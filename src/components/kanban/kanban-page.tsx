@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 
 import type { KanbanFilterOptions } from '../../lib/kanban';
@@ -33,27 +34,24 @@ export function KanbanPage({ issues }: KanbanPageProps) {
   );
 
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        padding: '1.2rem',
-        background: 'linear-gradient(140deg, #f8fafc, #edf3f7 50%, #f8fbf9)',
-        color: '#0f1720',
-        fontFamily: 'Segoe UI, system-ui, sans-serif',
-      }}
-    >
-      <header style={{ marginBottom: '0.9rem' }}>
-        <h1 style={{ margin: 0, fontSize: '1.9rem' }}>BeadBoard Kanban</h1>
-        <p style={{ margin: '0.35rem 0 0', color: '#475569' }}>Tracer Bullet 1 baseline from live `.beads/issues.jsonl`</p>
+    <main className="mx-auto min-h-screen max-w-[1680px] px-4 py-4 sm:px-6 sm:py-6">
+      <header className="mb-4 rounded-2xl border border-border-soft bg-surface/70 px-4 py-4 backdrop-blur md:px-5">
+        <p className="font-mono text-xs uppercase tracking-[0.14em] text-cyan-200/80">BeadBoard</p>
+        <h1 className="mt-1 text-2xl font-semibold text-text-strong sm:text-3xl">Kanban Dashboard</h1>
+        <p className="mt-2 text-sm text-text-muted">Tracer Bullet 1 from live `.beads/issues.jsonl` on Windows-native paths.</p>
       </header>
       <KanbanControls filters={filters} stats={stats} onFiltersChange={setFilters} />
-      <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: '0.9rem', marginTop: '0.9rem' }}>
-        <KanbanBoard
-          columns={columns}
-          selectedIssueId={selectedIssue?.id ?? null}
-          onSelect={(issue) => setSelectedIssueId(issue.id)}
-        />
-        <KanbanDetail issue={selectedIssue} />
+      <section className="mt-3 grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <motion.div layout className="overflow-x-auto rounded-2xl border border-border-soft bg-surface/55 p-2">
+          <KanbanBoard
+            columns={columns}
+            selectedIssueId={selectedIssue?.id ?? null}
+            onSelect={(issue) => setSelectedIssueId(issue.id)}
+          />
+        </motion.div>
+        <div className="xl:sticky xl:top-4 xl:self-start">
+          <KanbanDetail issue={selectedIssue} />
+        </div>
       </section>
     </main>
   );

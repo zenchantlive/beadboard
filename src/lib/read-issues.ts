@@ -10,24 +10,34 @@ export interface ReadIssuesOptions {
   includeTombstones?: boolean;
 }
 
+export function resolveIssuesJsonlPathCandidates(projectRoot: string = process.cwd()): string[] {
+  const baseDir = path.resolve(projectRoot, '.beads');
+  const primary = canonicalizeWindowsPath(path.join(baseDir, 'issues.jsonl'));
+  const fallback = canonicalizeWindowsPath(path.join(baseDir, 'issues.jsonl.new'));
+  return [primary, fallback];
+}
+
 export function resolveIssuesJsonlPath(projectRoot: string = process.cwd()): string {
-  const absolute = path.resolve(projectRoot, '.beads', 'issues.jsonl');
-  return canonicalizeWindowsPath(absolute);
+  return resolveIssuesJsonlPathCandidates(projectRoot)[0];
 }
 
 export async function readIssuesFromDisk(options: ReadIssuesOptions = {}): Promise<BeadIssue[]> {
-  const issuesPath = resolveIssuesJsonlPath(options.projectRoot);
+  const candidates = resolveIssuesJsonlPathCandidates(options.projectRoot);
 
-  try {
-    const jsonl = await fs.readFile(issuesPath, 'utf8');
-    return parseIssuesJsonl(jsonl, {
-      includeTombstones: options.includeTombstones ?? false,
-    });
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return [];
+  for (const issuesPath of candidates) {
+    try {
+      const jsonl = await fs.readFile(issuesPath, 'utf8');
+      return parseIssuesJsonl(jsonl, {
+        includeTombstones: options.includeTombstones ?? false,
+      });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        continue;
+      }
+
+      throw error;
     }
-
-    throw error;
   }
+
+  return [];
 }

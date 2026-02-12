@@ -1,21 +1,16 @@
 interface StatPillProps {
   label: string;
   value: number;
+  tone?: 'default' | 'critical';
 }
 
-export function StatPill({ label, value }: StatPillProps) {
+export function StatPill({ label, value, tone = 'default' }: StatPillProps) {
+  const valueToneClass = tone === 'critical' ? 'text-rose-300' : 'text-text-strong';
+
   return (
-    <div
-      style={{
-        border: '1px solid #d7dee8',
-        borderRadius: 12,
-        padding: '0.6rem 0.8rem',
-        background: '#ffffff',
-        minWidth: 90,
-      }}
-    >
-      <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#5e6b7a' }}>{label}</div>
-      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f1720' }}>{value}</div>
+    <div className="min-w-20 rounded-xl border border-border-soft bg-surface-muted/65 px-3 py-2">
+      <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-text-muted">{label}</div>
+      <div className={`mt-0.5 text-lg font-semibold ${valueToneClass}`}>{value}</div>
     </div>
   );
 }
