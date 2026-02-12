@@ -6,9 +6,9 @@ interface ChipProps {
 }
 
 const CHIP_TONE_CLASS: Record<NonNullable<ChipProps['tone']>, string> = {
-  default: 'border-border-soft bg-surface-muted/70 text-text-body',
-  status: 'border-cyan-300/25 bg-cyan-400/15 text-cyan-100',
-  priority: 'border-amber-300/25 bg-amber-400/15 text-amber-100',
+  default: 'border-border-soft bg-surface-muted/75 text-text-body',
+  status: 'border-cyan-300/30 bg-cyan-500/20 text-cyan-50',
+  priority: 'border-amber-300/30 bg-amber-500/20 text-amber-50',
 };
 
 export function Chip({ children, tone = 'default' }: ChipProps) {

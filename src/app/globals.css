@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #0a111f;
-  --color-surface: #111c31;
-  --color-surface-muted: #17263f;
-  --color-surface-raised: #1b2e4a;
-  --color-text-strong: #f5f8ff;
-  --color-text-body: #cfdae8;
-  --color-text-muted: #8da1bd;
-  --color-border-soft: rgba(130, 152, 185, 0.24);
-  --color-border-strong: rgba(167, 188, 218, 0.44);
+  --color-bg: #090c14;
+  --color-surface: #101827;
+  --color-surface-muted: #192336;
+  --color-surface-raised: #22314a;
+  --color-text-strong: #f6f8ff;
+  --color-text-body: #d8e0f1;
+  --color-text-muted: #9caccc;
+  --color-border-soft: rgba(145, 166, 204, 0.3);
+  --color-border-strong: rgba(187, 209, 246, 0.62);
 
   --status-open: #60a5fa;
   --status-progress: #fbbf24;
@@ -38,9 +38,10 @@ body {
 
 body {
   background:
-    radial-gradient(circle at 15% 8%, rgba(56, 189, 248, 0.2), transparent 32%),
-    radial-gradient(circle at 80% 12%, rgba(167, 139, 250, 0.16), transparent 38%),
-    linear-gradient(180deg, #060c17 0%, #0a111f 40%, #0d1525 100%);
+    radial-gradient(circle at 10% 12%, rgba(12, 138, 215, 0.34), transparent 36%),
+    radial-gradient(circle at 84% 20%, rgba(250, 122, 91, 0.18), transparent 30%),
+    radial-gradient(circle at 68% 88%, rgba(57, 189, 154, 0.14), transparent 36%),
+    linear-gradient(155deg, #05070d 0%, #0b1322 42%, #121e34 100%);
   color: var(--color-text-body);
-  font-family: 'Segoe UI', Inter, system-ui, sans-serif;
+  font-family: 'Segoe UI', 'Aptos', Inter, system-ui, sans-serif;
 }

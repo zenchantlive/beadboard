@@ -14,22 +14,22 @@ interface KanbanControlsProps {
 
 export function KanbanControls({ filters, stats, onFiltersChange }: KanbanControlsProps) {
   const inputClass =
-    'rounded-xl border border-border-soft bg-surface-muted/65 px-3 py-2 text-sm text-text-strong outline-none transition placeholder:text-text-muted focus:border-cyan-300/60 focus:ring-2 focus:ring-cyan-300/25';
+    'rounded-xl border border-border-soft bg-surface-muted/78 px-3 py-2.5 text-sm text-text-strong outline-none transition placeholder:text-text-muted focus:border-cyan-300/70 focus:ring-2 focus:ring-cyan-300/20';
 
   return (
     <section className="grid gap-3">
-      <motion.div layout className="flex flex-wrap gap-2.5">
+      <motion.div layout className="grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:items-center">
         <input
           type="search"
           value={filters.query ?? ''}
           onChange={(event) => onFiltersChange({ ...filters, query: event.target.value })}
           placeholder="Search by id/title/labels"
-          className={`${inputClass} min-w-60 flex-1`}
+          className={`${inputClass} w-full sm:min-w-[18rem] sm:flex-1`}
         />
         <select
           value={filters.type ?? ''}
           onChange={(event) => onFiltersChange({ ...filters, type: event.target.value })}
-          className={`${inputClass} w-40`}
+          className={`${inputClass} w-full sm:w-44`}
           aria-label="Type filter"
         >
           <option value="">All types</option>
@@ -42,7 +42,7 @@ export function KanbanControls({ filters, stats, onFiltersChange }: KanbanContro
         <select
           value={filters.priority ?? ''}
           onChange={(event) => onFiltersChange({ ...filters, priority: event.target.value })}
-          className={`${inputClass} w-32`}
+          className={`${inputClass} w-full sm:w-36`}
           aria-label="Priority filter"
         >
           <option value="">All priorities</option>
@@ -52,7 +52,7 @@ export function KanbanControls({ filters, stats, onFiltersChange }: KanbanContro
           <option value="3">P3</option>
           <option value="4">P4</option>
         </select>
-        <label className="inline-flex items-center gap-2 rounded-xl border border-border-soft bg-surface-muted/60 px-3 py-2 text-sm text-text-body">
+        <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border-soft bg-surface-muted/60 px-3 py-2 text-sm text-text-body sm:w-auto sm:justify-start">
           <input
             type="checkbox"
             checked={filters.showClosed ?? false}

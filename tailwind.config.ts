@@ -26,8 +26,8 @@ const config: Config = {
         },
       },
       boxShadow: {
-        card: '0 6px 18px rgba(15, 23, 42, 0.08)',
-        panel: '0 18px 42px rgba(15, 23, 42, 0.2)',
+        card: '0 14px 36px rgba(4, 8, 17, 0.45)',
+        panel: '0 24px 56px rgba(4, 8, 17, 0.58)',
       },
       borderRadius: {
         xl2: '1rem',
