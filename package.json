@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --import tsx --test tests/lib/project-context.test.ts && node --import tsx --test tests/lib/kanban.test.ts && node --import tsx --test tests/lib/read-issues.test.ts && node --test tests/guards/no-direct-jsonl-write.test.mjs && node --test tests/guards/no-inline-style-in-kanban.test.mjs && node --test tests/guards/kanban-responsive-contract.test.mjs"
+    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --import tsx --test tests/lib/project-context.test.ts && node --import tsx --test tests/lib/kanban.test.ts && node --import tsx --test tests/lib/read-issues.test.ts && node --import tsx --test tests/lib/bd-path.test.ts && node --import tsx --test tests/lib/bridge.test.ts && node --import tsx --test tests/lib/mutations.test.ts && node --import tsx --test tests/lib/writeback.test.ts && node --import tsx --test tests/lib/registry.test.ts && node --import tsx --test tests/lib/scanner.test.ts && node --import tsx --test tests/api/projects-route.test.ts && node --import tsx --test tests/api/mutations-routes.test.ts && node --test tests/guards/no-direct-jsonl-write.test.mjs && node --test tests/guards/no-inline-style-in-kanban.test.mjs && node --test tests/guards/kanban-responsive-contract.test.mjs"
   },
   "dependencies": {
     "framer-motion": "^11.18.2",
