@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import type { Dirent } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -155,7 +156,7 @@ async function scanRoot(
     }
 
     stats.scannedDirectories += 1;
-    let entries: fs.Dirent[];
+    let entries: Dirent[];
     try {
       entries = await fs.readdir(current.dir, { withFileTypes: true });
     } catch (error) {
