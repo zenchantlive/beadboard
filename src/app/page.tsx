@@ -1,7 +1,7 @@
-export default function Page() {
-  return (
-    <main>
-      <h1>BeadBoard</h1>
-    </main>
-  );
+import { KanbanPage } from '../components/kanban/kanban-page';
+import { readIssuesFromDisk } from '../lib/read-issues';
+
+export default async function Page() {
+  const issues = await readIssuesFromDisk();
+  return <KanbanPage issues={issues} />;
 }
