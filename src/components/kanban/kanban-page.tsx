@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { KanbanFilterOptions, KanbanStatus } from '../../lib/kanban';
 import { buildKanbanColumns, buildKanbanStats, filterKanbanIssues } from '../../lib/kanban';
@@ -61,6 +61,7 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
   const [desktopDetailMinimized, setDesktopDetailMinimized] = useState(false);
   const [pendingIssueIds, setPendingIssueIds] = useState<Set<string>>(new Set());
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const refreshInFlightRef = useRef(false);
 
   useEffect(() => {
     setLocalIssues(issues);
@@ -72,6 +73,38 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
 
   const selectedIssue = useMemo(() => filteredIssues.find((issue) => issue.id === selectedIssueId) ?? null, [filteredIssues, selectedIssueId]);
   const showDesktopDetail = Boolean(selectedIssue) && !desktopDetailMinimized;
+
+  const refreshIssues = useCallback(async (options: { silent?: boolean } = {}) => {
+    if (refreshInFlightRef.current) {
+      return;
+    }
+
+    refreshInFlightRef.current = true;
+    try {
+      const reconciled = await fetchIssues(projectRoot);
+      setLocalIssues(reconciled);
+    } catch (error) {
+      if (!options.silent) {
+        throw error;
+      }
+    } finally {
+      refreshInFlightRef.current = false;
+    }
+  }, [projectRoot]);
+
+  useEffect(() => {
+    const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
+    const onIssues = () => {
+      void refreshIssues({ silent: true });
+    };
+
+    source.addEventListener('issues', onIssues as EventListener);
+
+    return () => {
+      source.removeEventListener('issues', onIssues as EventListener);
+      source.close();
+    };
+  }, [projectRoot, refreshIssues]);
 
   const mutateStatus = async (issue: BeadIssue, targetStatus: KanbanStatus) => {
     const steps = planStatusTransition(issue, targetStatus);
@@ -92,8 +125,7 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
         });
       }
 
-      const reconciled = await fetchIssues(projectRoot);
-      setLocalIssues(reconciled);
+      await refreshIssues();
     } catch (error) {
       setLocalIssues(previous);
       setMutationError(error instanceof Error ? error.message : 'Mutation failed');

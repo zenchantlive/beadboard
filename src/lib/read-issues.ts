@@ -1,8 +1,8 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import { parseIssuesJsonl } from './parser';
 import { canonicalizeWindowsPath } from './pathing';
+import { readTextFileWithRetry } from './read-text-retry';
 import type { BeadIssue } from './types';
 
 export interface ReadIssuesOptions {
@@ -26,7 +26,7 @@ export async function readIssuesFromDisk(options: ReadIssuesOptions = {}): Promi
 
   for (const issuesPath of candidates) {
     try {
-      const jsonl = await fs.readFile(issuesPath, 'utf8');
+      const jsonl = await readTextFileWithRetry(issuesPath);
       return parseIssuesJsonl(jsonl, {
         includeTombstones: options.includeTombstones ?? false,
       });
