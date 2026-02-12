@@ -3,3 +3,6 @@ node_modules/
 *.tsbuildinfo
 .worktrees/
 worktrees/
+
+# bv (beads viewer) local config and caches
+.bv/

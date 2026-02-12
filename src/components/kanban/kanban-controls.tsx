@@ -14,7 +14,7 @@ interface KanbanControlsProps {
 
 export function KanbanControls({ filters, stats, onFiltersChange }: KanbanControlsProps) {
   const inputClass =
-    'rounded-xl border border-border-soft bg-surface-muted/78 px-3 py-2.5 text-sm text-text-strong outline-none transition placeholder:text-text-muted focus:border-cyan-300/70 focus:ring-2 focus:ring-cyan-300/20';
+    'rounded-xl border border-border-soft bg-surface-muted/78 px-3 py-2.5 text-sm text-text-strong outline-none transition placeholder:text-text-muted focus:border-border-strong focus:ring-2 focus:ring-white/10';
 
   return (
     <section className="grid gap-3">
@@ -57,7 +57,7 @@ export function KanbanControls({ filters, stats, onFiltersChange }: KanbanContro
             type="checkbox"
             checked={filters.showClosed ?? false}
             onChange={(event) => onFiltersChange({ ...filters, showClosed: event.target.checked })}
-            className="h-4 w-4 accent-cyan-400"
+            className="h-4 w-4 accent-amber-400"
           />
           Show closed
         </label>
