@@ -6,3 +6,6 @@ worktrees/
 
 # bv (beads viewer) local config and caches
 .bv/
+
+# beads lock artifact
+.beads/.bv.lock
