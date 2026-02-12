@@ -59,3 +59,16 @@ export interface ParseableBeadIssue extends Partial<BeadIssue> {
   id: string;
   title: string;
 }
+
+export type ProjectSource = 'local' | 'registry' | 'scanner';
+
+export interface ProjectContext {
+  key: string;
+  root: string;
+  displayPath: string;
+  name: string;
+  source: ProjectSource;
+  addedAt: string | null;
+}
+
+export type BeadIssueWithProject = BeadIssue & { project: ProjectContext };

@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { readIssuesFromDisk, resolveIssuesJsonlPath, resolveIssuesJsonlPathCandidates } from '../../src/lib/read-issues';
-import { sameWindowsPath } from '../../src/lib/pathing';
+import { canonicalizeWindowsPath, sameWindowsPath, toDisplayPath, windowsPathKey } from '../../src/lib/pathing';
 
 test('resolveIssuesJsonlPath appends .beads/issues.jsonl using windows-safe pathing', () => {
   const resolved = resolveIssuesJsonlPath('C:/Repo/Project');
@@ -38,6 +38,12 @@ test('readIssuesFromDisk parses JSONL issues from disk', async () => {
   assert.equal(issues.length, 1);
   assert.equal(issues[0].id, 'bb-1');
   assert.equal(issues[0].priority, 0);
+  assert.equal(issues[0].project.root, canonicalizeWindowsPath(root));
+  assert.equal(issues[0].project.key, windowsPathKey(root));
+  assert.equal(issues[0].project.displayPath, toDisplayPath(root));
+  assert.equal(issues[0].project.name, path.basename(canonicalizeWindowsPath(root)));
+  assert.equal(issues[0].project.source, 'local');
+  assert.equal(issues[0].project.addedAt, null);
 });
 
 test('readIssuesFromDisk returns empty list when issues file does not exist', async () => {
