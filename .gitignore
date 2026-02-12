@@ -1,0 +1,5 @@
+node_modules/
+.next/
+*.tsbuildinfo
+.worktrees/
+worktrees/

@@ -1,0 +1,85 @@
+import type { BeadDependency, BeadIssue, ParseableBeadIssue } from './types';
+
+export interface ParseIssuesOptions {
+  includeTombstones?: boolean;
+}
+
+function normalizeDependencies(value: unknown): BeadDependency[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') {
+        return null;
+      }
+
+      const dep = item as { type?: unknown; target?: unknown };
+      if (typeof dep.type !== 'string' || typeof dep.target !== 'string') {
+        return null;
+      }
+
+      return {
+        type: dep.type as BeadDependency['type'],
+        target: dep.target,
+      };
+    })
+    .filter((dep): dep is BeadDependency => dep !== null);
+}
+
+function normalizeIssue(raw: ParseableBeadIssue): BeadIssue {
+  return {
+    id: raw.id,
+    title: raw.title,
+    description: typeof raw.description === 'string' ? raw.description : null,
+    status: (raw.status ?? 'open') as BeadIssue['status'],
+    priority: typeof raw.priority === 'number' ? raw.priority : 2,
+    issue_type: (raw.issue_type ?? 'task') as BeadIssue['issue_type'],
+    assignee: typeof raw.assignee === 'string' ? raw.assignee : null,
+    owner: typeof raw.owner === 'string' ? raw.owner : null,
+    labels: Array.isArray(raw.labels) ? raw.labels.filter((x): x is string => typeof x === 'string') : [],
+    dependencies: normalizeDependencies(raw.dependencies),
+    created_at: typeof raw.created_at === 'string' ? raw.created_at : '',
+    updated_at: typeof raw.updated_at === 'string' ? raw.updated_at : '',
+    closed_at: typeof raw.closed_at === 'string' ? raw.closed_at : null,
+    close_reason: typeof raw.close_reason === 'string' ? raw.close_reason : null,
+    closed_by_session: typeof raw.closed_by_session === 'string' ? raw.closed_by_session : null,
+    created_by: typeof raw.created_by === 'string' ? raw.created_by : null,
+    due_at: typeof raw.due_at === 'string' ? raw.due_at : null,
+    estimated_minutes: typeof raw.estimated_minutes === 'number' ? raw.estimated_minutes : null,
+    external_ref: typeof raw.external_ref === 'string' ? raw.external_ref : null,
+    metadata: typeof raw.metadata === 'object' && raw.metadata !== null ? (raw.metadata as Record<string, unknown>) : {},
+  };
+}
+
+export function parseIssuesJsonl(text: string, options: ParseIssuesOptions = {}): BeadIssue[] {
+  const includeTombstones = options.includeTombstones ?? false;
+  const issues: BeadIssue[] = [];
+
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    try {
+      const parsed = JSON.parse(trimmed) as ParseableBeadIssue;
+      if (!parsed.id || !parsed.title) {
+        continue;
+      }
+
+      const normalized = normalizeIssue(parsed);
+      if (!includeTombstones && normalized.status === 'tombstone') {
+        continue;
+      }
+
+      issues.push(normalized);
+    } catch {
+      // Skip malformed lines to keep parser resilient against partial writes.
+      continue;
+    }
+  }
+
+  return issues;
+}

@@ -1,0 +1,26 @@
+{
+  "name": "beadboard",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --test tests/guards/no-direct-jsonl-write.test.mjs"
+  },
+  "dependencies": {
+    "next": "15.5.7",
+    "react": "19.2.1",
+    "react-dom": "19.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.2"
+  }
+}
