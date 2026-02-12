@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --test tests/guards/no-direct-jsonl-write.test.mjs"
+    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --import tsx --test tests/lib/registry.test.ts && node --import tsx --test tests/api/projects-route.test.ts && node --test tests/guards/no-direct-jsonl-write.test.mjs"
   },
   "dependencies": {
     "next": "15.5.7",
