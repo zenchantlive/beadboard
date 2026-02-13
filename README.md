@@ -1,6 +1,6 @@
 # BeadBoard
 
-**The Windows-native Control Center for Beads.**
+**The Windows-native Control Center for [Beads](https://github.com/steveyegge/beads).**
 
 BeadBoard is a high-performance local dashboard for managing your software development tasks. Built on the Beads protocol, it provides a unified, visualization-rich interface over your distributed project landscape.
 
