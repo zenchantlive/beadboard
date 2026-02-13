@@ -11,6 +11,7 @@ export interface KanbanFilterOptions {
   type?: string;
   priority?: string;
   showClosed?: boolean;
+  epicId?: string;
 }
 
 export interface KanbanStats {
@@ -123,6 +124,7 @@ export function filterKanbanIssues(issues: BeadIssue[], filters: KanbanFilterOpt
   const type = (filters.type ?? '').trim().toLowerCase();
   const priority = (filters.priority ?? '').trim();
   const showClosed = filters.showClosed ?? false;
+  const epicId = filters.epicId?.trim();
 
   return issues.filter((issue) => {
     if (!showClosed && issue.status === 'closed') {
@@ -142,6 +144,15 @@ export function filterKanbanIssues(issues: BeadIssue[], filters: KanbanFilterOpt
 
     if (priority && String(issue.priority) !== priority) {
       return false;
+    }
+
+    if (epicId) {
+      // Filter to show only tasks belonging to this epic
+      const parentDep = issue.dependencies.find((dep) => dep.type === 'parent');
+      const issueEpicId = parentDep?.target ?? (issue.id.includes('.') ? issue.id.split('.')[0] : null);
+      if (issueEpicId !== epicId) {
+        return false;
+      }
     }
 
     return true;

@@ -282,6 +282,7 @@ export function KanbanPage({
       <KanbanControls
         filters={filters}
         stats={stats}
+        epics={localIssues.filter((issue) => issue.issue_type === 'epic')}
         onFiltersChange={setFilters}
         onNextActionable={handleNextActionable}
         nextActionableFeedback={nextActionableFeedback}

@@ -3,12 +3,14 @@
 import { motion } from 'framer-motion';
 
 import type { KanbanFilterOptions, KanbanStats } from '../../lib/kanban';
+import type { BeadIssue } from '../../lib/types';
 
 import { StatPill } from '../shared/stat-pill';
 
 interface KanbanControlsProps {
   filters: KanbanFilterOptions;
   stats: KanbanStats;
+  epics: BeadIssue[];
   onFiltersChange: (filters: KanbanFilterOptions) => void;
   onNextActionable: () => void;
   nextActionableFeedback?: string | null;
@@ -17,6 +19,7 @@ interface KanbanControlsProps {
 export function KanbanControls({
   filters,
   stats,
+  epics,
   onFiltersChange,
   onNextActionable,
   nextActionableFeedback = null,
@@ -34,6 +37,19 @@ export function KanbanControls({
           placeholder="Search by id/title/labels"
           className={`${inputClass} w-full sm:min-w-[18rem] sm:flex-1`}
         />
+        <select
+          value={filters.epicId ?? ''}
+          onChange={(event) => onFiltersChange({ ...filters, epicId: event.target.value || undefined })}
+          className={`${inputClass} ui-select w-full sm:w-52`}
+          aria-label="Epic filter"
+        >
+          <option className="ui-option" value="">All epics</option>
+          {(epics ?? []).map((epic) => (
+            <option className="ui-option" key={epic.id} value={epic.id}>
+              {epic.title.slice(0, 40)}{epic.title.length > 40 ? '…' : ''} — {epic.id}
+            </option>
+          ))}
+        </select>
         <select
           value={filters.type ?? ''}
           onChange={(event) => onFiltersChange({ ...filters, type: event.target.value })}
