@@ -58,6 +58,9 @@ test('extracted graph section has viewport and legend', async () => {
   assert.match(graphSection, /blockerAnalysis/, 'should show blocker stats');
   assert.match(graphSection, /hideClosed/, 'should support hideClosed state in legend');
   assert.match(graphSection, /!hideClosed/, 'done legend should be hidden when closed items are hidden');
+  assert.match(graphSection, /Read left to right/, 'legend should include plain directional hint');
+  assert.match(graphSection, /Left = blockers/, 'legend should include left/right dependency meaning');
+  assert.match(graphSection, /Right = work this task unblocks/, 'legend should include downstream meaning');
 });
 
 test('graph node card supports tooltips and actionable glow', async () => {

@@ -78,6 +78,10 @@ export function GraphSection({
                         In progress blockers: {blockerAnalysis.inProgressBlockerCount}
                     </p>
                 ) : null}
+                <p className="w-full text-[10px] text-text-muted/55 md:w-auto md:max-w-[26rem]">
+                    <span className="font-semibold text-text-muted/75">Read left to right:</span>{' '}
+                    Left = blockers, middle = selected task, Right = work this task unblocks.
+                </p>
             </div>
 
             {/* ReactFlow graph viewport */}
