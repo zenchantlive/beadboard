@@ -70,6 +70,7 @@ export async function GET(request: Request): Promise<Response> {
         closed = true;
         clearInterval(heartbeat);
         unsubscribe();
+        request.signal.removeEventListener('abort', close);
         try {
           controller.close();
         } catch {
