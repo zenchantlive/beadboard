@@ -510,7 +510,6 @@ export function DependencyGraphPage({
     }
 
     // SCOPED: Only the epic's own child tasks (no cross-epic workspace nodes)
-    const issueById = new Map(issues.map((issue) => [issue.id, issue]));
     const visibleTasks = selectedEpicTasks
       .filter((issue) => (!hideClosed ? true : issue.status !== 'closed'));
 
