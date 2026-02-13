@@ -5,6 +5,9 @@ import { readIssuesFromDisk } from './read-issues';
 function scopeIssueId(projectKey: string, issueId: string): string {
   if (issueId.includes('::')) {
     return issueId;
+function scopeIssueId(projectKey: string, issueId: string): string {
+  if (issueId.includes('::')) {
+    return issueId;
   }
   return `${projectKey}::${issueId}`;
 }
