@@ -165,6 +165,9 @@ function applyFocusWorkspaceLayout(nodes: GraphNode[], edges: GraphEdge[], focus
     if (a.position.x !== b.position.x) {
       return a.position.x - b.position.x;
     }
+    if (a.position.x !== b.position.x) {
+      return a.position.x - b.position.x;
+    }
     return a.position.y - b.position.y;
   });
 }
