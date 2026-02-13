@@ -425,7 +425,7 @@ export function detectDependencyCycles(model: GraphModel): CycleAnomaly {
   const cycleKeys = new Set<string>();
   const cycles: string[][] = [];
 
-  const relevantEdges = model.edges.filter((e) => e.type === 'blocks');
+  const relevantEdges = [...model.edges]; // include all edge types for cycle detection
   const adj = new Map<string, string[]>();
   for (const node of model.nodes) {
     adj.set(node.id, []);
