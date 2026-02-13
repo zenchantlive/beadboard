@@ -1,0 +1,166 @@
+diff --git a/.gitignore b/.gitignore
+index eb35607..596f42a 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -3,3 +3,6 @@ node_modules/
+ *.tsbuildinfo
+ .worktrees/
+ worktrees/
++
++# bv (beads viewer) local config and caches
++.bv/
+diff --git a/src/app/globals.css b/src/app/globals.css
+index d17e938..a474080 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -3,15 +3,15 @@
+ @tailwind utilities;
+ 
+ :root {
+-  --color-bg: #090c14;
+-  --color-surface: #101827;
+-  --color-surface-muted: #192336;
+-  --color-surface-raised: #22314a;
+-  --color-text-strong: #f6f8ff;
+-  --color-text-body: #d8e0f1;
+-  --color-text-muted: #9caccc;
+-  --color-border-soft: rgba(145, 166, 204, 0.3);
+-  --color-border-strong: rgba(187, 209, 246, 0.62);
++  --color-bg: #090909;
++  --color-surface: #161616;
++  --color-surface-muted: #212121;
++  --color-surface-raised: #2a2a2a;
++  --color-text-strong: #f5f5f5;
++  --color-text-body: #d0d0d0;
++  --color-text-muted: #9a9a9a;
++  --color-border-soft: rgba(255, 255, 255, 0.15);
++  --color-border-strong: rgba(255, 255, 255, 0.3);
+ 
+   --status-open: #60a5fa;
+   --status-progress: #fbbf24;
+@@ -38,10 +38,9 @@ body {
+ 
+ body {
+   background:
+-    radial-gradient(circle at 10% 12%, rgba(12, 138, 215, 0.34), transparent 36%),
+-    radial-gradient(circle at 84% 20%, rgba(250, 122, 91, 0.18), transparent 30%),
+-    radial-gradient(circle at 68% 88%, rgba(57, 189, 154, 0.14), transparent 36%),
+-    linear-gradient(155deg, #05070d 0%, #0b1322 42%, #121e34 100%);
++    radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.05), transparent 36%),
++    radial-gradient(circle at 84% 18%, rgba(255, 180, 80, 0.06), transparent 32%),
++    linear-gradient(160deg, #070707 0%, #101010 48%, #161616 100%);
+   color: var(--color-text-body);
+-  font-family: 'Segoe UI', 'Aptos', Inter, system-ui, sans-serif;
++  font-family: 'DM Sans', 'Segoe UI', Inter, system-ui, sans-serif;
+ }
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index ff1ad90..1417e77 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -1,7 +1,18 @@
+ import type { Metadata } from 'next';
++import { DM_Sans, JetBrains_Mono } from 'next/font/google';
+ import type { ReactNode } from 'react';
+ import './globals.css';
+ 
++const dmSans = DM_Sans({
++  subsets: ['latin'],
++  variable: '--font-ui',
++});
++
++const jetbrainsMono = JetBrains_Mono({
++  subsets: ['latin'],
++  variable: '--font-mono',
++});
++
+ export const metadata: Metadata = {
+   title: 'BeadBoard',
+   description: 'Windows-native Beads dashboard',
+@@ -10,7 +21,7 @@ export const metadata: Metadata = {
+ export default function RootLayout({ children }: { children: ReactNode }) {
+   return (
+     <html lang="en">
+-      <body>{children}</body>
++      <body className={`${dmSans.variable} ${jetbrainsMono.variable}`}>{children}</body>
+     </html>
+   );
+ }
+diff --git a/src/components/kanban/kanban-controls.tsx b/src/components/kanban/kanban-controls.tsx
+index 78b09f4..e1e04f9 100644
+--- a/src/components/kanban/kanban-controls.tsx
++++ b/src/components/kanban/kanban-controls.tsx
+@@ -14,7 +14,7 @@ interface KanbanControlsProps {
+ 
+ export function KanbanControls({ filters, stats, onFiltersChange }: KanbanControlsProps) {
+   const inputClass =
+-    'rounded-xl border border-border-soft bg-surface-muted/78 px-3 py-2.5 text-sm text-text-strong outline-none transition placeholder:text-text-muted focus:border-cyan-300/70 focus:ring-2 focus:ring-cyan-300/20';
++    'rounded-xl border border-border-soft bg-surface-muted/78 px-3 py-2.5 text-sm text-text-strong outline-none transition placeholder:text-text-muted focus:border-border-strong focus:ring-2 focus:ring-white/10';
+ 
+   return (
+     <section className="grid gap-3">
+@@ -57,7 +57,7 @@ export function KanbanControls({ filters, stats, onFiltersChange }: KanbanContro
+             type="checkbox"
+             checked={filters.showClosed ?? false}
+             onChange={(event) => onFiltersChange({ ...filters, showClosed: event.target.checked })}
+-            className="h-4 w-4 accent-cyan-400"
++            className="h-4 w-4 accent-amber-400"
+           />
+           Show closed
+         </label>
+diff --git a/src/components/shared/chip.tsx b/src/components/shared/chip.tsx
+index c1637e6..e29d49d 100644
+--- a/src/components/shared/chip.tsx
++++ b/src/components/shared/chip.tsx
+@@ -7,7 +7,7 @@ interface ChipProps {
+ 
+ const CHIP_TONE_CLASS: Record<NonNullable<ChipProps['tone']>, string> = {
+   default: 'border-border-soft bg-surface-muted/75 text-text-body',
+-  status: 'border-cyan-300/30 bg-cyan-500/20 text-cyan-50',
++  status: 'border-zinc-300/30 bg-zinc-500/20 text-zinc-100',
+   priority: 'border-amber-300/30 bg-amber-500/20 text-amber-50',
+ };
+ 
+diff --git a/tailwind.config.ts b/tailwind.config.ts
+index 5ad9067..953965c 100644
+--- a/tailwind.config.ts
++++ b/tailwind.config.ts
+@@ -5,8 +5,8 @@ const config: Config = {
+   theme: {
+     extend: {
+       fontFamily: {
+-        ui: ['Segoe UI', 'Inter', 'system-ui', 'sans-serif'],
+-        mono: ['JetBrains Mono', 'Consolas', 'monospace'],
++        ui: ['var(--font-ui)', 'Segoe UI', 'Inter', 'system-ui', 'sans-serif'],
++        mono: ['var(--font-mono)', 'Consolas', 'monospace'],
+       },
+       colors: {
+         bg: 'var(--color-bg)',
+diff --git a/tests/guards/kanban-responsive-contract.test.mjs b/tests/guards/kanban-responsive-contract.test.mjs
+index 4e02f28..3efabf4 100644
+--- a/tests/guards/kanban-responsive-contract.test.mjs
++++ b/tests/guards/kanban-responsive-contract.test.mjs
+@@ -9,11 +9,12 @@ async function read(relativePath) {
+   return fs.readFile(path.join(ROOT, relativePath), 'utf8');
+ }
+ 
+-test('kanban board uses intentional horizontal scroll affordances', async () => {
++test('kanban board uses expandable vertical swimlanes', async () => {
+   const board = await read('src/components/kanban/kanban-board.tsx');
+ 
+-  assert.match(board, /snap-x/);
+-  assert.match(board, /overflow-x-auto/);
++  assert.match(board, /aria-expanded/);
++  assert.match(board, /onActivateStatus/);
++  assert.match(board, /max-h-\[50vh\]/);
+ });
+ 
+ test('kanban page defines mobile detail drawer behavior', async () => {
+@@ -21,6 +22,8 @@ test('kanban page defines mobile detail drawer behavior', async () => {
+ 
+   assert.match(page, /fixed inset-0/);
+   assert.match(page, /lg:hidden/);
++  assert.match(page, /lg:grid-cols-\[minmax\(0,1fr\)_minmax\(22rem,26rem\)\]/);
++  assert.match(page, /lg:border-l/);
+ });
+ 
+ test('kanban controls use fluid full-width sizing on small viewports', async () => {

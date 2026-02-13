@@ -1,6 +1,6 @@
 import type { BeadIssue } from './types';
 
-export const KANBAN_STATUSES = ['open', 'in_progress', 'blocked', 'deferred', 'closed'] as const;
+export const KANBAN_STATUSES = ['ready', 'in_progress', 'blocked', 'closed'] as const;
 
 export type KanbanStatus = (typeof KANBAN_STATUSES)[number];
 
@@ -15,15 +15,29 @@ export interface KanbanFilterOptions {
 
 export interface KanbanStats {
   total: number;
-  open: number;
+  ready: number;
   active: number;
   blocked: number;
   done: number;
   p0: number;
 }
 
-function isKanbanStatus(status: string): status is KanbanStatus {
-  return KANBAN_STATUSES.includes(status as KanbanStatus);
+export type BoardMutationStatus = 'open' | 'in_progress' | 'blocked' | 'closed';
+
+export interface BlockedTreeNode {
+  id: string;
+  title: string;
+  level: number;
+}
+
+export interface ExecutionChecklistItem {
+  key: 'owner_assigned' | 'no_open_blockers' | 'quality_signal' | 'execution_compatible';
+  label: string;
+  passed: boolean;
+}
+
+function isReviewStatus(status: string): boolean {
+  return status.toLowerCase().includes('review');
 }
 
 function issueSort(a: BeadIssue, b: BeadIssue): number {
@@ -33,6 +47,65 @@ function issueSort(a: BeadIssue, b: BeadIssue): number {
   }
 
   return b.updated_at.localeCompare(a.updated_at);
+}
+
+function hasOpenBlockers(issues: BeadIssue[], targetId: string): boolean {
+  return issues.some(
+    (issue) =>
+      issue.status !== 'closed' &&
+      issue.dependencies.some((dep) => dep.type === 'blocks' && dep.target === targetId),
+  );
+}
+
+function hasQualitySignal(issue: BeadIssue): boolean {
+  const description = issue.description?.trim() ?? '';
+  if (description.length > 0) {
+    return true;
+  }
+
+  if (issue.labels.some((label) => label.toLowerCase().includes('accept'))) {
+    return true;
+  }
+
+  const acceptance = issue.metadata.acceptance;
+  if (typeof acceptance === 'string') {
+    return acceptance.trim().length > 0;
+  }
+  if (Array.isArray(acceptance)) {
+    return acceptance.length > 0;
+  }
+
+  return false;
+}
+
+function deriveBlockedIds(issues: BeadIssue[]): Set<string> {
+  const issueById = new Map(issues.map((issue) => [issue.id, issue]));
+  const blockedIds = new Set<string>();
+
+  for (const issue of issues) {
+    for (const dep of issue.dependencies) {
+      if (dep.type !== 'blocks') continue;
+      const blocker = issueById.get(issue.id);
+      if (!blocker) continue;
+      if (blocker.status === 'closed') continue;
+      blockedIds.add(dep.target);
+    }
+  }
+
+  return blockedIds;
+}
+
+function laneForIssue(issue: BeadIssue, blockedIds: Set<string>): KanbanStatus {
+  if (issue.status === 'closed') {
+    return 'closed';
+  }
+  if (issue.status === 'blocked' || blockedIds.has(issue.id)) {
+    return 'blocked';
+  }
+  if (issue.status === 'in_progress' || isReviewStatus(issue.status)) {
+    return 'in_progress';
+  }
+  return 'ready';
 }
 
 export function filterKanbanIssues(issues: BeadIssue[], filters: KanbanFilterOptions): BeadIssue[] {
@@ -67,17 +140,19 @@ export function filterKanbanIssues(issues: BeadIssue[], filters: KanbanFilterOpt
 
 export function buildKanbanColumns(issues: BeadIssue[]): KanbanColumns {
   const columns = {
-    open: [],
+    ready: [],
     in_progress: [],
     blocked: [],
-    deferred: [],
     closed: [],
   } as KanbanColumns;
 
+  const blockedIds = deriveBlockedIds(issues);
   for (const issue of issues) {
-    if (isKanbanStatus(issue.status)) {
-      columns[issue.status].push(issue);
+    const lane = laneForIssue(issue, blockedIds);
+    if (lane === 'ready' && issue.issue_type === 'epic') {
+      continue;
     }
+    columns[lane].push(issue);
   }
 
   for (const status of KANBAN_STATUSES) {
@@ -88,12 +163,176 @@ export function buildKanbanColumns(issues: BeadIssue[]): KanbanColumns {
 }
 
 export function buildKanbanStats(issues: BeadIssue[]): KanbanStats {
+  const columns = buildKanbanColumns(issues);
   return {
     total: issues.length,
-    open: issues.filter((x) => x.status === 'open').length,
-    active: issues.filter((x) => x.status === 'in_progress').length,
-    blocked: issues.filter((x) => x.status === 'blocked').length,
-    done: issues.filter((x) => x.status === 'closed').length,
+    ready: columns.ready.length,
+    active: columns.in_progress.length,
+    blocked: columns.blocked.length,
+    done: columns.closed.length,
     p0: issues.filter((x) => x.priority === 0).length,
   };
+}
+
+export function laneToMutationStatus(status: KanbanStatus): BoardMutationStatus {
+  switch (status) {
+    case 'ready':
+      return 'open';
+    case 'in_progress':
+      return 'in_progress';
+    case 'blocked':
+      return 'blocked';
+    case 'closed':
+      return 'closed';
+    default:
+      return 'open';
+  }
+}
+
+export function buildBlockedByTree(
+  issues: BeadIssue[],
+  focusId: string | null,
+  options: { maxNodes?: number } = {},
+): { total: number; nodes: BlockedTreeNode[] } {
+  if (!focusId) {
+    return { total: 0, nodes: [] };
+  }
+
+  const issueById = new Map(issues.map((issue) => [issue.id, issue]));
+  const incomingByTarget = new Map<string, string[]>();
+  for (const issue of issues) {
+    for (const dep of issue.dependencies) {
+      if (dep.type !== 'blocks') continue;
+      const list = incomingByTarget.get(dep.target) ?? [];
+      list.push(issue.id);
+      incomingByTarget.set(dep.target, list);
+    }
+  }
+
+  for (const [targetId, blockerIds] of incomingByTarget.entries()) {
+    incomingByTarget.set(
+      targetId,
+      [...new Set(blockerIds)].sort((a, b) => a.localeCompare(b)),
+    );
+  }
+
+  const maxNodes = Math.max(1, options.maxNodes ?? 12);
+  const visited = new Set<string>([focusId]);
+  const queued = new Set<string>();
+  const queue: Array<{ id: string; level: number }> = [{ id: focusId, level: 0 }];
+  const nodes: BlockedTreeNode[] = [];
+  let total = 0;
+
+  while (queue.length > 0) {
+    const current = queue.shift() as { id: string; level: number };
+    const blockers = incomingByTarget.get(current.id) ?? [];
+    for (const blockerId of blockers) {
+      if (visited.has(blockerId) || queued.has(blockerId)) continue;
+      queued.add(blockerId);
+      total += 1;
+      const blocker = issueById.get(blockerId);
+      if (nodes.length < maxNodes) {
+        nodes.push({
+          id: blockerId,
+          title: blocker?.title ?? blockerId,
+          level: current.level + 1,
+        });
+      }
+      queue.push({ id: blockerId, level: current.level + 1 });
+    }
+    visited.add(current.id);
+  }
+
+  return { total, nodes };
+}
+
+export function findIssueLane(columns: KanbanColumns, issueId: string): KanbanStatus | null {
+  for (const status of KANBAN_STATUSES) {
+    if (columns[status].some((issue) => issue.id === issueId)) {
+      return status;
+    }
+  }
+  return null;
+}
+
+export function buildUnblocksCountByIssue(issues: BeadIssue[]): Map<string, number> {
+  const unblocksByIssue = new Map<string, number>();
+  for (const issue of issues) {
+    const targets = new Set(
+      issue.dependencies.filter((dep) => dep.type === 'blocks').map((dep) => dep.target),
+    );
+    unblocksByIssue.set(issue.id, targets.size);
+  }
+  return unblocksByIssue;
+}
+
+export function pickNextActionableIssue(columns: KanbanColumns, issues: BeadIssue[]): BeadIssue | null {
+  if (columns.ready.length === 0) {
+    return null;
+  }
+
+  const unblocksByIssue = buildUnblocksCountByIssue(issues);
+  const ranked = [...columns.ready].sort((a, b) => {
+    const priorityDiff = a.priority - b.priority;
+    if (priorityDiff !== 0) {
+      return priorityDiff;
+    }
+
+    const unblocksDiff = (unblocksByIssue.get(b.id) ?? 0) - (unblocksByIssue.get(a.id) ?? 0);
+    if (unblocksDiff !== 0) {
+      return unblocksDiff;
+    }
+
+    const updatedDiff = b.updated_at.localeCompare(a.updated_at);
+    if (updatedDiff !== 0) {
+      return updatedDiff;
+    }
+
+    return a.id.localeCompare(b.id);
+  });
+
+  return ranked[0] ?? null;
+}
+
+export function formatUpdatedRecency(updatedAt: string | null | undefined, nowMs = Date.now()): string {
+  if (!updatedAt) {
+    return 'updated unknown';
+  }
+
+  const parsed = Date.parse(updatedAt);
+  if (Number.isNaN(parsed)) {
+    return 'updated unknown';
+  }
+
+  const elapsedSeconds = Math.max(0, Math.floor((nowMs - parsed) / 1000));
+  if (elapsedSeconds < 60) {
+    return 'updated now';
+  }
+  if (elapsedSeconds < 3600) {
+    return `updated ${Math.floor(elapsedSeconds / 60)}m`;
+  }
+  if (elapsedSeconds < 86400) {
+    return `updated ${Math.floor(elapsedSeconds / 3600)}h`;
+  }
+  if (elapsedSeconds < 604800) {
+    return `updated ${Math.floor(elapsedSeconds / 86400)}d`;
+  }
+  return `updated ${Math.floor(elapsedSeconds / 604800)}w`;
+}
+
+export function buildExecutionChecklist(issue: BeadIssue, issues: BeadIssue[]): ExecutionChecklistItem[] {
+  const columns = buildKanbanColumns(issues);
+  const lane = findIssueLane(columns, issue.id);
+  const openBlockers = hasOpenBlockers(issues, issue.id);
+
+  return [
+    { key: 'owner_assigned', label: 'Owner assigned', passed: Boolean(issue.owner?.trim()) },
+    { key: 'no_open_blockers', label: 'Not blocked by open blockers', passed: !openBlockers },
+    { key: 'quality_signal', label: 'Has acceptance or description signal', passed: hasQualitySignal(issue) },
+    {
+      key: 'execution_compatible',
+      label: 'Execution-compatible status (ready or in progress)',
+      passed: lane === 'ready' || lane === 'in_progress',
+    },
+  ];
 }

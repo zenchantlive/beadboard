@@ -3,3 +3,13 @@ node_modules/
 *.tsbuildinfo
 .worktrees/
 worktrees/
+
+# bv (beads viewer) local config and caches
+.bv/
+
+# beads lock artifact
+.beads/.bv.lock
+.beads/.jsonl.lock
+
+# local screenshot artifacts
+artifacts/

@@ -5,8 +5,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        ui: ['Segoe UI', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+        ui: ['var(--font-ui)', 'Segoe UI', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'Consolas', 'monospace'],
       },
       colors: {
         bg: 'var(--color-bg)',
