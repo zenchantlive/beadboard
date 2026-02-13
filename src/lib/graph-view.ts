@@ -394,16 +394,16 @@ export function analyzeBlockedChain(model: GraphModel, options: { focusId: strin
     }
   }
 
-  const blockers = blockerNodeIds.map(id => model.nodes.find(n => n.id === id)).filter(Boolean) as GraphNode[];
   const nodeById = new Map(model.nodes.map((n) => [n.id, n]));
-  const blockers = blockerNodeIds.map(id => nodeById.get(id)).filter(Boolean) as GraphNode[];
-  const openBlockers = blockers.filter((b) => b.status !== 'closed');
-  const inProgress = openBlockers.filter((b) => b.status === 'in_progress');
+  const blockers = blockerNodeIds.map((id) => nodeById.get(id)).filter(Boolean) as GraphNode[];
+  const nonClosedBlockers = blockers.filter((b) => b.status !== 'closed');
+  const openBlockers = blockers.filter((b) => b.status === 'open');
+  const inProgress = blockers.filter((b) => b.status === 'in_progress');
 
-  const firstActionable = openBlockers.find((b) => {
+  const firstActionable = nonClosedBlockers.find((b) => {
     const adj = model.adjacency[b.id];
     if (!adj) return true;
-    return !adj.incoming.some(e => {
+    return !adj.incoming.some((e) => {
       if (e.type !== 'blocks') return false;
       const sourceNode = nodeById.get(e.source);
       return sourceNode?.status !== 'closed';

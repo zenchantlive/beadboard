@@ -50,10 +50,11 @@ export class IssuesEventBus {
   subscribe(listener: (event: IssuesChangedEvent) => void, options: SubscribeOptions = {}): () => void {
     const id = this.nextSubscriberId;
     this.nextSubscriberId += 1;
+    const canonicalRoot = options.projectRoot ? canonicalizeWindowsPath(options.projectRoot) : undefined;
 
     this.subscribers.set(id, {
       listener,
-      projectKey: options.projectRoot ? windowsPathKey(options.projectRoot) : undefined,
+      projectKey: canonicalRoot ? windowsPathKey(canonicalRoot) : undefined,
     });
 
     return () => {

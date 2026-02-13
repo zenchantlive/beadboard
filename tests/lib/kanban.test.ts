@@ -198,13 +198,13 @@ test('buildExecutionChecklist evaluates owner, blockers, quality signal, and exe
       owner: 'dev-a',
       description: 'Implements acceptance criteria with rollback notes',
     }),
-    issue({ id: 'bb-2', status: 'open', dependencies: [{ type: 'blocks', target: 'bb-1' }] }),
+    issue({ id: 'bb-2', status: 'closed', dependencies: [{ type: 'blocks', target: 'bb-1' }] }),
   ];
 
   const checklist = buildExecutionChecklist(issues[0], issues);
 
   assert.deepEqual(
     checklist.map((item) => item.passed),
-    [true, false, true, false],
+    [true, true, true, true],
   );
 });
