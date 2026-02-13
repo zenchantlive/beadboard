@@ -80,7 +80,7 @@ export function GraphSection({
                 ) : null}
                 <p className="w-full text-[10px] text-text-muted/55 md:w-auto md:max-w-[26rem]">
                     <span className="font-semibold text-text-muted/75">Read left to right:</span>{' '}
-                    Left = blockers, middle = selected task, Right = work this task unblocks.
+                    Left = blockers, middle = selected task, Right = work unblocked by this task.
                 </p>
             </div>
 
