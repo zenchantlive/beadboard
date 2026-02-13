@@ -57,7 +57,7 @@ interface TaskCardGridProps {
 function statusDot(status: BeadIssue['status']): string {
     switch (status) {
         case 'open':
-            return 'bg-sky-400';
+            return 'bg-emerald-400';
         case 'in_progress':
             return 'bg-amber-400';
         case 'blocked':
@@ -65,7 +65,7 @@ function statusDot(status: BeadIssue['status']): string {
         case 'deferred':
             return 'bg-slate-400';
         case 'closed':
-            return 'bg-emerald-400';
+            return 'bg-slate-400';
         case 'pinned':
             return 'bg-violet-400';
         case 'hooked':
@@ -76,24 +76,69 @@ function statusDot(status: BeadIssue['status']): string {
 }
 
 /**
+ * Returns status-tinted gradient background for Aero Chrome styling.
+ */
+function statusGradient(status: BeadIssue['status']): string {
+    switch (status) {
+        case 'open':
+            return 'bg-[linear-gradient(145deg,rgba(34,45,42,0.92)_0%,rgba(24,32,30,0.88)_50%,rgba(18,28,26,0.9)_100%)]';
+        case 'in_progress':
+            return 'bg-[linear-gradient(145deg,rgba(42,40,32,0.92)_0%,rgba(32,30,24,0.88)_50%,rgba(26,24,18,0.9)_100%)]';
+        case 'blocked':
+            return 'bg-[linear-gradient(145deg,rgba(60,24,30,0.95)_0%,rgba(45,18,24,0.9)_50%,rgba(32,12,16,0.92)_100%)]';
+        case 'closed':
+            return 'bg-[linear-gradient(145deg,rgba(28,30,34,0.75)_0%,rgba(22,24,28,0.72)_50%,rgba(18,20,24,0.75)_100%)] opacity-75';
+        case 'deferred':
+            return 'bg-[linear-gradient(145deg,rgba(38,40,48,0.92)_0%,rgba(28,30,36,0.88)_50%,rgba(22,24,30,0.9)_100%)]';
+        default:
+            return 'bg-[linear-gradient(145deg,rgba(38,40,48,0.92)_0%,rgba(28,30,36,0.88)_50%,rgba(22,24,30,0.9)_100%)]';
+    }
+}
+
+/**
+ * Returns status-colored border for Aero Chrome styling.
+ */
+function statusBorder(status: BeadIssue['status']): string {
+    switch (status) {
+        case 'open':
+            return 'border-emerald-500/20';
+        case 'in_progress':
+            return 'border-amber-500/20';
+        case 'blocked':
+            return 'border-rose-500/20';
+        case 'closed':
+            return 'border-rose-500/30';
+        case 'deferred':
+            return 'border-slate-500/20';
+        default:
+            return 'border-white/[0.06]';
+    }
+}
+
+/**
+ * Returns title text color class - greyed out for closed status.
+ */
+function titleColorClass(status: BeadIssue['status']): string {
+    return status === 'closed' ? 'text-text-muted/70' : 'text-text-strong';
+}
+
+/**
  * Returns a human-friendly label and text color class for a status.
  */
 function statusBadge(status: BeadIssue['status'], isActionable: boolean, hasBlockers: boolean): { label: string; textColor: string; bgColor: string } {
+    // Actual blocked status always shows as Blocked in red
+    if (status === 'blocked') {
+        return { label: 'Blocked', textColor: 'text-rose-400', bgColor: 'bg-rose-400/10' };
+    }
+
     // If effectively blocked (has open blockers), show Blocked (unless closed/done)
     if (hasBlockers && status !== 'closed' && status !== 'in_progress') {
         return { label: 'Blocked', textColor: 'text-rose-400', bgColor: 'bg-rose-400/10' };
     }
 
-    // Special case: "Blocked Now Open" -> Ready
-    if (status === 'blocked' && isActionable) {
-        return { label: 'Ready', textColor: 'text-cyan-400', bgColor: 'bg-cyan-400/10' };
-    }
-
     switch (status) {
         case 'in_progress':
             return { label: 'In Progress', textColor: 'text-amber-400', bgColor: 'bg-amber-400/10' };
-        case 'blocked':
-            return { label: 'Blocked', textColor: 'text-rose-400', bgColor: 'bg-rose-400/10' };
         case 'closed':
             return { label: 'Done', textColor: 'text-emerald-400', bgColor: 'bg-emerald-400/10' };
         case 'deferred':
@@ -106,30 +151,7 @@ function statusBadge(status: BeadIssue['status'], isActionable: boolean, hasBloc
     }
 }
 
-/**
- * Returns a card-level border class based on status for visual distinction.
- */
-function statusBorder(status: BeadIssue['status'], isActionable: boolean, hasBlockers: boolean): string {
-    if (hasBlockers && status !== 'closed' && status !== 'in_progress') {
-        return 'border-l-2 border-l-rose-500/60';
-    }
-    if (status === 'blocked' && isActionable) {
-        return 'border-l-2 border-l-cyan-400/60';
-    }
-    if (status === 'open') {
-        return 'border-l-2 border-l-cyan-400/60';
-    }
-    switch (status) {
-        case 'in_progress':
-            return 'border-l-2 border-l-amber-400/60';
-        case 'blocked':
-            return 'border-l-2 border-l-rose-500/60';
-        case 'closed':
-            return 'border-l-2 border-l-emerald-400/40 opacity-60';
-        default:
-            return '';
-    }
-}
+
 
 /**
  * A single task card displaying the issue ID, title, priority, type, assignee,
@@ -151,13 +173,9 @@ function TaskCard({ issue, selected, blockedBy, blocks, blockers, blocking, isAc
                     onSelect(issue.id, false);
                 }
             }}
-            className={`workflow-card group relative flex w-full flex-col rounded-xl px-4 py-4 text-left transition duration-200 ${statusBorder(
-                issue.status,
-                isActionable,
-                hasBlockers,
-            )} ${selected
-                ? 'workflow-card-selected'
-                : 'hover:border-sky-300/40 hover:bg-[linear-gradient(165deg,rgba(76,94,134,0.2),rgba(18,20,30,0.84))]'
+            className={`group relative flex w-full flex-col rounded-xl border ${statusBorder(hasBlockers ? 'blocked' : issue.status)} ${statusGradient(hasBlockers ? 'blocked' : issue.status)} px-4 py-4 text-left transition duration-200 shadow-[0_4px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)] ${selected
+                ? 'ring-1 ring-amber-200/30 shadow-[0_0_20px_rgba(251,191,36,0.15)]'
+                : 'hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)]'
                 }`}
         >
             {/* Expand / Open Drawer Button */}
@@ -176,7 +194,7 @@ function TaskCard({ issue, selected, blockedBy, blocks, blockers, blocking, isAc
             <div className="flex w-full items-start justify-between gap-3 pr-6">
                 <div className="flex flex-col gap-1.5 min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                        <span className={`h-2 w-2 rounded-full ${statusDot(issue.status)} ring-1 ring-white/10`} />
+                        <span className={`h-2 w-2 rounded-full ${statusDot(hasBlockers ? 'blocked' : issue.status)} ring-1 ring-white/10`} />
                         <span className="font-mono text-[10px] text-text-muted">{issue.id}</span>
                         {/* Status Badge */}
                         <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${badge.textColor} ${badge.bgColor}`}>
@@ -188,7 +206,7 @@ function TaskCard({ issue, selected, blockedBy, blocks, blockers, blocking, isAc
                             project: {projectName}
                         </div>
                     ) : null}
-                    <h3 className="line-clamp-3 text-sm font-medium leading-snug text-text-strong">
+                    <h3 className={`line-clamp-3 text-sm font-medium leading-snug ${titleColorClass(issue.status)}`}>
                         {issue.title}
                     </h3>
                 </div>
@@ -205,11 +223,11 @@ function TaskCard({ issue, selected, blockedBy, blocks, blockers, blocking, isAc
                 </div>
             ) : null}
 
-            {/* "Waiting On" section for blockers */}
+            {/* "Unlocks" section for blockers */}
             {blockers.length > 0 ? (
                 <div className="mt-auto pt-2 w-full">
                     <div className="rounded-lg bg-black/20 p-2 border border-white/5">
-                        <p className="mb-1.5 text-[9px] font-bold uppercase tracking-widest text-rose-400/80">Waiting On</p>
+                        <p className="mb-1.5 text-[9px] font-bold uppercase tracking-widest text-rose-400/80">Unlocks</p>
                         <div className="flex flex-col gap-1.5">
                             {blockers.map((blocker) => (
                                 <div
@@ -258,11 +276,11 @@ function TaskCard({ issue, selected, blockedBy, blocks, blockers, blocking, isAc
                 </div>
             ) : null}
 
-            {/* "Blocking" section (downstream) */}
+            {/* "Blocks" section (downstream) */}
             {blocking.length > 0 ? (
                 <div className={`${blockers.length > 0 ? 'mt-2' : 'mt-auto'} w-full`}>
                     <div className="rounded-lg bg-black/20 p-2 border border-white/5">
-                        <p className="mb-1.5 text-[9px] font-bold uppercase tracking-widest text-amber-400/80">Blocking</p>
+                        <p className="mb-1.5 text-[9px] font-bold uppercase tracking-widest text-amber-400/80">Blocks</p>
                         <div className="flex flex-col gap-1.5">
                             {blocking.map((item) => (
                                 <div
