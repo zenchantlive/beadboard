@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Chip } from '../shared/chip';
 import type { BeadIssue } from '../../lib/types';
 
 /** Props for the EpicChipStrip component. */
