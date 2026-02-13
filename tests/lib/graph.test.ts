@@ -62,8 +62,8 @@ test('buildGraphModel extracts supported dependency types with deterministic ord
     model.edges.map((x) => `${x.source}|${x.type}|${x.target}`),
     [
       'bb-1|supersedes|bb-3',
-      'bb-2|blocks|bb-3',
       'bb-2|parent|bb-1',
+      'bb-3|blocks|bb-2',
       'bb-3|duplicates|bb-1',
       'bb-3|relates_to|bb-2',
     ],
@@ -119,9 +119,9 @@ test('buildGraphModel builds incoming/outgoing adjacency maps', () => {
 
   const model = buildGraphModel(issues);
 
-  assert.deepEqual(model.adjacency['bb-1'].outgoing.map((x) => x.target), ['bb-2']);
-  assert.deepEqual(model.adjacency['bb-1'].incoming.map((x) => x.source), []);
-  assert.deepEqual(model.adjacency['bb-2'].incoming.map((x) => x.source), ['bb-1']);
-  assert.deepEqual(model.adjacency['bb-2'].outgoing.map((x) => x.target), ['bb-3']);
+  assert.deepEqual(model.adjacency['bb-1'].outgoing.map((x) => x.target), []);
+  assert.deepEqual(model.adjacency['bb-1'].incoming.map((x) => x.source), ['bb-2']);
+  assert.deepEqual(model.adjacency['bb-2'].incoming.map((x) => x.source), []);
+  assert.deepEqual(model.adjacency['bb-2'].outgoing.map((x) => x.target), ['bb-1', 'bb-3']);
   assert.deepEqual(model.adjacency['bb-3'].incoming.map((x) => x.source), ['bb-2']);
 });

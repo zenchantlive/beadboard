@@ -188,10 +188,8 @@ export function KanbanPage({
     }
   }, [projectRoot]);
 
+  // Auto-refresh when issues change on disk (SSE)
   useEffect(() => {
-    if (!allowMutations) {
-      return;
-    }
     const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
     const onIssues = () => {
       void refreshIssues({ silent: true });
@@ -203,7 +201,7 @@ export function KanbanPage({
       source.removeEventListener('issues', onIssues as EventListener);
       source.close();
     };
-  }, [allowMutations, projectRoot, refreshIssues]);
+  }, [projectRoot, refreshIssues]);
 
   const mutateStatus = async (issue: BeadIssue, targetStatus: KanbanStatus) => {
     if (!allowMutations) {

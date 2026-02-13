@@ -553,14 +553,14 @@ export function DependencyGraphPage({
         if (dep.type !== 'blocks') continue;
         // Avoid self-loops
         if (issue.id === dep.target) continue;
-        const edgeId = `${issue.id}:blocks:${dep.target}`;
+        const edgeId = `${dep.target}:blocks:${issue.id}`;
 
         const linkedToSelection = selectedId ? issue.id === selectedId || dep.target === selectedId : false;
 
         graphEdges.push({
           id: edgeId,
-          source: issue.id,
-          target: dep.target,
+          source: dep.target,
+          target: issue.id,
           className: linkedToSelection ? 'workflow-edge-selected' : 'workflow-edge-muted',
           animated: linkedToSelection,
           label: 'BLOCKS',
