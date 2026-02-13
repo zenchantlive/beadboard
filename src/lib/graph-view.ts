@@ -162,7 +162,10 @@ function applyFocusWorkspaceLayout(nodes: GraphNode[], edges: GraphEdge[], focus
     if (b.id === focusId) {
       return 1;
     }
-    return a.id.localeCompare(b.id);
+    if (a.position.x !== b.position.x) {
+      return a.position.x - b.position.x;
+    }
+    return a.position.y - b.position.y;
   });
 }
 
