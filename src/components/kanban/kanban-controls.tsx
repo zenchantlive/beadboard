@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import type { KanbanFilterOptions, KanbanStats } from '../../lib/kanban';
 import type { BeadIssue } from '../../lib/types';
 
+import { EpicChipStrip } from '../shared/epic-chip-strip';
 import { StatPill } from '../shared/stat-pill';
 
 interface KanbanControlsProps {
@@ -27,8 +28,25 @@ export function KanbanControls({
   const inputClass =
     'ui-field rounded-xl px-3 py-2.5 text-sm outline-none transition';
 
+  // Build bead counts map for EpicChipStrip
+  const beadCounts = new Map<string, number>();
+  for (const epic of epics) {
+    // Count non-epic issues that belong to this epic
+    const count = epic.dependencies?.filter(d => d.type === 'parent' && d.target === epic.id).length ?? 0;
+    beadCounts.set(epic.id, count);
+  }
+
   return (
     <section className="grid gap-3">
+      {/* Epic selector - full width like /graph page */}
+      <motion.div layout>
+        <EpicChipStrip
+          epics={epics.filter((epic) => (filters.showClosed ? true : epic.status !== 'closed'))}
+          selectedEpicId={filters.epicId ?? null}
+          beadCounts={beadCounts}
+          onSelect={(epicId) => onFiltersChange({ ...filters, epicId: epicId || undefined })}
+        />
+      </motion.div>
       <motion.div layout className="grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:items-center">
         <input
           type="search"
@@ -37,19 +55,6 @@ export function KanbanControls({
           placeholder="Search by id/title/labels"
           className={`${inputClass} w-full sm:min-w-[18rem] sm:flex-1`}
         />
-        <select
-          value={filters.epicId ?? ''}
-          onChange={(event) => onFiltersChange({ ...filters, epicId: event.target.value || undefined })}
-          className={`${inputClass} ui-select w-full sm:w-52`}
-          aria-label="Epic filter"
-        >
-          <option className="ui-option" value="">All epics</option>
-          {(epics ?? []).map((epic) => (
-            <option className="ui-option" key={epic.id} value={epic.id}>
-              {epic.title.slice(0, 40)}{epic.title.length > 40 ? '…' : ''} — {epic.id}
-            </option>
-          ))}
-        </select>
         <select
           value={filters.type ?? ''}
           onChange={(event) => onFiltersChange({ ...filters, type: event.target.value })}
