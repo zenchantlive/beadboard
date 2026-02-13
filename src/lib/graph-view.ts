@@ -389,19 +389,24 @@ export function analyzeBlockedChain(model: GraphModel, options: { focusId: strin
   }
 
   const blockers = blockerNodeIds.map(id => model.nodes.find(n => n.id === id)).filter(Boolean) as GraphNode[];
+  const nodeById = new Map(model.nodes.map((n) => [n.id, n]));
+  const blockers = blockerNodeIds.map(id => nodeById.get(id)).filter(Boolean) as GraphNode[];
   const openBlockers = blockers.filter((b) => b.status !== 'closed');
   const inProgress = openBlockers.filter((b) => b.status === 'in_progress');
-  const openCount = openBlockers.filter(b => b.status === 'open' || b.status === 'blocked').length;
-  
+
   const firstActionable = openBlockers.find((b) => {
     const adj = model.adjacency[b.id];
     if (!adj) return true;
-    return !adj.incoming.some(e => e.type === 'blocks' && model.nodes.find(n => n.id === e.source)?.status !== 'closed');
+    return !adj.incoming.some(e => {
+      if (e.type !== 'blocks') return false;
+      const sourceNode = nodeById.get(e.source);
+      return sourceNode?.status !== 'closed';
+    });
   });
 
   return {
     blockerNodeIds: blockerNodeIds.sort(),
-    openBlockerCount: openCount,
+    openBlockerCount: openBlockers.length,
     inProgressBlockerCount: inProgress.length,
     firstActionableBlockerId: firstActionable?.id ?? null,
     chainEdgeIds: chainEdgeIds.sort(),
