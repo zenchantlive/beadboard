@@ -47,6 +47,20 @@ const DEFAULT_IGNORE_DIRECTORIES = [
   'artifacts',
   'logs',
   '.worktrees', // TODO: confirm whether worktrees should be scan targets.
+  'worktrees',
+  '.agents',
+  '.kimi',
+  '.zenflow',
+  '.gemini',
+  'appdata',
+];
+
+const DEFAULT_IGNORE_PATH_FRAGMENTS = [
+  '\\go\\pkg\\mod\\',
+  '\\.agents\\skills\\',
+  '\\.kimi\\skills\\',
+  '\\.gemini\\skills\\',
+  '\\.zenflow\\worktrees\\',
 ];
 
 function userProfileRoot(): string {
@@ -68,6 +82,18 @@ async function ensureDirectoryExists(input: string): Promise<string | null> {
   } catch (error) {
     if (shouldSkipFsError(error as NodeJS.ErrnoException)) {
       return null;
+    }
+    throw error;
+  }
+}
+
+async function fileExists(input: string): Promise<boolean> {
+  try {
+    const stat = await fs.stat(input);
+    return stat.isFile();
+  } catch (error) {
+    if (shouldSkipFsError(error as NodeJS.ErrnoException)) {
+      return false;
     }
     throw error;
   }
@@ -128,6 +154,20 @@ function buildIgnoreSet(additional: string[] = []): Set<string> {
   );
 }
 
+function shouldIgnorePath(dir: string): boolean {
+  const normalized = toCanonicalRoot(dir).toLowerCase();
+  return DEFAULT_IGNORE_PATH_FRAGMENTS.some((fragment) => normalized.includes(fragment));
+}
+
+function shouldIgnoreDirectoryName(name: string): boolean {
+  const normalized = name.trim().toLowerCase();
+  return (
+    normalized.startsWith('beadboard-read-') ||
+    normalized.startsWith('beadboard-watch-') ||
+    normalized.startsWith('skills-')
+  );
+}
+
 function recordProject(projects: Map<string, ScannerProject>, root: string): void {
   const normalized = toCanonicalRoot(root);
   const key = windowsPathKey(normalized);
@@ -155,6 +195,11 @@ async function scanRoot(
       continue;
     }
 
+    if (current.depth > 0 && shouldIgnorePath(current.dir)) {
+      stats.ignoredDirectories += 1;
+      continue;
+    }
+
     stats.scannedDirectories += 1;
     let entries: Dirent[];
     try {
@@ -179,7 +224,7 @@ async function scanRoot(
       }
 
       const entryName = entry.name.toLowerCase();
-      if (ignoreSet.has(entryName)) {
+      if (ignoreSet.has(entryName) || shouldIgnoreDirectoryName(entryName)) {
         stats.ignoredDirectories += 1;
         continue;
       }
@@ -190,7 +235,13 @@ async function scanRoot(
     }
 
     if (hasBeads) {
-      recordProject(projects, current.dir);
+      const issuesPath = path.join(current.dir, '.beads', 'issues.jsonl');
+      const fallbackIssuesPath = path.join(current.dir, '.beads', 'issues.jsonl.new');
+      const [primaryExists, fallbackExists] = await Promise.all([fileExists(issuesPath), fileExists(fallbackIssuesPath)]);
+
+      if (primaryExists || fallbackExists) {
+        recordProject(projects, current.dir);
+      }
     }
   }
 }

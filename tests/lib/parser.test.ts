@@ -49,3 +49,24 @@ test('parseIssuesJsonl can include tombstones when requested', () => {
 
   assert.equal(result.length, 2);
 });
+
+test('parseIssuesJsonl supports beads dependency schema with depends_on_id and parent-child', () => {
+  const input = JSON.stringify({
+    id: 'bb-6',
+    title: 'Dependency test',
+    dependencies: [
+      { type: 'blocks', depends_on_id: 'bb-1' },
+      { type: 'parent-child', depends_on_id: 'bb-epic' },
+      { type: 'relates_to', target: 'bb-2' },
+    ],
+  });
+
+  const result = parseIssuesJsonl(input);
+
+  assert.equal(result.length, 1);
+  assert.deepEqual(result[0].dependencies, [
+    { type: 'blocks', target: 'bb-1' },
+    { type: 'parent', target: 'bb-epic' },
+    { type: 'relates_to', target: 'bb-2' },
+  ]);
+});

@@ -15,14 +15,21 @@ function normalizeDependencies(value: unknown): BeadDependency[] {
         return null;
       }
 
-      const dep = item as { type?: unknown; target?: unknown };
-      if (typeof dep.type !== 'string' || typeof dep.target !== 'string') {
+      const dep = item as { type?: unknown; target?: unknown; depends_on_id?: unknown };
+      if (typeof dep.type !== 'string') {
         return null;
       }
 
+      const target = typeof dep.target === 'string' ? dep.target : typeof dep.depends_on_id === 'string' ? dep.depends_on_id : null;
+      if (!target) {
+        return null;
+      }
+
+      const normalizedType = dep.type === 'parent-child' ? 'parent' : dep.type;
+
       return {
-        type: dep.type as BeadDependency['type'],
-        target: dep.target,
+        type: normalizedType as BeadDependency['type'],
+        target,
       };
     })
     .filter((dep): dep is BeadDependency => dep !== null);

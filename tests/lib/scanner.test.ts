@@ -51,12 +51,27 @@ test('scanForProjects respects depth limits and ignore list', async () => {
   await withTempUserProfile(async (userProfile) => {
     const projectRoot = path.join(userProfile, 'ProjectA');
     await fs.mkdir(path.join(projectRoot, '.beads'), { recursive: true });
+    await fs.writeFile(
+      path.join(projectRoot, '.beads', 'issues.jsonl'),
+      JSON.stringify({ id: 'bb-a', title: 'A', issue_type: 'task', status: 'open', priority: 1 }),
+      'utf8',
+    );
 
     const ignoredRoot = path.join(userProfile, 'node_modules', 'Ignored');
     await fs.mkdir(path.join(ignoredRoot, '.beads'), { recursive: true });
+    await fs.writeFile(
+      path.join(ignoredRoot, '.beads', 'issues.jsonl'),
+      JSON.stringify({ id: 'bb-ignored', title: 'Ignored', issue_type: 'task', status: 'open', priority: 1 }),
+      'utf8',
+    );
 
     const deepRoot = path.join(userProfile, 'Deep', 'Level1', 'Level2', 'ProjectDeep');
     await fs.mkdir(path.join(deepRoot, '.beads'), { recursive: true });
+    await fs.writeFile(
+      path.join(deepRoot, '.beads', 'issues.jsonl'),
+      JSON.stringify({ id: 'bb-deep', title: 'Deep', issue_type: 'task', status: 'open', priority: 1 }),
+      'utf8',
+    );
 
     const result = await scanForProjects({ maxDepth: 1 });
     const keys = result.projects.map((project) => project.key);
@@ -64,5 +79,61 @@ test('scanForProjects respects depth limits and ignore list', async () => {
     assert.equal(keys.includes(windowsPathKey(canonicalizeWindowsPath(projectRoot))), true);
     assert.equal(keys.includes(windowsPathKey(canonicalizeWindowsPath(ignoredRoot))), false);
     assert.equal(keys.includes(windowsPathKey(canonicalizeWindowsPath(deepRoot))), false);
+  });
+});
+
+test('scanForProjects ignores directories that have .beads but no issues JSONL files', async () => {
+  await withTempUserProfile(async (userProfile) => {
+    const falsePositiveRoot = path.join(userProfile, 'LooksLikeBeadsProject');
+    await fs.mkdir(path.join(falsePositiveRoot, '.beads'), { recursive: true });
+
+    const validRoot = path.join(userProfile, 'ValidProject');
+    await fs.mkdir(path.join(validRoot, '.beads'), { recursive: true });
+    await fs.writeFile(
+      path.join(validRoot, '.beads', 'issues.jsonl'),
+      JSON.stringify({ id: 'bb-1', title: 'valid', issue_type: 'task', status: 'open', priority: 1 }),
+      'utf8',
+    );
+
+    const result = await scanForProjects();
+    const keys = result.projects.map((project) => project.key);
+
+    assert.equal(keys.includes(windowsPathKey(canonicalizeWindowsPath(falsePositiveRoot))), false);
+    assert.equal(keys.includes(windowsPathKey(canonicalizeWindowsPath(validRoot))), true);
+  });
+});
+
+test('scanForProjects ignores tool/cache paths even if they contain issues JSONL', async () => {
+  await withTempUserProfile(async (userProfile) => {
+    const tempBeads = path.join(userProfile, 'AppData', 'Local', 'Temp', 'beadboard-read-X');
+    await fs.mkdir(path.join(tempBeads, '.beads'), { recursive: true });
+    await fs.writeFile(
+      path.join(tempBeads, '.beads', 'issues.jsonl'),
+      JSON.stringify({ id: 'bb-temp', title: 'temp', issue_type: 'task', status: 'open', priority: 1 }),
+      'utf8',
+    );
+
+    const skillsBeads = path.join(userProfile, '.agents', 'skills', 'create-beads-orchestration');
+    await fs.mkdir(path.join(skillsBeads, '.beads'), { recursive: true });
+    await fs.writeFile(
+      path.join(skillsBeads, '.beads', 'issues.jsonl'),
+      JSON.stringify({ id: 'bb-skill', title: 'skill', issue_type: 'task', status: 'open', priority: 1 }),
+      'utf8',
+    );
+
+    const realProject = path.join(userProfile, 'RealProject');
+    await fs.mkdir(path.join(realProject, '.beads'), { recursive: true });
+    await fs.writeFile(
+      path.join(realProject, '.beads', 'issues.jsonl'),
+      JSON.stringify({ id: 'bb-real', title: 'real', issue_type: 'task', status: 'open', priority: 1 }),
+      'utf8',
+    );
+
+    const result = await scanForProjects();
+    const keys = result.projects.map((project) => project.key);
+
+    assert.equal(keys.includes(windowsPathKey(canonicalizeWindowsPath(tempBeads))), false);
+    assert.equal(keys.includes(windowsPathKey(canonicalizeWindowsPath(skillsBeads))), false);
+    assert.equal(keys.includes(windowsPathKey(canonicalizeWindowsPath(realProject))), true);
   });
 });

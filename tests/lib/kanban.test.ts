@@ -4,9 +4,14 @@ import assert from 'node:assert/strict';
 import type { BeadIssue } from '../../src/lib/types';
 import {
   KANBAN_STATUSES,
+  buildExecutionChecklist,
+  buildBlockedByTree,
   buildKanbanColumns,
   buildKanbanStats,
+  buildUnblocksCountByIssue,
+  findIssueLane,
   filterKanbanIssues,
+  pickNextActionableIssue,
 } from '../../src/lib/kanban';
 
 function issue(overrides: Partial<BeadIssue>): BeadIssue {
@@ -56,19 +61,24 @@ test('buildKanbanColumns groups by core statuses and sorts by priority ascending
   const issues = [
     issue({ id: 'bb-1', status: 'open', priority: 2 }),
     issue({ id: 'bb-2', status: 'open', priority: 0 }),
-    issue({ id: 'bb-3', status: 'blocked', priority: 1 }),
-    issue({ id: 'bb-4', status: 'pinned', priority: 1 }),
+    issue({ id: 'bb-epic', status: 'open', priority: 0, issue_type: 'epic' }),
+    issue({ id: 'bb-3', status: 'in_progress', priority: 1 }),
+    issue({ id: 'bb-4', status: 'deferred', priority: 1 }),
+    issue({ id: 'bb-5', status: 'open', priority: 3, dependencies: [{ type: 'blocks', target: 'bb-1' }] }),
+    issue({ id: 'bb-6', status: 'open', priority: 4, dependencies: [{ type: 'blocks', target: 'bb-2' }] }),
   ];
 
   const columns = buildKanbanColumns(issues);
 
   assert.deepEqual(Object.keys(columns), KANBAN_STATUSES);
-  assert.deepEqual(columns.open.map((x) => x.id), ['bb-2', 'bb-1']);
-  assert.deepEqual(columns.blocked.map((x) => x.id), ['bb-3']);
+  assert.deepEqual(columns.ready.map((x) => x.id), ['bb-4', 'bb-5', 'bb-6']);
+  assert.equal(columns.ready.some((x) => x.issue_type === 'epic'), false);
+  assert.deepEqual(columns.in_progress.map((x) => x.id), ['bb-3']);
+  assert.deepEqual(columns.blocked.map((x) => x.id), ['bb-2', 'bb-1']);
   assert.equal(columns.closed.length, 0);
 });
 
-test('buildKanbanStats reports total/open/active/blocked/done/p0', () => {
+test('buildKanbanStats reports total/ready/active/blocked/done/p0', () => {
   const issues = [
     issue({ status: 'open', priority: 0 }),
     issue({ status: 'open', priority: 2 }),
@@ -80,9 +90,121 @@ test('buildKanbanStats reports total/open/active/blocked/done/p0', () => {
   const stats = buildKanbanStats(issues);
 
   assert.equal(stats.total, 5);
-  assert.equal(stats.open, 2);
+  assert.equal(stats.ready, 2);
   assert.equal(stats.active, 1);
   assert.equal(stats.blocked, 1);
   assert.equal(stats.done, 1);
   assert.equal(stats.p0, 1);
+});
+
+test('buildBlockedByTree returns compact blocker tree with depth and total', () => {
+  const issues = [
+    issue({ id: 'bb-1', title: 'Target issue' }),
+    issue({ id: 'bb-2', title: 'Direct blocker A', dependencies: [{ type: 'blocks', target: 'bb-1' }] }),
+    issue({ id: 'bb-3', title: 'Direct blocker B', dependencies: [{ type: 'blocks', target: 'bb-1' }] }),
+    issue({ id: 'bb-4', title: 'Nested blocker', dependencies: [{ type: 'blocks', target: 'bb-2' }] }),
+  ];
+
+  const tree = buildBlockedByTree(issues, 'bb-1');
+
+  assert.equal(tree.total, 3);
+  assert.deepEqual(
+    tree.nodes.map((node) => `${node.id}:${node.level}`),
+    ['bb-2:1', 'bb-3:1', 'bb-4:2'],
+  );
+});
+
+test('findIssueLane resolves ready lane for unblocked linked issues', () => {
+  const issues = [
+    issue({ id: 'bb-1', status: 'open' }),
+    issue({ id: 'bb-2', status: 'blocked' }),
+    issue({ id: 'bb-3', status: 'closed' }),
+  ];
+
+  const columns = buildKanbanColumns(issues);
+
+  assert.equal(findIssueLane(columns, 'bb-1'), 'ready');
+  assert.equal(findIssueLane(columns, 'bb-2'), 'blocked');
+  assert.equal(findIssueLane(columns, 'bb-3'), 'closed');
+  assert.equal(findIssueLane(columns, 'bb-404'), null);
+});
+
+test('pickNextActionableIssue is deterministic by priority asc, unblocks desc, updated desc, id asc', () => {
+  const issues = [
+    issue({
+      id: 'bb-1',
+      status: 'open',
+      priority: 1,
+      updated_at: '2026-02-10T01:00:00Z',
+      dependencies: [{ type: 'blocks', target: 'bb-10' }],
+    }),
+    issue({
+      id: 'bb-2',
+      status: 'open',
+      priority: 1,
+      updated_at: '2026-02-10T02:00:00Z',
+      dependencies: [{ type: 'blocks', target: 'bb-11' }, { type: 'blocks', target: 'bb-12' }],
+    }),
+    issue({
+      id: 'bb-3',
+      status: 'open',
+      priority: 1,
+      updated_at: '2026-02-10T02:00:00Z',
+      dependencies: [{ type: 'blocks', target: 'bb-13' }, { type: 'blocks', target: 'bb-14' }],
+    }),
+    issue({ id: 'bb-10', status: 'blocked' }),
+    issue({ id: 'bb-11', status: 'blocked' }),
+    issue({ id: 'bb-12', status: 'blocked' }),
+    issue({ id: 'bb-13', status: 'blocked' }),
+    issue({ id: 'bb-14', status: 'blocked' }),
+  ];
+
+  const columns = buildKanbanColumns(issues);
+  const next = pickNextActionableIssue(columns, issues);
+
+  assert.equal(next?.id, 'bb-2');
+});
+
+test('pickNextActionableIssue returns null when no ready issue exists', () => {
+  const issues = [issue({ id: 'bb-1', status: 'in_progress' }), issue({ id: 'bb-2', status: 'closed' })];
+  const columns = buildKanbanColumns(issues);
+
+  assert.equal(pickNextActionableIssue(columns, issues), null);
+});
+
+test('buildUnblocksCountByIssue counts unique blocks dependencies per issue', () => {
+  const issues = [
+    issue({
+      id: 'bb-1',
+      dependencies: [
+        { type: 'blocks', target: 'bb-2' },
+        { type: 'blocks', target: 'bb-2' },
+        { type: 'blocks', target: 'bb-3' },
+        { type: 'relates_to', target: 'bb-4' },
+      ],
+    }),
+  ];
+
+  const map = buildUnblocksCountByIssue(issues);
+
+  assert.equal(map.get('bb-1'), 2);
+});
+
+test('buildExecutionChecklist evaluates owner, blockers, quality signal, and execution-compatible lane', () => {
+  const issues = [
+    issue({
+      id: 'bb-1',
+      status: 'open',
+      owner: 'dev-a',
+      description: 'Implements acceptance criteria with rollback notes',
+    }),
+    issue({ id: 'bb-2', status: 'open', dependencies: [{ type: 'blocks', target: 'bb-1' }] }),
+  ];
+
+  const checklist = buildExecutionChecklist(issues[0], issues);
+
+  assert.deepEqual(
+    checklist.map((item) => item.passed),
+    [true, false, true, false],
+  );
 });

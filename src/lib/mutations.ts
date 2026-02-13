@@ -23,6 +23,7 @@ export interface UpdateMutationPayload extends MutationBasePayload {
   description?: string;
   status?: MutationStatus;
   priority?: number;
+  issueType?: string;
   assignee?: string;
   labels?: string[];
 }
@@ -162,11 +163,20 @@ export function validateMutationPayload(operation: MutationOperation, payload: u
       description: asOptionalString(data.description),
       status: asOptionalStatus(data.status),
       priority: asOptionalPriority(data.priority),
+      issueType: asOptionalString(data.issueType),
       assignee: asOptionalString(data.assignee),
       labels: asOptionalLabels(data.labels),
     };
 
-    if (!mapped.title && !mapped.description && !mapped.status && mapped.priority === undefined && !mapped.assignee && !mapped.labels) {
+    if (
+      !mapped.title &&
+      !mapped.description &&
+      !mapped.status &&
+      mapped.priority === undefined &&
+      !mapped.issueType &&
+      !mapped.assignee &&
+      !mapped.labels
+    ) {
       throw new MutationValidationError('At least one update field is required.');
     }
 
@@ -232,6 +242,7 @@ export function buildBdMutationArgs(operation: MutationOperation, payload: Mutat
     if (data.priority !== undefined) {
       args.push('-p', String(data.priority));
     }
+    pushOptionalArg(args, '-t', data.issueType);
     pushOptionalArg(args, '-a', data.assignee);
     pushOptionalLabels(args, data.labels);
     args.push('--json');

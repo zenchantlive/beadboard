@@ -29,6 +29,17 @@ test('buildBdMutationArgs maps reopen correctly', () => {
   assert.deepEqual(args, ['reopen', 'bb-123', '-r', 'retry work', '--json']);
 });
 
+test('buildBdMutationArgs maps update issue type correctly', () => {
+  const payload = validateMutationPayload('update', {
+    projectRoot: root,
+    id: 'bb-123',
+    issueType: 'feature',
+  });
+
+  const args = buildBdMutationArgs('update', payload);
+  assert.deepEqual(args, ['update', 'bb-123', '-t', 'feature', '--json']);
+});
+
 test('buildBdMutationArgs maps comment correctly', () => {
   const payload = validateMutationPayload('comment', {
     projectRoot: root,
