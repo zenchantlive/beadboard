@@ -3,7 +3,7 @@
 **The Windows-native Control Center for [Beads](https://github.com/steveyegge/beads).**
 
 BeadBoard is a high-performance local dashboard for managing your software development tasks. Built on the Beads protocol, it provides a unified, visualization-rich interface over your distributed project landscape.
-
+![alt text](image.png)
 ## 🚀 Why BeadBoard?
 Most task managers are siloes. BeadBoard is a lens over your source code.
 - **Source of Truth**: Reads directly from `.beads/issues.jsonl` in your repo. No database sync skew.
@@ -20,12 +20,14 @@ Stop context switching between repos.
 
 ### 2. Interactive Kanban Dashboard (`/`)
 Manage your flow state.
+![Kanban Dashboard](assets/kanban-hero.png)
 - **Live Updates**: Boards refresh automatically when the underlying JSONL files change (e.g., via CLI).
 - **Progressive Disclosure**: Task details, metadata, and relations are tucked away until you need them.
 - **Smart Filtering**: Filter by priority, assignee, status, or full-text search across thousands of beads.
 
 ### 3. Dependency Graph Explorer (`/graph`)
 Understand the "Why" and "What's Next".
+![alt text](image-1.png)
 - **Epic-Centric Layout**: Automatically groups tasks by Epic for logical clustering.
 - **True DAG Visualization**: Uses Dagre layout engine to enforce a strict Left-to-Right dependency flow.
   - *Left*: Incoming Blockers
