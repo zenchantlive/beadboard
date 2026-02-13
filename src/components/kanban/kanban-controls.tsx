@@ -60,7 +60,7 @@ export function KanbanControls({
           <option className="ui-option" value="3">P3</option>
           <option className="ui-option" value="4">P4</option>
         </select>
-        <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border-soft bg-surface-muted/60 px-3 py-2 text-sm text-text-body sm:w-auto sm:justify-start">
+        <label className="ui-text inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border-soft bg-gradient-to-b from-surface-muted/50 to-surface-muted/70 px-3 py-2 text-sm text-text-body sm:w-auto sm:justify-start shadow-[0_1px_3px_rgba(0,0,0,0.1)]">
           <input
             type="checkbox"
             checked={filters.showClosed ?? false}
@@ -72,7 +72,7 @@ export function KanbanControls({
         <button
           type="button"
           onClick={onNextActionable}
-          className="w-full rounded-xl border border-border-soft bg-surface-muted/70 px-3 py-2 text-sm font-semibold text-text-body transition hover:border-border-strong hover:bg-surface-raised sm:w-auto"
+          className="ui-text w-full rounded-xl border border-border-soft bg-gradient-to-b from-surface-muted/60 to-surface-muted/80 px-3 py-2 text-sm font-semibold text-text-body transition hover:from-surface-muted/75 hover:to-surface-muted/90 shadow-[0_1px_3px_rgba(0,0,0,0.1)] sm:w-auto"
         >
           Next Actionable
         </button>
@@ -85,9 +85,7 @@ export function KanbanControls({
         <StatPill label="Done" value={stats.done} />
         <StatPill label="P0" value={stats.p0} tone={stats.p0 > 0 ? 'critical' : 'default'} />
       </motion.div>
-      {nextActionableFeedback ? (
-        <p className="text-xs text-text-muted">{nextActionableFeedback}</p>
-      ) : null}
+      {nextActionableFeedback ? <p className="ui-text text-xs text-text-muted">{nextActionableFeedback}</p> : null}
     </section>
   );
 }

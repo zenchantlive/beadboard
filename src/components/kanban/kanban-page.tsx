@@ -22,6 +22,7 @@ import { KanbanBoard } from './kanban-board';
 import { KanbanControls } from './kanban-controls';
 import { KanbanDetail } from './kanban-detail';
 import { ProjectScopeControls } from '../shared/project-scope-controls';
+import { WorkspaceHero } from '../shared/workspace-hero';
 
 interface KanbanPageProps {
   issues: BeadIssue[];
@@ -242,34 +243,42 @@ export function KanbanPage({
 
   return (
     <main className="mx-auto min-h-screen max-w-[1800px] px-4 py-4 sm:px-6 sm:py-6">
-      <header className="mb-4 rounded-2xl border border-border-soft bg-surface/90 px-4 py-4 shadow-card backdrop-blur md:px-5">
-        <p className="font-mono text-xs uppercase tracking-[0.14em] text-text-muted">BeadBoard</p>
-        <div className="mt-1 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold text-text-strong sm:text-3xl">Kanban Dashboard</h1>
-          <Link href={graphHref} className="rounded-lg border border-border-soft bg-surface-muted/70 px-2.5 py-1 text-xs text-text-body hover:bg-surface-raised">
+      <WorkspaceHero
+        eyebrow="BeadBoard Workspace"
+        title="Swimlanes"
+        description="Epic-driven dependency visualization. Drill into task relationships, triage blockers, and understand downstream impact at a glance."
+        className="mb-4"
+        action={(
+          <Link
+            href={graphHref}
+            className="ui-text rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold text-text-body transition-all hover:bg-white/10 hover:border-white/20 sm:px-4 sm:text-xs"
+          >
             Open Graph
           </Link>
-        </div>
-        <p className="mt-2 text-sm text-text-muted">Tracer Bullet 1 from live `.beads/issues.jsonl` on Windows-native paths.</p>
-        {activeScope ? (
-          <p className="mt-2 text-xs text-text-muted">
+        )}
+        scope={activeScope ? (
+          <p className="ui-text text-xs text-text-muted/90">
             Scope:{' '}
-            <span className="rounded-md border border-border-soft bg-surface-muted/50 px-2 py-0.5 font-mono text-[11px] text-text-body">
+            <span className="system-data rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-text-body">
               {activeScope.source === 'local' ? 'local workspace' : activeScope.displayPath}
             </span>
           </p>
-        ) : null}
-        <div className="mt-3">
-          <ProjectScopeControls
-            projectScopeKey={projectScopeKey}
-            projectScopeMode={projectScopeMode}
-            projectScopeOptions={projectScopeOptions}
-          />
-        </div>
-        {!allowMutations ? (
-          <p className="mt-2 text-xs text-amber-200/90">Aggregate mode is read-only. Switch to single project mode to edit status/details.</p>
-        ) : null}
-      </header>
+        ) : undefined}
+        controls={(
+          <>
+            <ProjectScopeControls
+              projectScopeKey={projectScopeKey}
+              projectScopeMode={projectScopeMode}
+              projectScopeOptions={projectScopeOptions}
+            />
+            {!allowMutations ? (
+              <p className="ui-text mt-2 text-xs text-amber-200/90">
+                Aggregate mode is read-only. Switch to single project mode to edit status/details.
+              </p>
+            ) : null}
+          </>
+        )}
+      />
       <KanbanControls
         filters={filters}
         stats={stats}
@@ -278,10 +287,10 @@ export function KanbanPage({
         nextActionableFeedback={nextActionableFeedback}
       />
       {mutationError ? (
-        <div className="mt-3 rounded-xl border border-rose-300/40 bg-rose-950/40 px-3 py-2 text-sm text-rose-100">{mutationError}</div>
+        <div className="ui-text mt-3 rounded-xl border border-rose-300/40 bg-rose-950/40 px-3 py-2 text-sm text-rose-100">{mutationError}</div>
       ) : null}
       <section
-        className={`mt-3 overflow-hidden rounded-2xl border border-border-soft bg-surface/82 shadow-card ${
+        className={`mt-3 overflow-hidden rounded-2xl border border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.005))] shadow-[0_28px_62px_-18px_rgba(0,0,0,0.8),0_8px_24px_-10px_rgba(0,0,0,0.72)] backdrop-blur-xl ${
           showDesktopDetail ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(22rem,26rem)]' : ''
         }`}
       >
@@ -303,20 +312,20 @@ export function KanbanPage({
           />
         </motion.div>
         {showDesktopDetail ? (
-          <div className="hidden border-t border-border-soft bg-surface/72 p-3 lg:block lg:border-l lg:border-t-0">
-            <aside className="rounded-xl border border-border-soft bg-surface/78 p-3">
+          <div className="hidden border-t border-white/5 bg-[rgba(9,13,22,0.78)] p-3 lg:block lg:border-l lg:border-t-0">
+            <aside className="rounded-xl border border-white/6 bg-[linear-gradient(180deg,rgba(42,44,52,0.54),rgba(18,20,30,0.78))] p-3 shadow-[0_18px_42px_-20px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)]">
               <div className="mb-2 flex items-center justify-end gap-2 border-b border-border-soft pb-2">
                 <button
                   type="button"
                   onClick={() => setDesktopDetailMinimized(true)}
-                  className="rounded-md border border-border-soft bg-surface-muted/70 px-2 py-1 text-xs text-text-body"
+                  className="ui-text rounded-md border border-border-soft bg-surface-muted/70 px-2 py-1 text-xs text-text-body"
                 >
                   Minimize
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedIssueId(null)}
-                  className="rounded-md border border-border-soft bg-surface-muted/70 px-2 py-1 text-xs text-text-muted"
+                  className="ui-text rounded-md border border-border-soft bg-surface-muted/70 px-2 py-1 text-xs text-text-muted"
                 >
                   Clear
                 </button>
@@ -341,7 +350,7 @@ export function KanbanPage({
         <div className="fixed inset-0 z-40 lg:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/82 backdrop-blur-md"
             aria-label="Close details"
             onClick={() => setMobileDetailOpen(false)}
           />
@@ -350,13 +359,13 @@ export function KanbanPage({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 36, opacity: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="absolute inset-x-3 bottom-3 top-20 overflow-y-auto rounded-2xl border border-border-soft bg-surface/98 p-3 shadow-panel backdrop-blur-2xl"
+            className="absolute inset-x-3 bottom-3 top-20 overflow-y-auto rounded-2xl border border-border-soft bg-surface/96 p-3 shadow-panel backdrop-blur-3xl"
           >
             <div className="mb-2 flex justify-end">
               <button
                 type="button"
                 onClick={() => setMobileDetailOpen(false)}
-                className="rounded-lg border border-border-soft bg-surface-muted/70 px-3 py-1 text-xs font-semibold text-text-body"
+                className="ui-text rounded-lg border border-border-soft bg-surface-muted/70 px-3 py-1 text-xs font-semibold text-text-body"
               >
                 Close
               </button>
