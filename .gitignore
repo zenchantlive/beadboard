@@ -9,3 +9,7 @@ worktrees/
 
 # beads lock artifact
 .beads/.bv.lock
+.beads/.jsonl.lock
+
+# local screenshot artifacts
+artifacts/
