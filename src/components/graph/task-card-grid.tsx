@@ -161,6 +161,12 @@ function TaskCard({ issue, selected, blockedBy, blocks, blockers, blocking, isAc
     const hasBlockers = blockers.length > 0; // Note: blockers list only contains OPEN blockers (computed in page)
     const badge = statusBadge(issue.status, isActionable, hasBlockers);
     const projectName = (issue as BeadIssue & { project?: { name?: string } }).project?.name ?? null;
+    
+    // Determine effective status: in_progress always shows as in_progress, blocked always blocked, otherwise check blockers
+    const effectiveStatus: BeadIssue['status'] = issue.status === 'in_progress' ? 'in_progress' : 
+                                    issue.status === 'blocked' ? 'blocked' : 
+                                    hasBlockers ? 'blocked' : 
+                                    issue.status;
 
     return (
         <div
@@ -173,7 +179,7 @@ function TaskCard({ issue, selected, blockedBy, blocks, blockers, blocking, isAc
                     onSelect(issue.id, false);
                 }
             }}
-            className={`group relative flex w-full flex-col rounded-xl border ${statusBorder(hasBlockers ? 'blocked' : issue.status)} ${statusGradient(hasBlockers ? 'blocked' : issue.status)} px-4 py-4 text-left transition duration-200 shadow-[0_4px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)] ${selected
+            className={`group relative flex w-full flex-col rounded-xl border ${statusBorder(effectiveStatus)} ${statusGradient(effectiveStatus)} px-4 py-4 text-left transition duration-200 shadow-[0_4px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)] ${selected
                 ? 'ring-1 ring-amber-200/30 shadow-[0_0_20px_rgba(251,191,36,0.15)]'
                 : 'hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)]'
                 }`}
@@ -194,7 +200,7 @@ function TaskCard({ issue, selected, blockedBy, blocks, blockers, blocking, isAc
             <div className="flex w-full items-start justify-between gap-3 pr-6">
                 <div className="flex flex-col gap-1.5 min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                        <span className={`h-2 w-2 rounded-full ${statusDot(hasBlockers ? 'blocked' : issue.status)} ring-1 ring-white/10`} />
+                        <span className={`h-2 w-2 rounded-full ${statusDot(effectiveStatus)} ring-1 ring-white/10`} />
                         <span className="font-mono text-[10px] text-text-muted">{issue.id}</span>
                         {/* Status Badge */}
                         <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${badge.textColor} ${badge.bgColor}`}>

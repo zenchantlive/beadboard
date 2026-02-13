@@ -156,13 +156,14 @@ export function DependencyGraphPage({
     () =>
       issues
         .filter((issue) => issue.issue_type === 'epic')
+        .filter((issue) => (!hideClosed ? true : issue.status !== 'closed'))
         .sort((a, b) => {
           // Push closed epics to the end
           if (a.status === 'closed' && b.status !== 'closed') return 1;
           if (b.status === 'closed' && a.status !== 'closed') return -1;
           return a.id.localeCompare(b.id);
         }),
-    [issues],
+    [issues, hideClosed],
   );
 
   // --- Derived data: tasks grouped by parent epic ---
