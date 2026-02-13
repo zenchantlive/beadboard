@@ -9,10 +9,12 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --import tsx --test tests/lib/project-context.test.ts && node --import tsx --test tests/lib/kanban.test.ts && node --import tsx --test tests/lib/read-text-retry.test.ts && node --import tsx --test tests/lib/read-issues.test.ts && node --import tsx --test tests/lib/bd-path.test.ts && node --import tsx --test tests/lib/bridge.test.ts && node --import tsx --test tests/lib/mutations.test.ts && node --import tsx --test tests/lib/writeback.test.ts && node --import tsx --test tests/lib/realtime.test.ts && node --import tsx --test tests/lib/coalescer.test.ts && node --import tsx --test tests/lib/watcher.test.ts && node --import tsx --test tests/lib/registry.test.ts && node --import tsx --test tests/lib/scanner.test.ts && node --import tsx --test tests/api/projects-route.test.ts && node --import tsx --test tests/api/mutations-routes.test.ts && node --import tsx --test tests/api/events-route.test.ts && node --test tests/guards/no-direct-jsonl-write.test.mjs && node --test tests/guards/no-inline-style-in-kanban.test.mjs && node --test tests/guards/kanban-responsive-contract.test.mjs"
+    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --import tsx --test tests/lib/project-context.test.ts && node --import tsx --test tests/lib/project-scope.test.ts && node --import tsx --test tests/lib/aggregate-read.test.ts && node --import tsx --test tests/lib/kanban.test.ts && node --import tsx --test tests/lib/graph.test.ts && node --import tsx --test tests/lib/graph-view.test.ts && node --import tsx --test tests/lib/read-text-retry.test.ts && node --import tsx --test tests/lib/read-issues.test.ts && node --import tsx --test tests/lib/bd-path.test.ts && node --import tsx --test tests/lib/bridge.test.ts && node --import tsx --test tests/lib/mutations.test.ts && node --import tsx --test tests/lib/issue-editor.test.ts && node --import tsx --test tests/lib/writeback.test.ts && node --import tsx --test tests/lib/realtime.test.ts && node --import tsx --test tests/lib/coalescer.test.ts && node --import tsx --test tests/lib/watcher.test.ts && node --import tsx --test tests/lib/registry.test.ts && node --import tsx --test tests/lib/scanner.test.ts && node --import tsx --test tests/api/projects-route.test.ts && node --import tsx --test tests/api/mutations-routes.test.ts && node --import tsx --test tests/api/events-route.test.ts && node --test tests/guards/no-direct-jsonl-write.test.mjs && node --test tests/guards/no-inline-style-in-kanban.test.mjs && node --test tests/guards/kanban-responsive-contract.test.mjs && node --test tests/guards/graph-responsive-contract.test.mjs"
   },
   "dependencies": {
+    "@xyflow/react": "^12.10.0",
     "chokidar": "^5.0.0",
+    "dagre": "^0.8.5",
     "framer-motion": "^11.18.2",
     "next": "15.5.7",
     "react": "19.2.1",
@@ -20,10 +22,13 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "@types/dagre": "^0.7.53",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.24",
+    "eslint": "9.39.2",
+    "eslint-config-next": "16.1.6",
     "playwright": "^1.58.2",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",

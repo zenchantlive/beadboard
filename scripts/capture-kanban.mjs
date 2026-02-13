@@ -19,7 +19,7 @@ const browser = await chromium.launch({ headless: true });
 
 for (const shot of shots) {
   const page = await browser.newPage({ viewport: { width: shot.width, height: shot.height } });
-  await page.goto(url, { waitUntil: 'networkidle' });
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(700);
   await page.screenshot({
     path: path.join('artifacts', `kanban-${shot.name}-${mode}.png`),

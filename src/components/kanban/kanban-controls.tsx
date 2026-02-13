@@ -10,11 +10,19 @@ interface KanbanControlsProps {
   filters: KanbanFilterOptions;
   stats: KanbanStats;
   onFiltersChange: (filters: KanbanFilterOptions) => void;
+  onNextActionable: () => void;
+  nextActionableFeedback?: string | null;
 }
 
-export function KanbanControls({ filters, stats, onFiltersChange }: KanbanControlsProps) {
+export function KanbanControls({
+  filters,
+  stats,
+  onFiltersChange,
+  onNextActionable,
+  nextActionableFeedback = null,
+}: KanbanControlsProps) {
   const inputClass =
-    'rounded-xl border border-border-soft bg-surface-muted/78 px-3 py-2.5 text-sm text-text-strong outline-none transition placeholder:text-text-muted focus:border-border-strong focus:ring-2 focus:ring-white/10';
+    'ui-field rounded-xl px-3 py-2.5 text-sm outline-none transition';
 
   return (
     <section className="grid gap-3">
@@ -29,28 +37,28 @@ export function KanbanControls({ filters, stats, onFiltersChange }: KanbanContro
         <select
           value={filters.type ?? ''}
           onChange={(event) => onFiltersChange({ ...filters, type: event.target.value })}
-          className={`${inputClass} w-full sm:w-44`}
+          className={`${inputClass} ui-select w-full sm:w-44`}
           aria-label="Type filter"
         >
-          <option value="">All types</option>
-          <option value="task">Task</option>
-          <option value="bug">Bug</option>
-          <option value="feature">Feature</option>
-          <option value="epic">Epic</option>
-          <option value="chore">Chore</option>
+          <option className="ui-option" value="">All types</option>
+          <option className="ui-option" value="task">Task</option>
+          <option className="ui-option" value="bug">Bug</option>
+          <option className="ui-option" value="feature">Feature</option>
+          <option className="ui-option" value="epic">Epic</option>
+          <option className="ui-option" value="chore">Chore</option>
         </select>
         <select
           value={filters.priority ?? ''}
           onChange={(event) => onFiltersChange({ ...filters, priority: event.target.value })}
-          className={`${inputClass} w-full sm:w-36`}
+          className={`${inputClass} ui-select w-full sm:w-36`}
           aria-label="Priority filter"
         >
-          <option value="">All priorities</option>
-          <option value="0">P0</option>
-          <option value="1">P1</option>
-          <option value="2">P2</option>
-          <option value="3">P3</option>
-          <option value="4">P4</option>
+          <option className="ui-option" value="">All priorities</option>
+          <option className="ui-option" value="0">P0</option>
+          <option className="ui-option" value="1">P1</option>
+          <option className="ui-option" value="2">P2</option>
+          <option className="ui-option" value="3">P3</option>
+          <option className="ui-option" value="4">P4</option>
         </select>
         <label className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border-soft bg-surface-muted/60 px-3 py-2 text-sm text-text-body sm:w-auto sm:justify-start">
           <input
@@ -61,15 +69,25 @@ export function KanbanControls({ filters, stats, onFiltersChange }: KanbanContro
           />
           Show closed
         </label>
+        <button
+          type="button"
+          onClick={onNextActionable}
+          className="w-full rounded-xl border border-border-soft bg-surface-muted/70 px-3 py-2 text-sm font-semibold text-text-body transition hover:border-border-strong hover:bg-surface-raised sm:w-auto"
+        >
+          Next Actionable
+        </button>
       </motion.div>
       <motion.div layout className="flex flex-wrap gap-2">
         <StatPill label="Total" value={stats.total} />
-        <StatPill label="Open" value={stats.open} />
+        <StatPill label="Ready" value={stats.ready} />
         <StatPill label="Active" value={stats.active} />
         <StatPill label="Blocked" value={stats.blocked} />
         <StatPill label="Done" value={stats.done} />
         <StatPill label="P0" value={stats.p0} tone={stats.p0 > 0 ? 'critical' : 'default'} />
       </motion.div>
+      {nextActionableFeedback ? (
+        <p className="text-xs text-text-muted">{nextActionableFeedback}</p>
+      ) : null}
     </section>
   );
 }

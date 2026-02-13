@@ -3,21 +3,25 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #090909;
-  --color-surface: #161616;
-  --color-surface-muted: #212121;
-  --color-surface-raised: #2a2a2a;
-  --color-text-strong: #f5f5f5;
-  --color-text-body: #d0d0d0;
-  --color-text-muted: #9a9a9a;
-  --color-border-soft: rgba(255, 255, 255, 0.15);
-  --color-border-strong: rgba(255, 255, 255, 0.3);
+  --color-bg: #0b0c10;
+  --color-surface: #14171f;
+  --color-surface-muted: #1c212b;
+  --color-surface-raised: #252b38;
+  --color-text-strong: #f8fafc;
+  --color-text-body: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-border-soft: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.18);
+  
+  --aurora-blue: rgba(125, 175, 245, 0.14);
+  --aurora-amber: rgba(235, 185, 125, 0.11);
+  --aurora-purple: rgba(185, 125, 245, 0.08);
 
-  --status-open: #60a5fa;
+  --status-open: #38bdf8;
   --status-progress: #fbbf24;
-  --status-blocked: #fb7185;
+  --status-blocked: #f43f5e;
   --status-deferred: #94a3b8;
-  --status-closed: #34d399;
+  --status-closed: #10b981;
 
   --priority-p0: #f43f5e;
   --priority-p1: #f59e0b;
@@ -38,9 +42,173 @@ body {
 
 body {
   background:
-    radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.05), transparent 36%),
-    radial-gradient(circle at 84% 18%, rgba(255, 180, 80, 0.06), transparent 32%),
-    linear-gradient(160deg, #070707 0%, #101010 48%, #161616 100%);
+    radial-gradient(circle at 10% 10%, var(--aurora-blue), transparent 40%),
+    radial-gradient(circle at 90% 10%, var(--aurora-amber), transparent 40%),
+    radial-gradient(circle at 50% 90%, var(--aurora-purple), transparent 50%),
+    #0b0c10;
   color: var(--color-text-body);
   font-family: 'DM Sans', 'Segoe UI', Inter, system-ui, sans-serif;
+  letter-spacing: -0.011em;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 20px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 20px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.3);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
+.workflow-card {
+  border: 1px solid var(--color-border-soft);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+}
+
+.workflow-card-selected {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: linear-gradient(165deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.8));
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+/* Shared dark form controls to avoid white-on-white browser defaults */
+.ui-field {
+  border: 1px solid var(--color-border-soft);
+  background: linear-gradient(160deg, rgba(28, 33, 43, 0.9), rgba(20, 23, 31, 0.92));
+  color: var(--color-text-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.ui-field::placeholder {
+  color: color-mix(in srgb, var(--color-text-muted) 88%, transparent);
+}
+
+.ui-field:focus-visible {
+  outline: none;
+  border-color: var(--color-border-strong);
+  box-shadow:
+    0 0 0 2px rgba(125, 175, 245, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.ui-select {
+  appearance: none;
+}
+
+.ui-select option,
+.ui-option {
+  background-color: #10141d;
+  color: #e2e8f0;
+}
+
+
+.workflow-graph-legend {
+  backdrop-filter: blur(12px);
+  background: rgba(20, 23, 31, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.workflow-graph-flow .react-flow__viewport {
+  background:
+    radial-gradient(circle at 20% 20%, var(--aurora-blue), transparent 45%),
+    radial-gradient(circle at 80% 15%, var(--aurora-amber), transparent 45%);
+}
+
+.workflow-graph-flow .react-flow__edges {
+  z-index: 10 !important;
+}
+
+.workflow-graph-flow .react-flow__nodes {
+  z-index: 20 !important;
+}
+
+.workflow-graph-flow .react-flow__edge-path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.workflow-graph-flow .workflow-edge-muted .react-flow__edge-path {
+  opacity: 0.85;
+}
+
+.workflow-graph-flow .workflow-edge-selected .react-flow__edge-path {
+  opacity: 1;
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.6));
+}
+
+.workflow-graph-flow .workflow-edge-cycle .react-flow__edge-path {
+  opacity: 1;
+  filter: drop-shadow(0 0 10px rgba(251, 113, 133, 0.65));
+}
+
+.react-flow__edge-label {
+  pointer-events: none;
+}
+
+/* Node selection pulse animation - sky-blue ring expands and fades */
+@keyframes node-select-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+  70%  { box-shadow: 0 0 0 12px rgba(56, 189, 248, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+}
+.node-select-pulse {
+  animation: node-select-pulse 1s ease-out;
+}
+
+/* Tooltip fade-in animation */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
+}
+
+/* Hide scrollbar but keep scrolling (for epic chip strip) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

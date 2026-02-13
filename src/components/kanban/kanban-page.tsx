@@ -1,20 +1,34 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { KanbanFilterOptions, KanbanStatus } from '../../lib/kanban';
-import { buildKanbanColumns, buildKanbanStats, filterKanbanIssues } from '../../lib/kanban';
+import {
+  buildBlockedByTree,
+  buildKanbanColumns,
+  buildKanbanStats,
+  filterKanbanIssues,
+  findIssueLane,
+  laneToMutationStatus,
+  pickNextActionableIssue,
+} from '../../lib/kanban';
 import type { BeadIssue } from '../../lib/types';
+import type { ProjectScopeOption } from '../../lib/project-scope';
 import { applyOptimisticStatus, planStatusTransition } from '../../lib/writeback';
 
 import { KanbanBoard } from './kanban-board';
 import { KanbanControls } from './kanban-controls';
 import { KanbanDetail } from './kanban-detail';
+import { ProjectScopeControls } from '../shared/project-scope-controls';
 
 interface KanbanPageProps {
   issues: BeadIssue[];
   projectRoot: string;
+  projectScopeKey: string;
+  projectScopeOptions: ProjectScopeOption[];
+  projectScopeMode: 'single' | 'aggregate';
 }
 
 type MutationOperation = 'create' | 'update' | 'close' | 'reopen' | 'comment';
@@ -47,7 +61,13 @@ async function fetchIssues(projectRoot: string): Promise<BeadIssue[]> {
   return payload.issues;
 }
 
-export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
+export function KanbanPage({
+  issues,
+  projectRoot,
+  projectScopeKey,
+  projectScopeOptions,
+  projectScopeMode,
+}: KanbanPageProps) {
   const [localIssues, setLocalIssues] = useState<BeadIssue[]>(issues);
   const [filters, setFilters] = useState<KanbanFilterOptions>({
     query: '',
@@ -57,8 +77,9 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
   });
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
-  const [activeStatus, setActiveStatus] = useState<KanbanStatus | null>('open');
+  const [activeStatus, setActiveStatus] = useState<KanbanStatus | null>('ready');
   const [desktopDetailMinimized, setDesktopDetailMinimized] = useState(false);
+  const [nextActionableFeedback, setNextActionableFeedback] = useState<string | null>(null);
   const [pendingIssueIds, setPendingIssueIds] = useState<Set<string>>(new Set());
   const [mutationError, setMutationError] = useState<string | null>(null);
   const refreshInFlightRef = useRef(false);
@@ -70,9 +91,83 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
   const filteredIssues = useMemo(() => filterKanbanIssues(localIssues, filters), [localIssues, filters]);
   const columns = useMemo(() => buildKanbanColumns(filteredIssues), [filteredIssues]);
   const stats = useMemo(() => buildKanbanStats(filteredIssues), [filteredIssues]);
+  const parentEpicByIssueId = useMemo(() => {
+    const epicById = new Map(
+      localIssues.filter((issue) => issue.issue_type === 'epic').map((epic) => [epic.id, epic]),
+    );
+    const map = new Map<string, { id: string; title: string }>();
+
+    for (const issue of localIssues) {
+      if (issue.issue_type === 'epic') {
+        continue;
+      }
+      const parentDep = issue.dependencies.find((dependency) => dependency.type === 'parent');
+      const inferredParent = issue.id.includes('.') ? issue.id.split('.')[0] : null;
+      const parentEpicId = parentDep?.target ?? inferredParent;
+      if (!parentEpicId) {
+        continue;
+      }
+      const parentEpic = epicById.get(parentEpicId);
+      if (!parentEpic) {
+        continue;
+      }
+      map.set(issue.id, { id: parentEpic.id, title: parentEpic.title });
+    }
+
+    return map;
+  }, [localIssues]);
 
   const selectedIssue = useMemo(() => filteredIssues.find((issue) => issue.id === selectedIssueId) ?? null, [filteredIssues, selectedIssueId]);
+  const activeScope = useMemo(
+    () => projectScopeOptions.find((option) => option.key === projectScopeKey) ?? projectScopeOptions[0] ?? null,
+    [projectScopeKey, projectScopeOptions],
+  );
+  const graphHref = useMemo(() => {
+    const params = new URLSearchParams();
+    if (projectScopeMode !== 'single') {
+      params.set('mode', projectScopeMode);
+    }
+    if (projectScopeKey !== 'local') {
+      params.set('project', projectScopeKey);
+    }
+    const query = params.toString();
+    return query ? `/graph?${query}` : '/graph';
+  }, [projectScopeKey, projectScopeMode]);
+  const allowMutations = projectScopeMode === 'single';
+  const blockedTree = useMemo(
+    () => buildBlockedByTree(filteredIssues, selectedIssue?.id ?? null, { maxNodes: 8 }),
+    [filteredIssues, selectedIssue?.id],
+  );
+  const nextActionableIssue = useMemo(
+    () => pickNextActionableIssue(columns, filteredIssues),
+    [columns, filteredIssues],
+  );
   const showDesktopDetail = Boolean(selectedIssue) && !desktopDetailMinimized;
+  const focusIssueFromDetailLink = useCallback(
+    (issueId: string) => {
+      setSelectedIssueId(issueId);
+      setDesktopDetailMinimized(false);
+      const lane = findIssueLane(columns, issueId);
+      setActiveStatus(lane ?? 'ready');
+    },
+    [columns],
+  );
+
+  const selectIssueWithDetailBehavior = useCallback((issueId: string, lane: KanbanStatus = 'ready') => {
+    setSelectedIssueId(issueId);
+    setActiveStatus(lane);
+    setDesktopDetailMinimized(false);
+    setMobileDetailOpen(true);
+  }, []);
+
+  const handleNextActionable = useCallback(() => {
+    if (!nextActionableIssue) {
+      setNextActionableFeedback('No ready issue available for current filters.');
+      return;
+    }
+    setNextActionableFeedback(null);
+    selectIssueWithDetailBehavior(nextActionableIssue.id, 'ready');
+  }, [nextActionableIssue, selectIssueWithDetailBehavior]);
 
   const refreshIssues = useCallback(async (options: { silent?: boolean } = {}) => {
     if (refreshInFlightRef.current) {
@@ -93,6 +188,9 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
   }, [projectRoot]);
 
   useEffect(() => {
+    if (!allowMutations) {
+      return;
+    }
     const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
     const onIssues = () => {
       void refreshIssues({ silent: true });
@@ -104,10 +202,14 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
       source.removeEventListener('issues', onIssues as EventListener);
       source.close();
     };
-  }, [projectRoot, refreshIssues]);
+  }, [allowMutations, projectRoot, refreshIssues]);
 
   const mutateStatus = async (issue: BeadIssue, targetStatus: KanbanStatus) => {
-    const steps = planStatusTransition(issue, targetStatus);
+    if (!allowMutations) {
+      return;
+    }
+    const mutationStatus = laneToMutationStatus(targetStatus);
+    const steps = planStatusTransition(issue, mutationStatus);
     if (steps.length === 0) {
       return;
     }
@@ -115,7 +217,7 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
     setMutationError(null);
     const previous = localIssues;
     setPendingIssueIds((value) => new Set(value).add(issue.id));
-    setLocalIssues((current) => applyOptimisticStatus(current, issue.id, targetStatus));
+    setLocalIssues((current) => applyOptimisticStatus(current, issue.id, mutationStatus));
 
     try {
       for (const step of steps) {
@@ -142,10 +244,39 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
     <main className="mx-auto min-h-screen max-w-[1800px] px-4 py-4 sm:px-6 sm:py-6">
       <header className="mb-4 rounded-2xl border border-border-soft bg-surface/90 px-4 py-4 shadow-card backdrop-blur md:px-5">
         <p className="font-mono text-xs uppercase tracking-[0.14em] text-text-muted">BeadBoard</p>
-        <h1 className="mt-1 text-2xl font-semibold text-text-strong sm:text-3xl">Kanban Dashboard</h1>
+        <div className="mt-1 flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-semibold text-text-strong sm:text-3xl">Kanban Dashboard</h1>
+          <Link href={graphHref} className="rounded-lg border border-border-soft bg-surface-muted/70 px-2.5 py-1 text-xs text-text-body hover:bg-surface-raised">
+            Open Graph
+          </Link>
+        </div>
         <p className="mt-2 text-sm text-text-muted">Tracer Bullet 1 from live `.beads/issues.jsonl` on Windows-native paths.</p>
+        {activeScope ? (
+          <p className="mt-2 text-xs text-text-muted">
+            Scope:{' '}
+            <span className="rounded-md border border-border-soft bg-surface-muted/50 px-2 py-0.5 font-mono text-[11px] text-text-body">
+              {activeScope.source === 'local' ? 'local workspace' : activeScope.displayPath}
+            </span>
+          </p>
+        ) : null}
+        <div className="mt-3">
+          <ProjectScopeControls
+            projectScopeKey={projectScopeKey}
+            projectScopeMode={projectScopeMode}
+            projectScopeOptions={projectScopeOptions}
+          />
+        </div>
+        {!allowMutations ? (
+          <p className="mt-2 text-xs text-amber-200/90">Aggregate mode is read-only. Switch to single project mode to edit status/details.</p>
+        ) : null}
       </header>
-      <KanbanControls filters={filters} stats={stats} onFiltersChange={setFilters} />
+      <KanbanControls
+        filters={filters}
+        stats={stats}
+        onFiltersChange={setFilters}
+        onNextActionable={handleNextActionable}
+        nextActionableFeedback={nextActionableFeedback}
+      />
       {mutationError ? (
         <div className="mt-3 rounded-xl border border-rose-300/40 bg-rose-950/40 px-3 py-2 text-sm text-rose-100">{mutationError}</div>
       ) : null}
@@ -157,15 +288,17 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
         <motion.div layout className="p-2.5 sm:p-3">
           <KanbanBoard
             columns={columns}
+            parentEpicByIssueId={parentEpicByIssueId}
+            graphBaseHref={graphHref}
+            showClosed={Boolean(filters.showClosed)}
             selectedIssueId={selectedIssue?.id ?? null}
             pendingIssueIds={pendingIssueIds}
             activeStatus={activeStatus}
             onActivateStatus={setActiveStatus}
             onMoveIssue={mutateStatus}
             onSelect={(issue) => {
-              setSelectedIssueId(issue.id);
-              setDesktopDetailMinimized(false);
-              setMobileDetailOpen(true);
+              const lane = findIssueLane(columns, issue.id) ?? 'ready';
+              selectIssueWithDetailBehavior(issue.id, lane);
             }}
           />
         </motion.div>
@@ -189,7 +322,15 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
                 </button>
               </div>
               <div className="max-h-[calc(100vh-16rem)] overflow-y-auto pr-1">
-                <KanbanDetail issue={selectedIssue} framed={false} />
+                <KanbanDetail
+                  issue={selectedIssue}
+                  issues={filteredIssues}
+                  framed={false}
+                  blockedTree={blockedTree}
+                  onSelectBlockedIssue={focusIssueFromDetailLink}
+                  projectRoot={allowMutations ? projectRoot : undefined}
+                  onIssueUpdated={() => refreshIssues()}
+                />
               </div>
             </aside>
           </div>
@@ -200,7 +341,7 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
         <div className="fixed inset-0 z-40 lg:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-black/55"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             aria-label="Close details"
             onClick={() => setMobileDetailOpen(false)}
           />
@@ -209,7 +350,7 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 36, opacity: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="absolute inset-x-3 bottom-3 top-20 overflow-y-auto rounded-2xl border border-border-soft bg-surface/95 p-3 shadow-panel"
+            className="absolute inset-x-3 bottom-3 top-20 overflow-y-auto rounded-2xl border border-border-soft bg-surface/98 p-3 shadow-panel backdrop-blur-2xl"
           >
             <div className="mb-2 flex justify-end">
               <button
@@ -220,7 +361,15 @@ export function KanbanPage({ issues, projectRoot }: KanbanPageProps) {
                 Close
               </button>
             </div>
-            <KanbanDetail issue={selectedIssue} framed={false} />
+            <KanbanDetail
+              issue={selectedIssue}
+              issues={filteredIssues}
+              framed={false}
+              blockedTree={blockedTree}
+              onSelectBlockedIssue={focusIssueFromDetailLink}
+              projectRoot={allowMutations ? projectRoot : undefined}
+              onIssueUpdated={() => refreshIssues()}
+            />
           </motion.div>
         </div>
       ) : null}

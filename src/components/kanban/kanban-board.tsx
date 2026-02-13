@@ -10,6 +10,9 @@ import { KanbanCard } from './kanban-card';
 
 interface KanbanBoardProps {
   columns: Record<(typeof KANBAN_STATUSES)[number], BeadIssue[]>;
+  parentEpicByIssueId: Map<string, { id: string; title: string }>;
+  graphBaseHref: string;
+  showClosed: boolean;
   selectedIssueId: string | null;
   pendingIssueIds: Set<string>;
   activeStatus: KanbanStatus | null;
@@ -19,23 +22,33 @@ interface KanbanBoardProps {
 }
 
 const STATUS_META: Record<(typeof KANBAN_STATUSES)[number], { label: string; dot: string }> = {
-  open: { label: 'Open', dot: 'bg-zinc-300' },
+  ready: { label: 'Ready', dot: 'bg-sky-300' },
   in_progress: { label: 'In Progress', dot: 'bg-amber-300' },
   blocked: { label: 'Blocked', dot: 'bg-rose-300' },
-  deferred: { label: 'Deferred', dot: 'bg-stone-400' },
   closed: { label: 'Done', dot: 'bg-emerald-300' },
 };
 
 const STATUS_COLUMN_CLASS: Record<(typeof KANBAN_STATUSES)[number], string> = {
-  open: 'bg-zinc-500/10',
+  ready: 'bg-sky-500/10',
   in_progress: 'bg-amber-500/10',
   blocked: 'bg-rose-500/10',
-  deferred: 'bg-stone-500/10',
   closed: 'bg-emerald-500/10',
 };
 
-export function KanbanBoard({ columns, selectedIssueId, pendingIssueIds, activeStatus, onActivateStatus, onMoveIssue, onSelect }: KanbanBoardProps) {
+export function KanbanBoard({
+  columns,
+  parentEpicByIssueId,
+  graphBaseHref,
+  showClosed,
+  selectedIssueId,
+  pendingIssueIds,
+  activeStatus,
+  onActivateStatus,
+  onMoveIssue,
+  onSelect,
+}: KanbanBoardProps) {
   const allIssues = KANBAN_STATUSES.flatMap((status) => columns[status]);
+  const visibleStatuses = KANBAN_STATUSES.filter((status) => status !== 'closed' || showClosed);
 
   const issueLookup = new Map(allIssues.map((issue) => [issue.id, issue]));
 
@@ -44,16 +57,16 @@ export function KanbanBoard({ columns, selectedIssueId, pendingIssueIds, activeS
     onSelect(issue);
   };
 
-  const onDragStart = (issue: BeadIssue, event: DragEvent<HTMLButtonElement>) => {
+  const onDragStart = (issue: BeadIssue, sourceLane: KanbanStatus, event: DragEvent<HTMLElement>) => {
     event.dataTransfer.setData('application/x-bead-id', issue.id);
-    event.dataTransfer.setData('application/x-bead-status', issue.status);
+    event.dataTransfer.setData('application/x-bead-lane', sourceLane);
     event.dataTransfer.effectAllowed = 'move';
   };
 
   const onDropLane = (targetStatus: KanbanStatus, event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const issueId = event.dataTransfer.getData('application/x-bead-id');
-    const sourceStatus = event.dataTransfer.getData('application/x-bead-status') as KanbanStatus;
+    const sourceStatus = event.dataTransfer.getData('application/x-bead-lane') as KanbanStatus;
     if (!issueId || !sourceStatus || sourceStatus === targetStatus) {
       return;
     }
@@ -68,7 +81,7 @@ export function KanbanBoard({ columns, selectedIssueId, pendingIssueIds, activeS
 
   return (
     <section className="grid min-h-[58vh] gap-2.5">
-      {KANBAN_STATUSES.map((status) => (
+      {visibleStatuses.map((status) => (
         <div
           key={status}
           onDragOver={(event) => event.preventDefault()}
@@ -114,10 +127,12 @@ export function KanbanBoard({ columns, selectedIssueId, pendingIssueIds, activeS
                   <KanbanCard
                     key={issue.id}
                     issue={issue}
+                    parentEpic={parentEpicByIssueId.get(issue.id) ?? null}
+                    graphBaseHref={graphBaseHref}
                     pending={pendingIssueIds.has(issue.id)}
                     selected={selectedIssueId === issue.id}
                     draggable={!pendingIssueIds.has(issue.id)}
-                    onNativeDragStart={onDragStart}
+                    onNativeDragStart={(dragIssue, event) => onDragStart(dragIssue, status, event)}
                     onSelect={onSelect}
                   />
                 ))}
