@@ -7,7 +7,20 @@ const HEARTBEAT_MS = 15_000;
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
-  const projectRoot = canonicalizeWindowsPath(url.searchParams.get('projectRoot') ?? process.cwd());
+  const projectRootSearchParam = url.searchParams.get('projectRoot');
+  if (!projectRootSearchParam) {
+    return Response.json(
+      {
+        ok: false,
+        error: {
+          classification: 'bad_args',
+          message: 'The `projectRoot` query parameter is required.',
+        },
+      },
+      { status: 400 },
+    );
+  }
+  const projectRoot = canonicalizeWindowsPath(projectRootSearchParam);
 
   try {
     getIssuesWatchManager().startWatch(projectRoot);
