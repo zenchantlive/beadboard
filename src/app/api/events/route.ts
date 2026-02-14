@@ -86,15 +86,6 @@ export async function GET(request: Request): Promise<Response> {
         try {
           const nextVersion = await readLastTouchedVersion(lastTouchedPath);
           if (nextVersion === null) {
-      let isPolling = false;
-      const pollLastTouched = async () => {
-        if (isPolling) {
-          return;
-        }
-        isPolling = true;
-        try {
-          const nextVersion = await readLastTouchedVersion(lastTouchedPath);
-          if (nextVersion === null) {
             return;
           }
           if (lastTouchedVersion === null) {
@@ -105,10 +96,6 @@ export async function GET(request: Request): Promise<Response> {
             lastTouchedVersion = nextVersion;
             write(toSseFrame(issuesEventBus.emit(projectRoot, lastTouchedPath, 'changed')));
           }
-        } finally {
-          isPolling = false;
-        }
-      };
 
       const touchedPoll = setInterval(() => {
         void pollLastTouched();
