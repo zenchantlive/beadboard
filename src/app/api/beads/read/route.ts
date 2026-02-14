@@ -7,7 +7,7 @@ export async function GET(request: Request): Promise<Response> {
   const projectRoot = url.searchParams.get('projectRoot') ?? process.cwd();
 
   try {
-    const issues = await readIssuesFromDisk({ projectRoot });
+    const issues = await readIssuesFromDisk({ projectRoot, preferBd: true });
     return NextResponse.json({ ok: true, issues });
   } catch (error) {
     return NextResponse.json(
