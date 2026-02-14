@@ -75,18 +75,27 @@ export async function GET(request: Request): Promise<Response> {
       const lastTouchedPath = path.join(projectRoot, '.beads', 'last-touched');
       let lastTouchedVersion: number | null = null;
 
+      let isPolling = false;
       const pollLastTouched = async () => {
-        const nextVersion = await readLastTouchedVersion(lastTouchedPath);
-        if (nextVersion === null) {
+        if (isPolling) {
           return;
         }
-        if (lastTouchedVersion === null) {
-          lastTouchedVersion = nextVersion;
-          return;
-        }
-        if (nextVersion !== lastTouchedVersion) {
-          lastTouchedVersion = nextVersion;
-          write(toSseFrame(issuesEventBus.emit(projectRoot, lastTouchedPath, 'changed')));
+        isPolling = true;
+        try {
+          const nextVersion = await readLastTouchedVersion(lastTouchedPath);
+          if (nextVersion === null) {
+            return;
+          }
+          if (lastTouchedVersion === null) {
+            lastTouchedVersion = nextVersion;
+            return;
+          }
+          if (nextVersion !== lastTouchedVersion) {
+            lastTouchedVersion = nextVersion;
+            write(toSseFrame(issuesEventBus.emit(projectRoot, lastTouchedPath, 'changed')));
+          }
+        } finally {
+          isPolling = false;
         }
       };
 
