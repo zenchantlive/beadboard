@@ -169,6 +169,30 @@ async function readActiveReservations(): Promise<AgentReservation[]> {
   }
 }
 
+async function lockActiveReservations(): Promise<number> {
+  // Ensure the directory and file exist before trying to lock
+  await fs.mkdir(path.dirname(activeReservationsPath()), { recursive: true });
+  try {
+    const fd = await fs.open(activeReservationsPath(), 'r+');
+    await fs.flock(fd, 'ex');
+    return fd;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      // File doesn't exist, create it first
+      await fs.writeFile(activeReservationsPath(), JSON.stringify({ reservations: [] }), 'utf8');
+      const fd = await fs.open(activeReservationsPath(), 'r+');
+      await fs.flock(fd, 'ex');
+      return fd;
+    }
+    throw error;
+  }
+}
+
+async function unlockActiveReservations(fd: number): Promise<void> {
+  await fs.flock(fd, 'un');
+  await fs.close(fd);
+}
+
 async function atomicWriteJson(filePath: string, payload: string): Promise<void> {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
 
@@ -270,7 +294,11 @@ export async function reserveAgentScope(
     return invalid(command, 'INVALID_ARGS', `TTL must be an integer between ${MIN_TTL_MINUTES} and ${MAX_TTL_MINUTES} minutes.`);
   }
 
+  let lockFd: number | null = null;
   try {
+    // Acquire exclusive lock to prevent race conditions
+    lockFd = await lockActiveReservations();
+    
     const now = deps.now ? deps.now() : new Date().toISOString();
     const reservations = await readActiveReservations();
     const existing = reservations.find((reservation) => reservation.scope === scope);
@@ -320,6 +348,10 @@ export async function reserveAgentScope(
     return success(command, created);
   } catch (error) {
     return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to reserve scope.');
+  } finally {
+    if (lockFd !== null) {
+      await unlockActiveReservations(lockFd);
+    }
   }
 }
 
@@ -340,7 +372,11 @@ export async function releaseAgentReservation(
     return invalid(command, 'INVALID_ARGS', 'Scope is required.');
   }
 
+  let lockFd: number | null = null;
   try {
+    // Acquire exclusive lock to prevent race conditions
+    lockFd = await lockActiveReservations();
+    
     const now = deps.now ? deps.now() : new Date().toISOString();
     const reservations = await readActiveReservations();
     const existing = reservations.find((reservation) => reservation.scope === scope);
@@ -371,6 +407,10 @@ export async function releaseAgentReservation(
     return success(command, released);
   } catch (error) {
     return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to release reservation.');
+  } finally {
+    if (lockFd !== null) {
+      await unlockActiveReservations(lockFd);
+    }
   }
 }
 

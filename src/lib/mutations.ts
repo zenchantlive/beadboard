@@ -75,7 +75,13 @@ function asNonEmptyString(value: unknown, field: string): string {
   if (typeof value !== 'string' || !value.trim()) {
     throw new MutationValidationError(`"${field}" is required.`);
   }
-  return value.trim();
+  const trimmed = value.trim();
+  // Sanitize to prevent command injection - remove control characters and shell metacharacters
+  const sanitized = trimmed.replace(/[\x00-\x1f\x7f]/g, '').replace(/[;&|`$(){}[\]\\*?<>!#"'%\n\r]/g, '');
+  if (!sanitized) {
+    throw new MutationValidationError(`"${field}" contains only invalid characters.`);
+  }
+  return sanitized;
 }
 
 function asOptionalString(value: unknown): string | undefined {

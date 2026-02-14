@@ -5,11 +5,18 @@ import { activityEventBus } from '../../../lib/realtime';
 import { buildSessionTaskFeed, getCommunicationSummary } from '../../../lib/agent-sessions';
 
 function isValidProjectRoot(root: string): boolean {
-  // Basic validation: path should not contain traversal patterns
-  // and should resolve to an absolute path
   try {
     const resolved = path.resolve(root);
-    return path.isAbsolute(resolved);
+    if (!path.isAbsolute(resolved)) {
+      return false;
+    }
+    // Prevent path traversal by ensuring resolved path doesn't escape the project
+    const normalized = path.normalize(resolved);
+    // Check that the path doesn't contain traversal patterns
+    if (normalized.includes('..') || path.sep !== '/' && normalized.includes('..\\')) {
+      return false;
+    }
+    return true;
   } catch {
     return false;
   }

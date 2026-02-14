@@ -19,6 +19,11 @@ function getGlobalAgentMessagesPath(): string {
 interface WatchRegistration {
   projectRoot: string;
   watcher: FSWatcher;
+  handlers?: {
+    onAdd: (changedPath: string) => void;
+    onChange: (changedPath: string) => void;
+    onUnlink: (changedPath: string) => void;
+  };
 }
 
 export interface WatchManagerOptions {
@@ -119,13 +124,19 @@ export class IssuesWatchManager {
       this.queueCoalescedEvent(projectRoot, changedPath, kind);
     };
 
-    watcher.on('add', (changedPath) => onFileEvent('add', changedPath));
-    watcher.on('change', (changedPath) => onFileEvent('change', changedPath));
-    watcher.on('unlink', (changedPath) => onFileEvent('unlink', changedPath));
+    // Store references to event handlers for proper cleanup
+    const onAdd = (changedPath: string) => onFileEvent('add', changedPath);
+    const onChange = (changedPath: string) => onFileEvent('change', changedPath);
+    const onUnlink = (changedPath: string) => onFileEvent('unlink', changedPath);
+
+    watcher.on('add', onAdd);
+    watcher.on('change', onChange);
+    watcher.on('unlink', onUnlink);
 
     this.registrations.set(projectKey, {
       projectRoot,
       watcher,
+      handlers: { onAdd, onChange, onUnlink },
     });
   }
 
@@ -137,6 +148,14 @@ export class IssuesWatchManager {
     }
 
     this.coalescer.cancel(projectRoot);
+    
+    // Explicitly remove event listeners before closing to prevent memory leaks
+    if (registration.handlers) {
+      registration.watcher.removeListener('add', registration.handlers.onAdd);
+      registration.watcher.removeListener('change', registration.handlers.onChange);
+      registration.watcher.removeListener('unlink', registration.handlers.onUnlink);
+    }
+    
     this.registrations.delete(projectKey);
     await registration.watcher.close();
   }
@@ -145,6 +164,12 @@ export class IssuesWatchManager {
     const closeOps: Promise<void>[] = [];
 
     for (const registration of this.registrations.values()) {
+      // Explicitly remove event listeners before closing to prevent memory leaks
+      if (registration.handlers) {
+        registration.watcher.removeListener('add', registration.handlers.onAdd);
+        registration.watcher.removeListener('change', registration.handlers.onChange);
+        registration.watcher.removeListener('unlink', registration.handlers.onUnlink);
+      }
       closeOps.push(registration.watcher.close());
     }
 
