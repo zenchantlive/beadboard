@@ -117,6 +117,9 @@ export class ActivityEventBus {
     };
     this.nextEventId += 1;
 
+    // Capture history snapshot BEFORE modification for persistence
+    const historySnapshot = [...this.history];
+
     // Buffer history
     this.history.unshift(activity);
     if (this.history.length > this.MAX_HISTORY) {
@@ -124,10 +127,9 @@ export class ActivityEventBus {
     }
 
     // Persist async with deduplication - wait for any pending save to complete
-    const currentHistory = [...this.history];
     const persist = async () => {
       try {
-        await saveActivityHistory(currentHistory);
+        await saveActivityHistory(historySnapshot);
       } catch (error) {
         console.error('[ActivityEventBus] Failed to save history:', error);
       }

@@ -65,19 +65,13 @@ export function useBeadsSubscription(
   }, [projectRoot, onUpdate]);
 
   useEffect(() => {
-    console.log('[SSE] Connecting to event source for:', projectRoot);
     const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
-    
-    source.onopen = () => {
-      console.log('[SSE] Connection opened');
-    };
     
     source.onerror = (err) => {
       console.error('[SSE] Connection error:', err);
     };
     
-    const onIssues = (event: MessageEvent) => {
-      console.log('🚨 SSE RECEIVED:', event.data);
+    const onIssues = () => {
       onUpdate?.();
       void refresh({ silent: true });
     };
@@ -85,11 +79,10 @@ export function useBeadsSubscription(
     source.addEventListener('issues', onIssues as EventListener);
 
     return () => {
-      console.log('[SSE] Closing connection');
       source.removeEventListener('issues', onIssues as EventListener);
       source.close();
     };
-  }, [projectRoot, refresh]);
+  }, [projectRoot, refresh, onUpdate]);
 
   return { issues, refresh, updateLocal };
 }
