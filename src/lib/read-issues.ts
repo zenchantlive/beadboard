@@ -15,8 +15,8 @@ export interface ReadIssuesOptions {
 
 export function resolveIssuesJsonlPathCandidates(projectRoot: string = process.cwd()): string[] {
   const baseDir = path.resolve(projectRoot, '.beads');
-  const primary = canonicalizeWindowsPath(path.join(baseDir, 'issues.jsonl'));
-  const fallback = canonicalizeWindowsPath(path.join(baseDir, 'issues.jsonl.new'));
+  const primary = path.join(baseDir, 'issues.jsonl');
+  const fallback = path.join(baseDir, 'issues.jsonl.new');
   return [primary, fallback];
 }
 
