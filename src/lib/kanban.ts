@@ -49,12 +49,20 @@ function issueSort(a: BeadIssue, b: BeadIssue): number {
   return b.updated_at.localeCompare(a.updated_at);
 }
 
-function hasOpenBlockers(issues: BeadIssue[], targetId: string): boolean {
-  return issues.some(
-    (issue) =>
-      issue.status !== 'closed' &&
-      issue.dependencies.some((dep) => dep.type === 'blocks' && dep.target === targetId),
-  );
+export function hasOpenBlockers(issues: BeadIssue[], targetId: string): boolean {
+  const issueById = new Map(issues.map((issue) => [issue.id, issue]));
+  const target = issueById.get(targetId);
+  if (!target) {
+    return false;
+  }
+
+  return target.dependencies.some((dep) => {
+    if (dep.type !== 'blocks') {
+      return false;
+    }
+    const blocker = issueById.get(dep.target);
+    return blocker ? blocker.status !== 'closed' : false;
+  });
 }
 
 function hasQualitySignal(issue: BeadIssue): boolean {
@@ -83,12 +91,14 @@ function deriveBlockedIds(issues: BeadIssue[]): Set<string> {
   const blockedIds = new Set<string>();
 
   for (const issue of issues) {
-    for (const dep of issue.dependencies) {
-      if (dep.type !== 'blocks') continue;
-      const blocker = issueById.get(issue.id);
-      if (!blocker) continue;
-      if (blocker.status === 'closed') continue;
-      blockedIds.add(dep.target);
+    if (issue.status === 'closed') continue;
+    const hasOpenBlocker = issue.dependencies.some((dep) => {
+      if (dep.type !== 'blocks') return false;
+      const blocker = issueById.get(dep.target);
+      return blocker ? blocker.status !== 'closed' : false;
+    });
+    if (hasOpenBlocker) {
+      blockedIds.add(issue.id);
     }
   }
 
@@ -199,21 +209,16 @@ export function buildBlockedByTree(
   }
 
   const issueById = new Map(issues.map((issue) => [issue.id, issue]));
-  const incomingByTarget = new Map<string, string[]>();
+  const blockersByIssue = new Map<string, string[]>();
   for (const issue of issues) {
-    for (const dep of issue.dependencies) {
-      if (dep.type !== 'blocks') continue;
-      const list = incomingByTarget.get(dep.target) ?? [];
-      list.push(issue.id);
-      incomingByTarget.set(dep.target, list);
-    }
-  }
-
-  for (const [targetId, blockerIds] of incomingByTarget.entries()) {
-    incomingByTarget.set(
-      targetId,
-      [...new Set(blockerIds)].sort((a, b) => a.localeCompare(b)),
-    );
+    const blockers = [
+      ...new Set(
+        issue.dependencies
+          .filter((dep) => dep.type === 'blocks')
+          .map((dep) => dep.target),
+      ),
+    ].sort((a, b) => a.localeCompare(b));
+    blockersByIssue.set(issue.id, blockers);
   }
 
   const maxNodes = Math.max(1, options.maxNodes ?? 12);
@@ -225,7 +230,7 @@ export function buildBlockedByTree(
 
   while (queue.length > 0) {
     const current = queue.shift() as { id: string; level: number };
-    const blockers = incomingByTarget.get(current.id) ?? [];
+    const blockers = blockersByIssue.get(current.id) ?? [];
     for (const blockerId of blockers) {
       if (visited.has(blockerId) || queued.has(blockerId)) continue;
       queued.add(blockerId);
@@ -258,10 +263,16 @@ export function findIssueLane(columns: KanbanColumns, issueId: string): KanbanSt
 export function buildUnblocksCountByIssue(issues: BeadIssue[]): Map<string, number> {
   const unblocksByIssue = new Map<string, number>();
   for (const issue of issues) {
-    const targets = new Set(
+    unblocksByIssue.set(issue.id, 0);
+  }
+
+  for (const issue of issues) {
+    const uniqueBlockers = new Set(
       issue.dependencies.filter((dep) => dep.type === 'blocks').map((dep) => dep.target),
     );
-    unblocksByIssue.set(issue.id, targets.size);
+    for (const blockerId of uniqueBlockers) {
+      unblocksByIssue.set(blockerId, (unblocksByIssue.get(blockerId) ?? 0) + 1);
+    }
   }
   return unblocksByIssue;
 }

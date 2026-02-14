@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import type { DragEvent } from 'react';
 
-import { formatUpdatedRecency } from '../../lib/kanban';
+import { hasOpenBlockers } from '../../lib/kanban';
 import type { BeadIssue } from '../../lib/types';
 
 import { Chip } from '../shared/chip';
 
 interface KanbanCardProps {
   issue: BeadIssue;
+  issues?: BeadIssue[];
   parentEpic?: { id: string; title: string } | null;
   graphBaseHref: string;
   selected: boolean;
@@ -20,23 +21,61 @@ interface KanbanCardProps {
   onSelect: (issue: BeadIssue) => void;
 }
 
-function priorityClass(priority: number): string {
-  switch (priority) {
-    case 0:
-      return 'border-rose-300/45 bg-rose-500/20 text-rose-50';
-    case 1:
-      return 'border-amber-300/40 bg-amber-500/20 text-amber-50';
-    case 2:
-      return 'border-teal-300/40 bg-teal-500/20 text-teal-50';
-    case 3:
-      return 'border-slate-300/35 bg-slate-500/22 text-slate-50';
+function statusGradient(status: string): string {
+  switch (status) {
+    case 'ready':
+    case 'open':
+      return 'bg-[linear-gradient(145deg,rgba(34,45,42,0.92)_0%,rgba(24,32,30,0.88)_50%,rgba(18,28,26,0.9)_100%)]';
+    case 'in_progress':
+      return 'bg-[linear-gradient(145deg,rgba(42,40,32,0.92)_0%,rgba(32,30,24,0.88)_50%,rgba(26,24,18,0.9)_100%)]';
+    case 'blocked':
+      return 'bg-[linear-gradient(145deg,rgba(60,24,30,0.95)_0%,rgba(45,18,24,0.9)_50%,rgba(32,12,16,0.92)_100%)]';
+    case 'closed':
+      return 'bg-[linear-gradient(145deg,rgba(28,30,34,0.75)_0%,rgba(22,24,28,0.72)_50%,rgba(18,20,24,0.75)_100%)] opacity-75';
     default:
-      return 'border-slate-400/35 bg-slate-600/20 text-slate-50';
+      return 'bg-[linear-gradient(145deg,rgba(38,40,48,0.92)_0%,rgba(28,30,36,0.88)_50%,rgba(22,24,30,0.9)_100%)]';
   }
+}
+
+function statusBorder(status: string): string {
+  switch (status) {
+    case 'ready':
+    case 'open':
+      return 'border-emerald-500/20';
+    case 'in_progress':
+      return 'border-amber-500/20';
+    case 'blocked':
+      return 'border-rose-500/20';
+    case 'closed':
+      return 'border-rose-500/30';
+    default:
+      return 'border-white/[0.06]';
+  }
+}
+
+function statusDotColor(status: string): string {
+  switch (status) {
+    case 'ready':
+    case 'open':
+      return 'bg-emerald-400';
+    case 'in_progress':
+      return 'bg-amber-400';
+    case 'blocked':
+      return 'bg-rose-400';
+    case 'closed':
+      return 'bg-slate-400';
+    default:
+      return 'bg-slate-400';
+  }
+}
+
+function titleColor(status: string): string {
+  return status === 'closed' ? 'text-text-muted/70' : 'text-text-strong/95';
 }
 
 export function KanbanCard({
   issue,
+  issues = [],
   parentEpic = null,
   graphBaseHref,
   selected,
@@ -45,13 +84,15 @@ export function KanbanCard({
   onNativeDragStart,
   onSelect,
 }: KanbanCardProps) {
-  const projectName = (issue as BeadIssue & { project?: { name?: string } }).project?.name ?? null;
-  const unblocksCount = new Set(
-    issue.dependencies.filter((dependency) => dependency.type === 'blocks').map((dependency) => dependency.target),
-  ).size;
+  const blockerCount = issues.length > 0 ? (hasOpenBlockers(issues, issue.id) ? 
+    issue.dependencies.filter(d => d.type === 'blocks').filter(d => {
+      const blocker = issues.find(i => i.id === d.target);
+      return blocker && blocker.status !== 'closed';
+    }).length : 0) : 0;
+
   const selectedClass = selected
-    ? 'border-amber-200/60 bg-surface-raised shadow-card ring-1 ring-amber-200/20'
-    : 'border-border-soft bg-surface/95 shadow-[0_6px_18px_rgba(4,8,17,0.5)] hover:border-border-strong hover:bg-surface-raised/95';
+    ? 'ring-1 ring-amber-200/20 shadow-[0_24px_48px_-18px_rgba(0,0,0,0.88),0_0_26px_rgba(251,191,36,0.14)]'
+    : 'shadow-[0_18px_38px_-18px_rgba(0,0,0,0.82),0_6px_18px_-10px_rgba(0,0,0,0.72)] hover:shadow-[0_24px_52px_-16px_rgba(0,0,0,0.9),0_10px_26px_-10px_rgba(0,0,0,0.78)]';
 
   const graphDetailHref = parentEpic
     ? (() => {
@@ -78,52 +119,44 @@ export function KanbanCard({
           onSelect(issue);
         }
       }}
-      className={`w-full cursor-pointer rounded-2xl border px-3 py-2.5 text-left transition ${selectedClass} ${
+      className={`w-full cursor-pointer rounded-xl border ${statusBorder(issue.status)} ${statusGradient(issue.status)} px-3.5 py-3 text-left transition duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${selectedClass} ${
         pending ? 'opacity-70' : ''
       }`}
     >
-      <div className="font-mono text-[11px] text-text-muted break-all">{issue.id}</div>
-      {projectName ? (
-        <div className="mt-1">
-          <span className="rounded-md border border-sky-300/25 bg-sky-500/10 px-1.5 py-0.5 font-mono text-[10px] text-sky-200">
-            project: {projectName}
-          </span>
-        </div>
-      ) : null}
-      <div className="mt-1 text-sm font-semibold leading-5 text-text-strong break-words">{issue.title}</div>
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        <span
-          className={`inline-flex items-center rounded-full border px-2 py-1 font-mono text-[11px] font-semibold ${priorityClass(issue.priority)}`}
-        >
-          P{issue.priority}
-        </span>
-        <Chip>{issue.issue_type}</Chip>
-        <Chip tone="status">deps {issue.dependencies.length}</Chip>
-        {unblocksCount > 0 ? <Chip tone="status">Unblocks {unblocksCount}</Chip> : null}
+      {/* ID row with status dot */}
+      <div className="flex items-center gap-2">
+        <span className={`h-1.5 w-1.5 rounded-full ${statusDotColor(issue.status)} shadow-[0_0_6px_currentColor]`} />
+        <span className="system-data text-[11px] text-text-muted/60">{issue.id}</span>
       </div>
-      <div className="mt-2 break-words font-mono text-xs text-amber-100/90">
-        {issue.assignee ? `@${issue.assignee}` : 'unassigned'}
+
+      {/* Title */}
+      <div className={`ui-text mt-2 text-sm font-semibold leading-5 break-words ${titleColor(issue.status)}`}>
+        {issue.title}
       </div>
-      <div className="mt-1 font-mono text-[11px] text-text-muted">{formatUpdatedRecency(issue.updated_at)}</div>
+
+      {/* Labels/Tags row */}
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        {issue.labels.slice(0, 3).map((label) => (
+          <Chip key={`${issue.id}-${label}`}>{label}</Chip>
+        ))}
+        {blockerCount > 0 && (
+          <Chip tone="status">{blockerCount} Blocker{blockerCount > 1 ? 's' : ''}</Chip>
+        )}
+      </div>
+
       {parentEpic ? (
-        <div className="mt-2">
+        <div className="mt-2.5">
           <Link
             href={graphDetailHref ?? graphBaseHref}
-            className="inline-flex items-center gap-1 rounded-md border border-sky-300/25 bg-sky-500/10 px-2 py-1 font-mono text-[11px] text-sky-200 hover:border-sky-300/45 hover:bg-sky-500/15"
+            className="system-data inline-flex items-center gap-1 rounded border border-white/8 bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-text-muted/80 hover:text-text-body hover:bg-white/[0.08]"
             onClick={(event) => event.stopPropagation()}
           >
-            epic: {parentEpic.title}
+            {parentEpic.title}
           </Link>
         </div>
       ) : null}
-      {issue.labels.length > 0 ? (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {issue.labels.slice(0, 3).map((label) => (
-            <Chip key={`${issue.id}-${label}`}>#{label}</Chip>
-          ))}
-        </div>
-      ) : null}
-      {pending ? <div className="mt-2 text-[11px] font-medium text-amber-200">Saving…</div> : null}
+
+      {pending ? <div className="ui-text mt-2 text-[11px] font-medium text-amber-200">Saving…</div> : null}
     </motion.article>
   );
 }
