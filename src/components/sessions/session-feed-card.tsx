@@ -1,16 +1,17 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import type { SessionTaskCard } from '../../lib/agent-sessions';
+import type { SessionTaskCard, Incursion } from '../../lib/agent-sessions';
 import { statusBorder, statusDotColor, statusGradient, sessionStateGlow } from '../shared/status-utils';
 
 interface SessionFeedCardProps {
   card: SessionTaskCard;
   onSelect: (id: string) => void;
   isHighlighted?: boolean;
+  incursion?: Incursion;
 }
 
-export function SessionFeedCard({ card, onSelect, isHighlighted }: SessionFeedCardProps) {
+export function SessionFeedCard({ card, onSelect, isHighlighted, incursion }: SessionFeedCardProps) {
   return (
     <motion.article
       layout
@@ -19,8 +20,20 @@ export function SessionFeedCard({ card, onSelect, isHighlighted }: SessionFeedCa
         isHighlighted 
           ? 'border-sky-500 bg-sky-500/10 ring-1 ring-sky-500/50 scale-[1.02] shadow-[0_0_20px_rgba(56,189,248,0.15)]' 
           : `${statusBorder(card.status)} ${statusGradient(card.status)} hover:bg-white/[0.04]`
-      } ${sessionStateGlow(card.sessionState)}`}
+      } ${sessionStateGlow(card.sessionState)} ${incursion ? 'ring-1 ring-rose-500/30' : ''}`}
     >
+      {incursion && (
+        <div className="absolute -top-2 right-4 z-10">
+          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.55rem] font-black uppercase tracking-[0.1em] border shadow-lg animate-pulse ${
+            incursion.severity === 'exact' 
+              ? 'bg-rose-500 text-white border-rose-400 shadow-rose-500/20' 
+              : 'bg-amber-500 text-black border-amber-400 shadow-amber-500/20'
+          }`}>
+            Conflict
+          </span>
+        </div>
+      )}
+      
       <div className="flex gap-[0.75rem]">
         {/* Compact Avatar */}
         <div className="flex-none">

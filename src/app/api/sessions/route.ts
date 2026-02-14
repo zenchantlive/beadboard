@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { readIssuesFromDisk } from '../../../lib/read-issues';
 import { activityEventBus } from '../../../lib/realtime';
-import { buildSessionTaskFeed, getCommunicationSummary, getAgentLivenessMap } from '../../../lib/agent-sessions';
+import { buildSessionTaskFeed, getCommunicationSummary, getAgentLivenessMap, calculateIncursions } from '../../../lib/agent-sessions';
+import { listAgents } from '../../../lib/agent-registry';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,10 +15,18 @@ export async function GET(request: Request): Promise<Response> {
     const activity = activityEventBus.getHistory(projectRoot);
     const communication = await getCommunicationSummary();
     const livenessMap = await getAgentLivenessMap();
+    const incursions = await calculateIncursions();
+    const agentsResult = await listAgents({});
 
     const feed = buildSessionTaskFeed(issues, activity, communication, livenessMap);
 
-    return NextResponse.json({ ok: true, feed });
+    return NextResponse.json({ 
+      ok: true, 
+      feed, 
+      livenessMap, 
+      incursions,
+      agents: agentsResult.data ?? []
+    });
   } catch (error) {
     console.error('[API/Sessions] Failed to load session feed:', error);
     return NextResponse.json(

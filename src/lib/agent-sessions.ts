@@ -2,8 +2,9 @@ import type { ActivityEvent } from './activity';
 import type { BeadIssue } from './types';
 import { listAgents, deriveLiveness } from './agent-registry';
 import { inboxAgentMessages, type AgentMessage } from './agent-mail';
+import { statusAgentReservations, classifyOverlap } from './agent-reservations';
 
-export type AgentSessionState = 'active' | 'reviewing' | 'deciding' | 'needs_input' | 'completed' | 'stale' | 'evicted';
+export type AgentSessionState = 'active' | 'reviewing' | 'deciding' | 'needs_input' | 'completed' | 'stale' | 'evicted' | 'idle';
 
 export interface SessionTaskCard {
   id: string;
@@ -48,6 +49,49 @@ export async function getAgentLivenessMap(): Promise<Record<string, string>> {
   }
 
   return map;
+}
+
+export interface Incursion {
+  scope: string;
+  agents: string[];
+  severity: 'exact' | 'partial';
+}
+
+/**
+ * Calculates global incursions by comparing all active reservations.
+ */
+export async function calculateIncursions(): Promise<Incursion[]> {
+  const statusResult = await statusAgentReservations({});
+  if (!statusResult.ok || !statusResult.data) return [];
+
+  const reservations = statusResult.data.reservations;
+  const incursions: Incursion[] = [];
+  const processedPairs = new Set<string>();
+
+  for (let i = 0; i < reservations.length; i++) {
+    for (let j = i + 1; j < reservations.length; j++) {
+      const resA = reservations[i];
+      const resB = reservations[j];
+
+      // Don't compare an agent against themselves
+      if (resA.agent_id === resB.agent_id) continue;
+
+      const overlap = classifyOverlap(resA.scope, resB.scope);
+      if (overlap !== 'disjoint') {
+        const key = [resA.agent_id, resB.agent_id].sort().join(':') + ':' + [resA.scope, resB.scope].sort().join('|');
+        if (processedPairs.has(key)) continue;
+        processedPairs.add(key);
+
+        incursions.push({
+          scope: overlap === 'exact' ? resA.scope : `${resA.scope} ↔ ${resB.scope}`,
+          agents: [resA.agent_id, resB.agent_id],
+          severity: overlap
+        });
+      }
+    }
+  }
+
+  return incursions;
 }
 
 /**

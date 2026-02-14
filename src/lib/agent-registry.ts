@@ -52,8 +52,6 @@ export interface ActivityLeaseInput {
   agent: string;
 }
 
-export type AgentLiveness = 'active' | 'stale' | 'evicted';
-
 function userProfileRoot(): string {
   return process.env.USERPROFILE?.trim() || os.homedir();
 }
@@ -260,16 +258,23 @@ export async function showAgent(input: ShowAgentInput): Promise<AgentCommandResp
   }
 }
 
+export type AgentLiveness = 'active' | 'stale' | 'evicted' | 'idle';
+
 /**
  * Derives the liveness state of an agent based on its last seen timestamp.
- * stale threshold: staleMinutes (default 15)
- * evicted threshold: 2 * staleMinutes (default 30)
+ * active: < 15m
+ * stale: 15m - 30m
+ * evicted: 30m - 60m
+ * idle: >= 60m
  */
 export function deriveLiveness(lastSeenAt: string, now: Date = new Date(), staleMinutes: number = 15): AgentLiveness {
   const lastSeen = new Date(lastSeenAt).getTime();
   const diffMs = now.getTime() - lastSeen;
   const diffMin = diffMs / (1000 * 60);
 
+  if (diffMin >= 60) {
+    return 'idle';
+  }
   if (diffMin >= 2 * staleMinutes) {
     return 'evicted';
   }

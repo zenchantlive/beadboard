@@ -82,9 +82,22 @@ test('deriveLiveness follows threshold rules (15m/30m default)', () => {
   );
 
   // Evicted: 1 hour ago
+  // Note: Since we added Idle at 60m, let's test 59m for Evicted and 60m for Idle
+  assert.equal(
+    deriveLiveness('2026-02-14T11:01:00Z', now),
+    'evicted'
+  );
+
+  // Idle: Exactly 60 mins ago
   assert.equal(
     deriveLiveness('2026-02-14T11:00:00Z', now),
-    'evicted'
+    'idle'
+  );
+
+  // Idle: 2 hours ago
+  assert.equal(
+    deriveLiveness('2026-02-14T10:00:00Z', now),
+    'idle'
   );
 });
 

@@ -30,7 +30,7 @@ export function SessionsPage({
   projectScopeMode,
 }: SessionsPageProps) {
   // 2. Session-specific feed
-  const { feed, loading, refresh: refreshFeed, stats } = useSessionFeed(projectRoot);
+  const { feed, incursions, livenessMap, loading, refresh: refreshFeed, stats } = useSessionFeed(projectRoot);
 
   const { 
     selectedAgentId, 
@@ -73,6 +73,7 @@ export function SessionsPage({
         projectScopeMode={projectScopeMode}
         projectScopeOptions={projectScopeOptions}
         stats={stats}
+        livenessMap={livenessMap}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -97,6 +98,7 @@ export function SessionsPage({
             ) : (
               <SessionTaskFeed 
                 feed={feed} 
+                incursions={incursions}
                 selectedEpicId={selectedEpicId} 
                 onSelectTask={setSelectedTaskId}
                 highlightTaskId={selectedTaskId}
