@@ -76,8 +76,9 @@ function asNonEmptyString(value: unknown, field: string): string {
     throw new MutationValidationError(`"${field}" is required.`);
   }
   const trimmed = value.trim();
-  // Sanitize to prevent command injection - remove control characters and shell metacharacters
-  const sanitized = trimmed.replace(/[\x00-\x1f\x7f]/g, '').replace(/[;&|`$(){}[\]\\*?<>!#"'%\n\r]/g, '');
+  // Remove control characters that could cause issues in command execution
+  // Preserve backslashes for Windows paths and punctuation for user text
+  const sanitized = trimmed.replace(/[\x00-\x1f\x7f]/g, '');
   if (!sanitized) {
     throw new MutationValidationError(`"${field}" contains only invalid characters.`);
   }

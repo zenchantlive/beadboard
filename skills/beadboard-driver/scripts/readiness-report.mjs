@@ -44,16 +44,9 @@ async function withArtifactExistence(artifacts) {
     };
     if (typeof artifact.path === 'string' && artifact.path.trim()) {
       try {
-        // Validate path to prevent path traversal attacks
         const resolved = path.resolve(artifact.path);
-        const normalized = path.normalize(resolved);
-        // Check that the path doesn't contain traversal patterns
-        if (normalized.includes('..') || path.sep !== '/' && normalized.includes('..\\')) {
-          item.exists = false;
-        } else {
-          await fs.access(resolved);
-          item.exists = true;
-        }
+        await fs.access(resolved);
+        item.exists = true;
       } catch {
         item.exists = false;
       }

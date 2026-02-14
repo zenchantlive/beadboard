@@ -10,10 +10,11 @@ function isValidProjectRoot(root: string): boolean {
     if (!path.isAbsolute(resolved)) {
       return false;
     }
-    // Prevent path traversal by ensuring resolved path doesn't escape the project
-    const normalized = path.normalize(resolved);
-    // Check that the path doesn't contain traversal patterns
-    if (normalized.includes('..') || path.sep !== '/' && normalized.includes('..\\')) {
+    // Prevent path traversal by ensuring resolved path stays within the project root
+    const allowedBase = process.cwd();
+    const relative = path.relative(allowedBase, resolved);
+    // If "resolved" is outside "allowedBase", "relative" will start with ".."
+    if (relative.startsWith('..') || path.isAbsolute(relative)) {
       return false;
     }
     return true;
