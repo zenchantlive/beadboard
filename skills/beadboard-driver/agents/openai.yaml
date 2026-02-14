@@ -1,0 +1,4 @@
+interface:
+  display_name: "Beadboard Driver"
+  short_description: "Safe bd+bb agent workflow orchestration"
+  default_prompt: "Use Beadboard Driver to resolve bb path, register a unique session agent, coordinate via bb agent commands, and produce verification-backed closeout notes."
