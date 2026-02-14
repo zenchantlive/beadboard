@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const AGENT_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-export type AgentCommandName = 'agent register' | 'agent list' | 'agent show';
+export type AgentCommandName = 'agent register' | 'agent list' | 'agent show' | 'agent heartbeat';
 
 export interface AgentCommandError {
   code: string;
@@ -47,6 +47,12 @@ export interface ListAgentsInput {
 export interface ShowAgentInput {
   agent: string;
 }
+
+export interface HeartbeatAgentInput {
+  agent: string;
+}
+
+export type AgentLiveness = 'active' | 'stale' | 'evicted';
 
 function userProfileRoot(): string {
   return process.env.USERPROFILE?.trim() || os.homedir();
@@ -251,5 +257,59 @@ export async function showAgent(input: ShowAgentInput): Promise<AgentCommandResp
     return success(command, agent);
   } catch (error) {
     return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to load agent.');
+  }
+}
+
+/**
+ * Derives the liveness state of an agent based on its last seen timestamp.
+ * stale threshold: staleMinutes (default 15)
+ * evicted threshold: 2 * staleMinutes (default 30)
+ */
+export function deriveLiveness(lastSeenAt: string, now: Date = new Date(), staleMinutes: number = 15): AgentLiveness {
+  const lastSeen = new Date(lastSeenAt).getTime();
+  const diffMs = now.getTime() - lastSeen;
+  const diffMin = diffMs / (1000 * 60);
+
+  if (diffMin >= 2 * staleMinutes) {
+    return 'evicted';
+  }
+  if (diffMin >= staleMinutes) {
+    return 'stale';
+  }
+  return 'active';
+}
+
+/**
+ * Updates the last_seen_at timestamp for a registered agent.
+ */
+export async function heartbeatAgent(
+  input: HeartbeatAgentInput,
+  deps: Partial<RegisterAgentDeps> = {},
+): Promise<AgentCommandResponse<AgentRecord>> {
+  const command: AgentCommandName = 'agent heartbeat';
+  const agentId = trimOrEmpty(input.agent);
+
+  const agentIdError = validateAgentId(agentId);
+  if (agentIdError) {
+    return invalid(command, agentIdError.code, agentIdError.message);
+  }
+
+  try {
+    const existing = await readAgent(agentId);
+    if (!existing) {
+      return invalid(command, 'AGENT_NOT_FOUND', 'Agent is not registered.');
+    }
+
+    const now = deps.now ? deps.now() : new Date().toISOString();
+    const updated: AgentRecord = {
+      ...existing,
+      last_seen_at: now,
+      version: existing.version + 1,
+    };
+
+    await writeAgent(updated);
+    return success(command, updated);
+  } catch (error) {
+    return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to heartbeat agent.');
   }
 }
