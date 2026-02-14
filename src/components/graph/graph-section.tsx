@@ -85,7 +85,7 @@ export function GraphSection({
             </div>
 
             {/* ReactFlow graph viewport */}
-            <div className="relative h-[60vh] min-h-[35rem] overflow-hidden rounded-2xl border border-white/5 bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0.4),rgba(5,8,15,0.8))] shadow-inner">
+            <div className="relative h-[60vh] min-h-[24rem] md:min-h-[35rem] overflow-hidden rounded-2xl border border-white/5 bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0.4),rgba(5,8,15,0.8))] shadow-inner">
                 <ReactFlow
                     className="workflow-graph-flow"
                     defaultEdgeOptions={defaultEdgeOptions}

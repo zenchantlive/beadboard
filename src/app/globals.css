@@ -3,25 +3,47 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #0b0c10;
-  --color-surface: #14171f;
-  --color-surface-muted: #1c212b;
-  --color-surface-raised: #252b38;
-  --color-text-strong: #f8fafc;
-  --color-text-body: #cbd5e1;
-  --color-text-muted: #94a3b8;
-  --color-border-soft: rgba(255, 255, 255, 0.08);
-  --color-border-strong: rgba(255, 255, 255, 0.18);
-  
-  --aurora-blue: rgba(125, 175, 245, 0.14);
-  --aurora-amber: rgba(235, 185, 125, 0.11);
-  --aurora-purple: rgba(185, 125, 245, 0.08);
+  /* Aero Chrome foundation tokens */
+  --bg-base: #070709;
+  --glass-base: rgba(18, 18, 22, 0.4);
+  --edge-top: rgba(255, 255, 255, 0.12);
+  --edge-bottom: rgba(0, 0, 0, 0.8);
+  --edge-side: rgba(255, 255, 255, 0.04);
+  --elevation-tight: 0 4px 12px -2px rgba(0, 0, 0, 0.7);
+  --elevation-ambient: 0 16px 32px -8px rgba(0, 0, 0, 0.95);
 
-  --status-open: #38bdf8;
+  --status-rdy-glow: rgba(74, 222, 128, 0.9);
+  --status-rdy-bg: rgba(74, 222, 128, 0.15);
+  --status-blk-glow: rgba(248, 113, 113, 0.9);
+  --status-blk-bg: rgba(248, 113, 113, 0.15);
+  --status-wip-glow: rgba(96, 165, 250, 0.9);
+  --status-wip-bg: rgba(96, 165, 250, 0.15);
+  --status-wait-glow: rgba(160, 160, 180, 0.7);
+
+  /* Typography pairing */
+  --font-ui-stack: var(--font-ui), 'Segoe UI', system-ui, sans-serif;
+  --font-mono-stack: var(--font-ui), 'Segoe UI', system-ui, sans-serif;
+
+  /* Compatibility tokens consumed by existing components */
+  --color-bg: var(--bg-base);
+  --color-surface: rgba(32, 35, 45, 0.85);
+  --color-surface-muted: rgba(40, 44, 55, 0.8);
+  --color-surface-raised: rgba(52, 58, 72, 0.82);
+  --color-text-strong: #ffffff;
+  --color-text-body: #d1d1d6;
+  --color-text-muted: #9494a0;
+  --color-border-soft: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.22);
+
+  --aurora-blue: rgba(96, 165, 250, 0.12);
+  --aurora-amber: rgba(251, 191, 36, 0.1);
+  --aurora-purple: rgba(129, 140, 248, 0.08);
+
+  --status-open: #60a5fa;
   --status-progress: #fbbf24;
-  --status-blocked: #f43f5e;
-  --status-deferred: #94a3b8;
-  --status-closed: #10b981;
+  --status-blocked: #f87171;
+  --status-deferred: #a3a3b0;
+  --status-closed: #4ade80;
 
   --priority-p0: #f43f5e;
   --priority-p1: #f59e0b;
@@ -42,36 +64,63 @@ body {
 
 body {
   background:
-    radial-gradient(circle at 10% 10%, var(--aurora-blue), transparent 40%),
-    radial-gradient(circle at 90% 10%, var(--aurora-amber), transparent 40%),
-    radial-gradient(circle at 50% 90%, var(--aurora-purple), transparent 50%),
-    #0b0c10;
+    radial-gradient(circle at 15% 15%, rgba(60, 80, 120, 0.08) 0%, transparent 35%),
+    radial-gradient(circle at 85% 20%, rgba(100, 80, 140, 0.06) 0%, transparent 35%),
+    radial-gradient(circle at 50% 95%, rgba(50, 70, 100, 0.06) 0%, transparent 40%),
+    linear-gradient(180deg, rgba(20, 22, 30, 0.98) 0%, rgba(10, 11, 14, 0.99) 100%);
+  background-color: var(--bg-base);
   color: var(--color-text-body);
-  font-family: 'DM Sans', 'Segoe UI', Inter, system-ui, sans-serif;
+  font-family: var(--font-ui-stack);
   letter-spacing: -0.011em;
+  position: relative;
+  isolation: isolate;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 2rem 2rem;
+  pointer-events: none;
+  z-index: -2;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: -1;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+  scrollbar-color: rgba(148, 163, 184, 0.35) rgba(255, 255, 255, 0.02);
 }
 
 *::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 0.5rem;
+  height: 0.5rem;
 }
 
 *::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 9999px;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.2);
-  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(156, 163, 175, 0.55), rgba(107, 114, 128, 0.45));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.35);
+  background: linear-gradient(180deg, rgba(186, 194, 209, 0.72), rgba(124, 136, 156, 0.62));
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -99,24 +148,53 @@ body {
 
 
 .workflow-card {
-  border: 1px solid var(--color-border-soft);
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
-  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top-color: rgba(255, 255, 255, 0.24);
+  border-bottom-color: rgba(0, 0, 0, 0.9);
+  background: linear-gradient(180deg, rgba(42, 44, 52, 0.6) 0%, rgba(22, 23, 28, 0.6) 100%);
+  box-shadow:
+    var(--elevation-ambient),
+    var(--elevation-tight),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  transform: translateZ(0);
+  will-change: transform, box-shadow;
 }
 
 .workflow-card-selected {
-  border-color: rgba(56, 189, 248, 0.4);
-  background: linear-gradient(165deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.8));
-  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  border-color: rgba(96, 165, 250, 0.42);
+  border-top-color: rgba(96, 165, 250, 0.58);
+  background: linear-gradient(180deg, rgba(60, 68, 88, 0.7) 0%, rgba(35, 40, 52, 0.7) 100%);
+  box-shadow:
+    0 20px 48px -8px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(96, 165, 250, 0.25),
+    0 0 40px rgba(96, 165, 250, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.glass-panel {
+  background: var(--glass-base);
+  border: 1px solid var(--edge-side);
+  border-top-color: var(--edge-top);
+  border-bottom-color: var(--edge-bottom);
+  box-shadow: var(--elevation-ambient);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
 }
 
 /* Shared dark form controls to avoid white-on-white browser defaults */
 .ui-field {
-  border: 1px solid var(--color-border-soft);
-  background: linear-gradient(160deg, rgba(28, 33, 43, 0.9), rgba(20, 23, 31, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--edge-top);
+  border-bottom-color: var(--edge-bottom);
+  background: linear-gradient(180deg, rgba(32, 34, 42, 0.72), rgba(17, 19, 26, 0.72));
   color: var(--color-text-strong);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow:
+    0 8px 20px -12px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .ui-field::placeholder {
@@ -125,9 +203,9 @@ body {
 
 .ui-field:focus-visible {
   outline: none;
-  border-color: var(--color-border-strong);
+  border-color: rgba(96, 165, 250, 0.48);
   box-shadow:
-    0 0 0 2px rgba(125, 175, 245, 0.12),
+    0 0 0 2px rgba(96, 165, 250, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
@@ -139,6 +217,20 @@ body {
 .ui-option {
   background-color: #10141d;
   color: #e2e8f0;
+}
+
+.ui-text {
+  font-family: var(--font-ui-stack);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.system-data {
+  font-family: var(--font-mono-stack);
+  font-variant-numeric: tabular-nums;
+  font-weight: 450;
+  letter-spacing: 0.015em;
 }
 
 
@@ -183,6 +275,14 @@ body {
 
 .react-flow__edge-label {
   pointer-events: none;
+}
+
+.workflow-graph-flow .react-flow__edge-text {
+  text-transform: uppercase;
+  font-family: var(--font-mono-stack);
+  paint-order: stroke;
+  stroke: rgba(2, 6, 23, 0.95);
+  stroke-width: 2px;
 }
 
 /* Node selection pulse animation - sky-blue ring expands and fades */

@@ -61,6 +61,8 @@ test('extracted graph section has viewport and legend', async () => {
   assert.match(graphSection, /Read left to right/, 'legend should include plain directional hint');
   assert.match(graphSection, /Left = blockers/, 'legend should include left/right dependency meaning');
   assert.match(graphSection, /Right = work unblocked by this task/, 'legend should include downstream meaning');
+  assert.match(graphSection, /min-h-\[24rem\]/, 'graph container should enforce bounded minimum height');
+  assert.match(graphSection, /md:min-h-\[35rem\]/, 'graph container should scale minimum height on desktop');
 });
 
 test('graph node card supports tooltips and actionable glow', async () => {
@@ -72,4 +74,9 @@ test('graph node card supports tooltips and actionable glow', async () => {
   assert.match(nodeCard, /blockerTooltipLines/, 'should display blocker tooltip');
   assert.match(nodeCard, /isDimmed/, 'should support dimming non-chain nodes');
   assert.match(nodeCard, /Ready to work/, 'actionable tooltip text');
+});
+
+test('graph edges expose explicit relation labels', async () => {
+  const graphPage = await read('src/components/graph/dependency-graph-page.tsx');
+  assert.match(graphPage, /label:\s*'BLOCKS'/, 'edges should include plain-language relation labels');
 });

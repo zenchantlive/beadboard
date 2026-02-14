@@ -29,10 +29,14 @@ const STATUS_META: Record<(typeof KANBAN_STATUSES)[number], { label: string; dot
 };
 
 const STATUS_COLUMN_CLASS: Record<(typeof KANBAN_STATUSES)[number], string> = {
-  ready: 'bg-sky-500/10',
-  in_progress: 'bg-amber-500/10',
-  blocked: 'bg-rose-500/10',
-  closed: 'bg-emerald-500/10',
+  ready:
+    'bg-[radial-gradient(circle_at_0%_0%,rgba(56,189,248,0.2),transparent_62%),linear-gradient(180deg,rgba(22,27,40,0.66),rgba(10,12,20,0.84))]',
+  in_progress:
+    'bg-[radial-gradient(circle_at_0%_0%,rgba(251,191,36,0.2),transparent_62%),linear-gradient(180deg,rgba(22,27,40,0.66),rgba(10,12,20,0.84))]',
+  blocked:
+    'bg-[radial-gradient(circle_at_0%_0%,rgba(244,63,94,0.2),transparent_62%),linear-gradient(180deg,rgba(22,27,40,0.66),rgba(10,12,20,0.84))]',
+  closed:
+    'bg-[radial-gradient(circle_at_0%_0%,rgba(16,185,129,0.2),transparent_62%),linear-gradient(180deg,rgba(22,27,40,0.66),rgba(10,12,20,0.84))]',
 };
 
 export function KanbanBoard({
@@ -86,8 +90,10 @@ export function KanbanBoard({
           key={status}
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => onDropLane(status, event)}
-          className={`rounded-2xl border border-border-soft ${STATUS_COLUMN_CLASS[status]} p-2.5 transition ${
-            activeStatus === status ? 'shadow-card' : 'opacity-90'
+          className={`rounded-2xl border border-white/[0.04] ${STATUS_COLUMN_CLASS[status]} p-2.5 transition shadow-[0_24px_52px_-20px_rgba(0,0,0,0.82),0_10px_26px_-14px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(255,255,255,0.08)] ${
+            activeStatus === status
+              ? 'shadow-[0_30px_62px_-18px_rgba(0,0,0,0.86),0_0_0_1px_rgba(125,211,252,0.14)]'
+              : 'opacity-95'
           }`}
         >
           <div className="flex items-center gap-2">
@@ -103,11 +109,11 @@ export function KanbanBoard({
               }}
               className="flex w-full items-center justify-between rounded-lg px-1 py-0.5 text-left"
             >
-              <strong className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-body">
+              <strong className="ui-text inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-text-body">
                 <span className={`h-2 w-2 rounded-full ${STATUS_META[status].dot}`} />
                 {STATUS_META[status].label}
               </strong>
-              <span className="font-mono text-xs text-text-muted">{columns[status].length}</span>
+              <span className="system-data text-xs text-text-muted">{columns[status].length}</span>
             </button>
             {activeStatus === status ? (
               <button
@@ -127,6 +133,7 @@ export function KanbanBoard({
                   <KanbanCard
                     key={issue.id}
                     issue={issue}
+                    issues={allIssues}
                     parentEpic={parentEpicByIssueId.get(issue.id) ?? null}
                     graphBaseHref={graphBaseHref}
                     pending={pendingIssueIds.has(issue.id)}
@@ -150,11 +157,11 @@ export function KanbanBoard({
                   key={issue.id}
                   type="button"
                   onClick={() => handleExpandAndSelect(status, issue)}
-                  className="max-w-full rounded-lg border border-border-soft bg-surface-muted/60 px-2 py-1 text-left hover:border-border-strong hover:bg-surface-raised/70"
+                  className="max-w-full rounded-lg border border-border-soft bg-gradient-to-b from-surface-muted/50 to-surface-muted/70 px-2 py-1 text-left hover:border-border-strong hover:from-surface-raised/70 hover:to-surface-raised/90 shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
                   title={issue.title}
                 >
-                  <div className="font-mono text-[10px] text-text-muted">{issue.id}</div>
-                  <div className="line-clamp-1 text-xs font-medium text-text-body">{issue.title}</div>
+                  <div className="system-data text-[10px] text-text-muted">{issue.id}</div>
+                  <div className="ui-text line-clamp-1 text-sm font-medium text-text-body">{issue.title}</div>
                 </button>
               ))}
               {columns[status].length > 6 ? (

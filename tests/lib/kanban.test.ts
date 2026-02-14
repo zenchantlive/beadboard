@@ -71,10 +71,10 @@ test('buildKanbanColumns groups by core statuses and sorts by priority ascending
   const columns = buildKanbanColumns(issues);
 
   assert.deepEqual(Object.keys(columns), KANBAN_STATUSES);
-  assert.deepEqual(columns.ready.map((x) => x.id), ['bb-4', 'bb-5', 'bb-6']);
+  assert.deepEqual(columns.ready.map((x) => x.id), ['bb-2', 'bb-4', 'bb-1']);
   assert.equal(columns.ready.some((x) => x.issue_type === 'epic'), false);
   assert.deepEqual(columns.in_progress.map((x) => x.id), ['bb-3']);
-  assert.deepEqual(columns.blocked.map((x) => x.id), ['bb-2', 'bb-1']);
+  assert.deepEqual(columns.blocked.map((x) => x.id), ['bb-5', 'bb-6']);
   assert.equal(columns.closed.length, 0);
 });
 
@@ -105,12 +105,12 @@ test('buildBlockedByTree returns compact blocker tree with depth and total', () 
     issue({ id: 'bb-4', title: 'Nested blocker', dependencies: [{ type: 'blocks', target: 'bb-2' }] }),
   ];
 
-  const tree = buildBlockedByTree(issues, 'bb-1');
+  const tree = buildBlockedByTree(issues, 'bb-4');
 
-  assert.equal(tree.total, 3);
+  assert.equal(tree.total, 2);
   assert.deepEqual(
     tree.nodes.map((node) => `${node.id}:${node.level}`),
-    ['bb-2:1', 'bb-3:1', 'bb-4:2'],
+    ['bb-2:1', 'bb-1:2'],
   );
 });
 
@@ -136,27 +136,28 @@ test('pickNextActionableIssue is deterministic by priority asc, unblocks desc, u
       status: 'open',
       priority: 1,
       updated_at: '2026-02-10T01:00:00Z',
-      dependencies: [{ type: 'blocks', target: 'bb-10' }],
     }),
     issue({
       id: 'bb-2',
       status: 'open',
       priority: 1,
       updated_at: '2026-02-10T02:00:00Z',
-      dependencies: [{ type: 'blocks', target: 'bb-11' }, { type: 'blocks', target: 'bb-12' }],
     }),
     issue({
-      id: 'bb-3',
+      id: 'bb-10',
       status: 'open',
-      priority: 1,
-      updated_at: '2026-02-10T02:00:00Z',
-      dependencies: [{ type: 'blocks', target: 'bb-13' }, { type: 'blocks', target: 'bb-14' }],
+      dependencies: [{ type: 'blocks', target: 'bb-1' }],
     }),
-    issue({ id: 'bb-10', status: 'blocked' }),
-    issue({ id: 'bb-11', status: 'blocked' }),
-    issue({ id: 'bb-12', status: 'blocked' }),
-    issue({ id: 'bb-13', status: 'blocked' }),
-    issue({ id: 'bb-14', status: 'blocked' }),
+    issue({
+      id: 'bb-11',
+      status: 'open',
+      dependencies: [{ type: 'blocks', target: 'bb-2' }],
+    }),
+    issue({
+      id: 'bb-12',
+      status: 'open',
+      dependencies: [{ type: 'blocks', target: 'bb-2' }],
+    }),
   ];
 
   const columns = buildKanbanColumns(issues);
@@ -187,7 +188,9 @@ test('buildUnblocksCountByIssue counts unique blocks dependencies per issue', ()
 
   const map = buildUnblocksCountByIssue(issues);
 
-  assert.equal(map.get('bb-1'), 2);
+  assert.equal(map.get('bb-1'), 0);
+  assert.equal(map.get('bb-2'), 1);
+  assert.equal(map.get('bb-3'), 1);
 });
 
 test('buildExecutionChecklist evaluates owner, blockers, quality signal, and execution-compatible lane', () => {
@@ -197,8 +200,9 @@ test('buildExecutionChecklist evaluates owner, blockers, quality signal, and exe
       status: 'open',
       owner: 'dev-a',
       description: 'Implements acceptance criteria with rollback notes',
+      dependencies: [{ type: 'blocks', target: 'bb-2' }],
     }),
-    issue({ id: 'bb-2', status: 'closed', dependencies: [{ type: 'blocks', target: 'bb-1' }] }),
+    issue({ id: 'bb-2', status: 'closed' }),
   ];
 
   const checklist = buildExecutionChecklist(issues[0], issues);
@@ -207,4 +211,22 @@ test('buildExecutionChecklist evaluates owner, blockers, quality signal, and exe
     checklist.map((item) => item.passed),
     [true, true, true, true],
   );
+});
+
+test('buildExecutionChecklist fails blocker check when blocker is still open', () => {
+  const issues = [
+    issue({
+      id: 'bb-1',
+      status: 'open',
+      owner: 'dev-a',
+      description: 'Implements acceptance criteria with rollback notes',
+      dependencies: [{ type: 'blocks', target: 'bb-2' }],
+    }),
+    issue({ id: 'bb-2', status: 'open' }),
+  ];
+
+  const checklist = buildExecutionChecklist(issues[0], issues);
+  const blockerItem = checklist.find((item) => item.key === 'no_open_blockers');
+
+  assert.equal(blockerItem?.passed, false);
 });

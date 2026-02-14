@@ -23,6 +23,7 @@ import { DependencyFlowStrip } from './dependency-flow-strip';
 import { GraphNodeCard, type GraphNodeData } from './graph-node-card';
 import { GraphSection } from './graph-section';
 import { ProjectScopeControls } from '../shared/project-scope-controls';
+import { WorkspaceHero } from '../shared/workspace-hero';
 
 import { buildGraphModel, type GraphNode } from '../../lib/graph';
 import {
@@ -133,6 +134,7 @@ export function DependencyGraphPage({
   const requestedEpicId = searchParams.get('epic');
   const requestedTaskId = searchParams.get('task');
   const requestedTab = searchParams.get('tab');
+  const heroTitle = activeTab === 'dependencies' ? 'Graph' : 'Tasks';
   const kanbanHref = useMemo(() => {
     const params = new URLSearchParams();
     if (projectScopeMode !== 'single') {
@@ -154,13 +156,14 @@ export function DependencyGraphPage({
     () =>
       issues
         .filter((issue) => issue.issue_type === 'epic')
+        .filter((issue) => (!hideClosed ? true : issue.status !== 'closed'))
         .sort((a, b) => {
           // Push closed epics to the end
           if (a.status === 'closed' && b.status !== 'closed') return 1;
           if (b.status === 'closed' && a.status !== 'closed') return -1;
           return a.id.localeCompare(b.id);
         }),
-    [issues],
+    [issues, hideClosed],
   );
 
   // --- Derived data: tasks grouped by parent epic ---
@@ -560,10 +563,24 @@ export function DependencyGraphPage({
           target: dep.target,
           className: linkedToSelection ? 'workflow-edge-selected' : 'workflow-edge-muted',
           animated: linkedToSelection,
+          label: 'BLOCKS',
+          labelStyle: {
+            fill: linkedToSelection ? '#e2e8f0' : '#cbd5e1',
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+          },
+          labelBgPadding: [6, 3],
+          labelBgBorderRadius: 999,
+          labelBgStyle: {
+            fill: 'rgba(2, 6, 23, 0.92)',
+            stroke: linkedToSelection ? 'rgba(125, 211, 252, 0.35)' : 'rgba(251, 191, 36, 0.25)',
+            strokeWidth: 1,
+          },
           style: {
             stroke: linkedToSelection ? '#7dd3fc' : '#fbbf24',
-            strokeWidth: linkedToSelection ? 2.5 : 1.8,
-            opacity: linkedToSelection ? 1 : 0.55,
+            strokeWidth: linkedToSelection ? 2.8 : 2.1,
+            opacity: linkedToSelection ? 1 : 0.78,
           },
           markerEnd: { type: MarkerType.ArrowClosed, color: linkedToSelection ? '#7dd3fc' : '#fbbf24', width: 14, height: 14 },
         });
@@ -659,36 +676,34 @@ export function DependencyGraphPage({
 
   return (
     <main className="mx-auto max-w-[1880px] px-4 py-4 sm:px-6 sm:py-6 lg:px-10">
-      {/* Page header */}
-      <header className="mb-6 rounded-3xl border border-white/5 bg-[radial-gradient(circle_at_2%_2%,rgba(56,189,248,0.12),transparent_40%),linear-gradient(170deg,rgba(15,23,42,0.92),rgba(11,12,16,0.95))] px-5 py-5 sm:px-8 sm:py-8 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] backdrop-blur-2xl">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-sky-400/70 font-bold">BeadBoard Workspace</p>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold tracking-tight text-text-strong sm:text-4xl">Workflow Explorer</h1>
-            <Link href={kanbanHref} className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold text-text-body transition-all hover:bg-white/10 hover:border-white/20 sm:px-4 sm:text-xs">
-              &larr; Kanban
-            </Link>
-          </div>
-          <p className="hidden max-w-md text-sm leading-relaxed text-text-muted/90 sm:block">
-            Epic-driven dependency visualization. Drill into task relationships, triage blockers, and understand downstream impact at a glance.
-          </p>
-        </div>
-        {activeScope ? (
-          <p className="mt-3 text-xs text-text-muted/90">
+      <WorkspaceHero
+        eyebrow="BeadBoard Workspace"
+        title={heroTitle}
+        description="Epic-driven dependency visualization. Drill into task relationships, triage blockers, and understand downstream impact at a glance."
+        action={(
+          <Link
+            href={kanbanHref}
+            className="ui-text rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold text-text-body transition-all hover:bg-white/10 hover:border-white/20 sm:px-4 sm:text-xs"
+          >
+            &larr; Kanban
+          </Link>
+        )}
+        scope={activeScope ? (
+          <p className="ui-text text-xs text-text-muted/90">
             Scope:{' '}
-            <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[11px] text-text-body">
+            <span className="system-data rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-text-body">
               {activeScope.source === 'local' ? 'local workspace' : activeScope.displayPath}
             </span>
           </p>
-        ) : null}
-        <div className="mt-3">
+        ) : undefined}
+        controls={(
           <ProjectScopeControls
             projectScopeKey={projectScopeKey}
             projectScopeMode={projectScopeMode}
             projectScopeOptions={projectScopeOptions}
           />
-        </div>
-      </header>
+        )}
+      />
 
       {/* Main content area */}
       <section className="rounded-[2.5rem] border border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),rgba(255,255,255,0.005))] shadow-2xl backdrop-blur-sm overflow-hidden">
