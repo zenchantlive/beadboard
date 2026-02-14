@@ -8,7 +8,7 @@ Thank you for your interest in contributing to BeadBoard! This document provides
 
 - **Node.js** 18+ (LTS recommended)
 - **npm** 7+ or compatible package manager
-- **Windows OS** (BeadBoard is Windows-native and optimized for Windows paths)
+- **Windows OS** recommended (BeadBoard is optimized for Windows paths, though core functionality works cross-platform)
 - **Git** for version control
 
 ### Development Setup

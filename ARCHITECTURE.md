@@ -274,11 +274,12 @@ BeadBoard is a Next.js-based desktop application that provides a visual interfac
 - **Trade-off**: No indexing, full file reads on each query
 - **Mitigation**: Files are small (typically < 1MB), read once per request
 
-### 2. Windows-Native Paths
+### 2. Windows-Native Paths with Cross-Platform Support
 
-- **Why**: Beads protocol is Windows-focused, BeadBoard targets Windows developers
-- **Implementation**: All path operations use Windows normalization
-- **Impact**: Scanner and registry tests expect Windows paths (C:\, D:\, etc.)
+- **Why**: Beads protocol and typical users are Windows-focused, BeadBoard primarily targets Windows developers
+- **Implementation**: All path operations use Windows normalization for storage and display, while file I/O uses platform-native paths
+- **Cross-Platform**: Core functionality (reading, parsing, UI) works on Linux/macOS, though some features (scanner, registry) are Windows-specific
+- **Impact**: Scanner and registry tests expect Windows absolute paths (C:\, D:\, etc.) and will fail on non-Windows platforms
 
 ### 3. Server-Sent Events for Real-time
 
@@ -336,7 +337,11 @@ tests/
 npm test  # Runs all tests sequentially
 ```
 
-Note: Scanner tests expect Windows environment and will fail on Linux/macOS.
+**Platform Notes:**
+- Core tests (parser, kanban, graph, read-issues) pass on all platforms
+- Scanner tests (5 tests) require Windows environment and will fail on Linux/macOS
+  - These tests validate Windows absolute path requirements (C:\, D:\, etc.)
+  - Scanner module is intentionally Windows-specific for filesystem discovery
 
 ## Performance Considerations
 
