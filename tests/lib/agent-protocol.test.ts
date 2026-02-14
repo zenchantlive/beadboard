@@ -1,8 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { 
-  createProtocolEvent, 
-  type ProtocolEvent 
+  createProtocolEvent
 } from '../../src/lib/agent-protocol';
 
 test('createProtocolEvent generates a valid v1 envelope', () => {

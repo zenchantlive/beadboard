@@ -3,7 +3,6 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { showAgent, deriveLiveness } from './agent-registry';
-import type { AgentRecord } from './agent-registry';
 import type { AgentMessage } from './agent-mail';
 
 const MIN_TTL_MINUTES = 5;

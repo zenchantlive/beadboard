@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import { registerAgent, heartbeatAgent } from '../../src/lib/agent-registry';
+import { registerAgent } from '../../src/lib/agent-registry';
 import { reserveAgentScope } from '../../src/lib/agent-reservations';
 
 async function withTempUserProfile(run: () => Promise<void>): Promise<void> {

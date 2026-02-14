@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { readIssuesFromDisk } from '../../../lib/read-issues';
 import { activityEventBus } from '../../../lib/realtime';
-import { buildSessionTaskFeed, getCommunicationSummary } from '../../../lib/agent-sessions';
+import { buildSessionTaskFeed, getCommunicationSummary, getAgentLivenessMap } from '../../../lib/agent-sessions';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,8 +13,9 @@ export async function GET(request: Request): Promise<Response> {
     const issues = await readIssuesFromDisk({ projectRoot, preferBd: true });
     const activity = activityEventBus.getHistory(projectRoot);
     const communication = await getCommunicationSummary();
+    const livenessMap = await getAgentLivenessMap();
 
-    const feed = buildSessionTaskFeed(issues, activity, communication);
+    const feed = buildSessionTaskFeed(issues, activity, communication, livenessMap);
 
     return NextResponse.json({ ok: true, feed });
   } catch (error) {
