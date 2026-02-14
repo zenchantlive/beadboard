@@ -3,11 +3,30 @@ import { readIssuesFromDisk } from '../../../lib/read-issues';
 import { activityEventBus } from '../../../lib/realtime';
 import { buildSessionTaskFeed, getCommunicationSummary } from '../../../lib/agent-sessions';
 
+function isValidProjectRoot(root: string): boolean {
+  // Basic validation: path should not contain traversal patterns
+  // and should resolve to an absolute path
+  try {
+    const resolved = require('path').resolve(root);
+    return require('path').isAbsolute(resolved);
+  } catch {
+    return false;
+  }
+}
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
-  const projectRoot = url.searchParams.get('projectRoot') ?? process.cwd();
+  const projectRootParam = url.searchParams.get('projectRoot');
+  const projectRoot = projectRootParam ?? process.cwd();
+
+  if (projectRootParam && !isValidProjectRoot(projectRoot)) {
+    return NextResponse.json(
+      { ok: false, error: { classification: 'validation', message: 'Invalid projectRoot path' } },
+      { status: 400 }
+    );
+  }
 
   try {
     const issues = await readIssuesFromDisk({ projectRoot, preferBd: true });

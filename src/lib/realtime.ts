@@ -38,7 +38,7 @@ export class IssuesEventBus {
   private nextSubscriberId = 1;
 
   emit(projectRoot: string, changedPath?: string, kind: IssuesChangeKind = 'changed'): IssuesChangedEvent {
-    console.log(`[IssuesBus] Emitting event: ${kind} for ${projectRoot} (${changedPath})`);
+    console.log(`[IssuesBus] Emitting event: ${kind} for project (${changedPath ? path.basename(changedPath) : 'unknown'})`);
     const canonicalProjectRoot = canonicalizeWindowsPath(projectRoot);
     const projectKey = windowsPathKey(canonicalProjectRoot);
     const event: IssuesChangedEvent = {
@@ -94,6 +94,7 @@ export class ActivityEventBus {
   private readonly history: ActivityEvent[] = [];
   private readonly MAX_HISTORY = 100;
   private initialized = false;
+  private savePromise: Promise<void> | null = null;
 
   private nextSubscriberId = 1;
 
@@ -121,8 +122,22 @@ export class ActivityEventBus {
       this.history.pop();
     }
 
-    // Persist async
-    void saveActivityHistory(this.history);
+    // Persist async with deduplication - wait for any pending save to complete
+    const currentHistory = [...this.history];
+    const persist = async () => {
+      try {
+        await saveActivityHistory(currentHistory);
+      } catch (error) {
+        console.error('[ActivityEventBus] Failed to save history:', error);
+      }
+    };
+    
+    if (this.savePromise === null) {
+      this.savePromise = persist();
+    } else {
+      // Chain to existing promise to prevent concurrent writes
+      this.savePromise = this.savePromise.then(persist);
+    }
 
     for (const subscriber of this.subscribers.values()) {
       if (!subscriber.projectKey || subscriber.projectKey === projectKey) {

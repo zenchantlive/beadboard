@@ -98,6 +98,12 @@ function trimOrEmpty(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function isValidMessageId(value: string): boolean {
+  // Message IDs must be alphanumeric with underscores, hyphens, and colons
+  // This prevents path traversal attacks
+  return /^[a-zA-Z0-9_\-:]+$/.test(value);
+}
+
 function success<T>(command: MailCommandName, data: T): MailCommandResponse<T> {
   return {
     ok: true,
@@ -330,6 +336,10 @@ export async function readAgentMessage(
     return invalid(command, 'MESSAGE_NOT_FOUND', 'Message id is required.');
   }
 
+  if (!isValidMessageId(messageId)) {
+    return invalid(command, 'INVALID_MESSAGE_ID', 'Message id contains invalid characters.');
+  }
+
   try {
     const existing = await readMessageIndex(messageId);
     if (!existing) {
@@ -372,6 +382,10 @@ export async function ackAgentMessage(
 
   if (!messageId) {
     return invalid(command, 'MESSAGE_NOT_FOUND', 'Message id is required.');
+  }
+
+  if (!isValidMessageId(messageId)) {
+    return invalid(command, 'INVALID_MESSAGE_ID', 'Message id contains invalid characters.');
   }
 
   try {

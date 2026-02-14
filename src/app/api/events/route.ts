@@ -17,6 +17,8 @@ async function readLastTouchedVersion(filePath: string): Promise<number | null> 
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return null;
     }
+    // Log non-ENOENT errors but don't swallow them silently
+    console.error('[Events] Failed to read last-touched version:', error);
     return null;
   }
 }
