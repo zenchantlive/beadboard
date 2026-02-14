@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 import {
-    registerAgent, listAgents, showAgent, type AgentCommandResponse
+    registerAgent, listAgents, showAgent, heartbeatAgent, type AgentCommandResponse
 } from '../src/lib/agent-registry';
 import {
     sendAgentMessage, inboxAgentMessages, readAgentMessage, ackAgentMessage,
@@ -169,6 +169,13 @@ async function main() {
     try {
         let result: AnyCommandResponse;
 
+        // PASSIVE HEARTBEAT: If an agent is specified in any command, update their liveness.
+        // This provides observability without background workers.
+        const targetAgent = stringArg(values.agent) || stringArg(values.from) || stringArg(values.name);
+        if (targetAgent && command !== 'register') {
+            await heartbeatAgent({ agent: targetAgent }, deps).catch(() => {});
+        }
+
         switch (command) {
             // --- Identity ---
             case 'register':
@@ -178,6 +185,13 @@ async function main() {
                     role: stringArg(values.role)!,
                     display: stringArg(values.display),
                     forceUpdate: booleanArg(values['force-update']),
+                }, deps);
+                break;
+
+            case 'heartbeat':
+                if (!values.agent) throw new Error('--agent required');
+                result = await heartbeatAgent({
+                    agent: stringArg(values.agent)!,
                 }, deps);
                 break;
 
