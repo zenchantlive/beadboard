@@ -81,6 +81,11 @@ export function parseIssuesJsonl(text: string, options: ParseIssuesOptions = {})
         continue;
       }
 
+      // Exclude agent identities from standard mission lists
+      if (normalized.labels.includes('gt:agent')) {
+        continue;
+      }
+
       issues.push(normalized);
     } catch {
       // Skip malformed lines to keep parser resilient against partial writes.

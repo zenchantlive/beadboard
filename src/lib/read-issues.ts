@@ -105,7 +105,13 @@ async function readIssuesViaBd(options: ReadIssuesOptions, project: ReturnType<t
     return parsed
       .map((issue) => normalizeBdIssue(issue))
       .filter((issue): issue is BeadIssue => issue !== null)
-      .filter((issue) => (options.includeTombstones ?? false ? true : issue.status !== 'tombstone'))
+      .filter((issue) => {
+        // Exclude tombstones
+        if (issue.status === 'tombstone' && !options.includeTombstones) return false;
+        // Exclude agent identities from mission lists
+        if (issue.labels.includes('gt:agent')) return false;
+        return true;
+      })
       .map((issue) => ({
         ...issue,
         project,
