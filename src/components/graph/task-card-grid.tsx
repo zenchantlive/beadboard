@@ -18,10 +18,6 @@ interface TaskCardProps {
     issue: BeadIssue;
     /** Whether this card is the currently selected task. */
     selected: boolean;
-    /** Number of issues blocking this task. */
-    blockedBy: number;
-    /** Number of issues this task blocks. */
-    blocks: number;
     /** List of issues blocking this task. */
     blockers: BlockerDetail[];
     /** List of issues this task blocks. */
@@ -157,7 +153,7 @@ function statusBadge(status: BeadIssue['status'], isActionable: boolean, hasBloc
  * A single task card displaying the issue ID, title, priority, type, assignee,
  * and detailed blocker list (interactive).
  */
-function TaskCard({ issue, selected, blockers, blocking, isActionable, onSelect }: Omit<TaskCardProps, 'blockedBy' | 'blocks'>) {
+function TaskCard({ issue, selected, blockers, blocking, isActionable, onSelect }: TaskCardProps) {
     const hasBlockers = blockers.length > 0; // Note: blockers list only contains OPEN blockers (computed in page)
     const badge = statusBadge(issue.status, isActionable, hasBlockers);
     const projectName = (issue as BeadIssue & { project?: { name?: string } }).project?.name ?? null;
@@ -377,8 +373,6 @@ export function TaskCardGrid({ tasks, selectedId, signalById, blockerDetailsMap,
                     key={task.id}
                     issue={task}
                     selected={selectedId === task.id}
-                    blockedBy={signalById.get(task.id)?.blockedBy ?? 0}
-                    blocks={signalById.get(task.id)?.blocks ?? 0}
                     blockers={blockerDetailsMap?.get(task.id) ?? []}
                     blocking={blocksDetailsMap?.get(task.id) ?? []}
                     isActionable={actionableIds?.has(task.id) ?? false}
