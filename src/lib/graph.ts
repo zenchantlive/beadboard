@@ -100,7 +100,12 @@ export function buildGraphModel(issues: BeadIssue[], options: BuildGraphModelOpt
         continue;
       }
 
-      const edgeKey = `${issue.id}::${dependency.type}::${dependency.target}`;
+      // Beads "blocks" dependency means: issue depends on target, so target blocks issue.
+      // Normalize graph direction to blocker -> blocked for all blocker analytics and UI signals.
+      const source = dependency.type === 'blocks' ? dependency.target : issue.id;
+      const target = dependency.type === 'blocks' ? issue.id : dependency.target;
+
+      const edgeKey = `${source}::${dependency.type}::${target}`;
       if (edgeKeys.has(edgeKey)) {
         diagnostics.droppedDuplicates += 1;
         continue;
@@ -108,8 +113,8 @@ export function buildGraphModel(issues: BeadIssue[], options: BuildGraphModelOpt
 
       edgeKeys.add(edgeKey);
       edges.push({
-        source: issue.id,
-        target: dependency.target,
+        source,
+        target,
         type: dependency.type,
       });
     }

@@ -18,10 +18,6 @@ interface TaskCardProps {
     issue: BeadIssue;
     /** Whether this card is the currently selected task. */
     selected: boolean;
-    /** Number of issues blocking this task. */
-    blockedBy: number;
-    /** Number of issues this task blocks. */
-    blocks: number;
     /** List of issues blocking this task. */
     blockers: BlockerDetail[];
     /** List of issues this task blocks. */
@@ -38,8 +34,6 @@ interface TaskCardGridProps {
     tasks: BeadIssue[];
     /** ID of the currently selected task, or null. */
     selectedId: string | null;
-    /** Map of issue ID to blocker/blocks counts. */
-    signalById: Map<string, { blockedBy: number; blocks: number }>;
     /** Map of issue ID to detailed blocker info. */
     blockerDetailsMap: Map<string, BlockerDetail[]>;
     /** Map of issue ID to detailed downstream blocking info. */
@@ -157,7 +151,7 @@ function statusBadge(status: BeadIssue['status'], isActionable: boolean, hasBloc
  * A single task card displaying the issue ID, title, priority, type, assignee,
  * and detailed blocker list (interactive).
  */
-function TaskCard({ issue, selected, blockedBy, blocks, blockers, blocking, isActionable, onSelect }: TaskCardProps) {
+function TaskCard({ issue, selected, blockers, blocking, isActionable, onSelect }: TaskCardProps) {
     const hasBlockers = blockers.length > 0; // Note: blockers list only contains OPEN blockers (computed in page)
     const badge = statusBadge(issue.status, isActionable, hasBlockers);
     const projectName = (issue as BeadIssue & { project?: { name?: string } }).project?.name ?? null;
@@ -360,7 +354,7 @@ function TaskCard({ issue, selected, blockedBy, blocks, blockers, blocking, isAc
  * Renders a responsive grid of task cards.
  * Uses auto-fill with minmax to prevent cards from being too narrow to read.
  */
-export function TaskCardGrid({ tasks, selectedId, signalById, blockerDetailsMap, blocksDetailsMap, actionableIds, onSelect }: TaskCardGridProps) {
+export function TaskCardGrid({ tasks, selectedId, blockerDetailsMap, blocksDetailsMap, actionableIds, onSelect }: TaskCardGridProps) {
     // Show an empty state when no tasks exist in the selected epic
     if (tasks.length === 0) {
         return (
@@ -377,8 +371,6 @@ export function TaskCardGrid({ tasks, selectedId, signalById, blockerDetailsMap,
                     key={task.id}
                     issue={task}
                     selected={selectedId === task.id}
-                    blockedBy={signalById.get(task.id)?.blockedBy ?? 0}
-                    blocks={signalById.get(task.id)?.blocks ?? 0}
                     blockers={blockerDetailsMap?.get(task.id) ?? []}
                     blocking={blocksDetailsMap?.get(task.id) ?? []}
                     isActionable={actionableIds?.has(task.id) ?? false}

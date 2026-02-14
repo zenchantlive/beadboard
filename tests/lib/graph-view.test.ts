@@ -43,11 +43,11 @@ test('buildGraphViewModel limits visible nodes by hop depth around focus', () =>
 
   assert.deepEqual(
     depth1.nodes.map((x) => x.id),
-    ['bb-2', 'bb-1', 'bb-3'],
+    ['bb-2', 'bb-3', 'bb-1'],
   );
   assert.deepEqual(
     depth2.nodes.map((x) => x.id),
-    ['bb-2', 'bb-1', 'bb-3', 'bb-4'],
+    ['bb-2', 'bb-4', 'bb-3', 'bb-1'],
   );
 });
 
@@ -81,7 +81,7 @@ test('buildGraphViewModel keeps deterministic edge ordering', () => {
 
   assert.deepEqual(
     view.edges.map((x) => `${x.source}|${x.type}|${x.target}`),
-    ['bb-2|blocks|bb-3', 'bb-2|parent|bb-1'],
+    ['bb-2|parent|bb-1', 'bb-3|blocks|bb-2'],
   );
   assert.equal(view.nodes.every((x) => Number.isFinite(x.position.x) && Number.isFinite(x.position.y)), true);
 });
@@ -96,8 +96,8 @@ test('buildPathWorkspace returns upstream/downstream levels around focus', () =>
   const workspace = buildPathWorkspace(model, { focusId: 'bb-2', depth: 2, hideClosed: false });
 
   assert.equal(workspace.focus?.id, 'bb-2');
-  assert.deepEqual(workspace.blockers.map((level) => level.map((node) => node.id)), [['bb-1']]);
-  assert.deepEqual(workspace.dependents.map((level) => level.map((node) => node.id)), [['bb-3']]);
+  assert.deepEqual(workspace.blockers.map((level) => level.map((node) => node.id)), [['bb-3']]);
+  assert.deepEqual(workspace.dependents.map((level) => level.map((node) => node.id)), [['bb-1']]);
 });
 
 test('buildPathWorkspace hides closed nodes when requested', () => {
@@ -122,15 +122,15 @@ test('buildPathWorkspace full depth keeps deterministic blocker and dependent le
 
   const workspace = buildPathWorkspace(model, { focusId: 'bb-3', depth: 'full', hideClosed: false });
 
-  assert.deepEqual(workspace.blockers.map((level) => level.map((node) => node.id)), [['bb-2'], ['bb-1']]);
-  assert.deepEqual(workspace.dependents.map((level) => level.map((node) => node.id)), [['bb-4'], ['bb-5']]);
+  assert.deepEqual(workspace.blockers.map((level) => level.map((node) => node.id)), [['bb-4'], ['bb-5']]);
+  assert.deepEqual(workspace.dependents.map((level) => level.map((node) => node.id)), [['bb-2'], ['bb-1']]);
 });
 
 test('analyzeBlockedChain returns blocker counts, first actionable blocker, and chain edges', () => {
   const model = buildGraphModel([
-    issue({ id: 'bb-1', status: 'open', dependencies: [{ type: 'blocks', target: 'bb-2' }] }),
-    issue({ id: 'bb-2', status: 'in_progress', dependencies: [{ type: 'blocks', target: 'bb-3' }] }),
-    issue({ id: 'bb-3', status: 'blocked' }),
+    issue({ id: 'bb-1', status: 'open' }),
+    issue({ id: 'bb-2', status: 'in_progress', dependencies: [{ type: 'blocks', target: 'bb-1' }] }),
+    issue({ id: 'bb-3', status: 'blocked', dependencies: [{ type: 'blocks', target: 'bb-2' }] }),
   ]);
 
   const summary = analyzeBlockedChain(model, { focusId: 'bb-3' });
@@ -155,7 +155,7 @@ test('detectDependencyCycles reports cycle nodes and edges for blocks relations'
 
   assert.equal(anomaly.cycles.length, 1);
   assert.deepEqual(anomaly.cycleNodeIds, ['bb-1', 'bb-2', 'bb-3']);
-  assert.deepEqual(anomaly.cycleEdgeIds, ['bb-1:blocks:bb-2', 'bb-2:blocks:bb-3', 'bb-3:blocks:bb-1']);
+  assert.deepEqual(anomaly.cycleEdgeIds, ['bb-1:blocks:bb-3', 'bb-2:blocks:bb-1', 'bb-3:blocks:bb-2']);
 });
 
 test('detectDependencyCycles does not mark non-cycle predecessor as cyclic', () => {
@@ -170,5 +170,5 @@ test('detectDependencyCycles does not mark non-cycle predecessor as cyclic', () 
 
   assert.deepEqual(anomaly.cycleNodeIds, ['bb-a', 'bb-b', 'bb-c']);
   assert.equal(anomaly.cycleNodeIds.includes('bb-x'), false);
-  assert.equal(anomaly.cycleEdgeIds.includes('bb-x:blocks:bb-a'), false);
+  assert.equal(anomaly.cycleEdgeIds.includes('bb-a:blocks:bb-x'), false);
 });

@@ -25,6 +25,7 @@ export default async function GraphPage({ searchParams }: GraphPageProps) {
     mode: scope.mode,
     selected: scope.selected,
     scopeOptions: scope.options,
+    preferBd: true,
   });
   return (
     <DependencyGraphPage

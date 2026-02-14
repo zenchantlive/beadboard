@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import type { KanbanFilterOptions, KanbanStatus } from '../../lib/kanban';
 import {
@@ -24,6 +24,8 @@ import { KanbanDetail } from './kanban-detail';
 import { ProjectScopeControls } from '../shared/project-scope-controls';
 import { WorkspaceHero } from '../shared/workspace-hero';
 
+import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
+
 interface KanbanPageProps {
   issues: BeadIssue[];
   projectRoot: string;
@@ -33,10 +35,6 @@ interface KanbanPageProps {
 }
 
 type MutationOperation = 'create' | 'update' | 'close' | 'reopen' | 'comment';
-
-interface MutationErrorResponse {
-  error?: { message?: string };
-}
 
 async function postMutation(operation: MutationOperation, body: Record<string, unknown>) {
   const response = await fetch(`/api/beads/${operation}`, {
@@ -51,25 +49,14 @@ async function postMutation(operation: MutationOperation, body: Record<string, u
   }
 }
 
-async function fetchIssues(projectRoot: string): Promise<BeadIssue[]> {
-  const response = await fetch(`/api/beads/read?projectRoot=${encodeURIComponent(projectRoot)}`, {
-    cache: 'no-store',
-  });
-  const payload = (await response.json()) as { ok: boolean; issues?: BeadIssue[] } & MutationErrorResponse;
-  if (!response.ok || !payload.ok || !payload.issues) {
-    throw new Error(payload.error?.message ?? 'Failed to refresh issues');
-  }
-  return payload.issues;
-}
-
 export function KanbanPage({
-  issues,
+  issues: initialIssues,
   projectRoot,
   projectScopeKey,
   projectScopeOptions,
   projectScopeMode,
 }: KanbanPageProps) {
-  const [localIssues, setLocalIssues] = useState<BeadIssue[]>(issues);
+  const { issues: localIssues, refresh: refreshIssues, updateLocal: setLocalIssues } = useBeadsSubscription(initialIssues, projectRoot);
   const [filters, setFilters] = useState<KanbanFilterOptions>({
     query: '',
     type: '',
@@ -83,11 +70,6 @@ export function KanbanPage({
   const [nextActionableFeedback, setNextActionableFeedback] = useState<string | null>(null);
   const [pendingIssueIds, setPendingIssueIds] = useState<Set<string>>(new Set());
   const [mutationError, setMutationError] = useState<string | null>(null);
-  const refreshInFlightRef = useRef(false);
-
-  useEffect(() => {
-    setLocalIssues(issues);
-  }, [issues]);
 
   const filteredIssues = useMemo(() => filterKanbanIssues(localIssues, filters), [localIssues, filters]);
   const columns = useMemo(() => buildKanbanColumns(filteredIssues), [filteredIssues]);
@@ -170,41 +152,6 @@ export function KanbanPage({
     selectIssueWithDetailBehavior(nextActionableIssue.id, 'ready');
   }, [nextActionableIssue, selectIssueWithDetailBehavior]);
 
-  const refreshIssues = useCallback(async (options: { silent?: boolean } = {}) => {
-    if (refreshInFlightRef.current) {
-      return;
-    }
-
-    refreshInFlightRef.current = true;
-    try {
-      const reconciled = await fetchIssues(projectRoot);
-      setLocalIssues(reconciled);
-    } catch (error) {
-      if (!options.silent) {
-        throw error;
-      }
-    } finally {
-      refreshInFlightRef.current = false;
-    }
-  }, [projectRoot]);
-
-  useEffect(() => {
-    if (!allowMutations) {
-      return;
-    }
-    const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
-    const onIssues = () => {
-      void refreshIssues({ silent: true });
-    };
-
-    source.addEventListener('issues', onIssues as EventListener);
-
-    return () => {
-      source.removeEventListener('issues', onIssues as EventListener);
-      source.close();
-    };
-  }, [allowMutations, projectRoot, refreshIssues]);
-
   const mutateStatus = async (issue: BeadIssue, targetStatus: KanbanStatus) => {
     if (!allowMutations) {
       return;
@@ -282,6 +229,8 @@ export function KanbanPage({
       <KanbanControls
         filters={filters}
         stats={stats}
+        epics={localIssues.filter((issue) => issue.issue_type === 'epic')}
+        issues={localIssues}
         onFiltersChange={setFilters}
         onNextActionable={handleNextActionable}
         nextActionableFeedback={nextActionableFeedback}

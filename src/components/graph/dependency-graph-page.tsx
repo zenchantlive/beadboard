@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   MarkerType,
@@ -15,7 +15,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
 
-import { EpicChipStrip } from './epic-chip-strip';
+import { EpicChipStrip } from '../shared/epic-chip-strip';
 import { WorkflowTabs, type WorkflowTab } from './workflow-tabs';
 import { TaskCardGrid, type BlockerDetail } from './task-card-grid';
 import { TaskDetailsDrawer } from './task-details-drawer';
@@ -25,16 +25,18 @@ import { GraphSection } from './graph-section';
 import { ProjectScopeControls } from '../shared/project-scope-controls';
 import { WorkspaceHero } from '../shared/workspace-hero';
 
-import { buildGraphModel, type GraphNode } from '../../lib/graph';
+import { buildGraphModel } from '../../lib/graph';
 import {
   buildPathWorkspace,
   type GraphHopDepth,
   analyzeBlockedChain,
   detectDependencyCycles,
 } from '../../lib/graph-view';
-import { buildBlockedByTree, type BlockedTreeNode } from '../../lib/kanban';
+import { buildBlockedByTree } from '../../lib/kanban';
 import { type BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
+
+import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
 
 /** Props for the DependencyGraphPage component. */
 interface DependencyGraphPageProps {
@@ -110,13 +112,13 @@ function layoutDagre(nodes: Node<GraphNodeData>[], edges: Edge[]): Node<GraphNod
  * - Dependencies tab: flow strip + ReactFlow graph
  */
 export function DependencyGraphPage({
-  issues,
+  issues: initialIssues,
   projectRoot,
   projectScopeKey,
   projectScopeOptions,
   projectScopeMode,
 }: DependencyGraphPageProps) {
-  const router = useRouter();
+  const { issues, refresh: refreshIssues } = useBeadsSubscription(initialIssues, projectRoot);
   const searchParams = useSearchParams();
   // --- State ---
   const [selectedEpicId, setSelectedEpicId] = useState<string | null>(null);
@@ -553,14 +555,14 @@ export function DependencyGraphPage({
         if (dep.type !== 'blocks') continue;
         // Avoid self-loops
         if (issue.id === dep.target) continue;
-        const edgeId = `${issue.id}:blocks:${dep.target}`;
+        const edgeId = `${dep.target}:blocks:${issue.id}`;
 
         const linkedToSelection = selectedId ? issue.id === selectedId || dep.target === selectedId : false;
 
         graphEdges.push({
           id: edgeId,
-          source: issue.id,
-          target: dep.target,
+          source: dep.target,
+          target: issue.id,
           className: linkedToSelection ? 'workflow-edge-selected' : 'workflow-edge-muted',
           animated: linkedToSelection,
           label: 'BLOCKS',
@@ -599,8 +601,7 @@ export function DependencyGraphPage({
 
   const nodeTypes: NodeTypes = useMemo(
     () => ({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      flowNode: GraphNodeCard as any,
+      flowNode: GraphNodeCard as NodeTypes['flowNode'],
     }),
     [],
   );
@@ -847,7 +848,6 @@ export function DependencyGraphPage({
                 <TaskCardGrid
                   tasks={sortedEpicTasks}
                   selectedId={selectedId}
-                  signalById={signalById}
                   blockerDetailsMap={blockerDetailsMap}
                   blocksDetailsMap={blocksDetailsMap}
                   actionableIds={actionableNodeIds}
@@ -866,7 +866,6 @@ export function DependencyGraphPage({
             <TaskCardGrid
               tasks={sortedEpicTasks}
               selectedId={selectedId}
-              signalById={signalById}
               blockerDetailsMap={blockerDetailsMap}
               blocksDetailsMap={blocksDetailsMap}
               actionableIds={actionableNodeIds}
@@ -925,7 +924,7 @@ export function DependencyGraphPage({
         onClose={handleDrawerClose}
         projectRoot={projectRoot}
         editable={projectScopeMode === 'single'}
-        onIssueUpdated={() => router.refresh()}
+        onIssueUpdated={() => refreshIssues()}
         blockedTree={selectedIssue ? buildBlockedByTree(issues, selectedIssue.id) : undefined}
         outgoingBlocks={selectedId ? blocksDetailsMap.get(selectedId) ?? [] : []}
         onSelectBlockedIssue={handleTaskSelect}

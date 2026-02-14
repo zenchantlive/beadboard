@@ -1,26 +1,32 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import { canonicalizeWindowsPath } from '../../../lib/pathing';
-import { issuesEventBus, SSE_CONNECTED_FRAME, SSE_HEARTBEAT_FRAME, toSseFrame } from '../../../lib/realtime';
+import { issuesEventBus, activityEventBus, SSE_CONNECTED_FRAME, SSE_HEARTBEAT_FRAME, toSseFrame, toActivitySseFrame } from '../../../lib/realtime';
 import { getIssuesWatchManager } from '../../../lib/watcher';
 
 const encoder = new TextEncoder();
 const HEARTBEAT_MS = 15_000;
+const LAST_TOUCHED_POLL_MS = 1_000;
+
+async function readLastTouchedVersion(filePath: string): Promise<number | null> {
+  try {
+    const stat = await fs.stat(filePath);
+    return stat.mtimeMs;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return null;
+    }
+    // Log non-ENOENT errors but don't swallow them silently
+    console.error('[Events] Failed to read last-touched version:', error);
+    return null;
+  }
+}
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const projectRootSearchParam = url.searchParams.get('projectRoot');
-  if (!projectRootSearchParam) {
-    return Response.json(
-      {
-        ok: false,
-        error: {
-          classification: 'bad_args',
-          message: 'The `projectRoot` query parameter is required.',
-        },
-      },
-      { status: 400 },
-    );
-  }
-  const projectRoot = canonicalizeWindowsPath(projectRootSearchParam);
+  const projectRoot = canonicalizeWindowsPath(projectRootSearchParam || process.cwd());
 
   try {
     getIssuesWatchManager().startWatch(projectRoot);
@@ -51,9 +57,16 @@ export async function GET(request: Request): Promise<Response> {
 
       write(SSE_CONNECTED_FRAME);
 
-      const unsubscribe = issuesEventBus.subscribe(
+      const unsubscribeIssues = issuesEventBus.subscribe(
         (event) => {
           write(toSseFrame(event));
+        },
+        { projectRoot },
+      );
+
+      const unsubscribeActivity = activityEventBus.subscribe(
+        (event) => {
+          write(toActivitySseFrame(event));
         },
         { projectRoot },
       );
@@ -61,6 +74,37 @@ export async function GET(request: Request): Promise<Response> {
       const heartbeat = setInterval(() => {
         write(SSE_HEARTBEAT_FRAME);
       }, HEARTBEAT_MS);
+      const lastTouchedPath = path.join(projectRoot, '.beads', 'last-touched');
+      let lastTouchedVersion: number | null = null;
+
+      let isPolling = false;
+      const pollLastTouched = async () => {
+        if (isPolling) {
+          return;
+        }
+        isPolling = true;
+        try {
+          const nextVersion = await readLastTouchedVersion(lastTouchedPath);
+          if (nextVersion === null) {
+            return;
+          }
+          if (lastTouchedVersion === null) {
+            lastTouchedVersion = nextVersion;
+            return;
+          }
+          if (nextVersion !== lastTouchedVersion) {
+            lastTouchedVersion = nextVersion;
+            write(toSseFrame(issuesEventBus.emit(projectRoot, lastTouchedPath, 'changed')));
+          }
+        } finally {
+          isPolling = false;
+        }
+      };
+
+      const touchedPoll = setInterval(() => {
+        void pollLastTouched();
+      }, LAST_TOUCHED_POLL_MS);
+      void pollLastTouched();
 
       const close = () => {
         if (closed) {
@@ -69,7 +113,9 @@ export async function GET(request: Request): Promise<Response> {
 
         closed = true;
         clearInterval(heartbeat);
-        unsubscribe();
+        clearInterval(touchedPoll);
+        unsubscribeIssues();
+        unsubscribeActivity();
         request.signal.removeEventListener('abort', close);
         try {
           controller.close();

@@ -51,11 +51,13 @@ export async function readIssuesForScope(options: {
   mode: 'single' | 'aggregate';
   selected: ProjectScopeOption;
   scopeOptions: ProjectScopeOption[];
+  preferBd?: boolean;
 }): Promise<BeadIssueWithProject[]> {
   if (options.mode === 'single') {
     return readIssuesFromDisk({
       projectRoot: options.selected.root,
       projectSource: options.selected.source,
+      preferBd: options.preferBd,
     });
   }
 
@@ -64,6 +66,7 @@ export async function readIssuesForScope(options: {
       const issues = await readIssuesFromDisk({
         projectRoot: project.root,
         projectSource: project.source,
+        preferBd: options.preferBd,
       });
       return scopeIssuesForProject(project, issues);
     }),
