@@ -34,8 +34,6 @@ interface TaskCardGridProps {
     tasks: BeadIssue[];
     /** ID of the currently selected task, or null. */
     selectedId: string | null;
-    /** Map of issue ID to blocker/blocks counts. */
-    signalById: Map<string, { blockedBy: number; blocks: number }>;
     /** Map of issue ID to detailed blocker info. */
     blockerDetailsMap: Map<string, BlockerDetail[]>;
     /** Map of issue ID to detailed downstream blocking info. */
@@ -356,7 +354,7 @@ function TaskCard({ issue, selected, blockers, blocking, isActionable, onSelect 
  * Renders a responsive grid of task cards.
  * Uses auto-fill with minmax to prevent cards from being too narrow to read.
  */
-export function TaskCardGrid({ tasks, selectedId, signalById, blockerDetailsMap, blocksDetailsMap, actionableIds, onSelect }: TaskCardGridProps) {
+export function TaskCardGrid({ tasks, selectedId, blockerDetailsMap, blocksDetailsMap, actionableIds, onSelect }: TaskCardGridProps) {
     // Show an empty state when no tasks exist in the selected epic
     if (tasks.length === 0) {
         return (

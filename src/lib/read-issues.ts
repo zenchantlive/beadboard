@@ -1,7 +1,6 @@
 import path from 'node:path';
 
 import { parseIssuesJsonl } from './parser';
-import { canonicalizeWindowsPath } from './pathing';
 import { readTextFileWithRetry } from './read-text-retry';
 import { buildProjectContext } from './project-context';
 import type { BeadIssueWithProject, ProjectSource } from './types';

@@ -60,6 +60,20 @@ function normalizeIssue(raw: ParseableBeadIssue): BeadIssue {
   };
 }
 
+/**
+ * Parses a JSONL (JSON Lines) string containing Bead issues.
+ * 
+ * @param text - The JSONL text to parse, with one JSON object per line
+ * @param options - Parse options
+ * @param options.includeTombstones - Whether to include tombstoned issues (default: false)
+ * @returns Array of parsed and normalized BeadIssue objects
+ * 
+ * @remarks
+ * - Skips blank lines and malformed JSON
+ * - Applies default values for missing optional fields
+ * - Normalizes dependencies to use `target` field
+ * - Filters out tombstoned issues by default
+ */
 export function parseIssuesJsonl(text: string, options: ParseIssuesOptions = {}): BeadIssue[] {
   const includeTombstones = options.includeTombstones ?? false;
   const issues: BeadIssue[] = [];

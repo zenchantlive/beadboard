@@ -846,7 +846,6 @@ export function DependencyGraphPage({
                 <TaskCardGrid
                   tasks={sortedEpicTasks}
                   selectedId={selectedId}
-                  signalById={signalById}
                   blockerDetailsMap={blockerDetailsMap}
                   blocksDetailsMap={blocksDetailsMap}
                   actionableIds={actionableNodeIds}
@@ -865,7 +864,6 @@ export function DependencyGraphPage({
             <TaskCardGrid
               tasks={sortedEpicTasks}
               selectedId={selectedId}
-              signalById={signalById}
               blockerDetailsMap={blockerDetailsMap}
               blocksDetailsMap={blocksDetailsMap}
               actionableIds={actionableNodeIds}

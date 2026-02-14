@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { readIssuesFromDisk, resolveIssuesJsonlPath, resolveIssuesJsonlPathCandidates } from '../../src/lib/read-issues';
-import { canonicalizeWindowsPath, sameWindowsPath, toDisplayPath, windowsPathKey } from '../../src/lib/pathing';
+import { canonicalizeWindowsPath, toDisplayPath, windowsPathKey } from '../../src/lib/pathing';
 
 test('resolveIssuesJsonlPath appends .beads/issues.jsonl using windows-safe pathing', () => {
   const resolved = resolveIssuesJsonlPath('C:/Repo/Project');
