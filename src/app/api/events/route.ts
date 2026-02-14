@@ -96,6 +96,10 @@ export async function GET(request: Request): Promise<Response> {
             lastTouchedVersion = nextVersion;
             write(toSseFrame(issuesEventBus.emit(projectRoot, lastTouchedPath, 'changed')));
           }
+        } finally {
+          isPolling = false;
+        }
+      };
 
       const touchedPoll = setInterval(() => {
         void pollLastTouched();

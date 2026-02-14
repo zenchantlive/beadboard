@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import path from 'node:path';
 import { readIssuesFromDisk } from '../../../lib/read-issues';
 import { activityEventBus } from '../../../lib/realtime';
 import { buildSessionTaskFeed, getCommunicationSummary } from '../../../lib/agent-sessions';
@@ -7,8 +8,8 @@ function isValidProjectRoot(root: string): boolean {
   // Basic validation: path should not contain traversal patterns
   // and should resolve to an absolute path
   try {
-    const resolved = require('path').resolve(root);
-    return require('path').isAbsolute(resolved);
+    const resolved = path.resolve(root);
+    return path.isAbsolute(resolved);
   } catch {
     return false;
   }
@@ -42,8 +43,8 @@ export async function GET(request: Request): Promise<Response> {
       {
         ok: false,
         error: {
-          classification: 'unknown',
-          message: error instanceof Error ? error.message : 'Failed to load session feed.',
+          classification: 'internal_error',
+          message: 'An internal error occurred while loading the session feed.',
         },
       },
       { status: 500 },

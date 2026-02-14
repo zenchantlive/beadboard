@@ -27,12 +27,13 @@ export async function GET(request: Request): Promise<Response> {
     const issues = await readIssuesFromDisk({ projectRoot, preferBd: true });
     return NextResponse.json({ ok: true, issues });
   } catch (error) {
+    console.error('[API/BeadsRead] Failed to read issues:', error);
     return NextResponse.json(
       {
         ok: false,
         error: {
-          classification: 'unknown',
-          message: error instanceof Error ? error.message : 'Failed to read issues.',
+          classification: 'internal_error',
+          message: 'An internal error occurred while reading issues.',
         },
       },
       { status: 500 },

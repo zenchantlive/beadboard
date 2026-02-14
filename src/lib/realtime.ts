@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { canonicalizeWindowsPath, windowsPathKey } from './pathing';
 import type { ActivityEvent } from './activity';
 

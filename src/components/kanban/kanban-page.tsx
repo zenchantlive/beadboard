@@ -230,6 +230,7 @@ export function KanbanPage({
         filters={filters}
         stats={stats}
         epics={localIssues.filter((issue) => issue.issue_type === 'epic')}
+        issues={localIssues}
         onFiltersChange={setFilters}
         onNextActionable={handleNextActionable}
         nextActionableFeedback={nextActionableFeedback}

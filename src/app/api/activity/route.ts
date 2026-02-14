@@ -1,9 +1,11 @@
+import { NextResponse } from 'next/server';
+import path from 'node:path';
 import { activityEventBus } from '../../../lib/realtime';
 
 function isValidProjectRoot(root: string): boolean {
   try {
-    const resolved = require('path').resolve(root);
-    return require('path').isAbsolute(resolved);
+    const resolved = path.resolve(root);
+    return path.isAbsolute(resolved);
   } catch {
     return false;
   }
