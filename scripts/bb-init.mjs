@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 
 /**
- * bb-init.mjs - Agent Session Bootstrapper (Passive Version)
+ * bb-init.mjs - Agent Session Bootstrapper (Lease-Based)
  * 
  * Part of Operative Protocol v1 (bb-u6f.6.3)
  * 
  * Responsibility:
  * 1. Resolve bb.ps1 path.
  * 2. Identify agent (adopt or register).
+ * 3. Start the initial activity lease.
+ * 
+ * Note: No background processes are spawned. Liveness is maintained
+ * via passive side-effects of CLI commands (Activity-based model).
  */
 
 import { parseArgs } from 'node:util';
@@ -102,15 +106,15 @@ async function main() {
       const role = values.role || 'agent';
       execSync(`${bbExec} agent register --name ${agentId} --role ${role} --json`, { stdio: 'ignore' });
     } else {
-      // For adoption or auto, we just do a heartbeat to show we are alive
-      execSync(`${bbExec} agent heartbeat --agent ${agentId} --json`, { stdio: 'ignore' });
+      // Start/Extend the lease to show we are now active
+      execSync(`${bbExec} agent activity-lease --agent ${agentId} --json`, { stdio: 'ignore' });
     }
 
     log({
       ok: true,
       agent_id: agentId,
       mode,
-      heartbeat: { status: 'passive', note: 'Heartbeat managed via passive command side-effects' },
+      lease: { status: 'active', note: 'Activity lease started. Liveness maintained via real work.' },
       timestamp: new Date().toISOString()
     });
 

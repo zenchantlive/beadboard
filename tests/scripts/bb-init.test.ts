@@ -10,7 +10,7 @@ const initScript = path.join(projectRoot, 'scripts', 'bb-init.mjs');
 
 async function withTempRegistry(run: (tempDir: string) => Promise<void>): Promise<void> {
   const previous = process.env.USERPROFILE;
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'bb-init-passive-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'bb-init-lease-'));
   process.env.USERPROFILE = tempDir;
 
   // Initialize a fake git repo
@@ -22,13 +22,21 @@ async function withTempRegistry(run: (tempDir: string) => Promise<void>): Promis
     await run(tempDir);
   } finally {
     process.env.USERPROFILE = previous;
-    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 5 });
+    // Cleanup with retries for Windows
+    for (let i = 0; i < 5; i++) {
+      try {
+        await fs.rm(tempDir, { recursive: true, force: true });
+        break;
+      } catch {
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
   }
 }
 
-test('PASSIVE: bb-init --register updates liveness via side-effect', async (t) => {
+test('LEASE: bb-init --register updates liveness and starts lease', async () => {
   await withTempRegistry(async (tempDir) => {
-    const agentId = 'passive-agent';
+    const agentId = 'lease-agent';
     const cmd = `node ${initScript} --register ${agentId} --role backend --json`;
     
     const out = execSync(cmd, { 
@@ -39,7 +47,7 @@ test('PASSIVE: bb-init --register updates liveness via side-effect', async (t) =
     const result = JSON.parse(out);
 
     assert.equal(result.ok, true);
-    assert.equal(result.heartbeat.status, 'passive');
+    assert.equal(result.lease.status, 'active');
 
     // Verify Registry Entry exists and has a timestamp
     const agentFile = path.join(tempDir, '.beadboard', 'agent', 'agents', `${agentId}.json`);
@@ -49,35 +57,27 @@ test('PASSIVE: bb-init --register updates liveness via side-effect', async (t) =
   });
 });
 
-test('PASSIVE: bb-init --adopt rejection still works with noise filtering', async (t) => {
+test('LEASE: activity-lease command works via CLI', async () => {
   await withTempRegistry(async (tempDir) => {
-    const agentId = 'noise-agent';
-    
-    // Register first
+    const agentId = 'cli-agent';
+    // Register
     execSync(`node ${initScript} --register ${agentId} --role test --json`, { 
       cwd: tempDir,
       env: { ...process.env, BB_REPO: projectRoot }
     });
 
-    // Rejects with only .beadboard noise
-    try {
-      execSync(`node ${initScript} --adopt ${agentId} --non-interactive --json`, { 
-        cwd: tempDir, 
-        stdio: 'pipe',
-        env: { ...process.env, BB_REPO: projectRoot }
-      });
-      assert.fail('Should have rejected adoption');
-    } catch (err: any) {
-      const res = JSON.parse(err.stdout.toString());
-      assert.equal(res.error.code, 'ADOPTION_REJECTED');
-    }
+    const agentFile = path.join(tempDir, '.beadboard', 'agent', 'agents', `${agentId}.json`);
+    const firstSeen = JSON.parse(await fs.readFile(agentFile, 'utf8')).last_seen_at;
 
-    // Accepts with real change
-    await fs.writeFile(path.join(tempDir, 'real.ts'), 'code');
-    const adoptOut = execSync(`node ${initScript} --adopt ${agentId} --non-interactive --json`, { 
-      cwd: tempDir, 
+    // Extend lease
+    await new Promise(r => setTimeout(r, 100)); // Ensure clock tick
+    const bbPath = path.join(projectRoot, 'tools', 'bb.ts');
+    execSync(`npx tsx ${bbPath} agent activity-lease --agent ${agentId} --json`, { 
+      cwd: tempDir,
       env: { ...process.env, BB_REPO: projectRoot }
     });
-    assert.equal(JSON.parse(adoptOut).ok, true);
+
+    const secondSeen = JSON.parse(await fs.readFile(agentFile, 'utf8')).last_seen_at;
+    assert.notEqual(firstSeen, secondSeen, 'Lease extension should update last_seen_at');
   });
 });

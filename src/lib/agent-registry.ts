@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const AGENT_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-export type AgentCommandName = 'agent register' | 'agent list' | 'agent show' | 'agent heartbeat';
+export type AgentCommandName = 'agent register' | 'agent list' | 'agent show' | 'agent activity-lease';
 
 export interface AgentCommandError {
   code: string;
@@ -24,7 +24,7 @@ export interface AgentRecord {
   role: string;
   status: string;
   created_at: string;
-  last_seen_at: string;
+  last_seen_at: string; // Used as the base for the Activity Lease
   version: number;
 }
 
@@ -48,7 +48,7 @@ export interface ShowAgentInput {
   agent: string;
 }
 
-export interface HeartbeatAgentInput {
+export interface ActivityLeaseInput {
   agent: string;
 }
 
@@ -280,13 +280,14 @@ export function deriveLiveness(lastSeenAt: string, now: Date = new Date(), stale
 }
 
 /**
- * Updates the last_seen_at timestamp for a registered agent.
+ * Extends the activity lease (last_seen_at timestamp) for a registered agent.
+ * Equivalent to a "parking permit" extension based on real work.
  */
-export async function heartbeatAgent(
-  input: HeartbeatAgentInput,
+export async function extendActivityLease(
+  input: ActivityLeaseInput,
   deps: Partial<RegisterAgentDeps> = {},
 ): Promise<AgentCommandResponse<AgentRecord>> {
-  const command: AgentCommandName = 'agent heartbeat';
+  const command: AgentCommandName = 'agent activity-lease';
   const agentId = trimOrEmpty(input.agent);
 
   const agentIdError = validateAgentId(agentId);
@@ -310,6 +311,6 @@ export async function heartbeatAgent(
     await writeAgent(updated);
     return success(command, updated);
   } catch (error) {
-    return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to heartbeat agent.');
+    return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to extend activity lease.');
   }
 }
