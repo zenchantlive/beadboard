@@ -25,14 +25,14 @@ import { GraphSection } from './graph-section';
 import { ProjectScopeControls } from '../shared/project-scope-controls';
 import { WorkspaceHero } from '../shared/workspace-hero';
 
-import { buildGraphModel, type GraphNode } from '../../lib/graph';
+import { buildGraphModel } from '../../lib/graph';
 import {
   buildPathWorkspace,
   type GraphHopDepth,
   analyzeBlockedChain,
   detectDependencyCycles,
 } from '../../lib/graph-view';
-import { buildBlockedByTree, type BlockedTreeNode } from '../../lib/kanban';
+import { buildBlockedByTree } from '../../lib/kanban';
 import { type BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
 
@@ -599,7 +599,6 @@ export function DependencyGraphPage({
 
   const nodeTypes: NodeTypes = useMemo(
     () => ({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       flowNode: GraphNodeCard as any,
     }),
     [],

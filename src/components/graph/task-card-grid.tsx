@@ -157,7 +157,7 @@ function statusBadge(status: BeadIssue['status'], isActionable: boolean, hasBloc
  * A single task card displaying the issue ID, title, priority, type, assignee,
  * and detailed blocker list (interactive).
  */
-function TaskCard({ issue, selected, blockedBy, blocks, blockers, blocking, isActionable, onSelect }: TaskCardProps) {
+function TaskCard({ issue, selected, blockers, blocking, isActionable, onSelect }: Omit<TaskCardProps, 'blockedBy' | 'blocks'>) {
     const hasBlockers = blockers.length > 0; // Note: blockers list only contains OPEN blockers (computed in page)
     const badge = statusBadge(issue.status, isActionable, hasBlockers);
     const projectName = (issue as BeadIssue & { project?: { name?: string } }).project?.name ?? null;
