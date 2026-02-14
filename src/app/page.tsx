@@ -23,6 +23,7 @@ export default async function Page({ searchParams }: PageProps) {
     mode: scope.mode,
     selected: scope.selected,
     scopeOptions: scope.options,
+    preferBd: true,
   });
   return (
     <KanbanPage

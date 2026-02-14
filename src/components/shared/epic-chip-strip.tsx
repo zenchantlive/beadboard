@@ -67,7 +67,7 @@ export function EpicChipStrip({ epics, selectedEpicId, beadCounts, onSelect }: E
                         Epic
                     </span>
                     <span className="block truncate text-sm font-semibold text-text-strong">
-                        {selectedEpic ? selectedEpic.title : 'Select an epic'}
+                        {selectedEpic ? selectedEpic.title : 'All Epics'}
                     </span>
                 </div>
 
@@ -81,6 +81,36 @@ export function EpicChipStrip({ epics, selectedEpicId, beadCounts, onSelect }: E
             {expanded ? (
                 <div className="mt-2 rounded-2xl border border-white/8 bg-[#0c0e14]/95 p-3 shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-lg animate-fade-in">
                     <div className="grid gap-2 grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
+                        {/* "All Epics" option */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onSelect('');
+                                setExpanded(false);
+                            }}
+                            className={`flex flex-col gap-2 rounded-xl border px-3 py-2.5 text-left transition-all duration-200 ${selectedEpicId === null || selectedEpicId === ''
+                                ? 'border-sky-400/40 bg-sky-400/10 ring-1 ring-sky-400/15'
+                                : 'border-white/8 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/15'
+                                }`}
+                        >
+                            <div className="flex items-center justify-between gap-2 w-full">
+                                <span className="font-mono text-[9px] uppercase tracking-wider text-text-muted/60">all</span>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center gap-1 rounded-md bg-white/5 px-1.5 py-0.5">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                                        <span className="text-[9px] font-bold uppercase tracking-wider text-text-muted/70">All</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-[12px] font-semibold leading-tight text-text-strong line-clamp-2">
+                                All Epics
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[10px] text-text-muted bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
+                                    Show all tasks
+                                </span>
+                            </div>
+                        </button>
                         {epics.map((epic) => {
                             // Determine if this card is the currently selected epic
                             const isSelected = epic.id === selectedEpicId;

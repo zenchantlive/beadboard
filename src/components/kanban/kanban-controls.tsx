@@ -3,12 +3,15 @@
 import { motion } from 'framer-motion';
 
 import type { KanbanFilterOptions, KanbanStats } from '../../lib/kanban';
+import type { BeadIssue } from '../../lib/types';
 
+import { EpicChipStrip } from '../shared/epic-chip-strip';
 import { StatPill } from '../shared/stat-pill';
 
 interface KanbanControlsProps {
   filters: KanbanFilterOptions;
   stats: KanbanStats;
+  epics: BeadIssue[];
   onFiltersChange: (filters: KanbanFilterOptions) => void;
   onNextActionable: () => void;
   nextActionableFeedback?: string | null;
@@ -17,6 +20,7 @@ interface KanbanControlsProps {
 export function KanbanControls({
   filters,
   stats,
+  epics,
   onFiltersChange,
   onNextActionable,
   nextActionableFeedback = null,
@@ -24,8 +28,25 @@ export function KanbanControls({
   const inputClass =
     'ui-field rounded-xl px-3 py-2.5 text-sm outline-none transition';
 
+  // Build bead counts map for EpicChipStrip
+  const beadCounts = new Map<string, number>();
+  for (const epic of epics) {
+    // Count non-epic issues that belong to this epic
+    const count = epic.dependencies?.filter(d => d.type === 'parent' && d.target === epic.id).length ?? 0;
+    beadCounts.set(epic.id, count);
+  }
+
   return (
     <section className="grid gap-3">
+      {/* Epic selector - full width like /graph page */}
+      <motion.div layout>
+        <EpicChipStrip
+          epics={epics.filter((epic) => (filters.showClosed ? true : epic.status !== 'closed'))}
+          selectedEpicId={filters.epicId ?? null}
+          beadCounts={beadCounts}
+          onSelect={(epicId) => onFiltersChange({ ...filters, epicId: epicId || undefined })}
+        />
+      </motion.div>
       <motion.div layout className="grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:items-center">
         <input
           type="search"
