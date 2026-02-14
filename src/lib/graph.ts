@@ -66,6 +66,22 @@ function isSupportedEdgeType(type: BeadDependencyType): type is SupportedGraphEd
   return SUPPORTED_EDGE_TYPES.has(type);
 }
 
+/**
+ * Builds a graph model from an array of issues.
+ * 
+ * @param issues - Array of BeadIssue objects to build the graph from
+ * @param options - Build options
+ * @param options.supportedTypes - Set of dependency types to include in the graph
+ * @returns GraphModel containing nodes, edges, and adjacency maps
+ * 
+ * @remarks
+ * - Extracts dependency edges from issues
+ * - Deduplicates duplicate edges
+ * - Ignores edges with missing targets
+ * - Filters unsupported dependency types
+ * - Builds incoming/outgoing adjacency maps for efficient traversal
+ * - Tracks diagnostics (ignored edges, duplicates)
+ */
 export function buildGraphModel(issues: BeadIssue[], options: BuildGraphModelOptions = {}): GraphModel {
   const nodes = issues
     .map((issue) => ({

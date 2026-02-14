@@ -1,7 +1,6 @@
 import path from 'node:path';
 
 import { parseIssuesJsonl } from './parser';
-import { canonicalizeWindowsPath } from './pathing';
 import { readTextFileWithRetry } from './read-text-retry';
 import { buildProjectContext } from './project-context';
 import type { BeadIssueWithProject, ProjectSource } from './types';
@@ -15,8 +14,8 @@ export interface ReadIssuesOptions {
 
 export function resolveIssuesJsonlPathCandidates(projectRoot: string = process.cwd()): string[] {
   const baseDir = path.resolve(projectRoot, '.beads');
-  const primary = canonicalizeWindowsPath(path.join(baseDir, 'issues.jsonl'));
-  const fallback = canonicalizeWindowsPath(path.join(baseDir, 'issues.jsonl.new'));
+  const primary = path.join(baseDir, 'issues.jsonl');
+  const fallback = path.join(baseDir, 'issues.jsonl.new');
   return [primary, fallback];
 }
 

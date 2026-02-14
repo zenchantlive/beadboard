@@ -18,7 +18,7 @@ export function buildProjectContext(root: string, options: BuildProjectContextOp
     key: windowsPathKey(normalizedRoot),
     root: normalizedRoot,
     displayPath: toDisplayPath(normalizedRoot),
-    name: path.basename(normalizedRoot),
+    name: path.win32.basename(normalizedRoot),
     source: options.source ?? 'local',
     addedAt: options.addedAt ?? null,
   };

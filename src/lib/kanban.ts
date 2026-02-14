@@ -118,6 +118,17 @@ function laneForIssue(issue: BeadIssue, blockedIds: Set<string>): KanbanStatus {
   return 'ready';
 }
 
+/**
+ * Filters issues based on kanban display criteria.
+ * 
+ * @param issues - Array of issues to filter
+ * @param filters - Filter options
+ * @param filters.query - Text search query (searches id, title, description, assignee, labels)
+ * @param filters.type - Issue type filter (e.g., 'task', 'epic', 'bug')
+ * @param filters.priority - Priority filter (0-4)
+ * @param filters.showClosed - Whether to include closed issues (default: false)
+ * @returns Filtered array of issues
+ */
 export function filterKanbanIssues(issues: BeadIssue[], filters: KanbanFilterOptions): BeadIssue[] {
   const query = (filters.query ?? '').trim().toLowerCase();
   const type = (filters.type ?? '').trim().toLowerCase();
@@ -148,6 +159,19 @@ export function filterKanbanIssues(issues: BeadIssue[], filters: KanbanFilterOpt
   });
 }
 
+/**
+ * Groups issues into kanban columns by status.
+ * 
+ * @param issues - Array of issues to group
+ * @returns KanbanColumns object with issues grouped by ready, in_progress, blocked, closed
+ * 
+ * @remarks
+ * - Issues with open blockers are placed in 'blocked' column
+ * - Issues marked 'in_progress' go to 'in_progress' column
+ * - Issues marked 'closed' go to 'closed' column
+ * - All other unblocked issues go to 'ready' column
+ * - Each column is sorted by priority (ascending)
+ */
 export function buildKanbanColumns(issues: BeadIssue[]): KanbanColumns {
   const columns = {
     ready: [],
