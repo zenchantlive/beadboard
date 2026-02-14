@@ -169,28 +169,47 @@ async function readActiveReservations(): Promise<AgentReservation[]> {
   }
 }
 
-async function lockActiveReservations(): Promise<number> {
-  // Ensure the directory and file exist before trying to lock
-  await fs.mkdir(path.dirname(activeReservationsPath()), { recursive: true });
-  try {
-    const fd = await fs.open(activeReservationsPath(), 'r+');
-    await fs.flock(fd, 'ex');
-    return fd;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      // File doesn't exist, create it first
-      await fs.writeFile(activeReservationsPath(), JSON.stringify({ reservations: [] }), 'utf8');
-      const fd = await fs.open(activeReservationsPath(), 'r+');
-      await fs.flock(fd, 'ex');
-      return fd;
+// Simple mutex-based locking using a shared lock file to prevent race conditions
+const LOCK_FILE_PATH = path.join(reservationsRoot(), '.lock');
+
+async function lockActiveReservations(): Promise<void> {
+  // Ensure the directory exists
+  await fs.mkdir(path.dirname(LOCK_FILE_PATH), { recursive: true });
+  
+  // Use a simple file-based mutex - create file exclusively, fail if exists
+  let attempts = 0;
+  const maxAttempts = 100;
+  
+  while (attempts < maxAttempts) {
+    try {
+      await fs.writeFile(LOCK_FILE_PATH, String(process.pid), { flag: 'wx' });
+      return;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+        // Lock file exists, wait and retry
+        await new Promise(resolve => setTimeout(resolve, 50));
+        attempts++;
+        continue;
+      }
+      throw error;
     }
-    throw error;
   }
+  throw new Error('Failed to acquire lock after maximum attempts');
 }
 
-async function unlockActiveReservations(fd: number): Promise<void> {
-  await fs.flock(fd, 'un');
-  await fs.close(fd);
+async function unlockActiveReservations(): Promise<void> {
+  try {
+    const content = await fs.readFile(LOCK_FILE_PATH, 'utf8');
+    // Only release if we own the lock
+    if (content.trim() === String(process.pid)) {
+      await fs.unlink(LOCK_FILE_PATH);
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      throw error;
+    }
+    // Lock file doesn't exist, ignore
+  }
 }
 
 async function atomicWriteJson(filePath: string, payload: string): Promise<void> {
@@ -294,10 +313,9 @@ export async function reserveAgentScope(
     return invalid(command, 'INVALID_ARGS', `TTL must be an integer between ${MIN_TTL_MINUTES} and ${MAX_TTL_MINUTES} minutes.`);
   }
 
-  let lockFd: number | null = null;
   try {
     // Acquire exclusive lock to prevent race conditions
-    lockFd = await lockActiveReservations();
+    await lockActiveReservations();
     
     const now = deps.now ? deps.now() : new Date().toISOString();
     const reservations = await readActiveReservations();
@@ -349,9 +367,7 @@ export async function reserveAgentScope(
   } catch (error) {
     return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to reserve scope.');
   } finally {
-    if (lockFd !== null) {
-      await unlockActiveReservations(lockFd);
-    }
+    await unlockActiveReservations();
   }
 }
 
@@ -372,10 +388,9 @@ export async function releaseAgentReservation(
     return invalid(command, 'INVALID_ARGS', 'Scope is required.');
   }
 
-  let lockFd: number | null = null;
   try {
     // Acquire exclusive lock to prevent race conditions
-    lockFd = await lockActiveReservations();
+    await lockActiveReservations();
     
     const now = deps.now ? deps.now() : new Date().toISOString();
     const reservations = await readActiveReservations();
@@ -408,9 +423,7 @@ export async function releaseAgentReservation(
   } catch (error) {
     return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to release reservation.');
   } finally {
-    if (lockFd !== null) {
-      await unlockActiveReservations(lockFd);
-    }
+    await unlockActiveReservations();
   }
 }
 
