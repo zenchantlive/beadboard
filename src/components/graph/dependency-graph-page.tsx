@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   MarkerType,
@@ -35,6 +35,8 @@ import {
 import { buildBlockedByTree } from '../../lib/kanban';
 import { type BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
+
+import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
 
 /** Props for the DependencyGraphPage component. */
 interface DependencyGraphPageProps {
@@ -110,13 +112,13 @@ function layoutDagre(nodes: Node<GraphNodeData>[], edges: Edge[]): Node<GraphNod
  * - Dependencies tab: flow strip + ReactFlow graph
  */
 export function DependencyGraphPage({
-  issues,
+  issues: initialIssues,
   projectRoot,
   projectScopeKey,
   projectScopeOptions,
   projectScopeMode,
 }: DependencyGraphPageProps) {
-  const router = useRouter();
+  const { issues, refresh: refreshIssues } = useBeadsSubscription(initialIssues, projectRoot);
   const searchParams = useSearchParams();
   // --- State ---
   const [selectedEpicId, setSelectedEpicId] = useState<string | null>(null);
@@ -922,7 +924,7 @@ export function DependencyGraphPage({
         onClose={handleDrawerClose}
         projectRoot={projectRoot}
         editable={projectScopeMode === 'single'}
-        onIssueUpdated={() => router.refresh()}
+        onIssueUpdated={() => refreshIssues()}
         blockedTree={selectedIssue ? buildBlockedByTree(issues, selectedIssue.id) : undefined}
         outgoingBlocks={selectedId ? blocksDetailsMap.get(selectedId) ?? [] : []}
         onSelectBlockedIssue={handleTaskSelect}
