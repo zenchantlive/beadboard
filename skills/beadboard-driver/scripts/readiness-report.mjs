@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 function parseArgs(argv) {
   const output = {};
@@ -43,7 +44,8 @@ async function withArtifactExistence(artifacts) {
     };
     if (typeof artifact.path === 'string' && artifact.path.trim()) {
       try {
-        await fs.access(artifact.path);
+        const resolved = path.resolve(artifact.path);
+        await fs.access(resolved);
         item.exists = true;
       } catch {
         item.exists = false;

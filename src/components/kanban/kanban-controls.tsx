@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 import type { KanbanFilterOptions, KanbanStats } from '../../lib/kanban';
@@ -12,6 +13,7 @@ interface KanbanControlsProps {
   filters: KanbanFilterOptions;
   stats: KanbanStats;
   epics: BeadIssue[];
+  issues: BeadIssue[];
   onFiltersChange: (filters: KanbanFilterOptions) => void;
   onNextActionable: () => void;
   nextActionableFeedback?: string | null;
@@ -21,6 +23,7 @@ export function KanbanControls({
   filters,
   stats,
   epics,
+  issues,
   onFiltersChange,
   onNextActionable,
   nextActionableFeedback = null,
@@ -29,12 +32,24 @@ export function KanbanControls({
     'ui-field rounded-xl px-3 py-2.5 text-sm outline-none transition';
 
   // Build bead counts map for EpicChipStrip
-  const beadCounts = new Map<string, number>();
-  for (const epic of epics) {
-    // Count non-epic issues that belong to this epic
-    const count = epic.dependencies?.filter(d => d.type === 'parent' && d.target === epic.id).length ?? 0;
-    beadCounts.set(epic.id, count);
-  }
+  // Count non-epic issues that have this epic as their parent
+  const beadCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const epic of epics) {
+      let count = 0;
+      for (const issue of issues) {
+        if (issue.issue_type === 'epic') continue;
+        const parentDep = issue.dependencies.find(d => d.type === 'parent');
+        const inferredParent = issue.id.includes('.') ? issue.id.split('.')[0] : null;
+        const parentEpicId = parentDep?.target ?? inferredParent;
+        if (parentEpicId === epic.id) {
+          count++;
+        }
+      }
+      counts.set(epic.id, count);
+    }
+    return counts;
+  }, [epics, issues]);
 
   return (
     <section className="grid gap-3">

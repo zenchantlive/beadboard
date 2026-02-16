@@ -78,7 +78,7 @@ export function diffSnapshots(
 
     // 5. Collection Changes (Dependencies)
     diffDependencies(prev.dependencies, curr.dependencies).forEach(kindAndTarget => {
-      events.push(createEvent(kindAndTarget.kind, curr, now, { to: kindAndTarget.target }));
+      events.push(createEvent(kindAndTarget.kind, curr, now, { to: kindAndTarget.target, field: kindAndTarget.type }));
     });
   });
 
@@ -119,25 +119,28 @@ function areArraysEqual(a: string[], b: string[]): boolean {
 
 /**
  * Detects added and removed dependencies.
+ * Uses composite key `${type}:${target}` to detect type changes as well.
  */
 function diffDependencies(
   prev: BeadDependency[],
   curr: BeadDependency[]
-): { kind: 'dependency_added' | 'dependency_removed', target: string }[] {
-  const changes: { kind: 'dependency_added' | 'dependency_removed', target: string }[] = [];
+): { kind: 'dependency_added' | 'dependency_removed', target: string, type: string }[] {
+  const changes: { kind: 'dependency_added' | 'dependency_removed', target: string, type: string }[] = [];
   
-  const prevTargets = new Set(prev.map(d => d.target));
-  const currTargets = new Set(curr.map(d => d.target));
+  const prevKeys = new Set(prev.map(d => `${d.type}:${d.target}`));
+  const currKeys = new Set(curr.map(d => `${d.type}:${d.target}`));
 
   curr.forEach(d => {
-    if (!prevTargets.has(d.target)) {
-      changes.push({ kind: 'dependency_added', target: d.target });
+    const key = `${d.type}:${d.target}`;
+    if (!prevKeys.has(key)) {
+      changes.push({ kind: 'dependency_added', target: d.target, type: d.type });
     }
   });
 
   prev.forEach(d => {
-    if (!currTargets.has(d.target)) {
-      changes.push({ kind: 'dependency_removed', target: d.target });
+    const key = `${d.type}:${d.target}`;
+    if (!currKeys.has(key)) {
+      changes.push({ kind: 'dependency_removed', target: d.target, type: d.type });
     }
   });
 

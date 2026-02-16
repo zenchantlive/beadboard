@@ -65,17 +65,11 @@ export function useBeadsSubscription(
   }, [projectRoot, onUpdate]);
 
   useEffect(() => {
-    console.log('[SSE] Connecting to event source for:', projectRoot);
     const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
-    
-    source.onopen = () => {
-      console.log('[SSE] Connection opened');
-    };
     
     source.onerror = (err) => {
       console.error('[SSE] Connection error:', err);
     };
-    
     const onIssues = (event: MessageEvent) => {
       console.log('🚨 SSE ISSUES RECEIVED:', event.data);
       onUpdate?.('issues');
@@ -99,12 +93,12 @@ export function useBeadsSubscription(
     source.addEventListener('activity', onActivity as EventListener);
 
     return () => {
-      console.log('[SSE] Closing connection');
       source.removeEventListener('issues', onIssues as EventListener);
       source.removeEventListener('telemetry', onTelemetry as EventListener);
       source.removeEventListener('activity', onActivity as EventListener);
       source.close();
     };
+    
     // onUpdate is intentionally excluded from deps to avoid re-subscribing on parent re-renders
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectRoot, refresh]);

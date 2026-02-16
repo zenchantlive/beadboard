@@ -17,6 +17,8 @@ async function readLastTouchedVersion(filePath: string): Promise<number | null> 
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return null;
     }
+    // Log non-ENOENT errors but don't swallow them silently
+    console.error('[Events] Failed to read last-touched version:', error);
     return null;
   }
 }
@@ -75,18 +77,27 @@ export async function GET(request: Request): Promise<Response> {
       const lastTouchedPath = path.join(projectRoot, '.beads', 'last-touched');
       let lastTouchedVersion: number | null = null;
 
+      let isPolling = false;
       const pollLastTouched = async () => {
-        const nextVersion = await readLastTouchedVersion(lastTouchedPath);
-        if (nextVersion === null) {
+        if (isPolling) {
           return;
         }
-        if (lastTouchedVersion === null) {
-          lastTouchedVersion = nextVersion;
-          return;
-        }
-        if (nextVersion !== lastTouchedVersion) {
-          lastTouchedVersion = nextVersion;
-          write(toSseFrame(issuesEventBus.emit(projectRoot, lastTouchedPath, 'telemetry')));
+        isPolling = true;
+        try {
+          const nextVersion = await readLastTouchedVersion(lastTouchedPath);
+          if (nextVersion === null) {
+            return;
+          }
+          if (lastTouchedVersion === null) {
+            lastTouchedVersion = nextVersion;
+            return;
+          }
+          if (nextVersion !== lastTouchedVersion) {
+            lastTouchedVersion = nextVersion;
+            write(toSseFrame(issuesEventBus.emit(projectRoot, lastTouchedPath, 'telemetry')));
+          }
+        } finally {
+          isPolling = false;
         }
       };
 
