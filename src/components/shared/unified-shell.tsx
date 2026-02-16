@@ -7,12 +7,11 @@ import { TopBar } from './top-bar';
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { MobileNav } from './mobile-nav';
+import { ThreadDrawer } from './thread-drawer';
 import { useUrlState } from '../../hooks/use-url-state';
 import { GraphView } from '../graph/graph-view';
 import { SocialPage } from '../social/social-page';
-import { SocialDetail } from '../social/social-detail';
 import { SwarmPage } from '../swarm/swarm-page';
-import { SwarmDetail } from '../swarm/swarm-detail';
 import { buildSocialCards } from '../../lib/social-cards';
 import { buildSwarmCards } from '../../lib/swarm-cards';
 
@@ -27,7 +26,7 @@ export interface UnifiedShellProps {
 export function UnifiedShell({
   issues,
 }: UnifiedShellProps) {
-  const { view, taskId, setTaskId, swarmId, setSwarmId, graphTab, setGraphTab, panel } = useUrlState();
+  const { view, taskId, setTaskId, swarmId, setSwarmId, graphTab, setGraphTab, panel, drawer, setDrawer } = useUrlState();
 
   const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
   const swarmCards = useMemo(() => buildSwarmCards(issues), [issues]);
@@ -39,14 +38,33 @@ export function UnifiedShell({
     setTaskId(id);
   };
 
+  const handleCardSelect = (id: string) => {
+    if (view === 'social') {
+      setTaskId(id);
+    } else if (view === 'swarm') {
+      setSwarmId(id);
+    }
+    setDrawer('open');
+  };
+
+  const handleCloseDrawer = () => {
+    setDrawer('closed');
+  };
+
+  // Thread drawer - shows when card selected
+  const isDrawerOpen = drawer === 'open' && (!!taskId || !!swarmId);
+  const drawerTitle = selectedSocialCard?.title || selectedSwarmCard?.title || '';
+  const drawerId = taskId || swarmId || '';
+
   const renderRightPanel = () => {
-    if (view === 'social' && taskId && selectedSocialCard) {
-      return <SocialDetail data={selectedSocialCard} />;
-    }
-    if (view === 'swarm' && swarmId && selectedSwarmCard) {
-      return <SwarmDetail card={selectedSwarmCard} />;
-    }
-    return null;
+    // TODO: Wire up ActivityPanel (bb-ui2.29) - for now show placeholder
+    return (
+      <div className="p-4 text-center text-text-muted text-sm">
+        Activity Panel coming
+        <br />
+        <span className="text-xs">(bb-ui2.29)</span>
+      </div>
+    );
   };
 
   const renderMiddleContent = () => {
@@ -105,11 +123,19 @@ export function UnifiedShell({
           {renderMiddleContent()}
         </div>
 
-        {/* RIGHT PANEL: 17rem detail strip */}
+        {/* RIGHT PANEL: 17rem - Always shows Activity (bb-ui2.29) */}
         <RightPanel isOpen={panel === 'open'}>
           {renderRightPanel()}
         </RightPanel>
       </div>
+
+      {/* THREAD DRAWER: 24rem - Slides from right edge of middle when card selected */}
+      <ThreadDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        title={drawerTitle}
+        id={drawerId}
+      />
 
       {/* MOBILE NAV: Bottom tab bar */}
       <MobileNav />

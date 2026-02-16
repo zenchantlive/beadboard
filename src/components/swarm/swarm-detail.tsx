@@ -3,7 +3,6 @@
 import type { SwarmCard as SwarmCardType } from '../../lib/swarm-cards';
 import { Badge } from '../../../components/ui/badge';
 import { AgentAvatar } from '../shared/agent-avatar';
-import { ThreadView, type ThreadItem } from '../shared/thread-view';
 import { cn } from '../../lib/utils';
 import { AlertTriangle, Clock, Users } from 'lucide-react';
 
@@ -149,38 +148,15 @@ function LastActivitySection({ date }: { date: Date }) {
   );
 }
 
-// Sample data for demo - remove when real data connected
-const SAMPLE_SWARM_THREAD: ThreadItem[] = [
-  {
-    id: '1',
-    type: 'status_change',
-    from: 'planning',
-    to: 'in_progress',
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-  },
-  {
-    id: '2',
-    type: 'comment',
-    author: 'bb-agent-1',
-    content: 'Starting work on the first batch of tasks.',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-  },
-  {
-    id: '3',
-    type: 'protocol_event',
-    event: 'CLOSED',
-    content: 'Task bb-buff.1 completed',
-    timestamp: new Date(Date.now() - 30 * 60 * 1000),
-  },
-];
-
 function ThreadSection() {
   return (
     <div className="space-y-2">
       <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
         Thread
       </span>
-      <ThreadView items={SAMPLE_SWARM_THREAD} />
+      <p className="text-text-muted text-sm italic">
+        Thread drawer coming (bb-ui2.31)
+      </p>
     </div>
   );
 }

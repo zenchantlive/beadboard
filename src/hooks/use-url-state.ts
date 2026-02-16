@@ -3,8 +3,9 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export type ViewType = 'social' | 'graph' | 'swarm';
+export type ViewType = 'social' | 'graph' | 'swarm' | 'activity';
 export type PanelState = 'open' | 'closed';
+export type DrawerState = 'open' | 'closed';
 export type GraphTabType = 'flow' | 'overview';
 
 export interface UrlState {
@@ -14,8 +15,12 @@ export interface UrlState {
   setTaskId: (id: string | null) => void;
   swarmId: string | null;
   setSwarmId: (id: string | null) => void;
+  agentId: string | null;
+  setAgentId: (id: string | null) => void;
   panel: PanelState;
   togglePanel: () => void;
+  drawer: DrawerState;
+  setDrawer: (state: DrawerState) => void;
   graphTab: GraphTabType;
   setGraphTab: (tab: GraphTabType) => void;
   clearSelection: () => void;
@@ -23,17 +28,21 @@ export interface UrlState {
 
 const DEFAULT_VIEW: ViewType = 'social';
 const DEFAULT_PANEL: PanelState = 'closed';
+const DEFAULT_DRAWER: DrawerState = 'closed';
 const DEFAULT_GRAPH_TAB: GraphTabType = 'flow';
 
-const VALID_VIEWS: ViewType[] = ['social', 'graph', 'swarm'];
+const VALID_VIEWS: ViewType[] = ['social', 'graph', 'swarm', 'activity'];
 const VALID_PANELS: PanelState[] = ['open', 'closed'];
+const VALID_DRAWERS: DrawerState[] = ['open', 'closed'];
 const VALID_GRAPH_TABS: GraphTabType[] = ['flow', 'overview'];
 
 export function parseUrlState(searchParams: URLSearchParams): {
   view: ViewType;
   taskId: string | null;
   swarmId: string | null;
+  agentId: string | null;
   panel: PanelState;
+  drawer: DrawerState;
   graphTab: GraphTabType;
 } {
   const viewParam = searchParams.get('view');
@@ -43,18 +52,24 @@ export function parseUrlState(searchParams: URLSearchParams): {
 
   const taskId = searchParams.get('task');
   const swarmId = searchParams.get('swarm');
+  const agentId = searchParams.get('agent');
 
   const panelParam = searchParams.get('panel');
   const panel: PanelState = panelParam && VALID_PANELS.includes(panelParam as PanelState)
     ? (panelParam as PanelState)
     : DEFAULT_PANEL;
 
+  const drawerParam = searchParams.get('drawer');
+  const drawer: DrawerState = drawerParam && VALID_DRAWERS.includes(drawerParam as DrawerState)
+    ? (drawerParam as DrawerState)
+    : DEFAULT_DRAWER;
+
   const graphTabParam = searchParams.get('graphTab');
   const graphTab: GraphTabType = graphTabParam && VALID_GRAPH_TABS.includes(graphTabParam as GraphTabType)
     ? (graphTabParam as GraphTabType)
     : DEFAULT_GRAPH_TAB;
 
-  return { view, taskId, swarmId, panel, graphTab };
+  return { view, taskId, swarmId, agentId, panel, drawer, graphTab };
 }
 
 export function buildUrlParams(
@@ -98,17 +113,25 @@ export function useUrlState(): UrlState {
     updateUrl({ swarm: id, panel: id ? 'open' : null });
   }, [updateUrl]);
 
+  const setAgentId = useCallback((id: string | null) => {
+    updateUrl({ agent: id, panel: id ? 'open' : null });
+  }, [updateUrl]);
+
   const togglePanel = useCallback(() => {
     const newPanel = state.panel === 'open' ? 'closed' : 'open';
     updateUrl({ panel: newPanel });
   }, [state.panel, updateUrl]);
+
+  const setDrawer = useCallback((state: DrawerState) => {
+    updateUrl({ drawer: state });
+  }, [updateUrl]);
 
   const setGraphTab = useCallback((tab: GraphTabType) => {
     updateUrl({ graphTab: tab });
   }, [updateUrl]);
 
   const clearSelection = useCallback(() => {
-    updateUrl({ task: null, swarm: null, panel: 'closed' });
+    updateUrl({ task: null, swarm: null, panel: 'closed', drawer: 'closed' });
   }, [updateUrl]);
 
   return {
@@ -118,8 +141,12 @@ export function useUrlState(): UrlState {
     setTaskId,
     swarmId: state.swarmId,
     setSwarmId,
+    agentId: state.agentId,
+    setAgentId,
     panel: state.panel,
     togglePanel,
+    drawer: state.drawer,
+    setDrawer,
     graphTab: state.graphTab,
     setGraphTab,
     clearSelection,

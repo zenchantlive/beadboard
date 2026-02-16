@@ -3,33 +3,7 @@
 import type { SocialCard as SocialCardData, AgentStatus } from '../../lib/social-cards';
 import { StatusBadge } from '../shared/status-badge';
 import { AgentAvatar } from '../shared/agent-avatar';
-import { ThreadView, type ThreadItem } from '../shared/thread-view';
 import { Plus } from 'lucide-react';
-
-// Sample data for demo - remove when real data connected
-const SAMPLE_THREAD_ITEMS: ThreadItem[] = [
-  {
-    id: '1',
-    type: 'status_change',
-    from: 'backlog',
-    to: 'in_progress',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-  },
-  {
-    id: '2',
-    type: 'comment',
-    author: 'zenchantlive',
-    content: 'Started working on this task. Will need input from the API team.',
-    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
-  },
-  {
-    id: '3',
-    type: 'protocol_event',
-    event: 'HANDOFF',
-    content: 'Handed off to bb-agent-1 for implementation',
-    timestamp: new Date(Date.now() - 30 * 60 * 1000),
-  },
-];
 
 interface SocialDetailProps {
   data: SocialCardData;
@@ -67,7 +41,9 @@ export function SocialDetail({ data }: SocialDetailProps) {
         <h3 className="text-text-muted text-xs font-semibold uppercase tracking-wider">
           Thread
         </h3>
-        <ThreadView items={SAMPLE_THREAD_ITEMS} />
+        <p className="text-text-muted text-sm italic">
+          Thread drawer coming (bb-ui2.31)
+        </p>
       </div>
 
       {data.blocks.length > 0 && (
