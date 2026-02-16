@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
 import { TopBar } from './top-bar';
@@ -8,6 +9,12 @@ import { RightPanel } from './right-panel';
 import { MobileNav } from './mobile-nav';
 import { useUrlState } from '../../hooks/use-url-state';
 import { GraphView } from '../graph/graph-view';
+import { SocialPage } from '../social/social-page';
+import { SocialDetail } from '../social/social-detail';
+import { SwarmPage } from '../swarm/swarm-page';
+import { SwarmDetail } from '../swarm/swarm-detail';
+import { buildSocialCards } from '../../lib/social-cards';
+import { buildSwarmCards } from '../../lib/swarm-cards';
 
 export interface UnifiedShellProps {
   issues: BeadIssue[];
@@ -20,10 +27,26 @@ export interface UnifiedShellProps {
 export function UnifiedShell({
   issues,
 }: UnifiedShellProps) {
-  const { view, taskId, setTaskId, graphTab, setGraphTab, panel } = useUrlState();
+  const { view, taskId, setTaskId, swarmId, setSwarmId, graphTab, setGraphTab, panel } = useUrlState();
+
+  const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
+  const swarmCards = useMemo(() => buildSwarmCards(issues), [issues]);
+
+  const selectedSocialCard = taskId ? socialCards.find(c => c.id === taskId) : null;
+  const selectedSwarmCard = swarmId ? swarmCards.find(c => c.swarmId === swarmId) : null;
 
   const handleGraphSelect = (id: string) => {
     setTaskId(id);
+  };
+
+  const renderRightPanel = () => {
+    if (view === 'social' && taskId && selectedSocialCard) {
+      return <SocialDetail data={selectedSocialCard} />;
+    }
+    if (view === 'swarm' && swarmId && selectedSwarmCard) {
+      return <SwarmDetail card={selectedSwarmCard} />;
+    }
+    return null;
   };
 
   const renderMiddleContent = () => {
@@ -40,20 +63,27 @@ export function UnifiedShell({
       );
     }
 
-    return (
-      <div className="p-4" style={{ color: 'var(--color-text-secondary)' }}>
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            {view === 'social' && 'Social View'}
-            {view === 'swarm' && 'Swarm View'}
-          </h2>
-          <p className="text-sm mt-2">
-            {view === 'social' && 'Activity feed with blocks/unlocks coming soon'}
-            {view === 'swarm' && 'Team health dashboard coming soon'}
-          </p>
-        </div>
-      </div>
-    );
+    if (view === 'social') {
+      return (
+        <SocialPage
+          issues={issues}
+          selectedId={taskId ?? undefined}
+          onSelect={setTaskId}
+        />
+      );
+    }
+
+    if (view === 'swarm') {
+      return (
+        <SwarmPage
+          issues={issues}
+          selectedId={swarmId ?? undefined}
+          onSelect={setSwarmId}
+        />
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -76,7 +106,9 @@ export function UnifiedShell({
         </div>
 
         {/* RIGHT PANEL: 17rem detail strip */}
-        <RightPanel isOpen={panel === 'open'} />
+        <RightPanel isOpen={panel === 'open'}>
+          {renderRightPanel()}
+        </RightPanel>
       </div>
 
       {/* MOBILE NAV: Bottom tab bar */}

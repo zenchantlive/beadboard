@@ -91,40 +91,16 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(circle at 15% 15%, rgba(60, 80, 120, 0.08) 0%, transparent 35%),
-    radial-gradient(circle at 85% 20%, rgba(100, 80, 140, 0.06) 0%, transparent 35%),
-    radial-gradient(circle at 50% 95%, rgba(50, 70, 100, 0.06) 0%, transparent 40%),
-    linear-gradient(180deg, rgba(20, 22, 30, 0.98) 0%, rgba(10, 11, 14, 0.99) 100%);
-  background-color: var(--bg-base);
-  color: var(--color-text-body);
+  /* Earthy-dark base from PRD (replaces Aero Chrome) */
+  background-color: var(--color-bg-base);
+  color: var(--color-text-secondary);
   font-family: var(--font-ui-stack);
   letter-spacing: -0.011em;
   position: relative;
   isolation: isolate;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 2rem 2rem;
-  pointer-events: none;
-  z-index: -2;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.04;
-  pointer-events: none;
-  z-index: -1;
-}
+/* Aero Chrome decorative overlays removed per PRD - earthy-dark is clean/flat */
 
 * {
   scrollbar-width: thin;
@@ -296,4 +272,8 @@ body::after {
   filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.6));
 }
 
-.workflow-graph-flow .workflow-edge-cycle .react-f
+.workflow-graph-flow .workflow-edge-cycle .react-flow__edge-path {
+  stroke: var(--color-accent-amber);
+  stroke-dasharray: 4 4;
+  opacity: 0.9;
+}

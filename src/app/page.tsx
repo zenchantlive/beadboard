@@ -24,6 +24,7 @@ export default async function Page({ searchParams }: PageProps) {
     selected: scope.selected,
     scopeOptions: scope.options,
     preferBd: true,
+    skipAgentFilter: true,
   });
   
   return (

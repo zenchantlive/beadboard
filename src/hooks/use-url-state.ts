@@ -91,11 +91,11 @@ export function useUrlState(): UrlState {
   }, [updateUrl]);
 
   const setTaskId = useCallback((id: string | null) => {
-    updateUrl({ task: id });
+    updateUrl({ task: id, panel: id ? 'open' : null });
   }, [updateUrl]);
 
   const setSwarmId = useCallback((id: string | null) => {
-    updateUrl({ swarm: id });
+    updateUrl({ swarm: id, panel: id ? 'open' : null });
   }, [updateUrl]);
 
   const togglePanel = useCallback(() => {
@@ -108,7 +108,7 @@ export function useUrlState(): UrlState {
   }, [updateUrl]);
 
   const clearSelection = useCallback(() => {
-    updateUrl({ task: null, swarm: null, panel: null, graphTab: null });
+    updateUrl({ task: null, swarm: null, panel: 'closed' });
   }, [updateUrl]);
 
   return {

@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/components/sessions/sessions-header.test.ts && node --import tsx --test tests/components/sessions/agent-station-logic.test.ts && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts"
+    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/components/sessions/sessions-header.test.ts && node --import tsx --test tests/components/sessions/agent-station-logic.test.ts && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --import tsx --test tests/components/shared/left-panel.test.tsx && node --import tsx --test tests/components/shared/top-bar.test.tsx && node --import tsx --test tests/components/shared/mobile-nav.test.tsx && node --import tsx --test tests/components/swarm/swarm-card.test.tsx"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
