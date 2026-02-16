@@ -51,20 +51,10 @@ export function ThreadDrawer({ isOpen, onClose, title, id, items = SAMPLE_ITEMS 
         aria-hidden="true"
       />
       
-      {/* Drawer - positioned at right edge of middle panel, between middle and right */}
-      {/* Layout: Left(13rem) + Middle(1fr) + Right(17rem) */}
-      {/* Drawer sits at: right edge of middle = 100% - 17rem from left */}
+      {/* Drawer - slides from right edge of screen, overlaying everything */}
       <div
-        className="fixed top-0 z-50 overflow-hidden"
+        className="fixed top-0 right-0 h-full z-50 w-[24rem] overflow-hidden"
         style={{
-          // Positioned between middle and right panel
-          // left edge = (100% - 17rem - 24rem drawer)
-          // right edge = 17rem (the right panel width)
-          left: 'calc(100% - 17rem - 24rem)',
-          right: '17rem',
-          top: 0,
-          height: '100vh',
-          width: '24rem',
           backgroundColor: 'var(--color-bg-card)',
           borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
           boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.3)',
