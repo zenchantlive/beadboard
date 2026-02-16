@@ -1,26 +1,59 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import type { SessionTaskCard } from '../../lib/agent-sessions';
+import type { SessionTaskCard, Incursion } from '../../lib/agent-sessions';
 import { statusBorder, statusDotColor, statusGradient, sessionStateGlow } from '../shared/status-utils';
 
 interface SessionFeedCardProps {
   card: SessionTaskCard;
   onSelect: (id: string) => void;
   isHighlighted?: boolean;
+  incursion?: Incursion;
+  highlightSource?: 'task' | 'agent';
 }
 
-export function SessionFeedCard({ card, onSelect, isHighlighted }: SessionFeedCardProps) {
+export function SessionFeedCard({ card, onSelect, isHighlighted, incursion, highlightSource }: SessionFeedCardProps) {
   return (
     <motion.article
       layout
       onClick={() => onSelect(card.id)}
       className={`relative w-full cursor-pointer rounded-[1.25rem] border p-[1rem] text-left transition-all duration-200 ${
         isHighlighted 
-          ? 'border-sky-500 bg-sky-500/10 ring-1 ring-sky-500/50 scale-[1.02] shadow-[0_0_20px_rgba(56,189,248,0.15)]' 
+          ? highlightSource === 'agent' 
+            ? 'border-emerald-500/50 bg-emerald-500/10 ring-1 ring-emerald-500/30 scale-[1.01] shadow-[0_0_16px_rgba(16,185,129,0.15)]'
+            : 'border-sky-500 bg-sky-500/10 ring-1 ring-sky-500/50 scale-[1.02] shadow-[0_0_20px_rgba(56,189,248,0.15)]'
           : `${statusBorder(card.status)} ${statusGradient(card.status)} hover:bg-white/[0.04]`
-      } ${sessionStateGlow(card.sessionState)}`}
+      } ${sessionStateGlow(card.sessionState)} ${incursion ? 'ring-1 ring-rose-500/30' : ''}`}
     >
+      {/* Critical state badges */}
+      {card.sessionState === 'stuck' && (
+        <div className="absolute -top-2 right-4 z-10">
+          <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.55rem] font-black uppercase tracking-[0.1em] bg-red-500/80 text-white border border-red-400 shadow-lg animate-pulse">
+            <span aria-hidden="true">⚠</span>
+            STUCK
+          </span>
+        </div>
+      )}
+      {card.sessionState === 'dead' && (
+        <div className="absolute -top-2 right-4 z-10">
+          <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.55rem] font-black uppercase tracking-[0.1em] bg-zinc-700/80 text-zinc-300 border border-zinc-600 shadow-lg">
+            <span aria-hidden="true">✕</span>
+            OFFLINE
+          </span>
+        </div>
+      )}
+      {incursion && (
+        <div className="absolute -top-2 right-4 z-10">
+          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.55rem] font-black uppercase tracking-[0.1em] border shadow-lg animate-pulse ${
+            incursion.severity === 'exact' 
+              ? 'bg-rose-500 text-white border-rose-400 shadow-rose-500/20' 
+              : 'bg-amber-500 text-black border-amber-400 shadow-amber-500/20'
+          }`}>
+            Conflict
+          </span>
+        </div>
+      )}
+      
       <div className="flex gap-[0.75rem]">
         {/* Compact Avatar */}
         <div className="flex-none">

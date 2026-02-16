@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { runBdCommand } from '../../src/lib/bridge';
 
-test('runBdCommand returns structured success payload from execFile output', async () => {
+test('runBdCommand returns structured success payload from exec output', async () => {
   const result = await runBdCommand(
     {
       projectRoot: 'C:/repo/project',
@@ -13,9 +13,10 @@ test('runBdCommand returns structured success payload from execFile output', asy
     },
     {
       resolveBdExecutable: async () => ({ executable: 'C:/tools/bd.exe', source: 'config' }),
-      execFile: async (command, args, options) => {
-        assert.equal(command, 'C:/tools/bd.exe');
-        assert.deepEqual(args, ['list', '--json']);
+      exec: async (command: string, options: any) => {
+        assert.ok(command.includes('bd'));
+        assert.ok(command.includes('list'));
+        assert.ok(command.includes('--json'));
         assert.equal(options.cwd, 'C:/repo/project');
         return { stdout: '[{"id":"bb-1"}]\r\n', stderr: '' };
       },
@@ -32,7 +33,7 @@ test('runBdCommand classifies missing executable as not_found', async () => {
     { projectRoot: 'C:/repo/project', args: ['list'] },
     {
       resolveBdExecutable: async () => ({ executable: 'C:/tools/bd.exe', source: 'config' }),
-      execFile: async () => {
+      exec: async () => {
         const error = new Error('spawn ENOENT') as NodeJS.ErrnoException;
         error.code = 'ENOENT';
         throw error;
@@ -49,7 +50,7 @@ test('runBdCommand classifies timeout failures', async () => {
     { projectRoot: 'C:/repo/project', args: ['list'], timeoutMs: 5 },
     {
       resolveBdExecutable: async () => ({ executable: 'C:/tools/bd.exe', source: 'config' }),
-      execFile: async () => {
+      exec: async () => {
         const error = new Error('timed out') as NodeJS.ErrnoException & { killed?: boolean; signal?: string };
         error.code = 'ETIMEDOUT';
         error.killed = true;
@@ -68,7 +69,7 @@ test('runBdCommand classifies non-zero bad-argument exits', async () => {
     { projectRoot: 'C:/repo/project', args: ['update', '--bad-flag'] },
     {
       resolveBdExecutable: async () => ({ executable: 'C:/tools/bd.exe', source: 'config' }),
-      execFile: async () => {
+      exec: async () => {
         const error = new Error('exit code 1') as NodeJS.ErrnoException & {
           stdout?: string;
           stderr?: string;

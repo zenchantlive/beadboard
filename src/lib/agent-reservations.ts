@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import { showAgent } from './agent-registry';
+import { showAgent, deriveLiveness } from './agent-registry';
 import type { AgentMessage } from './agent-mail';
 
 const MIN_TTL_MINUTES = 5;
@@ -99,6 +99,52 @@ function reservationHistoryPath(): string {
 
 function messageIndexDirectoryPath(): string {
   return path.join(agentRoot(), 'messages', 'index');
+}
+
+/**
+ * Normalizes a path according to the Operative Protocol v1:
+ * 1. Resolve to absolute path.
+ * 2. Normalize separators to /.
+ * 3. On Windows, lowercase normalized path.
+ * 4. Remove trailing slash except root.
+ */
+export function normalizePath(p: string): string {
+  let resolved = path.resolve(p);
+  // Normalize separators
+  resolved = resolved.replace(/\\/g, '/');
+
+  // Lowercase on Windows
+  if (process.platform === 'win32') {
+    resolved = resolved.toLowerCase();
+  }
+
+  // Remove trailing slash except root (e.g., C:/ or /)
+  if (resolved.length > 3 && resolved.endsWith('/')) {
+    resolved = resolved.slice(0, -1);
+  }
+
+  return resolved;
+}
+
+export type OverlapClass = 'exact' | 'partial' | 'disjoint';
+
+/**
+ * Classifies the overlap between two paths A and B.
+ */
+export function classifyOverlap(pathA: string, pathB: string): OverlapClass {
+  const normA = normalizePath(pathA.replace(/\*$/, ''));
+  const normB = normalizePath(pathB.replace(/\*$/, ''));
+
+  if (normA === normB) {
+    return 'exact';
+  }
+
+  // Check if one is a parent of the other
+  if (normB.startsWith(`${normA}/`) || normA.startsWith(`${normB}/`)) {
+    return 'partial';
+  }
+
+  return 'disjoint';
 }
 
 function trimOrEmpty(value: unknown): string {
@@ -319,25 +365,43 @@ export async function reserveAgentScope(
     
     const now = deps.now ? deps.now() : new Date().toISOString();
     const reservations = await readActiveReservations();
-    const existing = reservations.find((reservation) => reservation.scope === scope);
+    const normalizedScope = normalizePath(scope);
+    const existing = reservations.find((r) => normalizePath(r.scope) === normalizedScope);
 
     if (existing) {
-      if (!isExpired(existing, now)) {
-        return invalid(command, 'RESERVATION_CONFLICT', `Scope is already reserved by ${existing.agent_id}.`);
+      const isReservationExpired = isExpired(existing, now);
+
+      // If it's the SAME agent, we can always refresh/takeover their own scope
+      if (existing.agent_id === agentId) {
+        // Continue to creation logic
+      } else {
+        // Different agent owns it. Check liveness.
+        const ownerRes = await showAgent({ agent: existing.agent_id });
+        if (ownerRes.ok && ownerRes.data) {
+          const liveness = deriveLiveness(ownerRes.data.last_seen_at, new Date(now));
+
+          // active: takeover MUST fail
+          if (liveness === 'active' && !isReservationExpired) {
+            return invalid(command, 'RESERVATION_CONFLICT', `Scope is already reserved by active agent ${existing.agent_id}.`);
+          }
+
+          // stale or evicted: takeover MAY succeed only when takeoverStale is true
+          if (!input.takeoverStale) {
+            const reason = liveness === 'evicted' ? 'evicted' : (liveness === 'stale' ? 'stale' : 'expired');
+            return invalid(command, 'RESERVATION_STALE_FOUND', `An ${reason} reservation exists for ${existing.agent_id}. Re-run with --takeover-stale.`);
+          }
+        }
       }
 
-      if (!input.takeoverStale) {
-        return invalid(command, 'RESERVATION_STALE_FOUND', 'An expired reservation exists. Re-run with --takeover-stale.');
-      }
-
-      const withoutExisting = reservations.filter((reservation) => reservation.reservation_id !== existing.reservation_id);
+      // If we reach here, we are taking over (either same agent or stale/evicted/expired takeover)
+      const withoutExisting = reservations.filter((r) => r.reservation_id !== existing.reservation_id);
       await writeActiveReservations(withoutExisting);
-      await appendReservationHistory({ ...existing, state: 'expired' });
+      await appendReservationHistory({ ...existing, state: isReservationExpired ? 'expired' : 'released' });
 
       const generateId = deps.idGenerator ?? (() => defaultReservationId(now));
       const created: AgentReservation = {
         reservation_id: generateId(),
-        scope,
+        scope: normalizedScope,
         agent_id: agentId,
         bead_id: beadId,
         state: 'active',
@@ -353,7 +417,7 @@ export async function reserveAgentScope(
     const generateId = deps.idGenerator ?? (() => defaultReservationId(now));
     const created: AgentReservation = {
       reservation_id: generateId(),
-      scope,
+      scope: normalizedScope,
       agent_id: agentId,
       bead_id: beadId,
       state: 'active',
@@ -394,7 +458,8 @@ export async function releaseAgentReservation(
     
     const now = deps.now ? deps.now() : new Date().toISOString();
     const reservations = await readActiveReservations();
-    const existing = reservations.find((reservation) => reservation.scope === scope);
+    const normalizedScope = normalizePath(scope);
+    const existing = reservations.find((reservation) => reservation.scope === normalizedScope);
 
     if (!existing || isExpired(existing, now)) {
       if (existing && isExpired(existing, now)) {

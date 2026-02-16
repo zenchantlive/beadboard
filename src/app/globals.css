@@ -50,6 +50,34 @@
   --priority-p2: #38bdf8;
   --priority-p3: #94a3b8;
   --priority-p4: #64748b;
+
+  /* ========== EARTHY-DARK TOKENS (bb-ui2.1) ========== */
+  /* Backgrounds */
+  --color-bg-base: #2D2D2D;
+  --color-bg-card: #363636;
+  --color-bg-input: #404040;
+
+  /* Accents */
+  --color-accent-green: #7CB97A;
+  --color-accent-amber: #D4A574;
+  --color-accent-teal: #5BA8A0;
+
+  /* Text */
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #B8B8B8;
+  --color-text-muted-dark: #888888;
+
+  /* Status colors (earthy variants) */
+  --status-ready: #5BA8A0;
+  --status-in-progress: #7CB97A;
+  --status-blocked-earthy: #D4A574;
+  --status-closed-earthy: #888888;
+
+  /* Liveness colors */
+  --liveness-active: #7CB97A;
+  --liveness-stale: #D4A574;
+  --liveness-stuck: #E57373;
+  --liveness-dead: #9E4244;
 }
 
 * {
@@ -268,47 +296,3 @@ body::after {
   filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.6));
 }
 
-.workflow-graph-flow .workflow-edge-cycle .react-flow__edge-path {
-  opacity: 1;
-  filter: drop-shadow(0 0 10px rgba(251, 113, 133, 0.65));
-}
-
-.react-flow__edge-label {
-  pointer-events: none;
-}
-
-.workflow-graph-flow .react-flow__edge-text {
-  text-transform: uppercase;
-  font-family: var(--font-mono-stack);
-  paint-order: stroke;
-  stroke: rgba(2, 6, 23, 0.95);
-  stroke-width: 2px;
-}
-
-/* Node selection pulse animation - sky-blue ring expands and fades */
-@keyframes node-select-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
-  70%  { box-shadow: 0 0 0 12px rgba(56, 189, 248, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
-}
-.node-select-pulse {
-  animation: node-select-pulse 1s ease-out;
-}
-
-/* Tooltip fade-in animation */
-@keyframes fade-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-.animate-fade-in {
-  animation: fade-in 200ms ease-out;
-}
-
-/* Hide scrollbar but keep scrolling (for epic chip strip) */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}

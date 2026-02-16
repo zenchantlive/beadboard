@@ -1,9 +1,10 @@
-import { execFile as nodeExecFile } from 'node:child_process';
+import { exec as nodeExec } from 'node:child_process';
 import { promisify } from 'node:util';
+import path from 'node:path';
 
 import { BdExecutableNotFoundError, resolveBdExecutable } from './bd-path';
 
-const execFileAsync = promisify(nodeExecFile);
+const execAsync = promisify(nodeExec);
 
 export type BdFailureClassification = 'not_found' | 'timeout' | 'non_zero_exit' | 'bad_args' | 'unknown';
 
@@ -27,58 +28,49 @@ export interface RunBdCommandResult {
   error: string | null;
 }
 
-type ExecFileOptions = {
-  cwd: string;
-  timeout: number;
-  windowsHide: boolean;
-  env: NodeJS.ProcessEnv;
-};
-
-type ExecFileLike = (
-  command: string,
-  args: string[],
-  options: ExecFileOptions,
-) => Promise<{ stdout: string; stderr: string }>;
-
 interface RunBdCommandDeps {
   resolveBdExecutable: typeof resolveBdExecutable;
-  execFile: ExecFileLike;
+  exec: (command: string, options: { cwd: string; timeout: number; env: NodeJS.ProcessEnv }) => Promise<{ stdout: string; stderr: string }>;
   env: NodeJS.ProcessEnv;
 }
 
 function normalizeOutput(text: unknown): string {
-  if (typeof text !== 'string') {
-    return '';
-  }
-
+  if (typeof text !== 'string') return '';
   return text.replaceAll('\r\n', '\n').trim();
 }
 
 function toErrorMessage(value: unknown): string {
-  if (value instanceof Error) {
-    return value.message;
-  }
+  if (value instanceof Error) return value.message;
   return String(value ?? 'Unknown error');
 }
 
 function classifyFailure(error: NodeJS.ErrnoException & { stderr?: string; killed?: boolean; signal?: string }): BdFailureClassification {
-  if (error.code === 'ENOENT') {
-    return 'not_found';
-  }
-
-  if (error.code === 'ETIMEDOUT' || error.killed || error.signal === 'SIGTERM') {
-    return 'timeout';
-  }
-
+  if (error.code === 'ENOENT') return 'not_found';
+  if (error.code === 'ETIMEDOUT' || error.killed || error.signal === 'SIGTERM') return 'timeout';
   const stderr = normalizeOutput(error.stderr);
   if (typeof error.code === 'number') {
-    if (/(unknown|invalid|required|usage)/i.test(stderr)) {
-      return 'bad_args';
-    }
+    if (/(unknown|invalid|required|usage)/i.test(stderr)) return 'bad_args';
     return 'non_zero_exit';
   }
-
   return 'unknown';
+}
+
+function buildShellCommand(executable: string, args: string[]): string {
+  // Normalize to forward slashes for Windows shell compatibility
+  const normalizedExe = executable.split(path.sep).join('/');
+  
+  if (process.platform === 'win32') {
+    // Windows: quote the executable path, leave simple args unquoted
+    const quotedExe = `"${normalizedExe}"`;
+    const quotedArgs = args.map(a => {
+      if (/[\s&|<>()^"]/.test(a)) return `"${a.replace(/"/g, '""')}"`;
+      return a;
+    });
+    return [quotedExe, ...quotedArgs].join(' ');
+  } else {
+    const escapeArg = (a: string) => `'${a.replace(/'/g, "'\''")}'`;
+    return [normalizedExe, ...args.map(escapeArg)].join(' ');
+  }
 }
 
 export async function runBdCommand(
@@ -89,14 +81,17 @@ export async function runBdCommand(
   const timeoutMs = options.timeoutMs ?? 30_000;
   const cwd = options.projectRoot;
   const args = [...options.args];
+  if (process.env.BD_NO_DAEMON === 'true') {
+    args.unshift('--no-daemon');
+  }
 
   const deps: RunBdCommandDeps = {
     resolveBdExecutable: injectedDeps?.resolveBdExecutable ?? resolveBdExecutable,
-    execFile: injectedDeps?.execFile ?? execFileAsync,
+    exec: injectedDeps?.exec ?? execAsync,
     env: injectedDeps?.env ?? process.env,
   };
 
-  let command = options.explicitBdPath ?? 'bd.exe';
+  let command = options.explicitBdPath ?? 'bd';
 
   try {
     const resolved = await deps.resolveBdExecutable({
@@ -105,10 +100,11 @@ export async function runBdCommand(
     });
     command = resolved.executable;
 
-    const { stdout, stderr } = await deps.execFile(command, args, {
+    const shellCommand = buildShellCommand(command, args);
+
+    const { stdout, stderr } = await deps.exec(shellCommand, {
       cwd,
       timeout: timeoutMs,
-      windowsHide: true,
       env: deps.env,
     });
 

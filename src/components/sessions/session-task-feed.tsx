@@ -1,17 +1,42 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { EpicBucket } from '../../lib/agent-sessions';
+import type { EpicBucket, Incursion } from '../../lib/agent-sessions';
 import { SessionFeedCard } from './session-feed-card';
 
 interface SessionTaskFeedProps {
   feed: EpicBucket[];
+  incursions?: Incursion[];
   selectedEpicId: string | null;
   onSelectTask: (id: string) => void;
   highlightTaskId?: string | null;
+  highlightingAgentId?: string | null;
 }
 
-export function SessionTaskFeed({ feed, selectedEpicId, onSelectTask, highlightTaskId }: SessionTaskFeedProps) {
+export function IncursionTicker({ incursions }: { incursions: Incursion[] }) {
+  return (
+    <div className="flex flex-col gap-2">
+      {incursions.map((inc, i) => (
+        <div 
+          key={i} 
+          className={`flex items-center gap-3 px-4 py-2 rounded-xl border border-rose-500/20 bg-rose-500/5 backdrop-blur-md animate-in slide-in-from-top-4 duration-500`}
+        >
+          <div className="flex-none">
+            <span className={`flex h-2 w-2 rounded-full ${inc.severity === 'exact' ? 'bg-rose-500 animate-pulse' : 'bg-amber-500'}`} />
+          </div>
+          <p className="ui-text text-[0.7rem] font-bold text-rose-200/80">
+            <span className="uppercase tracking-widest mr-2 opacity-50">Conflict Detected:</span>
+            <span className="text-white mr-2">{inc.agents.join(' & ')}</span>
+            <span className="opacity-40 font-medium">overlapping in</span>
+            <span className="ml-2 font-mono text-rose-300/90">{inc.scope}</span>
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function SessionTaskFeed({ feed, incursions = [], selectedEpicId, onSelectTask, highlightTaskId, highlightingAgentId }: SessionTaskFeedProps) {
   const filteredFeed = useMemo(() => {
     if (!selectedEpicId) return feed;
     return feed.filter(b => b.epic.id === selectedEpicId);
@@ -30,6 +55,12 @@ export function SessionTaskFeed({ feed, selectedEpicId, onSelectTask, highlightT
 
   return (
     <div className="space-y-16 pb-24">
+      {incursions.length > 0 && (
+        <div className="mb-8">
+          <IncursionTicker incursions={incursions} />
+        </div>
+      )}
+      
       {filteredFeed.map(bucket => (
         <section key={bucket.epic.id} className="space-y-[1.5rem]">
           <header className="flex items-center gap-[1rem] px-[0.5rem] group">
@@ -53,14 +84,23 @@ export function SessionTaskFeed({ feed, selectedEpicId, onSelectTask, highlightT
           </header>
 
           <div className="grid grid-cols-[repeat(auto-fill,minmax(20rem,1fr))] gap-[1.5rem]">
-            {bucket.tasks.map(task => (
-              <SessionFeedCard 
-                key={task.id} 
-                card={task} 
-                onSelect={onSelectTask} 
-                isHighlighted={highlightTaskId === task.id}
-              />
-            ))}
+            {bucket.tasks.map(task => {
+              const taskIncursion = incursions.find(inc => 
+                task.owner && inc.agents.includes(task.owner)
+              );
+              
+              const isAgentMission = highlightingAgentId ? task.owner === highlightingAgentId : false;
+              return (
+                <SessionFeedCard 
+                  key={task.id} 
+                  card={task} 
+                  onSelect={onSelectTask} 
+                  isHighlighted={highlightTaskId === task.id || isAgentMission}
+                  incursion={taskIncursion}
+                  highlightSource={isAgentMission ? 'agent' : undefined}
+                />
+              );
+            })}
           </div>
         </section>
       ))}

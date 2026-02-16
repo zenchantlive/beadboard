@@ -104,4 +104,14 @@ describe('Agent Sessions Aggregation', () => {
     const card = feed[0].tasks[0];
     assert.strictEqual(card.sessionState, 'stale');
   });
+
+  it('should reflect agent liveness (evicted) in session state', () => {
+    const issues = [MOCK_ISSUE];
+    const livenessMap = { 'agent-smith': 'evicted' };
+    
+    const feed = buildSessionTaskFeed(issues, [], { messages: [] }, livenessMap);
+    
+    const card = feed[0].tasks[0];
+    assert.strictEqual(card.sessionState, 'evicted');
+  });
 });

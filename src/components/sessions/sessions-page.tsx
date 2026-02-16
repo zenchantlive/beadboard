@@ -10,7 +10,8 @@ import type { AgentRecord } from '../../lib/agent-registry';
 import { EpicChipStrip } from '../shared/epic-chip-strip';
 import { SessionTaskFeed } from './session-task-feed';
 import { ConversationDrawer } from './conversation-drawer';
-import { SessionsHeader } from './sessions-header';
+import { SessionsHeader, type SwarmGroup } from './sessions-header';
+import { getMissionsByAgent } from '../../lib/agent-sessions';
 
 interface SessionsPageProps {
   issues: BeadIssue[];
@@ -19,6 +20,8 @@ interface SessionsPageProps {
   projectScopeKey: string;
   projectScopeOptions: ProjectScopeOption[];
   projectScopeMode: 'single' | 'aggregate';
+  swarmGroups?: SwarmGroup[];
+  unassignedAgents?: AgentRecord[];
 }
 
 export function SessionsPage({
@@ -28,9 +31,20 @@ export function SessionsPage({
   projectScopeKey,
   projectScopeOptions,
   projectScopeMode,
+  swarmGroups = [],
+  unassignedAgents = [],
 }: SessionsPageProps) {
-  // 2. Session-specific feed
-  const { feed, loading, refresh: refreshFeed, stats } = useSessionFeed(projectRoot);
+  const { feed, incursions, livenessMap, loading, refresh: refreshFeed, stats } = useSessionFeed(projectRoot);
+
+  // Compute mission counts for agent header badges
+  const missionCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const missionsByAgent = getMissionsByAgent(feed);
+    for (const [agentId, missions] of Object.entries(missionsByAgent)) {
+      counts[agentId] = missions.length;
+    }
+    return counts;
+  }, [feed]);
 
   const { 
     selectedAgentId, 
@@ -43,11 +57,11 @@ export function SessionsPage({
   const [selectedEpicId, setSelectedEpicId] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // 1. Basic subscription for SSE invalidation
   const { refresh: refreshIssues, issues: localIssues } = useBeadsSubscription(initialIssues, projectRoot, {
-    onUpdate: () => {
-      console.log('[Sessions] SSE update detected. Scheduling silent refresh...');
-      // Small delay to ensure backend files are flushed
+    onUpdate: (kind) => {
+      if (kind === 'telemetry') return;
+
+      console.log(`[Sessions] ${kind} update detected. Scheduling silent refresh...`);
       setTimeout(() => {
         void refreshFeed({ silent: true });
         setRefreshTrigger(prev => prev + 1);
@@ -73,6 +87,10 @@ export function SessionsPage({
         projectScopeMode={projectScopeMode}
         projectScopeOptions={projectScopeOptions}
         stats={stats}
+        livenessMap={livenessMap}
+        swarmGroups={swarmGroups}
+        unassignedAgents={unassignedAgents}
+        missionCounts={missionCounts}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -97,9 +115,11 @@ export function SessionsPage({
             ) : (
               <SessionTaskFeed 
                 feed={feed} 
+                incursions={incursions}
                 selectedEpicId={selectedEpicId} 
                 onSelectTask={setSelectedTaskId}
                 highlightTaskId={selectedTaskId}
+                highlightingAgentId={selectedAgentId}
               />
             )}
           </div>

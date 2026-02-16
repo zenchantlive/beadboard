@@ -5,6 +5,8 @@ import type { EpicBucket } from '../lib/agent-sessions';
 
 export function useSessionFeed(projectRoot: string) {
   const [feed, setFeed] = useState<EpicBucket[]>([]);
+  const [livenessMap, setLivenessMap] = useState<Record<string, string>>({});
+  const [incursions, setIncursions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,6 +20,12 @@ export function useSessionFeed(projectRoot: string) {
       const data = await res.json();
       if (data.ok) {
         setFeed(data.feed);
+        if (data.livenessMap) {
+          setLivenessMap(data.livenessMap);
+        }
+        if (data.incursions) {
+          setIncursions(data.incursions);
+        }
       } else {
         throw new Error(data.error?.message || 'Failed to fetch session feed');
       }
@@ -34,6 +42,8 @@ export function useSessionFeed(projectRoot: string) {
 
   return { 
     feed, 
+    livenessMap,
+    incursions,
     loading, 
     error, 
     refresh: fetchFeed,

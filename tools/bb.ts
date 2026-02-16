@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 import {
-    registerAgent, listAgents, showAgent, type AgentCommandResponse
+    registerAgent, listAgents, showAgent, extendActivityLease, type AgentCommandResponse
 } from '../src/lib/agent-registry';
 import {
     sendAgentMessage, inboxAgentMessages, readAgentMessage, ackAgentMessage,
@@ -10,7 +10,6 @@ import {
     reserveAgentScope, releaseAgentReservation, statusAgentReservations,
     type ReservationCommandResponse
 } from '../src/lib/agent-reservations';
-
 // Common types
 type AnyCommandResponse = AgentCommandResponse<any> | MailCommandResponse<any> | ReservationCommandResponse<any>;
 
@@ -45,6 +44,13 @@ function printResponse(response: AnyCommandResponse, json: boolean) {
     } else if (response.command === 'agent show') {
         const d = response.data;
         console.log(`Agent: ${d.agent_id}\nRole: ${d.role}\nStatus: ${d.status}\nLast Seen: ${d.last_seen_at}`);
+    } else if (response.command === 'agent activity-lease') {
+        const d = response.data;
+        if (d) {
+          console.log(`✓ Activity lease extended: ${d.agent_id} (version: ${d.version})`);
+        } else {
+          console.log(`✓ Activity lease extended.`);
+        }
     } else if (response.command === 'agent send') {
         const d = response.data;
         console.log(`✓ Message sent: ${d.message_id} (state: ${d.state})`);
@@ -78,10 +84,11 @@ function printAgentHelp() {
     console.log(`Usage: bb agent <command> [options]
 
 Commands:
-  register   Register or update an agent identity
-  list       List registered agents
-  show       Show one registered agent
-  send       Send a message to an agent
+  register         Register or update an agent identity
+  list             List registered agents
+  show             Show one registered agent
+  activity-lease   Extend the activity lease (silent refresh)
+  send             Send a message to an agent
   inbox      List inbox messages for an agent
   read       Mark one message as read
   ack        Acknowledge one message
@@ -169,6 +176,14 @@ async function main() {
     try {
         let result: AnyCommandResponse;
 
+        // ACTIVITY LEASE (Passive): Whenever an agent ID is provided in any command,
+        // we extend their lease as a side-effect of real work.
+        // This provides observability WITHOUT background workers or popups.
+        const targetAgent = stringArg(values.agent) || stringArg(values.from) || stringArg(values.name);
+        if (targetAgent && command !== 'register' && command !== 'activity-lease') {
+            await extendActivityLease({ agent: targetAgent }, deps).catch(() => {});
+        }
+
         switch (command) {
             // --- Identity ---
             case 'register':
@@ -191,6 +206,13 @@ async function main() {
             case 'show':
                 if (!values.agent) throw new Error('--agent required');
                 result = await showAgent({ agent: stringArg(values.agent)! });
+                break;
+
+            case 'activity-lease':
+                if (!values.agent) throw new Error('--agent required');
+                result = await extendActivityLease({
+                    agent: stringArg(values.agent)!,
+                }, deps);
                 break;
 
             // --- Mail ---

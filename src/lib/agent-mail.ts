@@ -194,6 +194,21 @@ async function resolveRegisteredAgent(agentId: string): Promise<AgentRecord | nu
   return result.ok ? result.data : null;
 }
 
+async function resolveRecipients(to: string, from: string): Promise<string[]> {
+  if (to === 'broadcast') {
+    const agents = (await listAgents({})).data ?? [];
+    return agents.map((a) => a.agent_id).filter((id) => id !== from);
+  }
+
+  if (to.startsWith('role:')) {
+    const role = to.slice(5);
+    const agents = (await listAgents({ role })).data ?? [];
+    return agents.map((a) => a.agent_id).filter((id) => id !== from);
+  }
+
+  return [to];
+}
+
 export async function sendAgentMessage(
   input: SendAgentMessageInput,
   deps: Partial<SendAgentMessageDeps> = {},
@@ -216,7 +231,9 @@ export async function sendAgentMessage(
     return invalid(command, 'UNKNOWN_RECIPIENT', 'Recipient agent is required.');
   }
 
-  if (to !== 'broadcast' && !(await resolveRegisteredAgent(to))) {
+  const isRoleOrBroadcast = to === 'broadcast' || to.startsWith('role:');
+
+  if (!isRoleOrBroadcast && !(await resolveRegisteredAgent(to))) {
     return invalid(command, 'UNKNOWN_RECIPIENT', 'Recipient agent is not registered.');
   }
 
@@ -235,12 +252,17 @@ export async function sendAgentMessage(
   try {
     const now = deps.now ? deps.now() : new Date().toISOString();
     const generateId = deps.idGenerator ?? (() => defaultMessageId(now));
-    const recipientIds =
-      to === 'broadcast'
-        ? ((await listAgents({})).data ?? []).map((agent) => agent.agent_id).filter((agentId) => agentId !== from)
-        : [to];
+    const recipientIds = await resolveRecipients(to, from);
 
     if (recipientIds.length === 0) {
+      if (to.startsWith('role:')) {
+        const role = to.slice(5);
+        const allWithRole = (await listAgents({ role })).data ?? [];
+        if (allWithRole.length === 0) {
+          return invalid(command, 'UNKNOWN_RECIPIENT', `no agents found with role '${role}'.`);
+        }
+        return invalid(command, 'UNKNOWN_RECIPIENT', 'all recipients were excluded (sender).');
+      }
       return invalid(command, 'UNKNOWN_RECIPIENT', 'No recipients available for broadcast.');
     }
 

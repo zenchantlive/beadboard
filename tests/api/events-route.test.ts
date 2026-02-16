@@ -4,6 +4,10 @@ import assert from 'node:assert/strict';
 import { GET as eventsGet } from '../../src/app/api/events/route';
 import { getIssuesWatchManager } from '../../src/lib/watcher';
 
+test.afterEach(async () => {
+  await getIssuesWatchManager().stopAll();
+});
+
 test.after(async () => {
   await getIssuesWatchManager().stopAll();
 });

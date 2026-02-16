@@ -29,7 +29,7 @@ test('graph page defines tabbed layout, epic chips, and mobile fallback', async 
   // Task details drawer
   assert.match(graphPage, /TaskDetailsDrawer/, 'should use TaskDetailsDrawer drawer');
   assert.match(graphPage, /projectRoot=\{projectRoot\}/, 'drawer should receive project root for edits');
-  assert.match(graphPage, /onIssueUpdated=\{\(\) => router.refresh\(\)\}/, 'drawer should trigger refresh after edits');
+  assert.match(graphPage, /onIssueUpdated=\{.*refreshIssues\(\)\}/, 'drawer should trigger refresh after edits');
 
   // Dependency flow strip
   assert.match(graphPage, /DependencyFlowStrip/, 'should use DependencyFlowStrip component');

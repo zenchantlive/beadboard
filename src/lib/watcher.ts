@@ -53,14 +53,20 @@ export class IssuesWatchManager {
       console.log(`[Watcher] Processing event for ${projectRoot}: ${payload.kind} (${payload.changedPath})`);
       
       // 1. Emit basic file change event
-      this.eventBus.emit(projectRoot, payload.changedPath, payload.kind);
-
-      // 2. Perform snapshot diffing if issues.jsonl changed
+      // If it's just last-touched or a DB file change, we treat it as telemetry
       const changedPath = payload.changedPath || '';
       const isIssuesJsonl = changedPath.endsWith('issues.jsonl') || changedPath.endsWith('issues.jsonl.new');
+      const isLastTouched = changedPath.includes('last-touched');
+      const isDbPulse = changedPath.includes('beads.db');
+
+      const kind = (isLastTouched || isDbPulse) && !isIssuesJsonl ? 'telemetry' : payload.kind;
+      this.eventBus.emit(projectRoot, payload.changedPath, kind);
+
+      // 2. Perform snapshot diffing if issues.jsonl changed
+      const isBeadsDb = changedPath.includes('beads.db') || isLastTouched;
       const isGlobalMessages = changedPath.includes('.beadboard') && changedPath.includes('messages');
       
-      if (isIssuesJsonl) {
+      if (isIssuesJsonl || isBeadsDb) {
         console.log(`[Watcher] Issues changed. Syncing activity for ${projectRoot}...`);
         await this.syncActivity(projectRoot);
       } else if (isGlobalMessages) {
@@ -76,7 +82,7 @@ export class IssuesWatchManager {
     const previous = this.snapshots.get(projectKey) ?? null;
     
     try {
-      const current = await readIssuesFromDisk({ projectRoot });
+      const current = await readIssuesFromDisk({ projectRoot, preferBd: true, skipAgentFilter: true });
       const events = diffSnapshots(previous, current);
       
       this.snapshots.set(projectKey, current);
@@ -97,7 +103,7 @@ export class IssuesWatchManager {
 
     // Pre-populate snapshot to avoid "all created" burst on first change
     try {
-      const initial = await readIssuesFromDisk({ projectRoot });
+      const initial = await readIssuesFromDisk({ projectRoot, preferBd: true, skipAgentFilter: true });
       this.snapshots.set(projectKey, initial);
     } catch {
       // Ignore initial read failure, will retry on first change
@@ -190,7 +196,7 @@ export class IssuesWatchManager {
   }
 }
 
-const WATCHER_VERSION = 3; // Bump this to force re-creation on HMR
+const WATCHER_VERSION = 4; // Bump this to force re-creation on HMR (v4: fix beads.db telemetry classification)
 
 const globalRegistry = globalThis as typeof globalThis & {
   __beadboardWatchManager?: IssuesWatchManager;

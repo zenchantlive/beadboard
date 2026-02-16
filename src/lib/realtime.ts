@@ -2,7 +2,7 @@ import path from 'node:path';
 import { canonicalizeWindowsPath, windowsPathKey } from './pathing';
 import type { ActivityEvent } from './activity';
 
-export type IssuesChangeKind = 'changed' | 'renamed';
+export type IssuesChangeKind = 'changed' | 'renamed' | 'telemetry';
 
 export interface IssuesChangedEvent {
   id: number;
@@ -202,7 +202,8 @@ if (!globalRegistry.__beadboardActivityEventBus) {
 }
 
 export function toSseFrame(event: IssuesChangedEvent): string {
-  return `id: ${event.id}\nevent: issues\ndata: ${JSON.stringify(event)}\n\n`;
+  const eventName = event.kind === 'telemetry' ? 'telemetry' : 'issues';
+  return `id: ${event.id}\nevent: ${eventName}\ndata: ${JSON.stringify(event)}\n\n`;
 }
 
 export function toActivitySseFrame(event: ActivityDispatchedEvent): string {

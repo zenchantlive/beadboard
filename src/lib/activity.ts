@@ -20,7 +20,8 @@ export type ActivityEventKind =
   | 'comment_added'
   | 'due_date_changed'
   | 'estimate_changed'
-  | 'field_changed';
+  | 'field_changed'
+  | 'heartbeat';
 
 /**
  * Represents a discrete change or action derived from bead snapshots or interactions.

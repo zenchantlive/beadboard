@@ -13,3 +13,6 @@ worktrees/
 
 # local screenshot artifacts
 artifacts/
+
+# beadboard runtime artifacts
+.beadboard/

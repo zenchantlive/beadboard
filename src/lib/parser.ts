@@ -2,6 +2,7 @@ import type { BeadDependency, BeadIssue, ParseableBeadIssue } from './types';
 
 export interface ParseIssuesOptions {
   includeTombstones?: boolean;
+  skipAgentFilter?: boolean;
 }
 
 function normalizeDependencies(value: unknown): BeadDependency[] {
@@ -78,6 +79,11 @@ export function parseIssuesJsonl(text: string, options: ParseIssuesOptions = {})
 
       const normalized = normalizeIssue(parsed);
       if (!includeTombstones && normalized.status === 'tombstone') {
+        continue;
+      }
+
+      // Exclude agent identities from standard mission lists
+      if (!options.skipAgentFilter && normalized.labels.includes('gt:agent')) {
         continue;
       }
 
