@@ -83,7 +83,7 @@ export function parseIssuesJsonl(text: string, options: ParseIssuesOptions = {})
       }
 
       // Exclude agent identities from standard mission lists
-      if (normalized.labels.includes('gt:agent')) {
+      if (!options.skipAgentFilter && normalized.labels.includes('gt:agent')) {
         continue;
       }
 

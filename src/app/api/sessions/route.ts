@@ -16,7 +16,7 @@ export async function GET(request: Request): Promise<Response> {
     const communication = await getCommunicationSummary();
     const livenessMap = await getAgentLivenessMap(projectRoot, activity);
     const incursions = await calculateIncursions();
-    const agentsResult = await listAgents({});
+    const agentsResult = await listAgents({}, { projectRoot });
 
     const feed = buildSessionTaskFeed(issues, activity, communication, livenessMap);
 

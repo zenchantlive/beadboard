@@ -18,7 +18,7 @@ import { parseArgs } from 'node:util';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { execSync } from 'node:child_process';
+import { execSync, execFileSync } from 'node:child_process';
 
 function log(obj) {
   process.stdout.write(`${JSON.stringify(obj, null, 2)}
@@ -48,20 +48,20 @@ async function resolveBbPath() {
   const tsEntry = path.join(process.cwd(), 'tools', 'bb.ts');
   try {
     await fs.access(tsEntry);
-    return `npx tsx ${tsEntry}`;
+    return { type: 'tsx', path: tsEntry };
   } catch {}
 
   if (envRepo) {
     const p = path.join(envRepo, 'bb.ps1');
     try {
       await fs.access(p);
-      return p;
+      return { type: 'powershell', path: p };
     } catch {}
     
     const envTs = path.join(envRepo, 'tools', 'bb.ts');
     try {
       await fs.access(envTs);
-      return `npx tsx ${envTs}`;
+      return { type: 'tsx', path: envTs };
     } catch {}
   }
 
@@ -82,9 +82,9 @@ async function main() {
 
   const isNonInteractive = values['non-interactive'];
   const projectRoot = values['project-root'] || process.cwd();
-  const bbPath = await resolveBbPath();
+  const bbResult = await resolveBbPath();
 
-  if (!bbPath) {
+  if (!bbResult) {
     error('BB_NOT_FOUND', 'Could not resolve bb.ps1 or tools/bb.ts');
   }
 
@@ -103,8 +103,6 @@ async function main() {
   }
 
   try {
-    const bbExec = bbPath.includes('npx tsx') ? bbPath : `powershell.exe -NoProfile -Command "& '${bbPath}'"`;
-    
     // Compose environment fingerprint (Rig)
     const rigId = `${os.platform()}-${os.arch()}-${os.hostname()}`;
 
@@ -112,10 +110,18 @@ async function main() {
 
     if (mode === 'register') {
       const role = values.role || 'agent';
-      execSync(`${bbExec} agent register --name ${agentId} --role ${role} --rig ${rigId} --json`, { stdio: 'ignore', cwd: projectRoot, env });
+      const registerArgs = bbResult.type === 'tsx'
+        ? ['tsx', bbResult.path, 'agent', 'register', '--name', agentId, '--role', role, '--rig', rigId, '--json']
+        : ['agent', 'register', '--name', agentId, '--role', role, '--rig', rigId, '--json'];
+      const registerCmd = bbResult.type === 'tsx' ? 'npx' : bbResult.path;
+      execFileSync(registerCmd, registerArgs, { stdio: 'ignore', cwd: projectRoot, env });
     } else {
       // Start/Extend the lease to show we are now active
-      execSync(`${bbExec} agent activity-lease --agent ${agentId} --json`, { stdio: 'ignore', cwd: projectRoot, env });
+      const leaseArgs = bbResult.type === 'tsx'
+        ? ['tsx', bbResult.path, 'agent', 'activity-lease', '--agent', agentId, '--json']
+        : ['agent', 'activity-lease', '--agent', agentId, '--json'];
+      const leaseCmd = bbResult.type === 'tsx' ? 'npx' : bbResult.path;
+      execFileSync(leaseCmd, leaseArgs, { stdio: 'ignore', cwd: projectRoot, env });
     }
 
     log({

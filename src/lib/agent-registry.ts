@@ -121,7 +121,7 @@ function trimOrEmpty(value: unknown): string {
 async function callBdAgentShow(beadId: string, projectRoot: string): Promise<AgentRecord | null> {
   const showResult = await runBdCommand({
     projectRoot,
-    args: ['show', beadId, '--json'],
+    args: ['agent', 'show', beadId, '--json'],
   });
 
   if (!showResult.success) {
