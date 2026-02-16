@@ -86,7 +86,7 @@ export function UnifiedShell({
         <SocialPage
           issues={issues}
           selectedId={taskId ?? undefined}
-          onSelect={setTaskId}
+          onSelect={handleCardSelect}
         />
       );
     }
@@ -96,7 +96,7 @@ export function UnifiedShell({
         <SwarmPage
           issues={issues}
           selectedId={swarmId ?? undefined}
-          onSelect={setSwarmId}
+          onSelect={handleCardSelect}
         />
       );
     }
