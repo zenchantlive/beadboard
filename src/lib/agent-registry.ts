@@ -1,10 +1,13 @@
-import fs from 'node:fs/promises';
-import os from 'node:os';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
+import { runBdCommand } from './bridge';
+import { activityEventBus } from './realtime';
 
 const AGENT_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-export type AgentCommandName = 'agent register' | 'agent list' | 'agent show' | 'agent activity-lease';
+export type AgentCommandName = 'agent register' | 'agent list' | 'agent show' | 'agent activity-lease' | 'agent state';
+
+export type AgentZfcState = 'idle' | 'spawning' | 'running' | 'working' | 'stuck' | 'done' | 'stopped' | 'dead';
 
 export interface AgentCommandError {
   code: string;
@@ -24,8 +27,10 @@ export interface AgentRecord {
   role: string;
   status: string;
   created_at: string;
-  last_seen_at: string; // Used as the base for the Activity Lease
+  last_seen_at: string;
   version: number;
+  rig?: string;
+  role_type?: string;
 }
 
 export interface RegisterAgentInput {
@@ -33,10 +38,12 @@ export interface RegisterAgentInput {
   display?: string;
   role: string;
   forceUpdate?: boolean;
+  rig?: string;
 }
 
 export interface RegisterAgentDeps {
   now: () => string;
+  projectRoot: string;
 }
 
 export interface ListAgentsInput {
@@ -52,24 +59,81 @@ export interface ActivityLeaseInput {
   agent: string;
 }
 
-function userProfileRoot(): string {
-  return process.env.USERPROFILE?.trim() || os.homedir();
+/**
+ * Normalizes agent name to bead ID with prefix.
+ * e.g. "silver-castle" -> "bb-silver-castle"
+ */
+function toBeadId(name: string): string {
+  const trimmed = name.trim();
+  if (trimmed.startsWith('bb-')) return trimmed;
+  return `bb-${trimmed}`;
 }
 
-export function agentRegistryRoot(): string {
-  return path.join(userProfileRoot(), '.beadboard', 'agent');
+/**
+ * Strips prefix from bead ID for display/internal logic.
+ * e.g. "bb-silver-castle" -> "silver-castle"
+ */
+function fromBeadId(id: string): string {
+  if (id.startsWith('bb-')) return id.slice(3);
+  return id;
 }
 
-export function agentsDirectoryPath(): string {
-  return path.join(agentRegistryRoot(), 'agents');
+/**
+ * Robustly extracts the first JSON block from a potentially noisy string.
+ * Handles cases where 'bd' outputs warnings or daemon logs before the JSON.
+ */
+function extractJson(text: string): any {
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1) {
+    throw new Error('No JSON block found in output');
+  }
+  const jsonPart = text.slice(start, end + 1);
+  return JSON.parse(jsonPart);
 }
 
-export function agentFilePath(agentId: string): string {
-  return path.join(agentsDirectoryPath(), `${agentId}.json`);
+/**
+ * Robustly extracts the first JSON array from a potentially noisy string.
+ */
+function extractJsonArray(text: string): any[] {
+  const start = text.indexOf('[');
+  const end = text.lastIndexOf(']');
+  if (start === -1 || end === -1) {
+    // Check if it's a single object instead
+    try {
+      const single = extractJson(text);
+      return [single];
+    } catch {
+      return [];
+    }
+  }
+  const jsonPart = text.slice(start, end + 1);
+  return JSON.parse(jsonPart);
 }
 
 function trimOrEmpty(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+/**
+ * Internal helper to fetch and parse agent details robustly.
+ */
+async function callBdAgentShow(beadId: string, projectRoot: string): Promise<AgentRecord | null> {
+  const showResult = await runBdCommand({
+    projectRoot,
+    args: ['show', beadId, '--json'],
+  });
+
+  if (!showResult.success) {
+    return null;
+  }
+
+  try {
+    const bdAgent = extractJson(showResult.stdout);
+    return mapBdAgentToRecord(bdAgent);
+  } catch {
+    return null;
+  }
 }
 
 function invalid(command: AgentCommandName, code: string, message: string): AgentCommandResponse<never> {
@@ -112,50 +176,36 @@ function validateRole(value: string): AgentCommandError | null {
   return null;
 }
 
-async function readAgent(agentId: string): Promise<AgentRecord | null> {
-  try {
-    const raw = await fs.readFile(agentFilePath(agentId), 'utf8');
-    const parsed = JSON.parse(raw) as AgentRecord;
-    return parsed;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return null;
+function mapBdAgentToRecord(bdAgent: any): AgentRecord {
+  // Extract role from labels if role_type is not set
+  let role = bdAgent.role_type || 'agent';
+  if (role === 'agent' && Array.isArray(bdAgent.labels)) {
+    const roleLabel = bdAgent.labels.find((l: string) => l.startsWith('role:'));
+    if (roleLabel) {
+      role = roleLabel.split(':')[1];
     }
-
-    throw error;
   }
-}
 
-async function writeAgent(record: AgentRecord): Promise<void> {
-  const filePath = agentFilePath(record.agent_id);
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
-}
-
-async function loadAllAgents(): Promise<AgentRecord[]> {
-  try {
-    const entries = await fs.readdir(agentsDirectoryPath(), { withFileTypes: true });
-    const files = entries.filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.json'));
-
-    const agents: AgentRecord[] = [];
-    for (const file of files) {
-      const filePath = path.join(agentsDirectoryPath(), file.name);
-      try {
-        const raw = await fs.readFile(filePath, 'utf8');
-        agents.push(JSON.parse(raw) as AgentRecord);
-      } catch {
-        continue;
-      }
+  let rig = bdAgent.rig;
+  if (!rig && Array.isArray(bdAgent.labels)) {
+    const rigLabel = bdAgent.labels.find((l: string) => l.startsWith('rig:'));
+    if (rigLabel) {
+      rig = rigLabel.split(':')[1];
     }
-
-    return agents.sort((left, right) => left.agent_id.localeCompare(right.agent_id));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return [];
-    }
-
-    throw error;
   }
+
+  const record: AgentRecord = {
+    agent_id: fromBeadId(bdAgent.id),
+    display_name: bdAgent.title?.replace(/^Agent: /, '') || fromBeadId(bdAgent.id),
+    role,
+    status: bdAgent.agent_state || 'idle',
+    created_at: bdAgent.created_at || bdAgent.last_activity || new Date().toISOString(),
+    last_seen_at: bdAgent.last_activity || new Date().toISOString(),
+    version: 1,
+    rig,
+    role_type: bdAgent.role_type,
+  };
+  return record;
 }
 
 export async function registerAgent(
@@ -163,11 +213,12 @@ export async function registerAgent(
   deps: Partial<RegisterAgentDeps> = {},
 ): Promise<AgentCommandResponse<AgentRecord>> {
   const command: AgentCommandName = 'agent register';
-  const agentId = trimOrEmpty(input.name);
+  const name = trimOrEmpty(input.name);
   const role = trimOrEmpty(input.role);
-  const display = trimOrEmpty(input.display) || agentId;
+  const display = trimOrEmpty(input.display) || name;
+  const projectRoot = deps.projectRoot || process.cwd();
 
-  const agentIdError = validateAgentId(agentId);
+  const agentIdError = validateAgentId(name);
   if (agentIdError) {
     return invalid(command, agentIdError.code, agentIdError.message);
   }
@@ -178,83 +229,176 @@ export async function registerAgent(
   }
 
   try {
-    const existing = await readAgent(agentId);
-    const now = deps.now ? deps.now() : new Date().toISOString();
+    const beadId = toBeadId(name);
+    
+    // 1. Check if agent exists
+    const showResult = await runBdCommand({
+      projectRoot,
+      args: ['agent', 'show', beadId, '--json'],
+    });
 
-    if (existing && !input.forceUpdate) {
+    if (showResult.success && !input.forceUpdate) {
       return invalid(command, 'DUPLICATE_AGENT_ID', 'Agent is already registered. Use --force-update to change display/role.');
     }
 
-    if (existing) {
-      const updated: AgentRecord = {
-        ...existing,
-        display_name: display || existing.display_name,
-        role,
-        last_seen_at: now,
-        version: existing.version + 1,
-      };
-      await writeAgent(updated);
-      return success(command, updated);
+    // 2. Set state (auto-creates if missing)
+    const stateResult = await runBdCommand({
+      projectRoot,
+      args: ['agent', 'state', beadId, 'idle', '--json'],
+    });
+
+    if (!stateResult.success) {
+      return invalid(command, 'INTERNAL_ERROR', `Failed to set agent state: ${stateResult.error}`);
     }
 
-    const created: AgentRecord = {
-      agent_id: agentId,
-      display_name: display,
-      role,
-      status: 'idle',
-      created_at: now,
-      last_seen_at: now,
-      version: 1,
-    };
+    // 3. Update title, role, and rig via labels
+    const labels = ['gt:agent'];
+    if (role) {
+      labels.push(`role:${role}`);
+    }
+    if (input.rig) {
+      labels.push(`rig:${input.rig}`);
+    }
 
-    await writeAgent(created);
-    return success(command, created);
+    const updateArgs = ['update', beadId, '--title', `Agent: ${display}`, '--add-label', labels.join(',')];
+
+    const updateResult = await runBdCommand({
+      projectRoot,
+      args: [...updateArgs, '--json'],
+    });
+
+    if (!updateResult.success) {
+      console.error('Update failed:', updateResult.error, updateResult.stdout, updateResult.stderr);
+      return invalid(command, 'INTERNAL_ERROR', `Failed to update agent details: ${updateResult.error}`);
+    }
+
+    // 4. Force flush to ensure issues.jsonl is updated (critical for tests and sync)
+    const flushResult = await runBdCommand({
+      projectRoot,
+      args: ['admin', 'flush'],
+    });
+    if (!flushResult.success) {
+      console.error('Flush failed:', flushResult.error, flushResult.stdout, flushResult.stderr);
+    }
+
+    // 5. Return the new record
+    const record = await callBdAgentShow(beadId, projectRoot);
+    if (!record) {
+      return invalid(command, 'INTERNAL_ERROR', 'Failed to retrieve final agent state.');
+    }
+
+    return success(command, record);
   } catch (error) {
     return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to register agent.');
   }
 }
 
-export async function listAgents(input: ListAgentsInput): Promise<AgentCommandResponse<AgentRecord[]>> {
+export async function listAgents(
+  input: ListAgentsInput,
+  deps: Partial<RegisterAgentDeps> = {},
+): Promise<AgentCommandResponse<AgentRecord[]>> {
   const command: AgentCommandName = 'agent list';
   const role = trimOrEmpty(input.role);
   const status = trimOrEmpty(input.status);
+  const projectRoot = deps.projectRoot || process.cwd();
 
   try {
-    const agents = await loadAllAgents();
-    const filtered = agents.filter((agent) => {
-      if (role && agent.role !== role) {
-        return false;
-      }
-      if (status && agent.status !== status) {
-        return false;
-      }
-      return true;
+    const listResult = await runBdCommand({
+      projectRoot,
+      args: ['list', '--label', 'gt:agent', '--json'],
     });
 
-    return success(command, filtered);
+    if (!listResult.success) {
+      return invalid(command, 'INTERNAL_ERROR', `Failed to list agents from bd: ${listResult.error}`);
+    }
+
+    const rawList = extractJsonArray(listResult.stdout);
+    if (rawList.length === 0) {
+      return success(command, []);
+    }
+
+    const agents: AgentRecord[] = [];
+    for (const item of rawList) {
+      // Get detailed agent state for each bead found using show
+      const record = await callBdAgentShow(item.id, projectRoot);
+      if (record) {
+        if (role && record.role !== role) continue;
+        if (status && record.status !== status) continue;
+        
+        agents.push(record);
+      }
+    }
+
+    return success(command, agents.sort((a, b) => a.agent_id.localeCompare(b.agent_id)));
   } catch (error) {
     return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to list agents.');
   }
 }
 
-export async function showAgent(input: ShowAgentInput): Promise<AgentCommandResponse<AgentRecord>> {
+export async function showAgent(
+  input: ShowAgentInput,
+  deps: Partial<RegisterAgentDeps> = {},
+): Promise<AgentCommandResponse<AgentRecord>> {
   const command: AgentCommandName = 'agent show';
-  const agentId = trimOrEmpty(input.agent);
+  const name = trimOrEmpty(input.agent);
+  const projectRoot = deps.projectRoot || process.cwd();
 
-  const agentIdError = validateAgentId(agentId);
+  const agentIdError = validateAgentId(name);
   if (agentIdError) {
     return invalid(command, agentIdError.code, agentIdError.message);
   }
 
   try {
-    const agent = await readAgent(agentId);
-    if (!agent) {
+    const beadId = toBeadId(name);
+    const record = await callBdAgentShow(beadId, projectRoot);
+
+    if (!record) {
       return invalid(command, 'AGENT_NOT_FOUND', 'Agent is not registered.');
     }
 
-    return success(command, agent);
+    return success(command, record);
   } catch (error) {
     return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to load agent.');
+  }
+}
+
+/**
+ * Updates the ZFC state of an agent bead.
+ */
+export async function setAgentState(
+  input: { agent: string; state: AgentZfcState },
+  deps: Partial<RegisterAgentDeps> = {},
+): Promise<AgentCommandResponse<AgentRecord>> {
+  const command: AgentCommandName = 'agent state';
+  const name = trimOrEmpty(input.agent);
+  const state = input.state;
+  const projectRoot = deps.projectRoot || process.cwd();
+
+  const agentIdError = validateAgentId(name);
+  if (agentIdError) {
+    return invalid(command, agentIdError.code, agentIdError.message);
+  }
+
+  try {
+    const beadId = toBeadId(name);
+    
+    const stateResult = await runBdCommand({
+      projectRoot,
+      args: ['agent', 'state', beadId, state, '--json'],
+    });
+
+    if (!stateResult.success) {
+      return invalid(command, 'AGENT_NOT_FOUND', 'Agent is not registered.');
+    }
+
+    const record = await callBdAgentShow(beadId, projectRoot);
+    if (!record) {
+      return invalid(command, 'INTERNAL_ERROR', 'Failed to retrieve agent state after update.');
+    }
+
+    return success(command, record);
+  } catch (error) {
+    return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to set agent state.');
   }
 }
 
@@ -285,36 +429,59 @@ export function deriveLiveness(lastSeenAt: string, now: Date = new Date(), stale
 }
 
 /**
- * Extends the activity lease (last_seen_at timestamp) for a registered agent.
- * Equivalent to a "parking permit" extension based on real work.
+ * Extends the activity lease for a registered agent by emitting a native bd wisp.
+ * This provides silent observability WITHOUT persistent git churn.
  */
 export async function extendActivityLease(
   input: ActivityLeaseInput,
   deps: Partial<RegisterAgentDeps> = {},
-): Promise<AgentCommandResponse<AgentRecord>> {
+): Promise<AgentCommandResponse<AgentRecord | null>> {
   const command: AgentCommandName = 'agent activity-lease';
-  const agentId = trimOrEmpty(input.agent);
+  const name = trimOrEmpty(input.agent);
+  const projectRoot = deps.projectRoot || process.cwd();
 
-  const agentIdError = validateAgentId(agentId);
+  const agentIdError = validateAgentId(name);
   if (agentIdError) {
     return invalid(command, agentIdError.code, agentIdError.message);
   }
 
   try {
-    const existing = await readAgent(agentId);
-    if (!existing) {
-      return invalid(command, 'AGENT_NOT_FOUND', 'Agent is not registered.');
+    const beadId = toBeadId(name);
+    
+    // We create an ephemeral wisp of type 'heartbeat' tied to the agent bead.
+    // This refreshes the 'last_activity' in the bd system without mutating issues.jsonl.
+    const wispResult = await runBdCommand({
+      projectRoot,
+      args: [
+        'create', 
+        `pulse:${name}:${Date.now()}`, 
+        '--type', 'event', 
+        '--wisp-type', 'heartbeat', 
+        '--ephemeral', 
+        '--event-actor', beadId,
+        '--json'
+      ],
+    });
+
+    if (!wispResult.success) {
+      return invalid(command, 'INTERNAL_ERROR', `Failed to emit heartbeat wisp: ${wispResult.error}`);
     }
 
-    const now = deps.now ? deps.now() : new Date().toISOString();
-    const updated: AgentRecord = {
-      ...existing,
-      last_seen_at: now,
-      version: existing.version + 1,
-    };
+    // Emit heartbeat to activity bus for real-time aggregation
+    activityEventBus.emit({
+      id: randomUUID(),
+      kind: 'heartbeat',
+      beadId: beadId,
+      beadTitle: `Agent: ${name}`,
+      projectId: projectRoot,
+      projectName: path.basename(projectRoot),
+      timestamp: new Date().toISOString(),
+      actor: name,
+      payload: { message: 'running' }
+    });
 
-    await writeAgent(updated);
-    return success(command, updated);
+    // We return ok: true. The actual lease state will be aggregated from wisps.
+    return success(command, null);
   } catch (error) {
     return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to extend activity lease.');
   }

@@ -17,6 +17,7 @@
 import { parseArgs } from 'node:util';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import os from 'node:os';
 import { execSync } from 'node:child_process';
 
 function log(obj) {
@@ -43,25 +44,26 @@ async function getUncommittedChanges(projectRoot) {
 
 async function resolveBbPath() {
   const envRepo = process.env.BB_REPO;
+  
+  const tsEntry = path.join(process.cwd(), 'tools', 'bb.ts');
+  try {
+    await fs.access(tsEntry);
+    return `npx tsx ${tsEntry}`;
+  } catch {}
+
   if (envRepo) {
     const p = path.join(envRepo, 'bb.ps1');
     try {
       await fs.access(p);
       return p;
     } catch {}
+    
+    const envTs = path.join(envRepo, 'tools', 'bb.ts');
+    try {
+      await fs.access(envTs);
+      return `npx tsx ${envTs}`;
+    } catch {}
   }
-
-  const local = path.join(process.cwd(), 'bb.ps1');
-  try {
-    await fs.access(local);
-    return local;
-  } catch {}
-
-  const tsEntry = path.join(process.cwd(), 'tools', 'bb.ts');
-  try {
-    await fs.access(tsEntry);
-    return `npx tsx ${tsEntry}`;
-  } catch {}
 
   return null;
 }
@@ -73,12 +75,13 @@ async function main() {
       adopt: { type: 'string' },
       register: { type: 'string' },
       role: { type: 'string' },
-      json: { type: 'boolean' }
+      json: { type: 'boolean' },
+      'project-root': { type: 'string' }
     }
   });
 
   const isNonInteractive = values['non-interactive'];
-  const projectRoot = process.cwd();
+  const projectRoot = values['project-root'] || process.cwd();
   const bbPath = await resolveBbPath();
 
   if (!bbPath) {
@@ -102,12 +105,17 @@ async function main() {
   try {
     const bbExec = bbPath.includes('npx tsx') ? bbPath : `powershell.exe -NoProfile -Command "& '${bbPath}'"`;
     
+    // Compose environment fingerprint (Rig)
+    const rigId = `${os.platform()}-${os.arch()}-${os.hostname()}`;
+
+    const env = { ...process.env, BD_DB: path.join(projectRoot, '.beads', 'beads.db') };
+
     if (mode === 'register') {
       const role = values.role || 'agent';
-      execSync(`${bbExec} agent register --name ${agentId} --role ${role} --json`, { stdio: 'ignore' });
+      execSync(`${bbExec} agent register --name ${agentId} --role ${role} --rig ${rigId} --json`, { stdio: 'ignore', cwd: projectRoot, env });
     } else {
       // Start/Extend the lease to show we are now active
-      execSync(`${bbExec} agent activity-lease --agent ${agentId} --json`, { stdio: 'ignore' });
+      execSync(`${bbExec} agent activity-lease --agent ${agentId} --json`, { stdio: 'ignore', cwd: projectRoot, env });
     }
 
     log({

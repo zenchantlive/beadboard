@@ -8,7 +8,6 @@ import {
   registerAgent,
   extendActivityLease,
   deriveLiveness,
-  agentFilePath,
 } from '../../src/lib/agent-registry';
 
 async function withTempUserProfile(run: () => Promise<void>): Promise<void> {
@@ -29,10 +28,9 @@ async function withTempUserProfile(run: () => Promise<void>): Promise<void> {
   }
 }
 
-test('extendActivityLease updates last_seen_at and increments version', async () => {
+test('extendActivityLease emits heartbeat and returns null data (side effect only)', async () => {
   await withTempUserProfile(async () => {
     const start = '2026-02-14T10:00:00.000Z';
-    const next = '2026-02-14T10:05:00.000Z';
 
     await registerAgent(
       { name: 'active-agent', role: 'infra' },
@@ -41,16 +39,11 @@ test('extendActivityLease updates last_seen_at and increments version', async ()
 
     const result = await extendActivityLease(
       { agent: 'active-agent' },
-      { now: () => next }
+      { now: () => start }
     );
 
     assert.equal(result.ok, true);
-    assert.equal(result.data?.last_seen_at, next);
-    assert.equal(result.data?.version, 2);
-
-    const raw = await fs.readFile(agentFilePath('active-agent'), 'utf8');
-    const parsed = JSON.parse(raw);
-    assert.equal(parsed.last_seen_at, next);
+    assert.equal(result.data, null, 'extendActivityLease returns null data - heartbeat is side effect');
   });
 });
 

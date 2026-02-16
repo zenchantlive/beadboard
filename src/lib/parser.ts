@@ -2,6 +2,7 @@ import type { BeadDependency, BeadIssue, ParseableBeadIssue } from './types';
 
 export interface ParseIssuesOptions {
   includeTombstones?: boolean;
+  skipAgentFilter?: boolean;
 }
 
 function normalizeDependencies(value: unknown): BeadDependency[] {

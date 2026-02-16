@@ -86,7 +86,7 @@ export async function GET(request: Request): Promise<Response> {
         }
         if (nextVersion !== lastTouchedVersion) {
           lastTouchedVersion = nextVersion;
-          write(toSseFrame(issuesEventBus.emit(projectRoot, lastTouchedPath, 'changed')));
+          write(toSseFrame(issuesEventBus.emit(projectRoot, lastTouchedPath, 'telemetry')));
         }
       };
 

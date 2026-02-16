@@ -10,7 +10,6 @@ import {
     reserveAgentScope, releaseAgentReservation, statusAgentReservations,
     type ReservationCommandResponse
 } from '../src/lib/agent-reservations';
-
 // Common types
 type AnyCommandResponse = AgentCommandResponse<any> | MailCommandResponse<any> | ReservationCommandResponse<any>;
 

@@ -407,7 +407,8 @@ export async function releaseAgentReservation(
   try {
     const now = deps.now ? deps.now() : new Date().toISOString();
     const reservations = await readActiveReservations();
-    const existing = reservations.find((reservation) => reservation.scope === scope);
+    const normalizedScope = normalizePath(scope);
+    const existing = reservations.find((reservation) => reservation.scope === normalizedScope);
 
     if (!existing || isExpired(existing, now)) {
       if (existing && isExpired(existing, now)) {

@@ -14,7 +14,7 @@ export async function GET(request: Request): Promise<Response> {
     const issues = await readIssuesFromDisk({ projectRoot, preferBd: true });
     const activity = activityEventBus.getHistory(projectRoot);
     const communication = await getCommunicationSummary();
-    const livenessMap = await getAgentLivenessMap();
+    const livenessMap = await getAgentLivenessMap(projectRoot, activity);
     const incursions = await calculateIncursions();
     const agentsResult = await listAgents({});
 

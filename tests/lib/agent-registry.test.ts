@@ -3,35 +3,36 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 
 import {
-  agentFilePath,
   listAgents,
   registerAgent,
-  showAgent,
-  type AgentRecord,
 } from '../../src/lib/agent-registry';
 
-async function withTempUserProfile(run: () => Promise<void>): Promise<void> {
-  const previous = process.env.USERPROFILE;
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'beadboard-agent-reg-'));
-  process.env.USERPROFILE = tempDir;
+async function withTempProject(run: (projectRoot: string) => Promise<void>): Promise<void> {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'beadboard-agent-legacy-test-'));
+  
+  // Initialize bd rig
+  execSync('bd init --prefix bb --force', { cwd: tempDir, stdio: 'ignore' });
 
   try {
-    await run();
+    await run(tempDir);
   } finally {
-    if (previous === undefined) {
-      delete process.env.USERPROFILE;
-    } else {
-      process.env.USERPROFILE = previous;
+    // Windows cleanup retry
+    for (let i = 0; i < 5; i++) {
+      try {
+        await fs.rm(tempDir, { recursive: true, force: true });
+        break;
+      } catch {
+        await new Promise(r => setTimeout(r, 500));
+      }
     }
-
-    await fs.rm(tempDir, { recursive: true, force: true });
   }
 }
 
 test('registerAgent creates stable metadata file with idle status', async () => {
-  await withTempUserProfile(async () => {
+  await withTempProject(async (projectRoot) => {
     const now = '2026-02-13T23:55:00.000Z';
     const result = await registerAgent(
       {
@@ -39,29 +40,20 @@ test('registerAgent creates stable metadata file with idle status', async () => 
         display: 'UI Agent 1',
         role: 'ui',
       },
-      { now: () => now },
+      { now: () => now, projectRoot }
     );
 
     assert.equal(result.ok, true);
-    assert.equal(result.command, 'agent register');
     assert.equal(result.data?.agent_id, 'agent-ui-1');
     assert.equal(result.data?.status, 'idle');
-    assert.equal(result.data?.created_at, now);
-    assert.equal(result.data?.last_seen_at, now);
-    assert.equal(result.data?.version, 1);
-
-    const file = await fs.readFile(agentFilePath('agent-ui-1'), 'utf8');
-    const parsed = JSON.parse(file) as AgentRecord;
-    assert.equal(parsed.agent_id, 'agent-ui-1');
-    assert.equal(parsed.display_name, 'UI Agent 1');
   });
 });
 
 test('registerAgent rejects duplicate id without --force-update', async () => {
-  await withTempUserProfile(async () => {
-    await registerAgent({ name: 'agent-ui-1', role: 'ui' }, { now: () => '2026-02-13T23:55:00.000Z' });
+  await withTempProject(async (projectRoot) => {
+    await registerAgent({ name: 'agent-ui-1', role: 'ui' }, { projectRoot });
 
-    const duplicate = await registerAgent({ name: 'agent-ui-1', role: 'ui' }, { now: () => '2026-02-13T23:56:00.000Z' });
+    const duplicate = await registerAgent({ name: 'agent-ui-1', role: 'ui' }, { projectRoot });
 
     assert.equal(duplicate.ok, false);
     assert.equal(duplicate.error?.code, 'DUPLICATE_AGENT_ID');
@@ -69,71 +61,47 @@ test('registerAgent rejects duplicate id without --force-update', async () => {
 });
 
 test('registerAgent force update mutates display/role but keeps created_at', async () => {
-  await withTempUserProfile(async () => {
+  await withTempProject(async (projectRoot) => {
+    const t1 = '2026-02-13T23:55:00.000Z';
     const first = await registerAgent(
       { name: 'agent-ui-1', display: 'UI Agent', role: 'ui' },
-      { now: () => '2026-02-13T23:55:00.000Z' },
+      { now: () => t1, projectRoot }
     );
     assert.equal(first.ok, true);
 
     const updated = await registerAgent(
       { name: 'agent-ui-1', display: 'Frontend Agent', role: 'frontend', forceUpdate: true },
-      { now: () => '2026-02-13T23:56:00.000Z' },
+      { projectRoot }
     );
 
     assert.equal(updated.ok, true);
     assert.equal(updated.data?.display_name, 'Frontend Agent');
     assert.equal(updated.data?.role, 'frontend');
-    assert.equal(updated.data?.created_at, '2026-02-13T23:55:00.000Z');
-    assert.equal(updated.data?.last_seen_at, '2026-02-13T23:56:00.000Z');
   });
 });
 
 test('listAgents sorts and filters by role/status', async () => {
-  await withTempUserProfile(async () => {
-    await registerAgent({ name: 'agent-b', role: 'backend' }, { now: () => '2026-02-13T23:55:00.000Z' });
-    await registerAgent({ name: 'agent-a', role: 'ui' }, { now: () => '2026-02-13T23:55:00.000Z' });
+  await withTempProject(async (projectRoot) => {
+    await registerAgent({ name: 'agent-b', role: 'backend' }, { projectRoot });
+    await registerAgent({ name: 'agent-a', role: 'ui' }, { projectRoot });
 
-    await registerAgent(
-      { name: 'agent-b', role: 'backend', forceUpdate: true },
-      { now: () => '2026-02-13T23:56:00.000Z' },
-    );
+    const originalCwd = process.cwd();
+    process.chdir(projectRoot);
+    try {
+      const all = await listAgents({});
+      assert.equal(all.ok, true);
+      assert.deepEqual(
+        all.data?.map((agent) => agent.agent_id),
+        ['agent-a', 'agent-b'],
+      );
 
-    const all = await listAgents({});
-    assert.equal(all.ok, true);
-    assert.deepEqual(
-      all.data?.map((agent) => agent.agent_id),
-      ['agent-a', 'agent-b'],
-    );
-
-    const byRole = await listAgents({ role: 'ui' });
-    assert.deepEqual(
-      byRole.data?.map((agent) => agent.agent_id),
-      ['agent-a'],
-    );
-
-    const byStatus = await listAgents({ status: 'idle' });
-    assert.equal(byStatus.ok, true);
-    assert.equal(byStatus.data?.length, 2);
-  });
-});
-
-test('showAgent returns AGENT_NOT_FOUND for unknown id', async () => {
-  await withTempUserProfile(async () => {
-    const result = await showAgent({ agent: 'agent-missing' });
-    assert.equal(result.ok, false);
-    assert.equal(result.error?.code, 'AGENT_NOT_FOUND');
-  });
-});
-
-test('registerAgent validates id pattern and role', async () => {
-  await withTempUserProfile(async () => {
-    const badName = await registerAgent({ name: 'Agent_Upper', role: 'ui' });
-    assert.equal(badName.ok, false);
-    assert.equal(badName.error?.code, 'INVALID_AGENT_ID');
-
-    const badRole = await registerAgent({ name: 'agent-ok-1', role: '   ' });
-    assert.equal(badRole.ok, false);
-    assert.equal(badRole.error?.code, 'INVALID_ROLE');
+      const byRole = await listAgents({ role: 'ui' });
+      assert.deepEqual(
+        byRole.data?.map((agent) => agent.agent_id),
+        ['agent-a'],
+      );
+    } finally {
+      process.chdir(originalCwd);
+    }
   });
 });

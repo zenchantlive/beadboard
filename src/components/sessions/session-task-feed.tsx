@@ -10,6 +10,7 @@ interface SessionTaskFeedProps {
   selectedEpicId: string | null;
   onSelectTask: (id: string) => void;
   highlightTaskId?: string | null;
+  highlightingAgentId?: string | null;
 }
 
 export function IncursionTicker({ incursions }: { incursions: Incursion[] }) {
@@ -35,7 +36,7 @@ export function IncursionTicker({ incursions }: { incursions: Incursion[] }) {
   );
 }
 
-export function SessionTaskFeed({ feed, incursions = [], selectedEpicId, onSelectTask, highlightTaskId }: SessionTaskFeedProps) {
+export function SessionTaskFeed({ feed, incursions = [], selectedEpicId, onSelectTask, highlightTaskId, highlightingAgentId }: SessionTaskFeedProps) {
   const filteredFeed = useMemo(() => {
     if (!selectedEpicId) return feed;
     return feed.filter(b => b.epic.id === selectedEpicId);
@@ -88,13 +89,15 @@ export function SessionTaskFeed({ feed, incursions = [], selectedEpicId, onSelec
                 task.owner && inc.agents.includes(task.owner)
               );
               
+              const isAgentMission = highlightingAgentId ? task.owner === highlightingAgentId : false;
               return (
                 <SessionFeedCard 
                   key={task.id} 
                   card={task} 
                   onSelect={onSelectTask} 
-                  isHighlighted={highlightTaskId === task.id}
+                  isHighlighted={highlightTaskId === task.id || isAgentMission}
                   incursion={taskIncursion}
+                  highlightSource={isAgentMission ? 'agent' : undefined}
                 />
               );
             })}

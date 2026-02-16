@@ -50,6 +50,9 @@ export function sessionStateGlow(state: string): string {
   switch (state) {
     case 'active': return 'shadow-[0_0_12px_rgba(74,222,128,0.3)] border-emerald-500/30';
     case 'needs_input': return 'shadow-[0_0_12px_rgba(248,113,113,0.3)] border-rose-500/30';
+    case 'stuck': return 'ring-2 ring-red-500 animate-pulse shadow-[0_0_16px_rgba(239,68,68,0.5)]';
+    case 'dead': return 'opacity-40 grayscale';
+    case 'evicted': return 'opacity-60 grayscale-[0.5]';
     case 'stale': return 'opacity-60 grayscale-[0.5]';
     case 'completed': return 'opacity-80';
     default: return '';

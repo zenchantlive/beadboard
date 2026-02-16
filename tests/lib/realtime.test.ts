@@ -44,3 +44,14 @@ test('toSseFrame includes id, event name, and data payload', () => {
   assert.equal(frame.includes('event: issues'), true);
   assert.equal(frame.includes('"projectRoot":"C:\\\\Repo\\\\One"'), true);
 });
+
+test('toSseFrame uses telemetry event name for telemetry kind', () => {
+  const frame = toSseFrame({
+    id: 42,
+    projectRoot: 'C:/Repo',
+    kind: 'telemetry',
+    at: new Date().toISOString(),
+  });
+  assert.ok(frame.includes('event: telemetry'), 'Should use telemetry event name');
+  assert.ok(frame.includes('id: 42'), 'Should preserve ID');
+});

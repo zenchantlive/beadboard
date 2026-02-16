@@ -29,7 +29,7 @@ async function fetchIssues(projectRoot: string): Promise<BeadIssue[]> {
 export function useBeadsSubscription(
   initialIssues: BeadIssue[],
   projectRoot: string,
-  options: { onUpdate?: () => void } = {}
+  options: { onUpdate?: (kind: 'issues' | 'telemetry' | 'activity') => void } = {}
 ): UseBeadsSubscriptionResult {
   const [issues, setIssues] = useState<BeadIssue[]>(initialIssues);
   const refreshInFlightRef = useRef(false);
@@ -54,7 +54,7 @@ export function useBeadsSubscription(
     try {
       const reconciled = await fetchIssues(projectRoot);
       setIssues(reconciled);
-      onUpdate?.();
+      onUpdate?.('issues');
     } catch (error) {
       if (!options.silent) {
         console.error('[BeadsSubscription] Refresh failed:', error);
@@ -77,18 +77,36 @@ export function useBeadsSubscription(
     };
     
     const onIssues = (event: MessageEvent) => {
-      console.log('🚨 SSE RECEIVED:', event.data);
-      onUpdate?.();
+      console.log('🚨 SSE ISSUES RECEIVED:', event.data);
+      onUpdate?.('issues');
       void refresh({ silent: true });
     };
 
+    const onTelemetry = (event: MessageEvent) => {
+      console.log('📡 SSE TELEMETRY RECEIVED (Silent):', event.data);
+      // We don't trigger a full refresh or parent update for heartbeats
+      // This prevents the page from flickering/clearing state while typing.
+      onUpdate?.('telemetry');
+    };
+
+    const onActivity = (event: MessageEvent) => {
+      console.log('📝 SSE ACTIVITY RECEIVED:', event.data);
+      onUpdate?.('activity');
+    };
+
     source.addEventListener('issues', onIssues as EventListener);
+    source.addEventListener('telemetry', onTelemetry as EventListener);
+    source.addEventListener('activity', onActivity as EventListener);
 
     return () => {
       console.log('[SSE] Closing connection');
       source.removeEventListener('issues', onIssues as EventListener);
+      source.removeEventListener('telemetry', onTelemetry as EventListener);
+      source.removeEventListener('activity', onActivity as EventListener);
       source.close();
     };
+    // onUpdate is intentionally excluded from deps to avoid re-subscribing on parent re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectRoot, refresh]);
 
   return { issues, refresh, updateLocal };

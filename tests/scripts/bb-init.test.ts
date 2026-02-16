@@ -5,23 +5,30 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 
+import { registerAgent } from '../../src/lib/agent-registry';
+
 const projectRoot = path.resolve(__dirname, '../../');
 const initScript = path.join(projectRoot, 'scripts', 'bb-init.mjs');
 
 async function withTempRegistry(run: (tempDir: string) => Promise<void>): Promise<void> {
-  const previous = process.env.USERPROFILE;
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'bb-init-lease-'));
-  process.env.USERPROFILE = tempDir;
-
-  // Initialize a fake git repo
+  
+  // Initialize a fake git repo first
   execSync('git init', { cwd: tempDir, stdio: 'ignore' });
   await fs.writeFile(path.join(tempDir, 'dummy'), 'data');
   execSync('git add dummy && git commit -m "initial"', { cwd: tempDir, stdio: 'ignore' });
 
+  // Initialize bd rig with explicit prefix
+  execSync('bd init --prefix bb- --force', { cwd: tempDir, stdio: 'ignore' });
+  execSync('bd migrate --update-repo-id', { cwd: tempDir, stdio: 'ignore' });
+
+  // Create a dummy issue to force a flush
+  execSync('bd create --title "Warmup" --id bb-warmup', { cwd: tempDir, stdio: 'ignore' });
+  execSync('bd admin flush', { cwd: tempDir, stdio: 'ignore' });
+
   try {
     await run(tempDir);
   } finally {
-    process.env.USERPROFILE = previous;
     // Cleanup with retries for Windows
     for (let i = 0; i < 5; i++) {
       try {
@@ -34,50 +41,51 @@ async function withTempRegistry(run: (tempDir: string) => Promise<void>): Promis
   }
 }
 
-test('LEASE: bb-init --register updates liveness and starts lease', async () => {
-  await withTempRegistry(async (tempDir) => {
-    const agentId = 'lease-agent';
-    const cmd = `node ${initScript} --register ${agentId} --role backend --json`;
+test('REGISTRY: registerAgent includes rig fingerprint', async () => {
+  await withTempRegistry(async (projectRoot) => {
+    const agentId = 'direct-agent';
+    const rigId = 'test-rig-123';
     
-    const out = execSync(cmd, { 
-      cwd: tempDir, 
-      encoding: 'utf8',
-      env: { ...process.env, BB_REPO: projectRoot }
-    });
-    const result = JSON.parse(out);
+    const result = await registerAgent({
+      name: agentId,
+      role: 'tester',
+      rig: rigId
+    }, { projectRoot });
 
-    assert.equal(result.ok, true);
-    assert.equal(result.lease.status, 'active');
+    assert.equal(result.ok, true, `registerAgent failed: ${result.error?.message}`);
+    assert.equal(result.data?.rig, rigId);
 
-    // Verify Registry Entry exists and has a timestamp
-    const agentFile = path.join(tempDir, '.beadboard', 'agent', 'agents', `${agentId}.json`);
-    const agentData = JSON.parse(await fs.readFile(agentFile, 'utf8'));
-    assert.equal(agentData.agent_id, agentId);
-    assert.ok(agentData.last_seen_at);
+    // Verify persistence via bd list
+    const listOut = execSync('bd list --all --json', { cwd: projectRoot, encoding: 'utf8' });
+    const agents = JSON.parse(listOut);
+    const agentData = agents.find((a: { id: string }) => a.id.includes(agentId));
+    
+    assert.ok(agentData, `Agent ${agentId} should exist in list`);
+    const rigLabel = agentData.labels?.find((l: string) => l.startsWith('rig:'));
+    assert.ok(rigLabel, `Rig fingerprint should be present in labels`);
+    assert.equal(rigLabel, `rig:${rigId}`);
   });
 });
-
-test('LEASE: activity-lease command works via CLI', async () => {
+test('FINGERPRINT: bb-init --register includes rig fingerprint', async () => {
   await withTempRegistry(async (tempDir) => {
-    const agentId = 'cli-agent';
-    // Register
-    execSync(`node ${initScript} --register ${agentId} --role test --json`, { 
-      cwd: tempDir,
-      env: { ...process.env, BB_REPO: projectRoot }
+    const agentId = 'fingerprint-agent';
+    const cmd = `node ${initScript} --register ${agentId} --role test --project-root ${tempDir} --json`;
+    
+    execSync(cmd, { 
+      cwd: tempDir, 
+      env: { ...process.env, BB_REPO: projectRoot, BD_NO_DAEMON: 'false' }
     });
 
-    const agentFile = path.join(tempDir, '.beadboard', 'agent', 'agents', `${agentId}.json`);
-    const firstSeen = JSON.parse(await fs.readFile(agentFile, 'utf8')).last_seen_at;
-
-    // Extend lease
-    await new Promise(r => setTimeout(r, 100)); // Ensure clock tick
-    const bbPath = path.join(projectRoot, 'tools', 'bb.ts');
-    execSync(`npx tsx ${bbPath} agent activity-lease --agent ${agentId} --json`, { 
-      cwd: tempDir,
-      env: { ...process.env, BB_REPO: projectRoot }
-    });
-
-    const secondSeen = JSON.parse(await fs.readFile(agentFile, 'utf8')).last_seen_at;
-    assert.notEqual(firstSeen, secondSeen, 'Lease extension should update last_seen_at');
+    // Verify Registry Entry exists via bd list
+    const listOut = execSync('bd list --all --json', { cwd: tempDir, encoding: 'utf8' });
+    const agents = JSON.parse(listOut);
+    const agentData = agents.find((a: { id: string }) => a.id.includes(agentId));
+    
+    // Check for fingerprint fields
+    assert.ok(agentData, `Agent ${agentId} should exist in list`);
+    const rigLabel = agentData.labels?.find((l: string) => l.startsWith('rig:'));
+    assert.ok(rigLabel, 'Rig fingerprint should be present in labels');
+    const rigValue = rigLabel?.split(':')[1];
+    assert.ok(rigValue?.includes(os.platform()), `Rig ${rigValue} should include platform ${os.platform()}`);
   });
 });

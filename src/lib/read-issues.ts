@@ -14,6 +14,7 @@ export interface ReadIssuesOptions {
   projectSource?: ProjectSource;
   projectAddedAt?: string | null;
   preferBd?: boolean;
+  skipAgentFilter?: boolean;
 }
 
 export function resolveIssuesJsonlPathCandidates(projectRoot: string = process.cwd()): string[] {
@@ -108,8 +109,8 @@ async function readIssuesViaBd(options: ReadIssuesOptions, project: ReturnType<t
       .filter((issue) => {
         // Exclude tombstones
         if (issue.status === 'tombstone' && !options.includeTombstones) return false;
-        // Exclude agent identities from mission lists
-        if (issue.labels.includes('gt:agent')) return false;
+        // Exclude agent identities from mission lists unless skipping filter (for watcher/diffing)
+        if (issue.labels.includes('gt:agent') && !options.skipAgentFilter) return false;
         return true;
       })
       .map((issue) => ({
@@ -141,6 +142,7 @@ export async function readIssuesFromDisk(options: ReadIssuesOptions = {}): Promi
       const jsonl = await readTextFileWithRetry(issuesPath);
       return parseIssuesJsonl(jsonl, {
         includeTombstones: options.includeTombstones ?? false,
+        skipAgentFilter: options.skipAgentFilter ?? false,
       }).map((issue) => ({
         ...issue,
         project,
