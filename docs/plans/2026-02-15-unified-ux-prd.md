@@ -1,8 +1,8 @@
 # Unified UX PRD - Swimlane Social Hub
 
-> **Version**: 1.0  
-> **Date**: 2026-02-15  
-> **Status**: Planning Complete - Ready for Bead Creation  
+> **Version**: 1.1  
+> **Date**: 2026-02-16  
+> **Status**: Updated - Activity View + Thread Drawer added
 > **Supersedes**: bb-u6f.7 (Unified Cross-Surface Navigation)
 
 ---
@@ -29,15 +29,18 @@ Single unified shell at `/` with 3 views:
 | # | Decision | Choice | Rationale |
 |---|----------|--------|-----------|
 | 1 | Routing | Single page at `/` with client tabs | Preserves selection state |
-| 2 | Views | 3 tabs: Social, Graph, Swarm | Sessions replaced by Social |
-| 3 | Detail pattern | Right sidebar (desktop), drawer (mobile) | Best use of screens |
-| 4 | Visual style | shadcn/ui + earthy-dark tokens | Replace Aero Chrome |
-| 5 | Tailwind | Stay on v3, use shadcn/ui patterns | v4 has migration risks |
-| 6 | Old pages | Copy page.tsx to page-old.tsx | Safe rollback |
-| 7 | Card pattern | Same base for Social and Swarm | Reusable components |
-| 8 | Threads | In detail strip for both views | Comments + events |
-| 9 | Agent presence | Embedded in swarm cards | Agents primary in Swarm |
-| 10 | Swarm sorting | Health (default), Activity, Progress | Auto-surface attention |
+| 2 | Views | 4 tabs: Social, Graph, Swarm, Activity | Activity replaces old /timeline |
+| 3 | Right Panel | Activity Feed + Agent roster (top 30%) | Persistent sidebar, always shows timeline |
+| 4 | Thread Drawer | Opens when clicking a card | Slides from right edge of middle area |
+| 5 | Detail pattern | Right sidebar (desktop), drawer (mobile) | Best use of screens |
+| 6 | Visual style | shadcn/ui + earthy-dark tokens | Replace Aero Chrome |
+| 7 | Tailwind | Stay on v3, use shadcn/ui patterns | v4 has migration risks |
+| 8 | Old pages | Copy page.tsx to page-old.tsx | Safe rollback |
+| 9 | Card pattern | Same base for Social and Swarm | Reusable components |
+| 10 | Threads | In thread drawer, not right panel | Separates conversation from activity |
+| 11 | Agent presence | Embedded in swarm cards + right panel top | Supervisors can see all agents |
+| 12 | Swarm sorting | Health (default), Activity, Progress | Auto-surface attention |
+| 13 | Mobile nav | 4 bottom tabs (Social, Graph, Swarm, Activity) | Matches desktop view selector |
 
 ---
 
@@ -85,22 +88,33 @@ Liveness:
 
 ## Layout Architecture
 
-Shell Structure (CSS Grid):
+### Shell Structure (CSS Grid)
 - TOP BAR: 3rem fixed
 - LEFT: 13rem (channel tree)
 - MIDDLE: flex-1 (card grid)
-- RIGHT: 17rem (detail strip)
+- RIGHT: 17rem (Activity Feed + Agent roster)
+- THREAD DRAWER: 24rem (slides from right edge of middle area, appears on card selection)
 
-Responsive:
-- < 768px: Full width, drawer overlay
-- 768-1024px: Left collapses, slide-over
-- >= 1024px: Full 3-panel
+### Responsive Behavior
+| Size | Left Panel | Middle | Right Panel (Activity) | Thread Drawer |
+|------|------------|--------|----------------------|---------------|
+| Desktop (≥1024px) | 13rem fixed | flex-1 | 17rem fixed, always visible | 24rem slides in |
+| Tablet (768-1024px) | Collapsed, toggle | flex-1 | Slide-over, toggle | Slide-over drawer |
+| Mobile (<768px) | Hidden | flex-1 | Bottom tab | Full-screen bottom sheet |
 
-URL State:
-- view: social | graph | swarm
+### Mobile Navigation (Bottom Tabs)
+- Tab 1: Social
+- Tab 2: Graph
+- Tab 3: Swarm
+- Tab 4: Activity (shows timeline/agent view)
+
+### URL State
+- view: social | graph | swarm | activity
 - task: selected task ID
 - swarm: selected swarm ID
-- panel: open | closed
+- agent: selected agent ID (for activity panel filtering)
+- panel: open | closed (right panel)
+- drawer: open | closed (thread drawer)
 
 ---
 
@@ -116,6 +130,30 @@ Keep ReactFlow + Dagre, add fitView() on tab activation
 Card: Swarm ID, Epic title, AGENTS roster with status glow, ATTENTION items, Progress bar, Last activity
 
 Sorting: Health (default), Activity, Progress, Name
+
+### Activity View
+Replaces /timeline. Shows:
+- Top 30%: Agent roster with status (active/stale/stuck/dead)
+- Bottom: Chronological activity feed (status changes, comments, events)
+- Real-time updates via SSE
+
+**Deep Linking from Cards:**
+- Click agent icon on any card → Activity panel filters to that agent
+- URL: `/?view=activity&agent=bb-xyz` shows agent's activity
+- Click graph icon on card → `/?view=graph&task=bb-xyz`
+- Click kanban icon on card → `/?view=social&task=bb-xyz`
+
+**Right Panel Behavior:**
+- No selection: Shows ALL active agents + ALL activity
+- Agent selected: Shows that agent's roster + their specific activity
+- Easy "show all" button to clear agent filter
+
+### Thread Drawer
+When clicking a card (Social or Swarm), opens drawer showing:
+- Task/Swarm header with ID and title
+- Full thread of comments and events
+- Compose area for adding comments
+- Close button (X)
 
 ---
 
@@ -133,6 +171,7 @@ PHASE 1: Shell Layout
 [1.4] LeftPanel Component <- [1.2]
 [1.5] RightPanel Component <- [1.2]
 [1.6] Responsive Behavior <- [1.3-1.5]
+[1.7] Resizable Panels <- [1.2-1.6]
 
 PHASE 2: Social View
 [2.1] Social Card Data Builder
@@ -147,16 +186,23 @@ PHASE 3: Swarm View
 [3.3] Swarm Detail Strip <- [1.5][3.1]
 [3.4] Swarm View Integration <- [1.2][3.2-3.3]
 
-PHASE 4: Graph Migration
-[4.1] Graph Component Extraction
-[4.2] Graph Tab Integration <- [1.2][4.1]
-[4.3] fitView Fix <- [4.2]
+PHASE 4: Activity View (NEW)
+[4.1] Activity Data Builder <- [0.3]
+[4.2] ActivityPanel Component <- [1.5][4.1]
+[4.3] Agent Deep Linking <- [4.2][2.2][3.2]
+[4.4] Thread Drawer <- [2.4]
+[4.5] Mobile Nav 4-tabs <- [1.6][4.2]
 
-PHASE 5: Polish
-[5.1] Deep Link Verification <- [all above]
-[5.2] Mobile Responsive Polish
-[5.3] Screenshot Evidence
-[5.4] Final Quality Gates
+PHASE 5: Graph Migration
+[5.1] Graph Component Extraction
+[5.2] Graph Tab Integration <- [1.2][5.1]
+[5.3] fitView Fix <- [5.2]
+
+PHASE 6: Polish
+[6.1] Deep Link Verification <- [all above]
+[6.2] Mobile Responsive Polish
+[6.3] Screenshot Evidence
+[6.4] Final Quality Gates
 
 ---
 

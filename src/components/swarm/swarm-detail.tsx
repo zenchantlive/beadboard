@@ -3,8 +3,9 @@
 import type { SwarmCard as SwarmCardType } from '../../lib/swarm-cards';
 import { Badge } from '../../../components/ui/badge';
 import { AgentAvatar } from '../shared/agent-avatar';
+import { ThreadView, type ThreadItem } from '../shared/thread-view';
 import { cn } from '../../lib/utils';
-import { AlertTriangle, Clock, MessageSquare, Users } from 'lucide-react';
+import { AlertTriangle, Clock, Users } from 'lucide-react';
 
 interface SwarmDetailProps {
   card: SwarmCardType;
@@ -148,21 +149,38 @@ function LastActivitySection({ date }: { date: Date }) {
   );
 }
 
-function ThreadPlaceholder() {
+// Sample data for demo - remove when real data connected
+const SAMPLE_SWARM_THREAD: ThreadItem[] = [
+  {
+    id: '1',
+    type: 'status_change',
+    from: 'planning',
+    to: 'in_progress',
+    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
+  },
+  {
+    id: '2',
+    type: 'comment',
+    author: 'bb-agent-1',
+    content: 'Starting work on the first batch of tasks.',
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+  },
+  {
+    id: '3',
+    type: 'protocol_event',
+    event: 'CLOSED',
+    content: 'Task bb-buff.1 completed',
+    timestamp: new Date(Date.now() - 30 * 60 * 1000),
+  },
+];
+
+function ThreadSection() {
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-1.5">
-        <MessageSquare className="h-3.5 w-3.5" style={{ color: 'var(--color-text-muted)' }} />
-        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-          Thread
-        </span>
-      </div>
-      <div
-        className="p-3 rounded-md text-center text-xs"
-        style={{ backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-muted)' }}
-      >
-        Thread coming soon
-      </div>
+      <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+        Thread
+      </span>
+      <ThreadView items={SAMPLE_SWARM_THREAD} />
     </div>
   );
 }
@@ -200,8 +218,8 @@ export function SwarmDetail({ card }: SwarmDetailProps) {
       {/* Last Activity */}
       <LastActivitySection date={card.lastActivity} />
 
-      {/* Thread Placeholder */}
-      <ThreadPlaceholder />
+      {/* Thread */}
+      <ThreadSection />
     </div>
   );
 }

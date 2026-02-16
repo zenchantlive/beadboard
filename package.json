@@ -9,7 +9,10 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/components/sessions/sessions-header.test.ts && node --import tsx --test tests/components/sessions/agent-station-logic.test.ts && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --import tsx --test tests/components/shared/left-panel.test.tsx && node --import tsx --test tests/components/shared/top-bar.test.tsx && node --import tsx --test tests/components/shared/mobile-nav.test.tsx && node --import tsx --test tests/components/swarm/swarm-card.test.tsx"
+    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/components/sessions/sessions-header.test.ts && node --import tsx --test tests/components/sessions/agent-station-logic.test.ts && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --import tsx --test tests/components/shared/left-panel.test.tsx && node --import tsx --test tests/components/shared/top-bar.test.tsx && node --import tsx --test tests/components/shared/mobile-nav.test.tsx && node --import tsx --test tests/components/swarm/swarm-card.test.tsx",
+    "video": "remotion preview src/video/index.ts",
+    "video:render": "remotion render src/video/index.ts Main out/video.mp4",
+    "video:thumbnail": "remotion still src/video/index.ts Main out/thumbnail.png --frame=60"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
@@ -18,6 +21,9 @@
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@remotion/google-fonts": "^4.0.422",
+    "@remotion/tailwind": "^4.0.422",
+    "@remotion/zod-types": "^4.0.422",
     "@xyflow/react": "^12.10.0",
     "chokidar": "^5.0.0",
     "class-variance-authority": "^0.7.1",
@@ -28,11 +34,14 @@
     "next": "15.5.7",
     "react": "19.2.1",
     "react-dom": "19.2.1",
+    "remotion": "^4.0.422",
     "tailwind-merge": "^3.4.1",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "3.22.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "@remotion/cli": "^4.0.422",
     "@types/dagre": "^0.7.53",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
