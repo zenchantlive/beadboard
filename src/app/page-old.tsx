@@ -1,4 +1,4 @@
-import { UnifiedShell } from '../components/shared/unified-shell';
+import { KanbanPage } from '../components/kanban/kanban-page';
 import { readIssuesForScope } from '../lib/aggregate-read';
 import { resolveProjectScope } from '../lib/project-scope';
 import { listProjects } from '../lib/registry';
@@ -25,9 +25,8 @@ export default async function Page({ searchParams }: PageProps) {
     scopeOptions: scope.options,
     preferBd: true,
   });
-  
   return (
-    <UnifiedShell
+    <KanbanPage
       issues={issues}
       projectRoot={scope.selected.root}
       projectScopeKey={scope.selected.key}
