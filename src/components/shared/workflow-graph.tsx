@@ -273,10 +273,7 @@ function WorkflowGraphInner({
         fitViewOptions={{ padding: 0.3 }}
         minZoom={0.3}
         maxZoom={1.5}
-        translateExtent={[
-          [-500, -500],
-          [3000, 2500],
-        ]}
+        // translateExtent removed for unlimited panning
         nodes={flowModel.nodes}
         edges={flowModel.edges}
         nodeTypes={nodeTypes}
