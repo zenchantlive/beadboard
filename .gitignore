@@ -14,3 +14,4 @@ worktrees/
 # local screenshot artifacts
 artifacts/
 .beads/bd.sock.startlock
+.beads/bd.sock.startlock
