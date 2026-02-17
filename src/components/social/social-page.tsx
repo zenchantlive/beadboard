@@ -1,13 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { BeadIssue } from '../../lib/types';
 import { buildSocialCards } from '../../lib/social-cards';
 import { SocialCard } from './social-card';
-import { Button } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react';
-
-const INITIAL_LIMIT = 16; // 4x4 grid
 
 interface SocialPageProps {
   issues: BeadIssue[];
@@ -16,50 +12,36 @@ interface SocialPageProps {
 }
 
 export function SocialPage({ issues, selectedId, onSelect }: SocialPageProps) {
-  const [expanded, setExpanded] = useState(false);
   const cards = useMemo(() => buildSocialCards(issues), [issues]);
-  const visibleCards = expanded ? cards : cards.slice(0, INITIAL_LIMIT);
-  const hasMore = cards.length > INITIAL_LIMIT;
 
   return (
-    <div className="p-4">
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '1rem',
-          maxWidth: '1200px',
-          margin: '0 auto',
-        }}
-      >
-        {visibleCards.map((card) => (
-          <SocialCard
-            key={card.id}
-            data={card}
-            selected={selectedId === card.id}
-            onClick={() => onSelect(card.id)}
-          />
-        ))}
+    <div className="flex flex-col h-full">
+      {/* Top: Scrollable Grid Container (approx 4x2 visible) */}
+      <div className="flex-none h-[60vh] min-h-[400px] overflow-y-auto p-6 border-b border-white/5 custom-scrollbar bg-black/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-[1600px] mx-auto">
+          {cards.map((card) => (
+            <SocialCard
+              key={card.id}
+              data={card}
+              selected={selectedId === card.id}
+              onClick={() => onSelect(card.id)}
+            />
+          ))}
+          {cards.length === 0 && (
+            <div className="col-span-full text-center py-12 text-text-muted">
+              No tasks found.
+            </div>
+          )}
+        </div>
       </div>
 
-      {hasMore && (
-        <div className="flex justify-center mt-4">
-          <Button
-            variant="outline"
-            onClick={() => setExpanded(true)}
-            className="gap-2 border-white/10 bg-white/5 hover:bg-white/10"
-          >
-            Show {cards.length - INITIAL_LIMIT} more
-            <ChevronDown className="h-4 w-4" />
-          </Button>
+      {/* Bottom: Detail Area Placeholder */}
+      <div className="flex-1 bg-surface-muted/30 p-6 flex items-center justify-center text-text-muted/50">
+        <div className="text-center">
+          <p className="text-sm font-medium">Select a task to view details</p>
+          <p className="text-xs mt-1 opacity-70">(Chat & Activity stream coming soon)</p>
         </div>
-      )}
-
-      {cards.length === 0 && (
-        <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
-          No tasks found.
-        </div>
-      )}
+      </div>
     </div>
   );
 }

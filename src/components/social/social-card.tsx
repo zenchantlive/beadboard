@@ -148,9 +148,14 @@ export function SocialCard({
               <div className="rounded-lg bg-black/20 p-2 border border-white/5">
                 <p className="mb-1.5 text-[9px] font-bold uppercase tracking-widest text-rose-400/80 pl-0.5">Blocked By</p>
                 <div className="flex flex-col gap-1.5">
-                  {data.unblocks.map((id) => (
+                  {data.unblocks.slice(0, 3).map((id) => (
                     <RelationshipItem key={id} id={id} color="unlocks" />
                   ))}
+                  {data.unblocks.length > 3 && (
+                    <div className="text-[10px] text-rose-400/60 px-2 py-1 italic">
+                      +{data.unblocks.length - 3} more
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -160,9 +165,14 @@ export function SocialCard({
               <div className="rounded-lg bg-black/20 p-2 border border-white/5">
                 <p className="mb-1.5 text-[9px] font-bold uppercase tracking-widest text-amber-400/80 pl-0.5">Blocking</p>
                 <div className="flex flex-col gap-1.5">
-                  {data.blocks.map((id) => (
+                  {data.blocks.slice(0, 3).map((id) => (
                     <RelationshipItem key={id} id={id} color="blocks" />
                   ))}
+                  {data.blocks.length > 3 && (
+                    <div className="text-[10px] text-amber-400/60 px-2 py-1 italic">
+                      +{data.blocks.length - 3} more
+                    </div>
+                  )}
                 </div>
               </div>
             )}
