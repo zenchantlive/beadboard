@@ -46,10 +46,11 @@ export function SocialDetail({ data }: SocialDetailProps) {
         </p>
       </div>
 
+      {/* NEW semantic: blocks = what I block (amber), unblocks = what blocks me (rose) */}
       {data.blocks.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-amber-400 text-xs font-semibold uppercase tracking-wider">
-            Blocks
+            Blocks (what I block)
           </h3>
           <ul className="space-y-1">
             {data.blocks.map((id) => (
@@ -61,13 +62,13 @@ export function SocialDetail({ data }: SocialDetailProps) {
         </div>
       )}
 
-      {data.unlocks.length > 0 && (
+      {data.unblocks.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-emerald-400 text-xs font-semibold uppercase tracking-wider">
-            Unlocks
+          <h3 className="text-rose-400 text-xs font-semibold uppercase tracking-wider">
+            Unlocks (what blocks me)
           </h3>
           <ul className="space-y-1">
-            {data.unlocks.map((id) => (
+            {data.unblocks.map((id) => (
               <li key={id} className="text-text-secondary text-sm font-mono">
                 {id}
               </li>
@@ -75,6 +76,7 @@ export function SocialDetail({ data }: SocialDetailProps) {
           </ul>
         </div>
       )}
+
 
       <div className="space-y-2">
         <h3 className="text-text-muted text-xs font-semibold uppercase tracking-wider">

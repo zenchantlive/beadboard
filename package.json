@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/components/sessions/sessions-header.test.ts && node --import tsx --test tests/components/sessions/agent-station-logic.test.ts && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --import tsx --test tests/components/shared/left-panel.test.tsx && node --import tsx --test tests/components/shared/top-bar.test.tsx && node --import tsx --test tests/components/shared/mobile-nav.test.tsx && node --import tsx --test tests/components/swarm/swarm-card.test.tsx",
+    "test": "node --test tests/bootstrap.test.mjs && node --import tsx --test tests/components/sessions/sessions-header.test.ts && node --import tsx --test tests/components/sessions/agent-station-logic.test.ts && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --import tsx --test tests/components/shared/left-panel.test.tsx && node --import tsx --test tests/components/shared/top-bar.test.tsx && node --import tsx --test tests/components/shared/mobile-nav.test.tsx && node --import tsx --test tests/components/swarm/swarm-card.test.tsx && node --import tsx --test tests/hooks/url-state-integration.test.ts",
     "video": "remotion preview src/video/index.ts",
     "video:render": "remotion render src/video/index.ts Main out/video.mp4",
     "video:thumbnail": "remotion still src/video/index.ts Main out/thumbnail.png --frame=60"

@@ -15,8 +15,8 @@ export interface SocialCard {
   id: string;
   title: string;
   status: SocialCardStatus;
-  unlocks: string[];
-  blocks: string[];
+  blocks: string[];     // tasks THIS task blocks (amber) - what I block
+  unblocks: string[];  // tasks blocking THIS task (rose) - what blocks me
   agents: AgentInfo[];
   lastActivity: Date;
   priority: SocialCardPriority;
@@ -94,10 +94,11 @@ export function buildSocialCards(beads: BeadIssue[]): SocialCard[] {
     id: bead.id,
     title: bead.title,
     status: mapStatus(bead.status),
-    unlocks: blocksOutgoing.get(bead.id) ?? [],
-    blocks: blocksIncoming.get(bead.id) ?? [],
+    blocks: blocksOutgoing.get(bead.id) ?? [],   // what I block (amber)
+    unblocks: blocksIncoming.get(bead.id) ?? [], // what blocks me (rose)
     agents: extractAgents(bead),
     lastActivity: new Date(bead.updated_at),
     priority: mapPriority(bead.priority),
   }));
 }
+

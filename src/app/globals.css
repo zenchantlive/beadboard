@@ -3,55 +3,8 @@
 @tailwind utilities;
 
 :root {
-  /* Aero Chrome foundation tokens */
-  --bg-base: #070709;
-  --glass-base: rgba(18, 18, 22, 0.4);
-  --edge-top: rgba(255, 255, 255, 0.12);
-  --edge-bottom: rgba(0, 0, 0, 0.8);
-  --edge-side: rgba(255, 255, 255, 0.04);
-  --elevation-tight: 0 4px 12px -2px rgba(0, 0, 0, 0.7);
-  --elevation-ambient: 0 16px 32px -8px rgba(0, 0, 0, 0.95);
-
-  --status-rdy-glow: rgba(74, 222, 128, 0.9);
-  --status-rdy-bg: rgba(74, 222, 128, 0.15);
-  --status-blk-glow: rgba(248, 113, 113, 0.9);
-  --status-blk-bg: rgba(248, 113, 113, 0.15);
-  --status-wip-glow: rgba(96, 165, 250, 0.9);
-  --status-wip-bg: rgba(96, 165, 250, 0.15);
-  --status-wait-glow: rgba(160, 160, 180, 0.7);
-
-  /* Typography pairing */
-  --font-ui-stack: var(--font-ui), 'Segoe UI', system-ui, sans-serif;
-  --font-mono-stack: var(--font-ui), 'Segoe UI', system-ui, sans-serif;
-
-  /* Compatibility tokens consumed by existing components */
-  --color-bg: var(--bg-base);
-  --color-surface: rgba(32, 35, 45, 0.85);
-  --color-surface-muted: rgba(40, 44, 55, 0.8);
-  --color-surface-raised: rgba(52, 58, 72, 0.82);
-  --color-text-strong: #ffffff;
-  --color-text-body: #d1d1d6;
-  --color-text-muted: #9494a0;
-  --color-border-soft: rgba(255, 255, 255, 0.1);
-  --color-border-strong: rgba(255, 255, 255, 0.22);
-
-  --aurora-blue: rgba(96, 165, 250, 0.12);
-  --aurora-amber: rgba(251, 191, 36, 0.1);
-  --aurora-purple: rgba(129, 140, 248, 0.08);
-
-  --status-open: #60a5fa;
-  --status-progress: #fbbf24;
-  --status-blocked: #f87171;
-  --status-deferred: #a3a3b0;
-  --status-closed: #4ade80;
-
-  --priority-p0: #f43f5e;
-  --priority-p1: #f59e0b;
-  --priority-p2: #38bdf8;
-  --priority-p3: #94a3b8;
-  --priority-p4: #64748b;
-
-  /* ========== EARTHY-DARK TOKENS (bb-ui2.1) ========== */
+  /* ========== EARTHY-DARK DESIGN SYSTEM TOKENS (PRD v2.0) ========== */
+  
   /* Backgrounds */
   --color-bg-base: #2D2D2D;
   --color-bg-card: #363636;
@@ -65,19 +18,106 @@
   /* Text */
   --color-text-primary: #FFFFFF;
   --color-text-secondary: #B8B8B8;
-  --color-text-muted-dark: #888888;
+  --color-text-muted: #888888;
+  --color-text-on-primary: #1A1A1A;
 
-  /* Status colors (earthy variants) */
+  /* Borders */
+  --color-border-default: #4A4A4A;
+  --color-border-subtle: #3A3A3A;
+
+  /* Status colors */
+  --status-open: #5BA8A0;
   --status-ready: #5BA8A0;
   --status-in-progress: #7CB97A;
+  --status-progress: #7CB97A;
+  --status-blocked: #D4A574;
   --status-blocked-earthy: #D4A574;
+  --status-closed: #888888;
   --status-closed-earthy: #888888;
+  --status-deferred: #888888;
 
   /* Liveness colors */
   --liveness-active: #7CB97A;
   --liveness-stale: #D4A574;
-  --liveness-stuck: #E57373;
-  --liveness-dead: #9E4244;
+  --liveness-stuck: #C97A7A;
+  --liveness-dead: #C97A7A;
+  --liveness-idle: #888888;
+
+  /* Agent Role Colors */
+  --agent-role-ui: #6B9BD2;
+  --agent-role-graph: #7CB97A;
+  --agent-role-orchestrator: #B08ED6;
+  --agent-role-agent: #B8B8B8;
+  --agent-role-researcher: #D4A574;
+
+  /* Priority Colors */
+  --priority-p0: #f43f5e;
+  --priority-p1: #f59e0b;
+  --priority-p2: #38bdf8;
+  --priority-p3: #94a3b8;
+  --priority-p4: #64748b;
+
+  /* Blocks/Unlocks Section Colors */
+  --color-blocks-bg: rgba(212, 165, 116, 0.1);
+  --color-unlocks-bg: rgba(229, 115, 115, 0.1);
+  --color-blocks-border: rgba(212, 165, 116, 0.2);
+  --color-unlocks-border: rgba(229, 115, 115, 0.2);
+
+  /* ========== RADI ========== */
+  --radius-sm: 0.375rem;
+  --radius-card: 0.625rem;
+  --radius-modal: 1rem;
+  --radius-pill: 9999px;
+
+  /* ========== SHADOWS ========== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  /* ========== TYPOGRAPHY ========== */
+  --font-ui-stack: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono-stack: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  
+  --font-size-h1: 2rem;
+  --font-size-h2: 1.5rem;
+  --font_size-h3: 1.125rem;
+  --font-size-body: 0.875rem;
+  --font-size-small: 0.75rem;
+  --font-size-tiny: 0.6875rem;
+
+  --font-weight-h1: 700;
+  --font-weight-h2: 600;
+  --font-weight-h3: 600;
+  --font-weight-body: 400;
+
+  --line-height-heading: 1.2;
+  --line-height-body: 1.5;
+
+  /* ========== SPACING ========== */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 2.5rem;
+
+  /* ========== TRANSITIONS ========== */
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 200ms ease-out;
+
+  /* ========== LAYOUT ========== */
+  --sidebar-left-width: 13.75rem;
+  --sidebar-right-width: 17.5rem;
+  --topbar-height: 3rem;
+
+  /* ========== LEGACY COMPATIBILITY TOKENS ========== */
+  /* For existing components that reference these */
+  --color-bg: var(--color-bg-base);
+  --color-surface: var(--color-bg-card);
+  --color-surface-muted: var(--color-bg-input);
+  --color-text-strong: var(--color-text-primary);
+  --color-text-body: var(--color-text-secondary);
+  --color-border-soft: var(--color-border-subtle);
+  --color-border-strong: var(--color-border-default);
 }
 
 * {
@@ -276,4 +316,16 @@ body {
   stroke: var(--color-accent-amber);
   stroke-dasharray: 4 4;
   opacity: 0.9;
+}
+
+/* Thread Drawer slide-in animation */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }

@@ -14,12 +14,16 @@ interface SocialCardProps {
 }
 
 const RELATIONSHIP_COLORS = {
-  unlocks: 'text-emerald-400',
+  // NEW: unlocks = what blocks ME (rose)
+  unlocks: 'text-rose-400',
+  // NEW: blocks = what I block (amber)
   blocks: 'text-amber-400',
 };
 
 const DOT_COLORS = {
-  unlocks: 'bg-emerald-400',
+  // NEW: unlocks = what blocks ME (rose)
+  unlocks: 'bg-rose-400',
+  // NEW: blocks = what I block (amber)
   blocks: 'bg-amber-400',
 };
 
@@ -146,8 +150,9 @@ export function SocialCard({
   onJumpToGraph,
   onJumpToKanban,
 }: SocialCardProps) {
-  const hasUnlocks = data.unlocks.length > 0;
+  // NEW semantic: blocks = what I block (amber), unblocks = what blocks me (rose)
   const hasBlocks = data.blocks.length > 0;
+  const hasUnblocks = data.unblocks.length > 0;
 
   return (
     <BaseCard
@@ -173,12 +178,15 @@ export function SocialCard({
           {data.title}
         </h3>
 
-        {(hasUnlocks || hasBlocks) && (
+        {(hasBlocks || hasUnblocks) && (
           <div className="space-y-1">
-            <RelationshipSection label="UNLOCKS" items={data.unlocks} color="unlocks" />
+            {/* UNLOCKS: tasks blocking THIS task (rose) - what blocks me */}
+            <RelationshipSection label="UNLOCKS" items={data.unblocks} color="unlocks" />
+            {/* BLOCKS: tasks THIS task blocks (amber) - what I block */}
             <RelationshipSection label="BLOCKS" items={data.blocks} color="blocks" />
           </div>
         )}
+
 
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-1">

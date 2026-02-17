@@ -14,6 +14,7 @@ import { SocialPage } from '../social/social-page';
 import { SwarmPage } from '../swarm/swarm-page';
 import { buildSocialCards } from '../../lib/social-cards';
 import { buildSwarmCards } from '../../lib/swarm-cards';
+import { ActivityPanel } from '../activity/activity-panel';
 
 export interface UnifiedShellProps {
   issues: BeadIssue[];
@@ -57,14 +58,7 @@ export function UnifiedShell({
   const drawerId = taskId || swarmId || '';
 
   const renderRightPanel = () => {
-    // TODO: Wire up ActivityPanel (bb-ui2.29) - for now show placeholder
-    return (
-      <div className="p-4 text-center text-text-muted text-sm">
-        Activity Panel coming
-        <br />
-        <span className="text-xs">(bb-ui2.29)</span>
-      </div>
-    );
+    return <ActivityPanel issues={issues} />;
   };
 
   const renderMiddleContent = () => {
@@ -118,9 +112,21 @@ export function UnifiedShell({
         {/* LEFT PANEL: 13rem channel tree */}
         <LeftPanel issues={issues} />
 
-        {/* MIDDLE CONTENT: flex-1 */}
-        <div className="overflow-y-auto" data-testid="middle-content">
+        {/* MIDDLE CONTENT: flex-1 - contains card grid AND thread drawer */}
+        <div className="relative overflow-hidden" data-testid="middle-content">
           {renderMiddleContent()}
+          
+          {/* THREAD DRAWER: Inside middle section, attached to right edge */}
+          {isDrawerOpen && (
+            <div className="absolute top-0 right-0 h-full z-50">
+              <ThreadDrawer
+                isOpen={isDrawerOpen}
+                onClose={handleCloseDrawer}
+                title={drawerTitle}
+                id={drawerId}
+              />
+            </div>
+          )}
         </div>
 
         {/* RIGHT PANEL: 17rem - Always shows Activity (bb-ui2.29) */}
@@ -129,13 +135,7 @@ export function UnifiedShell({
         </RightPanel>
       </div>
 
-      {/* THREAD DRAWER: 24rem - Slides from right edge of middle when card selected */}
-      <ThreadDrawer
-        isOpen={isDrawerOpen}
-        onClose={handleCloseDrawer}
-        title={drawerTitle}
-        id={drawerId}
-      />
+
 
       {/* MOBILE NAV: Bottom tab bar */}
       <MobileNav />
