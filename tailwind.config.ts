@@ -65,7 +65,9 @@ const config: Config = {
       },
       boxShadow: {
         card: '0 14px 36px rgba(4, 8, 17, 0.45)',
-        panel: '0 24px 56px rgba(4, 8, 17, 0.58)'
+        panel: '0 24px 56px rgba(4, 8, 17, 0.58)',
+        'soft-lg': 'var(--shadow-soft-lg)',
+        'soft-xl': 'var(--shadow-soft-xl)'
       },
       borderRadius: {
         xl2: '1rem',

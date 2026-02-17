@@ -15,10 +15,10 @@ export function SocialPage({ issues, selectedId, onSelect }: SocialPageProps) {
   const cards = useMemo(() => buildSocialCards(issues), [issues]);
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Top: Scrollable Grid Container (approx 4x2 visible) */}
-      <div className="flex-none h-[60vh] min-h-[400px] overflow-y-auto p-6 border-b border-white/5 custom-scrollbar bg-black/10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-[1600px] mx-auto">
+    <div className="flex flex-col h-full bg-earthy-gradient">
+      {/* Feed Container */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {cards.map((card) => (
             <SocialCard
               key={card.id}
@@ -28,19 +28,19 @@ export function SocialPage({ issues, selectedId, onSelect }: SocialPageProps) {
             />
           ))}
           {cards.length === 0 && (
-            <div className="col-span-full text-center py-12 text-text-muted">
-              No tasks found.
+            <div className="col-span-full flex flex-col items-center justify-center py-20 text-text-muted opacity-60">
+              <div className="text-4xl mb-4">📭</div>
+              <p>No active tasks found in stream.</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Bottom: Detail Area Placeholder */}
-      <div className="flex-1 bg-surface-muted/30 p-6 flex items-center justify-center text-text-muted/50">
-        <div className="text-center">
-          <p className="text-sm font-medium">Select a task to view details</p>
-          <p className="text-xs mt-1 opacity-70">(Chat & Activity stream coming soon)</p>
-        </div>
+      {/* Bottom Console (Conversation Deck) - Placeholder for future chat integration */}
+      <div className="flex-none h-16 border-t border-white/5 bg-black/20 backdrop-blur-md flex items-center justify-center">
+        <p className="text-xs font-medium text-text-muted/60 tracking-wide uppercase">
+          Select a task to view conversation
+        </p>
       </div>
     </div>
   );

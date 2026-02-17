@@ -13,25 +13,24 @@ interface SocialCardProps {
   onJumpToKanban?: (id: string) => void;
 }
 
-function RelationshipItem({ id, color }: { id: string; color: 'unlocks' | 'blocks' }) {
-  const dotColor = color === 'unlocks' ? 'bg-rose-400' : 'bg-amber-400';
-  const borderColor = color === 'unlocks' ? 'border-rose-500/20' : 'border-amber-500/20';
-  const hoverBorder = color === 'unlocks' ? 'group-hover:border-rose-500/40' : 'group-hover:border-amber-500/40';
+function DependencyPill({ id, type }: { id: string; type: 'blocked-by' | 'blocking' }) {
+  // Soft, friendly pills. Rose for "blocked by", Amber for "blocking".
+  const styles = type === 'blocked-by' 
+    ? 'bg-rose-500/10 text-rose-200 hover:bg-rose-500/20' 
+    : 'bg-amber-500/10 text-amber-200 hover:bg-amber-500/20';
 
   return (
-    <div className={cn(
-      "group flex items-center gap-2 rounded border bg-white/5 px-2.5 py-2 transition-colors",
-      borderColor,
-      hoverBorder,
-      "hover:bg-white/10"
+    <span className={cn(
+      "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors cursor-default",
+      styles
     )}>
-      <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", dotColor)} />
-      <span className="font-mono text-[10px] text-text-muted">{id}</span>
-    </div>
+      {type === 'blocked-by' ? 'Waiting on ' : 'Blocks '}
+      <span className="font-mono ml-1 opacity-80">{id}</span>
+    </span>
   );
 }
 
-function ViewJumpIcon({
+function ActionButton({
   icon,
   label,
   onClick,
@@ -44,8 +43,12 @@ function ViewJumpIcon({
     <button
       type="button"
       aria-label={label}
-      onClick={onClick}
-      className="p-1 text-text-muted hover:text-text-body transition-colors rounded hover:bg-white/5"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+      className="p-2 text-text-muted hover:text-white hover:bg-white/10 rounded-full transition-all duration-200"
+      title={label}
     >
       {icon}
     </button>
@@ -54,53 +57,40 @@ function ViewJumpIcon({
 
 function GraphIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <circle cx="4" cy="4" r="2" />
-      <circle cx="12" cy="4" r="2" />
-      <circle cx="8" cy="12" r="2" />
-      <line x1="5.5" y1="5.5" x2="7" y2="10" />
-      <line x1="10.5" y1="5.5" x2="9" y2="10" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3"></circle>
+      <circle cx="6" cy="12" r="3"></circle>
+      <circle cx="18" cy="19" r="3"></circle>
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
     </svg>
   );
 }
 
 function KanbanIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <rect x="2" y="2" width="4" height="12" rx="1" />
-      <rect x="6" y="2" width="4" height="8" rx="1" />
-      <rect x="10" y="2" width="4" height="6" rx="1" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="9" y1="3" x2="9" y2="21"></line>
     </svg>
   );
 }
 
-function ExpandIcon() {
+function StatusBadge({ status }: { status: string }) {
+  const styles = {
+    ready: 'bg-teal-500/10 text-teal-300 border-teal-500/20',
+    in_progress: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+    blocked: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
+    closed: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+  }[status as keyof typeof styles] || 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <circle cx="6" cy="6" r="4" />
-      <line x1="9" y1="9" x2="12.5" y2="12.5" />
-    </svg>
+    <span className={cn(
+      "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+      styles
+    )}>
+      {status.replace('_', ' ')}
+    </span>
   );
 }
 
@@ -112,104 +102,82 @@ export function SocialCard({
   onJumpToGraph,
   onJumpToKanban,
 }: SocialCardProps) {
-  // NEW semantic: blocks = what I block (amber), unblocks = what blocks me (rose)
   const hasBlocks = data.blocks.length > 0;
   const hasUnblocks = data.unblocks.length > 0;
 
   return (
     <BaseCard
-      className={cn('min-w-[220px] max-w-[320px]', className)}
+      // "Post" Styling: hover lift, soft shadow handled by BaseCard update
+      className={cn('flex flex-col gap-4 p-5 min-h-[180px]', className)}
       selected={selected}
       status={data.status}
       onClick={onClick}
     >
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-teal-400 font-mono text-sm font-medium">
-            {data.id}
-          </span>
-          <button
-            type="button"
-            aria-label="Expand"
-            className="p-1 text-text-muted hover:text-text-body transition-colors rounded hover:bg-white/5"
-          >
-            <ExpandIcon />
-          </button>
+      {/* Header: ID & Status */}
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-xs font-medium text-teal-400/80">
+          {data.id}
+        </span>
+        <StatusBadge status={data.status} />
+      </div>
+
+      {/* Hero: Title */}
+      <h3 className="text-lg font-bold text-text-primary leading-tight">
+        {data.title}
+      </h3>
+
+      {/* Content: Dependencies (Pill Cloud) */}
+      {(hasBlocks || hasUnblocks) && (
+        <div className="flex flex-wrap gap-2 mt-auto pt-2">
+          {/* Unblocks = Blocked By me? No. 
+              data.unblocks = tasks blocking THIS task (upstream) -> "Waiting on"
+              data.blocks = tasks THIS task blocks (downstream) -> "Blocks" 
+          */}
+          {data.unblocks.slice(0, 3).map((id) => (
+            <DependencyPill key={id} id={id} type="blocked-by" />
+          ))}
+          {data.blocks.slice(0, 3).map((id) => (
+            <DependencyPill key={id} id={id} type="blocking" />
+          ))}
+          {(data.unblocks.length + data.blocks.length > 6) && (
+            <span className="px-2 py-1 text-[10px] text-text-muted/60 italic">
+              +{data.unblocks.length + data.blocks.length - 6} more
+            </span>
+          )}
         </div>
+      )}
 
-        <h3 className="text-text-strong font-semibold text-sm leading-tight line-clamp-2">
-          {data.title}
-        </h3>
-
-        {(hasBlocks || hasUnblocks) && (
-          <div className="space-y-2 pt-1">
-            {/* BLOCKED BY: tasks blocking THIS task (rose) */}
-            {hasUnblocks && (
-              <div className="rounded-lg bg-black/20 p-2 border border-white/5">
-                <p className="mb-1.5 text-[9px] font-bold uppercase tracking-widest text-rose-400/80 pl-0.5">Blocked By</p>
-                <div className="flex flex-col gap-1.5">
-                  {data.unblocks.slice(0, 3).map((id) => (
-                    <RelationshipItem key={id} id={id} color="unlocks" />
-                  ))}
-                  {data.unblocks.length > 3 && (
-                    <div className="text-[10px] text-rose-400/60 px-2 py-1 italic">
-                      +{data.unblocks.length - 3} more
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* BLOCKING: tasks THIS task blocks (amber) */}
-            {hasBlocks && (
-              <div className="rounded-lg bg-black/20 p-2 border border-white/5">
-                <p className="mb-1.5 text-[9px] font-bold uppercase tracking-widest text-amber-400/80 pl-0.5">Blocking</p>
-                <div className="flex flex-col gap-1.5">
-                  {data.blocks.slice(0, 3).map((id) => (
-                    <RelationshipItem key={id} id={id} color="blocks" />
-                  ))}
-                  {data.blocks.length > 3 && (
-                    <div className="text-[10px] text-amber-400/60 px-2 py-1 italic">
-                      +{data.blocks.length - 3} more
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-
-        <div className="flex items-center justify-between pt-2 border-t border-white/5">
-          <div className="flex items-center gap-1">
-            {data.agents.slice(0, 3).map((agent) => (
+      {/* Footer: Agents & Actions */}
+      <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-2">
+        {/* Crew */}
+        <div className="flex items-center -space-x-2 pl-1">
+          {data.agents.map((agent) => (
+            <div key={agent.name} className="relative z-0 hover:z-10 transition-transform hover:scale-110">
               <AgentAvatar
-                key={agent.name}
                 name={agent.name}
                 status={agent.status as AgentStatus}
                 role={agent.role}
                 size="sm"
               />
-            ))}
-            {data.agents.length > 3 && (
-              <span className="text-text-muted text-xs ml-1">
-                +{data.agents.length - 3}
-              </span>
-            )}
-          </div>
+            </div>
+          ))}
+          {data.agents.length === 0 && (
+            <span className="text-xs text-text-muted/40 italic">Unassigned</span>
+          )}
+        </div>
 
-          <div className="flex items-center gap-0.5">
-            <ViewJumpIcon
-              icon={<GraphIcon />}
-              label="View in Graph"
-              onClick={() => onJumpToGraph?.(data.id)}
-            />
-            <ViewJumpIcon
-              icon={<KanbanIcon />}
-              label="View in Kanban"
-              onClick={() => onJumpToKanban?.(data.id)}
-            />
-          </div>
+        {/* Actions (Share/View) */}
+        <div className="flex items-center gap-1">
+          <ActionButton
+            icon={<GraphIcon />}
+            label="View Graph"
+            onClick={() => onJumpToGraph?.(data.id)}
+          />
+          <ActionButton
+            icon={<KanbanIcon />}
+            label="View Kanban"
+            onClick={() => onJumpToKanban?.(data.id)}
+          />
         </div>
       </div>
     </BaseCard>
