@@ -10,6 +10,7 @@ interface ThreadDrawerProps {
   title: string;
   id: string;
   items?: ThreadItem[];
+  embedded?: boolean; // New prop for embedded mode
 }
 
 // Sample data for demo
@@ -37,23 +38,24 @@ const SAMPLE_ITEMS: ThreadItem[] = [
   },
 ];
 
-export function ThreadDrawer({ isOpen, onClose, title, id, items = SAMPLE_ITEMS }: ThreadDrawerProps) {
+export function ThreadDrawer({ isOpen, onClose, title, id, items = SAMPLE_ITEMS, embedded = false }: ThreadDrawerProps) {
   const [comment, setComment] = useState('');
 
   if (!isOpen) return null;
 
   return (
     <div
-      className="h-full w-[24rem] overflow-hidden flex flex-col"
+      className="h-full flex flex-col"
       style={{
+        width: embedded ? '100%' : '24rem', // Full width when embedded
         backgroundColor: 'var(--color-bg-card)',
-        borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.3)',
+        borderLeft: embedded ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: embedded ? 'none' : '-4px 0 20px rgba(0, 0, 0, 0.3)',
       }}
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between p-4 border-b"
+        className="flex items-center justify-between p-4 border-b flex-shrink-0"
         style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
       >
         <div className="flex-1 min-w-0 mr-4">
@@ -78,13 +80,13 @@ export function ThreadDrawer({ isOpen, onClose, title, id, items = SAMPLE_ITEMS 
       </div>
 
       {/* Thread Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
         <ThreadView items={items} />
       </div>
 
       {/* Compose */}
       <div
-        className="p-4 border-t"
+        className="p-4 border-t flex-shrink-0"
         style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
       >
         <div className="flex gap-2">
@@ -93,7 +95,7 @@ export function ThreadDrawer({ isOpen, onClose, title, id, items = SAMPLE_ITEMS 
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Add a comment..."
-            className="flex-1 px-3 py-2 rounded-md text-sm"
+            className="flex-1 px-3 py-2 rounded-md text-sm outline-none focus:ring-1 focus:ring-teal-500/50 transition-all"
             style={{
               backgroundColor: 'var(--color-bg-input)',
               color: 'var(--color-text-primary)',
@@ -106,7 +108,7 @@ export function ThreadDrawer({ isOpen, onClose, title, id, items = SAMPLE_ITEMS 
             }}
           />
           <button
-            className="p-2 rounded-md"
+            className="p-2 rounded-md hover:opacity-90 transition-opacity"
             style={{
               backgroundColor: 'var(--color-accent-green)',
               color: '#fff',

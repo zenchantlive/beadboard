@@ -6,8 +6,8 @@ import type { ActivityEvent } from '../../lib/activity';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 type AgentStatus = 'active' | 'stale' | 'stuck' | 'dead';
 
@@ -20,6 +20,7 @@ interface AgentRosterEntry {
 
 interface ActivityPanelProps {
   issues: BeadIssue[];
+  collapsed?: boolean;
 }
 
 const AGENT_LABEL = 'gt:agent';
@@ -99,17 +100,6 @@ function formatRelativeTime(timestamp: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-// Get status badge variant
-function getStatusVariant(status: AgentStatus): 'default' | 'secondary' | 'outline' | 'destructive' {
-  switch (status) {
-    case 'active': return 'default';
-    case 'stale': return 'secondary';
-    case 'stuck': return 'outline';
-    case 'dead': return 'destructive';
-    default: return 'secondary';
-  }
-}
-
 // Get event kind icon/color
 function getEventKindInfo(kind: string): { label: string; color: string } {
   const events: Record<string, { label: string; color: string }> = {
@@ -131,7 +121,7 @@ function getInitials(name: string): string {
   return name.split(/[-_\s]/).map(p => p[0]).join('').toUpperCase().slice(0, 2);
 }
 
-export function ActivityPanel({ issues }: ActivityPanelProps) {
+export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps) {
   const [activities, setActivities] = useState<ActivityEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -182,6 +172,44 @@ export function ActivityPanel({ issues }: ActivityPanelProps) {
   const activeAgents = agentRoster.filter(a => a.status === 'active').length;
   const staleAgents = agentRoster.filter(a => a.status === 'stale').length;
   
+  if (collapsed) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-4 h-full bg-black/20">
+        {/* Collapsed Agent Icons */}
+        <div className="flex flex-col gap-2">
+          {agentRoster.slice(0, 5).map(agent => (
+            <div key={agent.beadId} className="relative group cursor-help" title={`${agent.name} (${agent.status})`}>
+              <Avatar className="h-8 w-8 ring-1 ring-white/10 hover:ring-white/30 transition-all">
+                <AvatarFallback className="text-[10px] bg-white/5">
+                  {getInitials(agent.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className={cn(
+                "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#1e1e1e]",
+                agent.status === 'active' ? 'bg-emerald-500' :
+                agent.status === 'stale' ? 'bg-amber-500' : 'bg-rose-500'
+              )} />
+            </div>
+          ))}
+        </div>
+        
+        {/* Divider */}
+        <div className="w-4 h-[1px] bg-white/10" />
+        
+        {/* Mini Activity Dots (Just visual pulse) */}
+        <div className="flex flex-col gap-1">
+           {/* Just show a few recent activity dots as a visual "heartbeat" */}
+           {activities.slice(0, 5).map((act) => (
+             <div key={act.id} className={cn(
+               "w-1.5 h-1.5 rounded-full opacity-50",
+               act.kind === 'created' ? 'bg-emerald-500' : 'bg-cyan-500'
+             )} />
+           ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* AGENT ROSTER SECTION */}

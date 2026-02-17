@@ -7,30 +7,49 @@ import { useUrlState } from '../../hooks/use-url-state';
 
 export interface RightPanelProps {
   children?: ReactNode;
+  rail?: ReactNode;
   isOpen?: boolean;
 }
 
-export function RightPanel({ children, isOpen: externalIsOpen }: RightPanelProps) {
+export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPanelProps) {
   const { isMobile, isDesktop } = useResponsive();
   const { panel, togglePanel } = useUrlState();
   
   const isOpen = externalIsOpen ?? (panel === 'open');
+  
+  // Calculate width based on content (Standard 17rem vs Chat Mode ~26rem)
+  // If rail is present, we are in "Chat Mode" (Wide Panel + Rail)
+  // If no rail, we are in "Activity Mode" (Standard Panel)
+  const panelWidth = isOpen ? (rail ? '26rem' : '17rem') : '0';
 
   if (isDesktop) {
     return (
       <div
-        className="overflow-y-auto transition-all duration-300"
+        className="overflow-hidden transition-all duration-300 flex"
         style={{
-          width: isOpen ? '17rem' : '0',
+          width: panelWidth,
           backgroundColor: 'var(--color-bg-card)',
           borderLeft: isOpen ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
         }}
         data-testid="right-panel-desktop"
       >
         {isOpen && (
-          <div className="p-4" style={{ color: 'var(--color-text-secondary)' }}>
-            {children || <span>Right Panel</span>}
-          </div>
+          <>
+            {/* Main Content (Chat or Activity) */}
+            <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
+                 {/* Remove default padding to allow edge-to-edge chat */}
+                 {children || <span>Right Panel</span>}
+              </div>
+            </div>
+
+            {/* Side Rail (Mini Activity - Only if provided) */}
+            {rail && (
+              <div className="w-12 h-full flex-shrink-0 border-l border-white/10 bg-black/20">
+                {rail}
+              </div>
+            )}
+          </>
         )}
       </div>
     );

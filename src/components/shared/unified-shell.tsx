@@ -52,14 +52,32 @@ export function UnifiedShell({
     setDrawer('closed');
   };
 
-  // Thread drawer - shows when card selected
-  const isDrawerOpen = drawer === 'open' && (!!taskId || !!swarmId);
+  // Chat Mode Logic: If a card is selected (drawer='open'), we show Chat + Mini Activity Rail
+  const isChatOpen = drawer === 'open' && (!!taskId || !!swarmId);
   const drawerTitle = selectedSocialCard?.title || selectedSwarmCard?.title || '';
   const drawerId = taskId || swarmId || '';
 
-  const renderRightPanel = () => {
-    return <ActivityPanel issues={issues} />;
-  };
+  // Right Panel Content Logic
+  // - Chat Mode: Main = Chat, Rail = Activity(Collapsed)
+  // - Default: Main = Activity, Rail = None
+  const rightPanelMain = isChatOpen ? (
+    <ThreadDrawer
+      isOpen={true} // Always "open" inside the panel
+      onClose={handleCloseDrawer}
+      title={drawerTitle}
+      id={drawerId}
+      embedded={true} // New prop to tell ThreadDrawer it's embedded, not an overlay
+    />
+  ) : (
+    <ActivityPanel issues={issues} />
+  );
+
+  const rightPanelRail = isChatOpen ? (
+    <ActivityPanel issues={issues} collapsed={true} />
+  ) : undefined;
+
+  // Grid Layout: Expand Right Panel width when Chat is open
+  const rightPanelWidth = isChatOpen ? '26rem' : '17rem';
 
   const renderMiddleContent = () => {
     if (view === 'graph') {
@@ -103,39 +121,25 @@ export function UnifiedShell({
       {/* TOP BAR: 3rem fixed */}
       <TopBar />
 
-      {/* MAIN AREA: CSS Grid [13rem | 1fr | 17rem] */}
+      {/* MAIN AREA: CSS Grid [13rem | 1fr | RightPanel] */}
       <div 
-        className="flex-1 grid overflow-hidden"
-        style={{ gridTemplateColumns: '13rem 1fr 17rem' }}
+        className="flex-1 grid overflow-hidden transition-all duration-300"
+        style={{ gridTemplateColumns: `13rem 1fr ${rightPanelWidth}` }}
         data-testid="main-area"
       >
         {/* LEFT PANEL: 13rem channel tree */}
         <LeftPanel issues={issues} />
 
-        {/* MIDDLE CONTENT: flex-1 - contains card grid AND thread drawer */}
-        <div className="relative overflow-hidden" data-testid="middle-content">
+        {/* MIDDLE CONTENT: flex-1 */}
+        <div className="relative overflow-hidden bg-black/10 shadow-inner" data-testid="middle-content">
           {renderMiddleContent()}
-          
-          {/* THREAD DRAWER: Inside middle section, attached to right edge */}
-          {isDrawerOpen && (
-            <div className="absolute top-0 right-0 h-full z-50">
-              <ThreadDrawer
-                isOpen={isDrawerOpen}
-                onClose={handleCloseDrawer}
-                title={drawerTitle}
-                id={drawerId}
-              />
-            </div>
-          )}
         </div>
 
-        {/* RIGHT PANEL: 17rem - Always shows Activity (bb-ui2.29) */}
-        <RightPanel isOpen={panel === 'open'}>
-          {renderRightPanel()}
+        {/* RIGHT PANEL: Dynamic Content + Optional Rail */}
+        <RightPanel isOpen={panel === 'open'} rail={rightPanelRail}>
+          {rightPanelMain}
         </RightPanel>
       </div>
-
-
 
       {/* MOBILE NAV: Bottom tab bar */}
       <MobileNav />
