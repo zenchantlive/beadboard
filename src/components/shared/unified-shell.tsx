@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
 import { TopBar } from './top-bar';
@@ -26,8 +27,10 @@ export interface UnifiedShellProps {
 
 export function UnifiedShell({
   issues,
+  projectRoot,
   projectScopeOptions,
 }: UnifiedShellProps) {
+  const router = useRouter();
   const { view, taskId, setTaskId, swarmId, setSwarmId, graphTab, setGraphTab, panel, drawer, setDrawer, epicId, setEpicId } = useUrlState();
 
   const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
@@ -35,6 +38,7 @@ export function UnifiedShell({
 
   const selectedSocialCard = taskId ? socialCards.find(c => c.id === taskId) : null;
   const selectedSwarmCard = swarmId ? swarmCards.find(c => c.swarmId === swarmId) : null;
+  const selectedIssue = taskId ? issues.find((issue) => issue.id === taskId) ?? null : null;
 
   const handleGraphSelect = (id: string) => {
     setTaskId(id);
@@ -68,6 +72,11 @@ export function UnifiedShell({
       title={drawerTitle}
       id={drawerId}
       embedded={true} // New prop to tell ThreadDrawer it's embedded, not an overlay
+      issue={selectedIssue}
+      projectRoot={projectRoot}
+      onIssueUpdated={async () => {
+        router.refresh();
+      }}
     />
   ) : (
     <ActivityPanel issues={issues} />

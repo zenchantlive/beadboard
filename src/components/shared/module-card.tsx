@@ -1,6 +1,6 @@
 import type { ReactNode, MouseEventHandler } from 'react';
 import { cn } from '@/lib/utils';
-import type { SocialCardStatus } from '@/lib/social-cards';
+import type { SocialCardStatus } from '../../lib/social-cards';
 
 interface ModuleCardProps {
   children: ReactNode;
