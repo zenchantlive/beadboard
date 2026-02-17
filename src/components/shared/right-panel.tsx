@@ -28,8 +28,9 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
         className="overflow-hidden transition-all duration-300 flex"
         style={{
           width: panelWidth,
-          backgroundColor: 'var(--color-bg-card)',
-          borderLeft: isOpen ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
+          background:
+            'radial-gradient(circle_at_12%_8%,rgba(91,168,160,0.22),transparent_34%),radial-gradient(circle_at_88%_84%,rgba(212,165,116,0.2),transparent_30%),linear-gradient(180deg,rgba(50,50,58,0.98),rgba(40,42,54,0.98))',
+          boxShadow: isOpen ? '-24px 0 44px -26px rgba(0,0,0,0.85)' : 'none',
         }}
         data-testid="right-panel-desktop"
       >
@@ -45,7 +46,7 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
 
             {/* Side Rail (Mini Activity - Only if provided) */}
             {rail && (
-              <div className="w-12 h-full flex-shrink-0 border-l border-white/10 bg-black/20">
+              <div className="w-12 h-full flex-shrink-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.24),rgba(0,0,0,0.36))] shadow-[-10px_0_20px_-18px_rgba(0,0,0,0.9)]">
                 {rail}
               </div>
             )}
@@ -104,8 +105,9 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
         className="fixed top-0 right-0 h-full z-50 overflow-y-auto"
         style={{
           width: '17rem',
-          backgroundColor: 'var(--color-bg-card)',
-          borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
+          background:
+            'radial-gradient(circle_at_12%_8%,rgba(91,168,160,0.22),transparent_34%),radial-gradient(circle_at_88%_84%,rgba(212,165,116,0.2),transparent_30%),linear-gradient(180deg,rgba(50,50,58,0.98),rgba(40,42,54,0.98))',
+          boxShadow: '-24px 0 44px -26px rgba(0,0,0,0.85)',
         }}
         data-testid="right-panel-tablet"
       >

@@ -24,8 +24,9 @@ export function TopBar({ children }: TopBarProps) {
     <header
       className="h-12 flex items-center justify-between px-4"
       style={{
-        backgroundColor: 'var(--color-bg-card)',
-        borderBottom: '1px solid var(--color-border-soft)',
+        background:
+          'radial-gradient(circle_at_10%_50%,rgba(212,165,116,0.14),transparent_30%),radial-gradient(circle_at_90%_40%,rgba(91,168,160,0.14),transparent_30%),var(--color-bg-card)',
+        boxShadow: '0 14px 22px -20px rgba(0,0,0,0.85)',
       }}
       data-testid="top-bar"
     >
@@ -64,14 +65,13 @@ export function TopBar({ children }: TopBarProps) {
                 onClick={() => setView(tab.id)}
                 role="tab"
                 aria-selected={isActive}
-                className={`px-4 py-2 text-sm transition-colors rounded-t ${
+                className={`px-4 py-2 text-sm transition-colors rounded-md ${
                   isActive
-                    ? 'font-bold border-b-2'
+                    ? 'font-bold shadow-[inset_0_-2px_0_var(--color-accent-green),0_10px_18px_-14px_rgba(0,0,0,0.8)] bg-white/[0.03]'
                     : 'font-normal hover:text-[var(--color-text-primary)]'
                 }`}
                 style={{
                   color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-                  borderColor: isActive ? 'var(--color-accent-green)' : 'transparent',
                 }}
                 data-testid={`tab-${tab.id}`}
               >
@@ -92,7 +92,7 @@ export function TopBar({ children }: TopBarProps) {
               style={{
                 backgroundColor: 'var(--color-bg-input)',
                 color: 'var(--color-text-primary)',
-                border: '1px solid var(--color-border-soft)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 14px -12px rgba(0,0,0,0.85)',
               }}
               data-testid="filter-input"
             />

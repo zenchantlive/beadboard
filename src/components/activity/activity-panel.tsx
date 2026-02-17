@@ -4,12 +4,25 @@ import { useEffect, useState, useMemo } from 'react';
 import type { BeadIssue } from '../../lib/types';
 import type { ActivityEvent } from '../../lib/activity';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 type AgentStatus = 'active' | 'stale' | 'stuck' | 'dead';
+
+type AgentTone = {
+  cardClass: string;
+  labelClass: string;
+  ringClass: string;
+  glowClass: string;
+};
+
+type EventTone = {
+  label: string;
+  labelClass: string;
+  dotClass: string;
+  cardClass: string;
+  idClass: string;
+};
 
 interface AgentRosterEntry {
   name: string;
@@ -94,21 +107,136 @@ function formatRelativeTime(timestamp: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-// Get event kind icon/color
-function getEventKindInfo(kind: string): { label: string; color: string } {
-  const events: Record<string, { label: string; color: string }> = {
-    created: { label: 'Created', color: 'text-emerald-500' },
-    closed: { label: 'Closed', color: 'text-amber-500' },
-    reopened: { label: 'Reopened', color: 'text-blue-500' },
-    status_changed: { label: 'Status changed', color: 'text-cyan-500' },
-    priority_changed: { label: 'Priority changed', color: 'text-purple-500' },
-    assignee_changed: { label: 'Assigned', color: 'text-indigo-500' },
-    heartbeat: { label: 'Heartbeat', color: 'text-muted-foreground' },
-    dependency_added: { label: 'Dependency added', color: 'text-orange-500' },
-    dependency_removed: { label: 'Dependency removed', color: 'text-red-500' },
+function getAgentTone(status: AgentStatus): AgentTone {
+  const tones: Record<AgentStatus, AgentTone> = {
+    active: {
+      cardClass: 'bg-[radial-gradient(circle_at_86%_18%,rgba(124,185,122,0.28),transparent_58%),rgba(45,64,47,0.74)]',
+      labelClass: 'text-[#7CB97A]',
+      ringClass: 'ring-[#7CB97A]/45',
+      glowClass: 'bg-[#7CB97A]/30',
+    },
+    stale: {
+      cardClass: 'bg-[radial-gradient(circle_at_86%_18%,rgba(212,165,116,0.28),transparent_58%),rgba(73,61,46,0.74)]',
+      labelClass: 'text-[#D4A574]',
+      ringClass: 'ring-[#D4A574]/45',
+      glowClass: 'bg-[#D4A574]/30',
+    },
+    stuck: {
+      cardClass: 'bg-[radial-gradient(circle_at_86%_18%,rgba(201,122,122,0.28),transparent_58%),rgba(74,52,54,0.76)]',
+      labelClass: 'text-[#C97A7A]',
+      ringClass: 'ring-[#C97A7A]/45',
+      glowClass: 'bg-[#C97A7A]/30',
+    },
+    dead: {
+      cardClass: 'bg-[radial-gradient(circle_at_86%_18%,rgba(136,104,112,0.26),transparent_58%),rgba(60,55,60,0.74)]',
+      labelClass: 'text-[#A78A94]',
+      ringClass: 'ring-[#A78A94]/40',
+      glowClass: 'bg-[#A78A94]/25',
+    },
   };
-  
-  return events[kind] || { label: kind.replace(/_/g, ' '), color: 'text-muted-foreground' };
+
+  return tones[status];
+}
+
+// reopened=blue, closed=amber, created/opened=green, others semantic
+function getEventTone(kind: string): EventTone {
+  const normalized = kind.toLowerCase();
+  const byKind: Record<string, EventTone> = {
+    created: {
+      label: 'Created',
+      labelClass: 'text-[#7CB97A]',
+      dotClass: 'bg-[#7CB97A]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(124,185,122,0.26),transparent_55%),rgba(42,62,44,0.68)]',
+      idClass: 'text-[#9ACB98]',
+    },
+    opened: {
+      label: 'Opened',
+      labelClass: 'text-[#7CB97A]',
+      dotClass: 'bg-[#7CB97A]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(124,185,122,0.26),transparent_55%),rgba(42,62,44,0.68)]',
+      idClass: 'text-[#9ACB98]',
+    },
+    closed: {
+      label: 'Closed',
+      labelClass: 'text-[#D4A574]',
+      dotClass: 'bg-[#D4A574]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(212,165,116,0.28),transparent_55%),rgba(66,56,44,0.7)]',
+      idClass: 'text-[#DAB891]',
+    },
+    reopened: {
+      label: 'Reopened',
+      labelClass: 'text-[#5B95E8]',
+      dotClass: 'bg-[#5B95E8]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(91,149,232,0.3),transparent_55%),rgba(42,51,66,0.7)]',
+      idClass: 'text-[#8DB4EF]',
+    },
+    status_changed: {
+      label: 'Status changed',
+      labelClass: 'text-[#D4A574]',
+      dotClass: 'bg-[#D4A574]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(212,165,116,0.24),transparent_55%),rgba(63,54,44,0.68)]',
+      idClass: 'text-[#DAB891]',
+    },
+    priority_changed: {
+      label: 'Priority changed',
+      labelClass: 'text-[#D4A574]',
+      dotClass: 'bg-[#D4A574]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(212,165,116,0.24),transparent_55%),rgba(63,54,44,0.68)]',
+      idClass: 'text-[#DAB891]',
+    },
+    assignee_changed: {
+      label: 'Assigned',
+      labelClass: 'text-[#D4A574]',
+      dotClass: 'bg-[#D4A574]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(212,165,116,0.24),transparent_55%),rgba(63,54,44,0.68)]',
+      idClass: 'text-[#DAB891]',
+    },
+    dependency_added: {
+      label: 'Dependency added',
+      labelClass: 'text-[#D4A574]',
+      dotClass: 'bg-[#D4A574]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(212,165,116,0.24),transparent_55%),rgba(63,54,44,0.68)]',
+      idClass: 'text-[#DAB891]',
+    },
+    dependency_removed: {
+      label: 'Dependency removed',
+      labelClass: 'text-[#C97A7A]',
+      dotClass: 'bg-[#C97A7A]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(201,122,122,0.24),transparent_55%),rgba(65,47,50,0.7)]',
+      idClass: 'text-[#D9A9A9]',
+    },
+    heartbeat: {
+      label: 'Heartbeat',
+      labelClass: 'text-[#5BA8A0]',
+      dotClass: 'bg-[#5BA8A0]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(91,168,160,0.26),transparent_55%),rgba(42,58,60,0.7)]',
+      idClass: 'text-[#8BC9C1]',
+    },
+    commented: {
+      label: 'Commented',
+      labelClass: 'text-[#5BA8A0]',
+      dotClass: 'bg-[#5BA8A0]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(91,168,160,0.26),transparent_55%),rgba(42,58,60,0.7)]',
+      idClass: 'text-[#8BC9C1]',
+    },
+    comment_added: {
+      label: 'Commented',
+      labelClass: 'text-[#5BA8A0]',
+      dotClass: 'bg-[#5BA8A0]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(91,168,160,0.26),transparent_55%),rgba(42,58,60,0.7)]',
+      idClass: 'text-[#8BC9C1]',
+    },
+  };
+
+  return (
+    byKind[normalized] || {
+      label: normalized.replace(/_/g, ' '),
+      labelClass: 'text-[#5BA8A0]',
+      dotClass: 'bg-[#5BA8A0]',
+      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(91,168,160,0.24),transparent_55%),rgba(42,58,60,0.68)]',
+      idClass: 'text-[#8BC9C1]',
+    }
+  );
 }
 
 function getInitials(name: string): string {
@@ -164,24 +292,24 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
   }, []);
 
   const activeAgents = agentRoster.filter(a => a.status === 'active').length;
-  const staleAgents = agentRoster.filter(a => a.status === 'stale').length;
-  
   if (collapsed) {
     return (
-      <div className="flex flex-col items-center gap-6 py-6 h-full bg-black/40 border-l border-white/5 shadow-2xl">
+      <div className="flex flex-col items-center gap-6 py-6 h-full bg-[linear-gradient(180deg,rgba(0,0,0,0.2),rgba(0,0,0,0.36))] shadow-[inset_10px_0_22px_-20px_rgba(0,0,0,0.9)]">
         {/* Collapsed Agent Icons with ZFC Rings */}
         <div className="flex flex-col gap-4">
           {agentRoster.slice(0, 6).map(agent => (
             <div key={agent.beadId} className="relative group cursor-help" title={`${agent.name} (${agent.status})`}>
               <div className={cn(
                 "absolute -inset-1 rounded-full blur-[2px] transition-opacity duration-500",
-                agent.status === 'active' ? 'bg-emerald-500/20 opacity-100 animate-pulse' :
-                agent.status === 'stale' ? 'bg-amber-500/10 opacity-50' : 'bg-rose-500/20 opacity-100'
+                agent.status === 'active' ? 'bg-[#7CB97A]/20 opacity-100 animate-pulse' :
+                agent.status === 'stale' ? 'bg-[#D4A574]/14 opacity-80' :
+                agent.status === 'stuck' ? 'bg-[#C97A7A]/20 opacity-100' : 'bg-[#A78A94]/18 opacity-90'
               )} />
               <Avatar className={cn(
                 "h-9 w-9 ring-2 transition-all duration-300 relative z-10",
-                agent.status === 'active' ? 'ring-emerald-500/40' :
-                agent.status === 'stale' ? 'ring-amber-500/20' : 'ring-rose-500/40'
+                agent.status === 'active' ? 'ring-[#7CB97A]/45' :
+                agent.status === 'stale' ? 'ring-[#D4A574]/45' :
+                agent.status === 'stuck' ? 'ring-[#C97A7A]/45' : 'ring-[#A78A94]/40'
               )}>
                 <AvatarFallback className="text-[10px] font-bold bg-[#1a1a1a] text-text-muted">
                   {getInitials(agent.name)}
@@ -191,14 +319,14 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
           ))}
         </div>
         
-        <div className="w-6 h-[1px] bg-white/10 mx-auto" />
+        <div className="w-6 h-[1px] bg-white/20 mx-auto" />
         
         {/* Activity Pulses */}
         <div className="flex flex-col gap-2 opacity-40">
            {activities.slice(0, 8).map((act) => (
              <div key={act.id} className={cn(
                "w-1 h-1 rounded-full",
-               act.kind === 'created' ? 'bg-emerald-500 shadow-[0_0_4px_#10b981]' : 'bg-cyan-500 shadow-[0_0_4px_#06b6d4]'
+               getEventTone(act.kind).dotClass
              )} />
            ))}
         </div>
@@ -207,15 +335,15 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#1a1a1a]/95 backdrop-blur-xl">
+    <div className="flex flex-col h-full bg-[radial-gradient(circle_at_8%_5%,rgba(91,168,160,0.16),transparent_30%),radial-gradient(circle_at_94%_88%,rgba(212,165,116,0.14),transparent_34%),rgba(26,26,28,0.96)] backdrop-blur-xl">
       {/* AGENT ROSTER SECTION */}
-      <div className="flex-shrink-0 p-4 border-b border-white/5 bg-white/[0.02]">
+      <div className="flex-shrink-0 p-4 bg-black/10 shadow-[0_16px_24px_-24px_rgba(0,0,0,0.9)]">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
             <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-text-muted">Live Agents</h3>
           </div>
-          <div className="text-[10px] font-mono text-emerald-500/60 bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10">
+          <div className="text-[10px] font-mono text-[#7CB97A]/80 bg-[#7CB97A]/15 px-2 py-0.5 rounded shadow-[0_10px_16px_-12px_rgba(0,0,0,0.8)]">
             {activeAgents} ONLINE
           </div>
         </div>
@@ -225,16 +353,16 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
         ) : (
           <div className="grid grid-cols-1 gap-2">
             {agentRoster.map(agent => (
-              <div
-                key={agent.beadId}
-                className="group flex items-center gap-3 p-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 hover:bg-white/[0.05] transition-all duration-300"
-              >
+              <div key={agent.beadId} className={cn(
+                'group flex items-center gap-3 p-2 rounded-xl transition-all duration-300 shadow-[0_12px_22px_-14px_rgba(0,0,0,0.85)]',
+                getAgentTone(agent.status).cardClass,
+              )}>
                 <div className="relative">
                   <div className={cn(
                     "absolute -inset-0.5 rounded-full blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity",
-                    agent.status === 'active' ? 'bg-emerald-500/30' : 'bg-amber-500/30'
+                    getAgentTone(agent.status).glowClass
                   )} />
-                  <Avatar className="h-8 w-8 relative z-10 ring-1 ring-white/10">
+                  <Avatar className={cn("h-8 w-8 relative z-10 ring-1", getAgentTone(agent.status).ringClass)}>
                     <AvatarFallback className="text-[10px] font-bold bg-[#252525]">
                       {getInitials(agent.name)}
                     </AvatarFallback>
@@ -245,7 +373,7 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
                   <div className="flex items-center gap-1.5">
                     <span className={cn(
                       "text-[9px] uppercase tracking-wider font-bold",
-                      agent.status === 'active' ? 'text-emerald-500' : 'text-amber-500'
+                      getAgentTone(agent.status).labelClass
                     )}>
                       {agent.status}
                     </span>
@@ -262,7 +390,7 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
       
       {/* ACTIVITY FEED SECTION */}
       <div className="flex-1 min-h-0 flex flex-col">
-        <div className="p-4 flex items-center gap-2 border-b border-white/5">
+        <div className="p-4 flex items-center gap-2 shadow-[0_14px_24px_-24px_rgba(0,0,0,0.9)]">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted/60"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
           <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-text-muted">Telemetry Stream</h3>
         </div>
@@ -280,19 +408,20 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
           ) : (
             <div className="p-3 space-y-3">
               {activities.map((activity) => {
-                const eventInfo = getEventKindInfo(activity.kind);
+                const eventTone = getEventTone(activity.kind);
                 return (
                   <div key={activity.id} className="group relative">
-                    <div className="absolute -left-3 top-0 bottom-0 w-[1px] bg-white/5 group-hover:bg-white/10 transition-colors" />
-                    
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                    <div className={cn(
+                      "p-3 rounded-xl transition-all duration-300 shadow-[0_12px_22px_-14px_rgba(0,0,0,0.88)]",
+                      eventTone.cardClass
+                    )}>
                       <div className="flex items-center gap-2 mb-1.5">
                         <div className={cn(
                           "w-1.5 h-1.5 rounded-full shrink-0",
-                          activity.kind === 'closed' ? 'bg-amber-500' : 'bg-emerald-500'
+                          eventTone.dotClass
                         )} />
-                        <span className={cn("text-[10px] font-bold uppercase tracking-wider", eventInfo.color)}>
-                          {eventInfo.label}
+                        <span className={cn("text-[10px] font-bold uppercase tracking-wider", eventTone.labelClass)}>
+                          {eventTone.label}
                         </span>
                         <span className="text-[9px] text-text-muted/30 font-mono ml-auto">
                           {formatRelativeTime(activity.timestamp)}
@@ -304,12 +433,12 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
                       </p>
                       
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono text-teal-500/50">
+                        <span className={cn("text-[10px] font-mono", eventTone.idClass)}>
                           {activity.beadId}
                         </span>
                         {activity.actor && (
                           <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[6px] font-bold">
+                            <div className="w-3 h-3 rounded-full bg-white/10 shadow-[0_0_8px_rgba(0,0,0,0.45)] flex items-center justify-center text-[6px] font-bold">
                               {activity.actor[0].toUpperCase()}
                             </div>
                             <span className="text-[9px] text-text-muted/60">{activity.actor}</span>

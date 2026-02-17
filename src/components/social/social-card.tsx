@@ -1,5 +1,9 @@
-import type { ReactNode, MouseEventHandler } from 'react';
-import { cn } from '../../lib/utils';
+import type { MouseEventHandler } from 'react';
+import { Activity, Clock3, GitBranch, Link2, MessageCircle, Orbit } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+
 import type { SocialCard as SocialCardData, AgentStatus } from '../../lib/social-cards';
 import { AgentAvatar } from '../shared/agent-avatar';
 
@@ -9,55 +13,74 @@ interface SocialCardProps {
   selected?: boolean;
   onClick?: MouseEventHandler<HTMLDivElement>;
   onJumpToGraph?: (id: string) => void;
-  onJumpToKanban?: (id: string) => void;
+  onJumpToActivity?: (id: string) => void;
+  onOpenThread?: () => void;
+  description?: string;
+  updatedLabel?: string;
+  dependencyCount?: number;
+  commentCount?: number;
+  unreadCount?: number;
 }
 
-// "Hard Style" Dependency Item (from TaskCardGrid inspiration)
-function DependencyItem({ id, type }: { id: string; type: 'blocked-by' | 'blocking' }) {
-  const styles = type === 'blocked-by' 
-    ? 'border-rose-500/20 hover:border-rose-500/40 hover:bg-rose-500/10' 
-    : 'border-amber-500/20 hover:border-amber-500/40 hover:bg-amber-500/10';
-  
-  const dotColor = type === 'blocked-by' ? 'bg-rose-500' : 'bg-amber-500';
+type StatusTone = {
+  accent: string;
+  glow: string;
+  badgeClass: string;
+  surface: string;
+  accentChip: string;
+};
+
+const STATUS_TONES: Record<SocialCardData['status'], StatusTone> = {
+  ready: {
+    accent: '#7CB97A',
+    glow: 'rgba(124,185,122,0.26)',
+    badgeClass: 'bg-[#7CB97A]/26 text-[#DCEED8] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
+    surface:
+      'radial-gradient(circle at 80% 78%, rgba(124,185,122,0.46), transparent 76%), radial-gradient(circle at 8% 6%, rgba(124,185,122,0.26), transparent 68%), linear-gradient(145deg, rgba(45,78,45,0.99), rgba(35,62,35,0.99))',
+    accentChip: 'bg-[#7CB97A]/18 text-[#D2E4CE] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
+  },
+  in_progress: {
+    accent: '#D4A574',
+    glow: 'rgba(212,165,116,0.28)',
+    badgeClass: 'bg-[#D4A574]/28 text-[#EED9C1] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
+    surface:
+      'radial-gradient(circle at 80% 78%, rgba(212,165,116,0.48), transparent 76%), radial-gradient(circle at 8% 6%, rgba(212,165,116,0.28), transparent 68%), linear-gradient(145deg, rgba(86,64,40,0.99), rgba(68,49,30,0.99))',
+    accentChip: 'bg-[#D4A574]/20 text-[#E0C6A7] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
+  },
+  blocked: {
+    accent: '#C97A7A',
+    glow: 'rgba(201,122,122,0.26)',
+    badgeClass: 'bg-[#C97A7A]/28 text-[#EDD3D3] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
+    surface:
+      'radial-gradient(circle at 80% 78%, rgba(201,122,122,0.46), transparent 76%), radial-gradient(circle at 8% 6%, rgba(201,122,122,0.27), transparent 68%), linear-gradient(145deg, rgba(76,46,46,0.99), rgba(60,36,36,0.99))',
+    accentChip: 'bg-[#C97A7A]/18 text-[#E1C0C0] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
+  },
+  closed: {
+    accent: 'var(--status-closed)',
+    glow: 'rgba(136,136,136,0.16)',
+    badgeClass: 'bg-[#888888]/26 text-[#CECECE] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
+    surface:
+      'radial-gradient(circle at 80% 78%, rgba(136,136,136,0.32), transparent 76%), radial-gradient(circle at 8% 6%, rgba(136,136,136,0.16), transparent 68%), linear-gradient(145deg, rgba(56,56,56,0.99), rgba(44,44,44,0.99))',
+    accentChip: 'bg-[#888888]/16 text-[#BEBEBE] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
+  },
+};
+
+function renderDependencyPreview(ids: string[], toneClass: string, label: string) {
+  if (ids.length === 0) {
+    return null;
+  }
 
   return (
-    <div className={cn(
-      "flex items-center gap-2 px-2.5 py-2 rounded-md border bg-white/5 transition-all duration-200 cursor-default",
-      styles
-    )}>
-      <div className={cn("w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]", dotColor)} />
-      <span className="font-mono text-[10px] text-text-secondary">{id}</span>
-    </div>
-  );
-}
-
-function ActionButton({ icon, label, onClick }: { icon: ReactNode; label: string; onClick?: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={(e) => { e.stopPropagation(); onClick?.(); }}
-      className="group flex items-center justify-center p-2 rounded-full hover:bg-white/10 text-text-muted hover:text-white transition-all active:scale-95"
-      title={label}
-    >
-      {icon}
-    </button>
-  );
-}
-
-function StatusIndicator({ status }: { status: string }) {
-  const color = {
-    ready: 'bg-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.5)]',
-    in_progress: 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]',
-    blocked: 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]',
-    closed: 'bg-slate-500',
-  }[status] || 'bg-slate-500';
-
-  return (
-    <div className="flex items-center gap-2">
-      <div className={cn("w-2 h-2 rounded-full animate-pulse", color)} />
-      <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted/80">
-        {status.replace('_', ' ')}
-      </span>
+    <div className="min-w-0 rounded-lg bg-black/20 px-2 py-1.5 shadow-[0_10px_18px_-14px_rgba(0,0,0,0.85)]">
+      <p className={cn('mb-1 text-[10px] font-semibold uppercase tracking-[0.12em]', toneClass)}>{label}</p>
+      <div className="flex flex-wrap gap-1">
+        {ids.slice(0, 2).map((id) => (
+          <span key={id} className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[10px] text-[#DCDCDC] shadow-[0_8px_12px_-12px_rgba(0,0,0,0.88)]">
+            {id}
+          </span>
+        ))}
+        {ids.length > 2 ? <span className="text-[10px] text-[#8E8E8E]">+{ids.length - 2}</span> : null}
+      </div>
     </div>
   );
 }
@@ -68,10 +91,15 @@ export function SocialCard({
   selected = false,
   onClick,
   onJumpToGraph,
-  onJumpToKanban,
+  onJumpToActivity,
+  onOpenThread,
+  description,
+  updatedLabel = 'just now',
+  dependencyCount,
+  commentCount,
+  unreadCount = 0,
 }: SocialCardProps) {
-  const hasBlocks = data.blocks.length > 0;
-  const hasUnblocks = data.unblocks.length > 0;
+  const tone = STATUS_TONES[data.status];
 
   return (
     <div
@@ -79,76 +107,76 @@ export function SocialCard({
       role="button"
       tabIndex={0}
       className={cn(
-        "group relative flex flex-col p-6 gap-4 transition-all duration-300 ease-out",
-        "rounded-[2rem]", // Elegant roundness
-        "bg-[#252525]/90 backdrop-blur-xl", // Glassy dark
-        "border border-white/5 hover:border-white/10",
-        "shadow-lg hover:shadow-2xl hover:-translate-y-1",
-        selected ? "ring-2 ring-amber-500/50 shadow-amber-900/20" : "",
-        className
+        'group relative flex h-full min-h-[18rem] cursor-pointer flex-col rounded-2xl px-4 py-4 text-left transition-all duration-200 ease-out',
+        'hover:-translate-y-0.5',
+        selected && 'translate-y-[-2px]',
+        className,
       )}
+      style={{
+        background: tone.surface,
+        boxShadow: selected
+          ? `0 24px 50px -18px ${tone.glow}, 0 10px 24px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.12)`
+          : `0 12px 24px -20px ${tone.glow}, 0 6px 14px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.06)`,
+      }}
     >
-      {/* Header: Status & ID */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-xs font-bold text-teal-500/90 tracking-tight">
-            {data.id}
-          </span>
-          <div className="h-3 w-[1px] bg-white/10" />
-          <StatusIndicator status={data.status} />
+      <div className="absolute inset-x-0 top-0 h-[4px]" style={{ backgroundColor: tone.accent }} />
+      <div
+        className="pointer-events-none absolute right-3 top-3 h-10 w-10 rounded-full blur-xl"
+        style={{ backgroundColor: tone.glow }}
+      />
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="truncate font-mono text-[11px] text-[#A8D0CB]">{data.id}</span>
+          {unreadCount > 0 ? (
+            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#E24A3A] px-1 text-[10px] font-semibold text-white">
+              {unreadCount}
+            </span>
+          ) : null}
         </div>
-        <div className="text-[10px] text-text-muted/40 font-mono">
-          {new Date(data.lastActivity).toLocaleDateString()}
+        <div className="flex items-center gap-2">
+          <Badge className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold', tone.badgeClass)}>
+            {data.status.replace('_', ' ')}
+          </Badge>
+          <Badge className="rounded-full bg-black/25 px-2 py-0.5 font-mono text-[10px] text-[#D0D0D0] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]">
+            {data.priority}
+          </Badge>
         </div>
       </div>
 
-      {/* Hero: Title */}
-      <h3 className="text-xl font-bold text-white leading-snug tracking-tight group-hover:text-amber-50 transition-colors">
+      <h3 className="line-clamp-2 text-[1.7rem] font-semibold leading-[1.1] tracking-[-0.02em] text-white">
         {data.title}
       </h3>
 
-      {/* Content: Dependencies (Hard Style List) */}
-      {(hasBlocks || hasUnblocks) && (
-        <div className="flex flex-col gap-3 mt-2">
-          {/* Blocked By */}
-          {hasUnblocks && (
-            <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-black/20 border border-white/5">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-rose-400/70 pl-1">Blocked By</span>
-              <div className="flex flex-col gap-1.5">
-                {data.unblocks.slice(0, 3).map((id) => (
-                  <DependencyItem key={id} id={id} type="blocked-by" />
-                ))}
-                {data.unblocks.length > 3 && (
-                  <div className="px-2 text-[10px] text-rose-400/50 italic">+{data.unblocks.length - 3} more</div>
-                )}
-              </div>
-            </div>
-          )}
+      <p className="mt-2 line-clamp-2 min-h-[2.6rem] text-sm leading-relaxed text-[#B8B8B8]">
+        {description || 'No summary provided yet.'}
+      </p>
 
-          {/* Blocking */}
-          {hasBlocks && (
-            <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-black/20 border border-white/5">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70 pl-1">Blocking</span>
-              <div className="flex flex-col gap-1.5">
-                {data.blocks.slice(0, 3).map((id) => (
-                  <DependencyItem key={id} id={id} type="blocking" />
-                ))}
-                {data.blocks.length > 3 && (
-                  <div className="px-2 text-[10px] text-amber-400/50 italic">+{data.blocks.length - 3} more</div>
-                )}
-              </div>
-            </div>
-          )}
+      <div className="mt-2 flex flex-wrap gap-2">
+        <span className="rounded-full bg-[#D4A574]/28 px-2 py-0.5 text-[10px] font-semibold text-[#F5DFC2] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.82)]">
+          {data.blocks.length} blocking
+        </span>
+        <span className="rounded-full bg-[#E57373]/24 px-2 py-0.5 text-[10px] font-semibold text-[#F3C2C2] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.82)]">
+          {data.unblocks.length} blocked by
+        </span>
+      </div>
+
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        {renderDependencyPreview(data.unblocks, 'text-[#D4A574]', 'Blocked By')}
+        {renderDependencyPreview(data.blocks, 'text-[#5BA8A0]', 'Unblocks')}
+      </div>
+
+      <div className="mt-auto flex items-end justify-between gap-3 pt-4">
+        <div className="space-y-1.5 text-xs text-[#9A9A9A]">
+          <p className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />{updatedLabel}</p>
+          <div className="flex items-center gap-3">
+            <p className="inline-flex items-center gap-1"><Link2 className="h-3.5 w-3.5" />{dependencyCount ?? data.blocks.length + data.unblocks.length}</p>
+            <p className="inline-flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />{commentCount ?? 0}</p>
+          </div>
         </div>
-      )}
 
-      {/* Footer: Social Actions & Crew */}
-      <div className="mt-auto pt-4 flex items-center justify-between border-t border-white/5">
-        
-        {/* Crew (Left) */}
-        <div className="flex items-center -space-x-3 pl-2">
+        <div className="flex items-center -space-x-2">
           {data.agents.slice(0, 4).map((agent) => (
-            <div key={agent.name} className="relative transition-transform hover:scale-110 hover:z-10 ring-2 ring-[#252525] rounded-full">
+            <div key={`${data.id}-${agent.name}`} className="rounded-full ring-2 ring-[#2C2C2C]">
               <AgentAvatar
                 name={agent.name}
                 status={agent.status as AgentStatus}
@@ -157,29 +185,44 @@ export function SocialCard({
               />
             </div>
           ))}
-          {data.agents.length === 0 && (
-            <span className="text-xs text-text-muted/30 font-medium">No Crew</span>
-          )}
+          {data.agents.length === 0 ? <span className="text-xs text-[#808080]">No crew</span> : null}
         </div>
+      </div>
 
-        {/* Action Dock (Right) */}
-        <div className="flex items-center gap-1 bg-black/20 rounded-full px-2 py-1 border border-white/5">
-          <ActionButton
-            icon={
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-            }
-            label="Graph"
-            onClick={() => onJumpToGraph?.(data.id)}
-          />
-          <div className="w-[1px] h-4 bg-white/10" />
-          <ActionButton
-            icon={
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
-            }
-            label="Kanban"
-            onClick={() => onJumpToKanban?.(data.id)}
-          />
-        </div>
+      <div className="mt-3 flex items-center justify-end gap-1 pt-2 shadow-[inset_0_10px_12px_-14px_rgba(0,0,0,0.88)]">
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onJumpToGraph?.(data.id);
+          }}
+          className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#5BA8A0]/24 text-[#AFE2DC] shadow-[0_10px_16px_-12px_rgba(0,0,0,0.8)] transition-colors hover:bg-[#5BA8A0]/36"
+          title="Jump to graph view"
+        >
+          <GitBranch className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onJumpToActivity?.(data.id);
+          }}
+          className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#D4A574]/24 text-[#E8D0B3] shadow-[0_10px_16px_-12px_rgba(0,0,0,0.8)] transition-colors hover:bg-[#D4A574]/36"
+          title="Jump to activity view"
+        >
+          <Orbit className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onOpenThread?.();
+          }}
+          className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#7CB97A]/24 text-[#D2EACF] shadow-[0_10px_16px_-12px_rgba(0,0,0,0.8)] transition-colors hover:bg-[#7CB97A]/36"
+          title="Open thread"
+        >
+          <Activity className="h-3.5 w-3.5" />
+        </button>
       </div>
     </div>
   );
