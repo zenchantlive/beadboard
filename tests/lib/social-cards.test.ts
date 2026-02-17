@@ -75,7 +75,7 @@ test('buildSocialCards maps priority correctly', () => {
   assert.equal(cards[6].priority, 'P4');
 });
 
-test('buildSocialCards computes unlocks (outgoing blocks)', () => {
+test('buildSocialCards computes unblocks (outgoing blocks)', () => {
   const beads = [
     issue({ id: 'bb-1', dependencies: [dep('blocks', 'bb-2'), dep('blocks', 'bb-3')] }),
     issue({ id: 'bb-2' }),
@@ -85,7 +85,7 @@ test('buildSocialCards computes unlocks (outgoing blocks)', () => {
   const cards = buildSocialCards(beads);
   const card1 = cards.find((c) => c.id === 'bb-1')!;
 
-  assert.deepEqual(card1.unlocks.sort(), ['bb-2', 'bb-3']);
+  assert.deepEqual(card1.unblocks.sort(), ['bb-2', 'bb-3']);
   assert.deepEqual(card1.blocks, []);
 });
 
@@ -100,7 +100,7 @@ test('buildSocialCards computes blocks (incoming blocks)', () => {
   const card1 = cards.find((c) => c.id === 'bb-1')!;
 
   assert.deepEqual(card1.blocks.sort(), ['bb-2', 'bb-3']);
-  assert.deepEqual(card1.unlocks, []);
+  assert.deepEqual(card1.unblocks, []);
 });
 
 test('buildSocialCards ignores missing targets for blocks', () => {
@@ -111,7 +111,7 @@ test('buildSocialCards ignores missing targets for blocks', () => {
   const cards = buildSocialCards(beads);
 
   assert.equal(cards.length, 1);
-  assert.deepEqual(cards[0].unlocks, []);
+  assert.deepEqual(cards[0].unblocks, []);
   assert.deepEqual(cards[0].blocks, []);
 });
 
@@ -178,6 +178,6 @@ test('buildSocialCards ignores non-blocks dependencies', () => {
 
   const cards = buildSocialCards(beads);
 
-  assert.deepEqual(cards[0].unlocks, []);
+  assert.deepEqual(cards[0].unblocks, []);
   assert.deepEqual(cards[0].blocks, []);
 });

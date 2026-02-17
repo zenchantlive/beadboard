@@ -1,12 +1,13 @@
 import type { BeadIssue } from './types';
+export type { AgentStatus, AgentRole } from '../components/shared/agent-avatar';
+import type { AgentStatus, AgentRole } from '../components/shared/agent-avatar';
 
 export type SocialCardStatus = 'ready' | 'in_progress' | 'blocked' | 'closed';
-
-export type AgentStatus = 'active' | 'stale' | 'stuck' | 'dead';
 
 export interface AgentInfo {
   name: string;
   status: AgentStatus;
+  role?: AgentRole;
 }
 
 export type SocialCardPriority = 'P0' | 'P1' | 'P2' | 'P3' | 'P4';
@@ -57,7 +58,17 @@ function extractAgents(bead: BeadIssue): AgentInfo[] {
       typeof bead.metadata?.agentStatus === 'string' 
         ? (bead.metadata.agentStatus as AgentStatus) 
         : 'active';
-    agents.push({ name: bead.assignee, status: agentStatus });
+    
+    const agentRole: AgentRole | undefined = 
+      typeof bead.metadata?.agentRole === 'string'
+        ? (bead.metadata.agentRole as AgentRole)
+        : undefined;
+
+    agents.push({ 
+      name: bead.assignee, 
+      status: agentStatus,
+      role: agentRole
+    });
   }
   return agents;
 }

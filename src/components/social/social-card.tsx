@@ -13,58 +13,20 @@ interface SocialCardProps {
   onJumpToKanban?: (id: string) => void;
 }
 
-const RELATIONSHIP_COLORS = {
-  // NEW: unlocks = what blocks ME (rose)
-  unlocks: 'text-rose-400',
-  // NEW: blocks = what I block (amber)
-  blocks: 'text-amber-400',
-};
-
-const DOT_COLORS = {
-  // NEW: unlocks = what blocks ME (rose)
-  unlocks: 'bg-rose-400',
-  // NEW: blocks = what I block (amber)
-  blocks: 'bg-amber-400',
-};
-
-function Dot({ color }: { color: 'unlocks' | 'blocks' }) {
-  return (
-    <span
-      className={cn(
-        'inline-block h-1.5 w-1.5 rounded-full mr-1.5',
-        DOT_COLORS[color]
-      )}
-    />
-  );
-}
-
-function RelationshipSection({
-  label,
-  items,
-  color,
-}: {
-  label: string;
-  items: string[];
-  color: 'unlocks' | 'blocks';
-}) {
-  if (items.length === 0) return null;
+function RelationshipItem({ id, color }: { id: string; color: 'unlocks' | 'blocks' }) {
+  const dotColor = color === 'unlocks' ? 'bg-rose-400' : 'bg-amber-400';
+  const borderColor = color === 'unlocks' ? 'border-rose-500/20' : 'border-amber-500/20';
+  const hoverBorder = color === 'unlocks' ? 'group-hover:border-rose-500/40' : 'group-hover:border-amber-500/40';
 
   return (
-    <div className="flex items-center gap-1 text-[11px]">
-      <span className={cn('font-medium', RELATIONSHIP_COLORS[color])}>
-        {label}:
-      </span>
-      <div className="flex flex-wrap gap-x-2">
-        {items.slice(0, 3).map((id) => (
-          <span key={id} className="text-text-muted flex items-center">
-            <Dot color={color} />
-            {id}
-          </span>
-        ))}
-        {items.length > 3 && (
-          <span className="text-text-muted">+{items.length - 3}</span>
-        )}
-      </div>
+    <div className={cn(
+      "group flex items-center gap-2 rounded border bg-white/5 px-2.5 py-2 transition-colors",
+      borderColor,
+      hoverBorder,
+      "hover:bg-white/10"
+    )}>
+      <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", dotColor)} />
+      <span className="font-mono text-[10px] text-text-muted">{id}</span>
     </div>
   );
 }
@@ -158,9 +120,10 @@ export function SocialCard({
     <BaseCard
       className={cn('min-w-[220px] max-w-[320px]', className)}
       selected={selected}
+      status={data.status}
       onClick={onClick}
     >
-      <div className="space-y-2">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-teal-400 font-mono text-sm font-medium">
             {data.id}
@@ -179,22 +142,42 @@ export function SocialCard({
         </h3>
 
         {(hasBlocks || hasUnblocks) && (
-          <div className="space-y-1">
-            {/* UNLOCKS: tasks blocking THIS task (rose) - what blocks me */}
-            <RelationshipSection label="UNLOCKS" items={data.unblocks} color="unlocks" />
-            {/* BLOCKS: tasks THIS task blocks (amber) - what I block */}
-            <RelationshipSection label="BLOCKS" items={data.blocks} color="blocks" />
+          <div className="space-y-2 pt-1">
+            {/* BLOCKED BY: tasks blocking THIS task (rose) */}
+            {hasUnblocks && (
+              <div className="rounded-lg bg-black/20 p-2 border border-white/5">
+                <p className="mb-1.5 text-[9px] font-bold uppercase tracking-widest text-rose-400/80 pl-0.5">Blocked By</p>
+                <div className="flex flex-col gap-1.5">
+                  {data.unblocks.map((id) => (
+                    <RelationshipItem key={id} id={id} color="unlocks" />
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* BLOCKING: tasks THIS task blocks (amber) */}
+            {hasBlocks && (
+              <div className="rounded-lg bg-black/20 p-2 border border-white/5">
+                <p className="mb-1.5 text-[9px] font-bold uppercase tracking-widest text-amber-400/80 pl-0.5">Blocking</p>
+                <div className="flex flex-col gap-1.5">
+                  {data.blocks.map((id) => (
+                    <RelationshipItem key={id} id={id} color="blocks" />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
 
-        <div className="flex items-center justify-between pt-1">
+        <div className="flex items-center justify-between pt-2 border-t border-white/5">
           <div className="flex items-center gap-1">
             {data.agents.slice(0, 3).map((agent) => (
               <AgentAvatar
                 key={agent.name}
                 name={agent.name}
                 status={agent.status as AgentStatus}
+                role={agent.role}
                 size="sm"
               />
             ))}
