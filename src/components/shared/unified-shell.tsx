@@ -26,6 +26,7 @@ export interface UnifiedShellProps {
 
 export function UnifiedShell({
   issues,
+  projectScopeOptions,
 }: UnifiedShellProps) {
   const { view, taskId, setTaskId, swarmId, setSwarmId, graphTab, setGraphTab, panel, drawer, setDrawer, epicId, setEpicId } = useUrlState();
 
@@ -108,6 +109,7 @@ export function UnifiedShell({
           issues={filteredIssues}
           selectedId={taskId ?? undefined}
           onSelect={handleCardSelect}
+          projectScopeOptions={projectScopeOptions}
         />
       );
     }
@@ -134,7 +136,7 @@ export function UnifiedShell({
       {/* Increased Left Panel width to 18rem per redesign request */}
       <div 
         className="flex-1 grid overflow-hidden transition-all duration-300"
-        style={{ gridTemplateColumns: `18rem 1fr ${rightPanelWidth}` }}
+        style={{ gridTemplateColumns: `20rem 1fr ${rightPanelWidth}` }}
         data-testid="main-area"
       >
         {/* LEFT PANEL: 18rem channel tree */}

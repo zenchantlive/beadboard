@@ -27,7 +27,7 @@ describe('URL State Integration - bb-ui2.22', () => {
       assert.strictEqual(state.view, 'social');
       assert.strictEqual(state.taskId, null);
       assert.strictEqual(state.swarmId, null);
-      assert.strictEqual(state.panel, 'closed');
+      assert.strictEqual(state.panel, 'open');
     });
 
     it('/?view=social&task=bb-buff.1&panel=open - task selected, panel open', () => {
@@ -137,10 +137,10 @@ describe('URL State Integration - bb-ui2.22', () => {
       assert.strictEqual(state.graphTab, 'flow');
     });
 
-    it('/?panel=invalid - invalid panel defaults to closed', () => {
+    it('/?panel=invalid - invalid panel defaults to open', () => {
       const sp = createMockSearchParams({ panel: 'invalid' });
       const state = parseUrlState(sp);
-      assert.strictEqual(state.panel, 'closed');
+      assert.strictEqual(state.panel, 'open');
     });
 
     it('/?task=invalid-id - invalid task ID still parsed (no validation)', () => {
