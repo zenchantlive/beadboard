@@ -27,7 +27,7 @@ export interface UrlState {
 }
 
 const DEFAULT_VIEW: ViewType = 'social';
-const DEFAULT_PANEL: PanelState = 'closed';
+const DEFAULT_PANEL: PanelState = 'open';
 const DEFAULT_DRAWER: DrawerState = 'closed';
 const DEFAULT_GRAPH_TAB: GraphTabType = 'flow';
 

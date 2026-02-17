@@ -45,26 +45,24 @@ export function ThreadDrawer({ isOpen, onClose, title, id, items = SAMPLE_ITEMS,
 
   return (
     <div
-      className="h-full flex flex-col"
+      className="h-full flex flex-col bg-[#1a1a1a]/95 backdrop-blur-2xl"
       style={{
-        width: embedded ? '100%' : '24rem', // Full width when embedded
-        backgroundColor: 'var(--color-bg-card)',
+        width: embedded ? '100%' : '26rem',
         borderLeft: embedded ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: embedded ? 'none' : '-4px 0 20px rgba(0, 0, 0, 0.3)',
+        boxShadow: embedded ? 'none' : '-10px 0 40px rgba(0, 0, 0, 0.5)',
       }}
     >
-      {/* Header */}
+      {/* Header: Mission Control Style */}
       <div
-        className="flex items-center justify-between p-4 border-b flex-shrink-0"
-        style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+        className="flex items-center justify-between p-5 border-b border-white/5 bg-white/[0.02]"
       >
-        <div className="flex-1 min-w-0 mr-4">
-          <span className="text-teal-400 font-mono text-sm">
-            {id}
-          </span>
+        <div className="flex-1 min-w-0 pr-4">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-1 h-1 rounded-full bg-teal-500 animate-ping" />
+            <span className="text-[10px] font-bold font-mono text-teal-500/70 tracking-[0.2em]">MISSION_{id}</span>
+          </div>
           <h2
-            className="text-sm font-semibold truncate"
-            style={{ color: 'var(--color-text-primary)' }}
+            className="text-base font-bold text-white truncate leading-tight tracking-tight"
             title={title}
           >
             {title}
@@ -72,35 +70,31 @@ export function ThreadDrawer({ isOpen, onClose, title, id, items = SAMPLE_ITEMS,
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-md hover:bg-white/10 transition-colors flex-shrink-0"
+          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-text-muted hover:text-white"
           aria-label="Close"
         >
-          <X size={18} style={{ color: 'var(--color-text-muted)' }} />
+          <X size={18} />
         </button>
       </div>
 
       {/* Thread Content */}
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-        <ThreadView items={items} />
+      <div className="flex-1 overflow-y-auto p-5 custom-scrollbar space-y-6">
+        <div className="flex flex-col gap-6">
+          <ThreadView items={items} />
+        </div>
       </div>
 
-      {/* Compose */}
+      {/* Compose: Technical Input Field */}
       <div
-        className="p-4 border-t flex-shrink-0"
-        style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+        className="p-5 border-t border-white/5 bg-black/20"
       >
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3 p-1.5 rounded-2xl bg-[#252525] border border-white/5 shadow-inner group focus-within:border-teal-500/30 transition-all">
           <input
             type="text"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Add a comment..."
-            className="flex-1 px-3 py-2 rounded-md text-sm outline-none focus:ring-1 focus:ring-teal-500/50 transition-all"
-            style={{
-              backgroundColor: 'var(--color-bg-input)',
-              color: 'var(--color-text-primary)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-            }}
+            placeholder="Transmit message..."
+            className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-text-muted/30 outline-none"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && comment.trim()) {
                 setComment('');
@@ -108,15 +102,19 @@ export function ThreadDrawer({ isOpen, onClose, title, id, items = SAMPLE_ITEMS,
             }}
           />
           <button
-            className="p-2 rounded-md hover:opacity-90 transition-opacity"
-            style={{
-              backgroundColor: 'var(--color-accent-green)',
-              color: '#fff',
-            }}
+            className="p-2.5 rounded-xl bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all active:scale-95 flex-shrink-0"
             aria-label="Send comment"
           >
-            <Send size={16} />
+            <Send size={16} fill="currentColor" />
           </button>
+        </div>
+        <div className="mt-3 flex items-center justify-between px-1">
+          <span className="text-[8px] font-mono text-text-muted/30 uppercase tracking-[0.2em]">Encrypted Channel_Active</span>
+          <div className="flex gap-2">
+             <div className="w-1 h-1 rounded-full bg-white/10" />
+             <div className="w-1 h-1 rounded-full bg-white/10" />
+             <div className="w-1 h-1 rounded-full bg-white/10" />
+          </div>
         </div>
       </div>
     </div>

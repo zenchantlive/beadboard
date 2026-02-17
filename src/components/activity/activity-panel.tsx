@@ -174,35 +174,37 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
   
   if (collapsed) {
     return (
-      <div className="flex flex-col items-center gap-4 py-4 h-full bg-black/20">
-        {/* Collapsed Agent Icons */}
-        <div className="flex flex-col gap-2">
-          {agentRoster.slice(0, 5).map(agent => (
+      <div className="flex flex-col items-center gap-6 py-6 h-full bg-black/40 border-l border-white/5 shadow-2xl">
+        {/* Collapsed Agent Icons with ZFC Rings */}
+        <div className="flex flex-col gap-4">
+          {agentRoster.slice(0, 6).map(agent => (
             <div key={agent.beadId} className="relative group cursor-help" title={`${agent.name} (${agent.status})`}>
-              <Avatar className="h-8 w-8 ring-1 ring-white/10 hover:ring-white/30 transition-all">
-                <AvatarFallback className="text-[10px] bg-white/5">
+              <div className={cn(
+                "absolute -inset-1 rounded-full blur-[2px] transition-opacity duration-500",
+                agent.status === 'active' ? 'bg-emerald-500/20 opacity-100 animate-pulse' :
+                agent.status === 'stale' ? 'bg-amber-500/10 opacity-50' : 'bg-rose-500/20 opacity-100'
+              )} />
+              <Avatar className={cn(
+                "h-9 w-9 ring-2 transition-all duration-300 relative z-10",
+                agent.status === 'active' ? 'ring-emerald-500/40' :
+                agent.status === 'stale' ? 'ring-amber-500/20' : 'ring-rose-500/40'
+              )}>
+                <AvatarFallback className="text-[10px] font-bold bg-[#1a1a1a] text-text-muted">
                   {getInitials(agent.name)}
                 </AvatarFallback>
               </Avatar>
-              <div className={cn(
-                "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#1e1e1e]",
-                agent.status === 'active' ? 'bg-emerald-500' :
-                agent.status === 'stale' ? 'bg-amber-500' : 'bg-rose-500'
-              )} />
             </div>
           ))}
         </div>
         
-        {/* Divider */}
-        <div className="w-4 h-[1px] bg-white/10" />
+        <div className="w-6 h-[1px] bg-white/10 mx-auto" />
         
-        {/* Mini Activity Dots (Just visual pulse) */}
-        <div className="flex flex-col gap-1">
-           {/* Just show a few recent activity dots as a visual "heartbeat" */}
-           {activities.slice(0, 5).map((act) => (
+        {/* Activity Pulses */}
+        <div className="flex flex-col gap-2 opacity-40">
+           {activities.slice(0, 8).map((act) => (
              <div key={act.id} className={cn(
-               "w-1.5 h-1.5 rounded-full opacity-50",
-               act.kind === 'created' ? 'bg-emerald-500' : 'bg-cyan-500'
+               "w-1 h-1 rounded-full",
+               act.kind === 'created' ? 'bg-emerald-500 shadow-[0_0_4px_#10b981]' : 'bg-cyan-500 shadow-[0_0_4px_#06b6d4]'
              )} />
            ))}
         </div>
@@ -211,44 +213,52 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-[#1a1a1a]/95 backdrop-blur-xl">
       {/* AGENT ROSTER SECTION */}
-      <div className="flex-shrink-0 p-3 border-b border-border">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold">Agents</h3>
-          <div className="flex gap-2">
-            {activeAgents > 0 && (
-              <Badge variant="default" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                {activeAgents} active
-              </Badge>
-            )}
-            {staleAgents > 0 && (
-              <Badge variant="secondary" className="bg-amber-500/20 text-amber-400 border-amber-500/30">
-                {staleAgents} stale
-              </Badge>
-            )}
+      <div className="flex-shrink-0 p-4 border-b border-white/5 bg-white/[0.02]">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+            <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-text-muted">Live Agents</h3>
+          </div>
+          <div className="text-[10px] font-mono text-emerald-500/60 bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10">
+            {activeAgents} ONLINE
           </div>
         </div>
         
         {agentRoster.length === 0 ? (
-          <p className="text-xs text-muted-foreground italic">No active agents</p>
+          <p className="text-xs text-text-muted/40 italic text-center py-4">No agents broadcasting</p>
         ) : (
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-1 gap-2">
             {agentRoster.map(agent => (
               <div
                 key={agent.beadId}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/50 hover:bg-muted transition-colors"
+                className="group flex items-center gap-3 p-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 hover:bg-white/[0.05] transition-all duration-300"
               >
-                <Avatar className="h-6 w-6">
-                  <AvatarFallback className="text-xs">
-                    {getInitials(agent.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <span className="text-xs font-medium">{agent.name}</span>
-                  <span className="text-[10px] text-muted-foreground capitalize">
-                    {agent.status}
-                  </span>
+                <div className="relative">
+                  <div className={cn(
+                    "absolute -inset-0.5 rounded-full blur-[1px] opacity-0 group-hover:opacity-100 transition-opacity",
+                    agent.status === 'active' ? 'bg-emerald-500/30' : 'bg-amber-500/30'
+                  )} />
+                  <Avatar className="h-8 w-8 relative z-10 ring-1 ring-white/10">
+                    <AvatarFallback className="text-[10px] font-bold bg-[#252525]">
+                      {getInitials(agent.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-xs font-semibold text-text-primary group-hover:text-white transition-colors">{agent.name}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={cn(
+                      "text-[9px] uppercase tracking-wider font-bold",
+                      agent.status === 'active' ? 'text-emerald-500' : 'text-amber-500'
+                    )}>
+                      {agent.status}
+                    </span>
+                    <span className="text-[9px] text-text-muted/40 font-mono">
+                      {agent.lastSeen ? formatRelativeTime(agent.lastSeen) : 'N/A'}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -257,62 +267,62 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
       </div>
       
       {/* ACTIVITY FEED SECTION */}
-      <div className="flex-1 min-h-0">
-        <div className="p-3 border-b border-border">
-          <h3 className="text-sm font-semibold">Recent Activity</h3>
+      <div className="flex-1 min-h-0 flex flex-col">
+        <div className="p-4 flex items-center gap-2 border-b border-white/5">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted/60"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-text-muted">Telemetry Stream</h3>
         </div>
         
-        <ScrollArea className="h-[calc(100%-40px)]">
+        <ScrollArea className="flex-1">
           {isLoading ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              Loading...
+            <div className="p-10 flex flex-col items-center gap-3">
+              <div className="w-4 h-4 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-[10px] font-mono text-text-muted">SYNCING...</span>
             </div>
           ) : activities.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              No recent activity
+            <div className="p-10 text-center opacity-30">
+              <p className="text-[10px] font-mono">VOID_STREAM_NULL</p>
             </div>
           ) : (
-            <div className="p-2">
-              {activities.map((activity, index) => {
+            <div className="p-3 space-y-3">
+              {activities.map((activity) => {
                 const eventInfo = getEventKindInfo(activity.kind);
                 return (
-                  <div key={activity.id}>
-                    <div className="flex items-start gap-2 py-2 px-1 rounded hover:bg-muted/50 transition-colors">
-                      <div className="flex flex-col items-center mt-0.5">
-                        <div className={`w-2 h-2 rounded-full ${
-                          activity.kind === 'heartbeat' ? 'bg-muted' :
-                          activity.kind === 'created' ? 'bg-emerald-500' :
-                          activity.kind === 'closed' ? 'bg-amber-500' :
-                          'bg-cyan-500'
-                        }`} />
+                  <div key={activity.id} className="group relative">
+                    <div className="absolute -left-3 top-0 bottom-0 w-[1px] bg-white/5 group-hover:bg-white/10 transition-colors" />
+                    
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-300">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className={cn(
+                          "w-1.5 h-1.5 rounded-full shrink-0",
+                          activity.kind === 'closed' ? 'bg-amber-500' : 'bg-emerald-500'
+                        )} />
+                        <span className={cn("text-[10px] font-bold uppercase tracking-wider", eventInfo.color)}>
+                          {eventInfo.label}
+                        </span>
+                        <span className="text-[9px] text-text-muted/30 font-mono ml-auto">
+                          {formatRelativeTime(activity.timestamp)}
+                        </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className={`text-xs font-medium ${eventInfo.color}`}>
-                            {eventInfo.label}
-                          </span>
-                          <span className="text-xs text-muted-foreground font-mono">
-                            {activity.beadId}
-                          </span>
-                        </div>
-                        <p className="text-xs text-foreground line-clamp-1 mt-0.5">
-                          {activity.beadTitle}
-                        </p>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          {activity.actor && (
-                            <span className="text-[10px] text-muted-foreground">
-                              {activity.actor}
-                            </span>
-                          )}
-                          <span className="text-[10px] text-muted-foreground">
-                            {formatRelativeTime(activity.timestamp)}
-                          </span>
-                        </div>
+                      
+                      <p className="text-xs font-medium text-text-secondary leading-snug line-clamp-2 mb-2 group-hover:text-text-primary transition-colors">
+                        {activity.beadTitle}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono text-teal-500/50">
+                          {activity.beadId}
+                        </span>
+                        {activity.actor && (
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[6px] font-bold">
+                              {activity.actor[0].toUpperCase()}
+                            </div>
+                            <span className="text-[9px] text-text-muted/60">{activity.actor}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    {index < activities.length - 1 && (
-                      <Separator className="my-0.5" />
-                    )}
                   </div>
                 );
               })}
