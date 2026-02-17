@@ -53,11 +53,13 @@ function extractAgentName(issue: BeadIssue): string | null {
 // Build agent roster - filter out dead agents unless none are active
 function buildAgentRoster(issues: BeadIssue[]): AgentRosterEntry[] {
   const agentIssues = issues.filter(issue => 
-    issue.labels.includes(AGENT_LABEL) || issue.labels.some(l => l.startsWith('gt:agent'))
+    issue.labels.includes(AGENT_LABEL) || 
+    issue.labels.some(l => l.startsWith('gt:agent')) ||
+    issue.labels.includes('agent')
   );
   
   const roster = agentIssues.map(issue => {
-    const name = extractAgentName(issue) || issue.id;
+    const name = extractAgentName(issue) || issue.title.replace('Agent: ', '') || issue.id;
     const status = deriveAgentStatus(issue.updated_at);
     
     return {
@@ -71,16 +73,8 @@ function buildAgentRoster(issues: BeadIssue[]): AgentRosterEntry[] {
     return statusOrder[a.status] - statusOrder[b.status];
   });
 
-  // Filter: if there are active agents, show only active + stale (max 5)
-  // If no active, show stale + stuck (max 3)
-  // Dead agents never show unless it's the only thing
-  const activeCount = roster.filter(a => a.status === 'active').length;
-  
-  if (activeCount > 0) {
-    return roster.filter(a => a.status !== 'dead').slice(0, 5);
-  } else {
-    return roster.filter(a => a.status !== 'dead').slice(0, 3);
-  }
+  // Show all non-dead agents, or at least the most recent ones
+  return roster.filter(a => a.status !== 'dead' || a.lastSeen).slice(0, 10);
 }
 
 // Format relative time

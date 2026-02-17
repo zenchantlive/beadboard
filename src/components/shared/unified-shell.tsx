@@ -27,7 +27,7 @@ export interface UnifiedShellProps {
 export function UnifiedShell({
   issues,
 }: UnifiedShellProps) {
-  const { view, taskId, setTaskId, swarmId, setSwarmId, graphTab, setGraphTab, panel, drawer, setDrawer } = useUrlState();
+  const { view, taskId, setTaskId, swarmId, setSwarmId, graphTab, setGraphTab, panel, drawer, setDrawer, epicId, setEpicId } = useUrlState();
 
   const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
   const swarmCards = useMemo(() => buildSwarmCards(issues), [issues]);
@@ -80,10 +80,19 @@ export function UnifiedShell({
   const rightPanelWidth = isChatOpen ? '26rem' : '17rem';
 
   const renderMiddleContent = () => {
+    // Filter issues by Epic if selected (Global Filter)
+    const filteredIssues = epicId 
+      ? issues.filter(issue => {
+          if (issue.issue_type === 'epic') return issue.id === epicId;
+          const parent = issue.dependencies.find(d => d.type === 'parent');
+          return parent?.target === epicId;
+        })
+      : issues;
+
     if (view === 'graph') {
       return (
         <GraphView
-          beads={issues}
+          beads={filteredIssues}
           selectedId={taskId ?? undefined}
           onSelect={handleGraphSelect}
           graphTab={graphTab}
@@ -96,7 +105,7 @@ export function UnifiedShell({
     if (view === 'social') {
       return (
         <SocialPage
-          issues={issues}
+          issues={filteredIssues}
           selectedId={taskId ?? undefined}
           onSelect={handleCardSelect}
         />
@@ -106,7 +115,7 @@ export function UnifiedShell({
     if (view === 'swarm') {
       return (
         <SwarmPage
-          issues={issues}
+          issues={filteredIssues}
           selectedId={swarmId ?? undefined}
           onSelect={handleCardSelect}
         />
@@ -121,14 +130,19 @@ export function UnifiedShell({
       {/* TOP BAR: 3rem fixed */}
       <TopBar />
 
-      {/* MAIN AREA: CSS Grid [13rem | 1fr | RightPanel] */}
+      {/* MAIN AREA: CSS Grid [18rem | 1fr | RightPanel] */}
+      {/* Increased Left Panel width to 18rem per redesign request */}
       <div 
         className="flex-1 grid overflow-hidden transition-all duration-300"
-        style={{ gridTemplateColumns: `13rem 1fr ${rightPanelWidth}` }}
+        style={{ gridTemplateColumns: `18rem 1fr ${rightPanelWidth}` }}
         data-testid="main-area"
       >
-        {/* LEFT PANEL: 13rem channel tree */}
-        <LeftPanel issues={issues} />
+        {/* LEFT PANEL: 18rem channel tree */}
+        <LeftPanel 
+          issues={issues} 
+          selectedEpicId={epicId}
+          onEpicSelect={setEpicId}
+        />
 
         {/* MIDDLE CONTENT: flex-1 */}
         <div className="relative overflow-hidden bg-black/10 shadow-inner" data-testid="middle-content">

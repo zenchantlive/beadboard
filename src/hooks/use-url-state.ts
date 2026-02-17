@@ -17,6 +17,8 @@ export interface UrlState {
   setSwarmId: (id: string | null) => void;
   agentId: string | null;
   setAgentId: (id: string | null) => void;
+  epicId: string | null;
+  setEpicId: (id: string | null) => void;
   panel: PanelState;
   togglePanel: () => void;
   drawer: DrawerState;
@@ -41,6 +43,7 @@ export function parseUrlState(searchParams: URLSearchParams): {
   taskId: string | null;
   swarmId: string | null;
   agentId: string | null;
+  epicId: string | null;
   panel: PanelState;
   drawer: DrawerState;
   graphTab: GraphTabType;
@@ -53,6 +56,7 @@ export function parseUrlState(searchParams: URLSearchParams): {
   const taskId = searchParams.get('task');
   const swarmId = searchParams.get('swarm');
   const agentId = searchParams.get('agent');
+  const epicId = searchParams.get('epic');
 
   const panelParam = searchParams.get('panel');
   const panel: PanelState = panelParam && VALID_PANELS.includes(panelParam as PanelState)
@@ -69,7 +73,7 @@ export function parseUrlState(searchParams: URLSearchParams): {
     ? (graphTabParam as GraphTabType)
     : DEFAULT_GRAPH_TAB;
 
-  return { view, taskId, swarmId, agentId, panel, drawer, graphTab };
+  return { view, taskId, swarmId, agentId, epicId, panel, drawer, graphTab };
 }
 
 export function buildUrlParams(
@@ -117,6 +121,10 @@ export function useUrlState(): UrlState {
     updateUrl({ agent: id, panel: id ? 'open' : null });
   }, [updateUrl]);
 
+  const setEpicId = useCallback((id: string | null) => {
+    updateUrl({ epic: id });
+  }, [updateUrl]);
+
   const togglePanel = useCallback(() => {
     const newPanel = state.panel === 'open' ? 'closed' : 'open';
     updateUrl({ panel: newPanel });
@@ -131,7 +139,7 @@ export function useUrlState(): UrlState {
   }, [updateUrl]);
 
   const clearSelection = useCallback(() => {
-    updateUrl({ task: null, swarm: null, panel: 'closed', drawer: 'closed' });
+    updateUrl({ task: null, swarm: null, epic: null, panel: 'closed', drawer: 'closed' });
   }, [updateUrl]);
 
   return {
@@ -143,6 +151,8 @@ export function useUrlState(): UrlState {
     setSwarmId,
     agentId: state.agentId,
     setAgentId,
+    epicId: state.epicId,
+    setEpicId,
     panel: state.panel,
     togglePanel,
     drawer: state.drawer,
