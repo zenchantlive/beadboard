@@ -1,0 +1,9 @@
+{
+  "name": "trading-wisdom",
+  "version": "1.0",
+  "last_updated": "2026-01-17T20:31:30.960610",
+  "total_patterns": 219,
+  "active_patterns": 206,
+  "inactive_patterns": 13,
+  "confidence_threshold": 0.6
+}

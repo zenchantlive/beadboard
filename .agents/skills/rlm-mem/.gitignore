@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+brain/memory/
+user_backups/
