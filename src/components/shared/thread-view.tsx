@@ -19,6 +19,8 @@ export interface ThreadItem {
 
 interface ThreadViewProps {
   items: ThreadItem[];
+  variant?: 'stack' | 'chat';
+  currentUser?: string;
   onAddComment?: (text: string) => void;
 }
 
@@ -72,28 +74,40 @@ function getProtocolLabel(event?: string): string {
   }
 }
 
-function CommentItem({ item }: { item: ThreadItem }) {
+function CommentItem({ item, isSelf }: { item: ThreadItem; isSelf: boolean }) {
   return (
-    <div className="flex gap-3 py-3">
-      <Avatar className="h-8 w-8 flex-shrink-0">
-        <AvatarImage src={undefined} alt={item.author} />
-        <AvatarFallback className="bg-surface-muted text-text-body text-xs font-semibold">
-          {item.author ? getInitials(item.author) : '??'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-text-primary text-sm font-medium">
-            {item.author || 'Unknown'}
-          </span>
-          <span className="text-text-muted text-xs">
-            {formatRelativeTime(item.timestamp)}
-          </span>
+    <div className={cn('flex gap-3 py-3', isSelf && 'justify-end')}>
+      {!isSelf ? (
+        <Avatar className="h-8 w-8 flex-shrink-0">
+          <AvatarImage src={undefined} alt={item.author} />
+          <AvatarFallback className="bg-surface-muted text-text-body text-xs font-semibold">
+            {item.author ? getInitials(item.author) : '??'}
+          </AvatarFallback>
+        </Avatar>
+      ) : null}
+      <div className={cn('min-w-0 max-w-[80%]', isSelf && 'items-end')}>
+        <div className={cn('mb-1 flex items-center gap-2', isSelf && 'justify-end')}>
+          <span className="text-text-primary text-sm font-semibold">{item.author || 'Unknown'}</span>
+          <span className="font-mono text-[11px] text-text-muted">{formatRelativeTime(item.timestamp)}</span>
         </div>
-        <p className="text-text-secondary text-sm whitespace-pre-wrap break-words">
+        <p
+          className={cn(
+            'whitespace-pre-wrap break-words rounded-xl px-3 py-2 text-base leading-relaxed',
+            isSelf
+              ? 'bg-[color-mix(in_srgb,var(--ui-accent-ready)_24%,var(--ui-bg-panel))] text-[var(--ui-text-primary)]'
+              : 'bg-[color-mix(in_srgb,var(--ui-bg-panel)_88%,black)] text-text-secondary',
+          )}
+        >
           {item.content}
         </p>
       </div>
+      {isSelf ? (
+        <Avatar className="h-8 w-8 flex-shrink-0">
+          <AvatarFallback className="bg-[color-mix(in_srgb,var(--ui-accent-ready)_40%,var(--ui-bg-panel))] text-text-body text-xs font-semibold">
+            {item.author ? getInitials(item.author) : 'ME'}
+          </AvatarFallback>
+        </Avatar>
+      ) : null}
     </div>
   );
 }
@@ -133,7 +147,9 @@ function ProtocolEventItem({ item }: { item: ThreadItem }) {
   );
 }
 
-export function ThreadView({ items, onAddComment }: ThreadViewProps) {
+export function ThreadView({ items, variant = 'stack', currentUser = 'you', onAddComment }: ThreadViewProps) {
+  void onAddComment;
+
   return (
     <div className="space-y-1">
       {items.length === 0 ? (
@@ -143,7 +159,13 @@ export function ThreadView({ items, onAddComment }: ThreadViewProps) {
           {items.map((item) => {
             switch (item.type) {
               case 'comment':
-                return <CommentItem key={item.id} item={item} />;
+                return (
+                  <CommentItem
+                    key={item.id}
+                    item={item}
+                    isSelf={variant === 'chat' && (item.author ?? '').trim().toLowerCase() === currentUser.toLowerCase()}
+                  />
+                );
               case 'status_change':
                 return <StatusChangeItem key={item.id} item={item} />;
               case 'protocol_event':

@@ -31,6 +31,8 @@ export interface AgentRecord {
   version: number;
   rig?: string;
   role_type?: string;
+  swarm_id?: string;
+  current_task?: string;
 }
 
 export interface RegisterAgentInput {
@@ -179,10 +181,21 @@ function validateRole(value: string): AgentCommandError | null {
 function mapBdAgentToRecord(bdAgent: any): AgentRecord {
   // Extract role from labels if role_type is not set
   let role = bdAgent.role_type || 'agent';
-  if (role === 'agent' && Array.isArray(bdAgent.labels)) {
+  let swarmId: string | undefined;
+  let currentTask: string | undefined;
+
+  if (Array.isArray(bdAgent.labels)) {
     const roleLabel = bdAgent.labels.find((l: string) => l.startsWith('role:'));
     if (roleLabel) {
       role = roleLabel.split(':')[1];
+    }
+    const swarmLabel = bdAgent.labels.find((l: string) => l.startsWith('swarm:'));
+    if (swarmLabel) {
+      swarmId = swarmLabel.split(':')[1];
+    }
+    const workingLabel = bdAgent.labels.find((l: string) => l.startsWith('working:'));
+    if (workingLabel) {
+      currentTask = workingLabel.split(':')[1];
     }
   }
 
@@ -204,6 +217,8 @@ function mapBdAgentToRecord(bdAgent: any): AgentRecord {
     version: 1,
     rig,
     role_type: bdAgent.role_type,
+    swarm_id: swarmId,
+    current_task: currentTask,
   };
   return record;
 }

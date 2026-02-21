@@ -1,320 +1,442 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { ChevronDown, ChevronRight, Folder, FolderOpen, Star } from 'lucide-react';
+
 import type { BeadIssue } from '../../lib/types';
-import { useResponsive } from '../../hooks/use-responsive';
 import { cn } from '../../lib/utils';
+import { useUrlState, type ViewType } from '../../hooks/use-url-state';
+
+export type LeftPanelStatusFilter = 'all' | 'ready' | 'in_progress' | 'blocked' | 'deferred' | 'done';
+export type LeftPanelPriorityFilter = 'all' | 'P0' | 'P1' | 'P2' | 'P3' | 'P4';
+export type LeftPanelPresetFilter = 'all' | 'active' | 'blocked_agents';
+
+export interface LeftPanelFilters {
+  query: string;
+  status: LeftPanelStatusFilter;
+  priority: LeftPanelPriorityFilter;
+  preset: LeftPanelPresetFilter;
+  hideClosed: boolean;
+}
 
 export interface LeftPanelProps {
   issues: BeadIssue[];
   selectedEpicId?: string | null;
   onEpicSelect?: (epicId: string | null) => void;
+  filters: LeftPanelFilters;
+  onFiltersChange: (filters: LeftPanelFilters) => void;
 }
 
-interface EpicNode {
+interface EpicEntry {
   epic: BeadIssue;
   children: BeadIssue[];
-  stats: {
-    total: number;
-    closed: number;
-    in_progress: number;
-    blocked: number;
-    ready: number;
-    lastActivity: number;
-  };
-  status: 'blocked' | 'in_progress' | 'ready' | 'done' | 'empty';
+  blockedCount: number;
+  activeCount: number;
+  readyCount: number;
+  deferredCount: number;
+  doneCount: number;
+  agentBlockedCount: number;
+  latestTimestamp: string;
 }
 
-function buildEpicTree(issues: BeadIssue[]): EpicNode[] {
-  const epics = issues.filter(issue => issue.issue_type === 'epic');
-  const epicMap = new Map<string, EpicNode>();
+function mapStatus(task: BeadIssue): LeftPanelStatusFilter {
+  if (task.status === 'open') return 'ready';
+  if (task.status === 'in_progress') return 'in_progress';
+  if (task.status === 'blocked') return 'blocked';
+  if (task.status === 'closed' || task.status === 'tombstone') return 'done';
+  return 'deferred';
+}
 
-  for (const epic of epics) {
-    epicMap.set(epic.id, { 
-      epic, 
-      children: [],
-      stats: { total: 0, closed: 0, in_progress: 0, blocked: 0, ready: 0, lastActivity: new Date(epic.updated_at).getTime() },
-      status: 'empty'
-    });
+function mapPriority(task: BeadIssue): LeftPanelPriorityFilter {
+  if (task.priority <= 0) return 'P0';
+  if (task.priority === 1) return 'P1';
+  if (task.priority === 2) return 'P2';
+  if (task.priority === 3) return 'P3';
+  return 'P4';
+}
+
+function formatRelative(timestamp: string): string {
+  const then = new Date(timestamp);
+  const now = new Date();
+  const diffMinutes = Math.floor((now.getTime() - then.getTime()) / 60000);
+  if (diffMinutes < 1) return 'just now';
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays}d ago`;
+}
+
+function buildEntries(issues: BeadIssue[]): EpicEntry[] {
+  const epics = issues.filter((issue) => issue.issue_type === 'epic');
+  const tasks = issues.filter((issue) => issue.issue_type !== 'epic');
+  const taskById = new Map(tasks.map((task) => [task.id, task] as const));
+  const incomingBlockers = new Map<string, string[]>();
+
+  for (const task of tasks) {
+    incomingBlockers.set(task.id, []);
   }
 
-  for (const issue of issues) {
-    if (issue.issue_type === 'epic') continue;
-
-    const parentDep = issue.dependencies.find(dep => dep.type === 'parent');
-    if (parentDep && epicMap.has(parentDep.target)) {
-      const node = epicMap.get(parentDep.target)!;
-      node.children.push(issue);
-      
-      node.stats.total++;
-      if (issue.status === 'closed') node.stats.closed++;
-      else if (issue.status === 'blocked') node.stats.blocked++;
-      else if (issue.status === 'in_progress') node.stats.in_progress++;
-      else node.stats.ready++; // open/ready
-      
-      const issueTime = new Date(issue.updated_at).getTime();
-      if (issueTime > node.stats.lastActivity) node.stats.lastActivity = issueTime;
+  for (const task of tasks) {
+    for (const dependency of task.dependencies) {
+      if (dependency.type !== 'blocks') continue;
+      if (!taskById.has(dependency.target)) continue;
+      const current = incomingBlockers.get(dependency.target) ?? [];
+      current.push(task.id);
+      incomingBlockers.set(dependency.target, current);
     }
   }
 
-  // Determine Aggregate Status
-  for (const node of epicMap.values()) {
-    if (node.stats.blocked > 0) node.status = 'blocked';
-    else if (node.stats.in_progress > 0) node.status = 'in_progress';
-    else if (node.stats.ready > 0) node.status = 'ready';
-    else if (node.stats.total > 0 && node.stats.closed === node.stats.total) node.status = 'done';
-    else node.status = 'empty';
-  }
-
-  return Array.from(epicMap.values()).sort((a, b) => {
-    // Sort by status priority (Blocked > In Progress > Ready > Done) then Recency
-    const statusScore = { blocked: 4, in_progress: 3, ready: 2, done: 1, empty: 0 };
-    const scoreDiff = statusScore[b.status] - statusScore[a.status];
-    if (scoreDiff !== 0) return scoreDiff;
-    return b.stats.lastActivity - a.stats.lastActivity;
-  });
-}
-
-function StatusIndicator({ status }: { status: string }) {
-  const styles = {
-    blocked: 'bg-[#C97A7A] shadow-[0_0_8px_rgba(201,122,122,0.45)]',
-    in_progress: 'bg-[#D4A574] shadow-[0_0_8px_rgba(212,165,116,0.45)]',
-    ready: 'bg-[#7CB97A] shadow-[0_0_8px_rgba(124,185,122,0.45)]',
-    done: 'bg-[var(--status-closed)]',
-    empty: 'bg-white/10',
-  }[status] || 'bg-slate-500';
-
-  return <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", styles)} />;
-}
-
-export function LeftPanel({
-  issues,
-  selectedEpicId,
-  onEpicSelect,
-}: LeftPanelProps) {
-  const [expandedEpics, setExpandedEpics] = useState<Set<string>>(new Set());
-  const { isDesktop, isTablet } = useResponsive();
-
-  const epicTree = useMemo(() => buildEpicTree(issues), [issues]);
-  const featuredEpics = useMemo(() => epicTree.slice(0, 2), [epicTree]);
-  const standardEpics = useMemo(() => epicTree.slice(2, 6), [epicTree]);
-  const compactEpics = useMemo(() => epicTree.slice(6), [epicTree]);
-
-  const toggleEpic = (epicId: string) => {
-    setExpandedEpics(prev => {
-      const next = new Set(prev);
-      if (next.has(epicId)) {
-        next.delete(epicId);
-      } else {
-        next.add(epicId);
-      }
-      return next;
+  const isEffectivelyBlocked = (task: BeadIssue): boolean => {
+    if (task.status === 'blocked') return true;
+    if (task.status === 'closed' || task.status === 'tombstone') return false;
+    const blockers = incomingBlockers.get(task.id) ?? [];
+    return blockers.some((blockerId) => {
+      const blocker = taskById.get(blockerId);
+      return blocker ? blocker.status !== 'closed' && blocker.status !== 'tombstone' : false;
     });
   };
 
-  const handleEpicClick = (epicId: string) => {
-    onEpicSelect?.(epicId === selectedEpicId ? null : epicId); 
-    toggleEpic(epicId);
-  };
+  return epics
+    .map((epic) => {
+      const children = tasks
+        .filter((task) => task.dependencies.some((dep) => dep.type === 'parent' && dep.target === epic.id))
+        .sort((a, b) => a.id.localeCompare(b.id));
+      const blockedCount = children.filter((task) => isEffectivelyBlocked(task)).length;
+      const activeCount = children.filter((task) => task.status === 'in_progress').length;
+      const readyCount = children.filter((task) => task.status === 'open' && !isEffectivelyBlocked(task)).length;
+      const deferredCount = children.filter((task) => task.status === 'deferred').length;
+      const doneCount = children.filter((task) => task.status === 'closed' || task.status === 'tombstone').length;
+      const agentBlockedCount = children.filter(
+        (task) =>
+          isEffectivelyBlocked(task) &&
+          (Boolean(task.assignee) ||
+            task.labels.some((label) => label === 'gt:agent' || label.startsWith('agent:') || label.startsWith('gt:agent:'))),
+      ).length;
+      const latestTimestamp = [epic.updated_at, ...children.map((child) => child.updated_at)]
+        .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] ?? epic.updated_at;
+      return {
+        epic,
+        children,
+        blockedCount,
+        activeCount,
+        readyCount,
+        deferredCount,
+        doneCount,
+        agentBlockedCount,
+        latestTimestamp,
+      };
+    })
+    .sort((a, b) => a.epic.id.localeCompare(b.epic.id));
+}
 
-  if (isTablet) {
-    return (
-      <div className="flex w-16 flex-col items-center gap-2 overflow-y-auto bg-[var(--color-bg-card)]/96 py-4 shadow-[10px_0_28px_-16px_rgba(0,0,0,0.82)]">
-        {epicTree.map(({ epic, status }) => (
-          <button
-            key={epic.id}
-            onClick={() => handleEpicClick(epic.id)}
-            className={cn(
-              'w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold transition-all duration-200 ring-1',
-              selectedEpicId === epic.id
-                ? 'bg-[var(--color-bg-input)] ring-white/30 text-white'
-                : 'ring-transparent text-[var(--color-text-muted)] hover:bg-white/5',
-              status === 'blocked' && 'ring-[#C97A7A]/50',
-              status === 'in_progress' && 'ring-[#D4A574]/50'
-            )}
-          >
-            {epic.id.slice(0, 2).toUpperCase()}
-          </button>
-        ))}
-      </div>
-    );
+function statusDot(status: BeadIssue['status']): string {
+  if (status === 'blocked') return 'bg-[var(--ui-accent-blocked)]';
+  if (status === 'in_progress') return 'bg-[var(--ui-accent-warning)]';
+  if (status === 'closed') return 'bg-[var(--ui-text-muted)]';
+  return 'bg-[var(--ui-accent-ready)]';
+}
+
+function rowTone(entry: EpicEntry): string {
+  if (entry.blockedCount > 0) {
+    return '#22111a';
   }
+  if (entry.activeCount > 0) {
+    return '#221a11';
+  }
+  if (entry.readyCount > 0) {
+    return '#0f221c';
+  }
+  return '#111f2b';
+}
+
+function isTaskMatch(task: BeadIssue, filters: LeftPanelFilters): boolean {
+  if (filters.hideClosed && (task.status === 'closed' || task.status === 'tombstone')) return false;
+  const normalizedQuery = filters.query.trim().toLowerCase();
+  if (normalizedQuery.length > 0) {
+    const searchable = `${task.id} ${task.title} ${task.labels.join(' ')}`.toLowerCase();
+    if (!searchable.includes(normalizedQuery)) return false;
+  }
+  if (filters.status !== 'all' && mapStatus(task) !== filters.status) return false;
+  if (filters.priority !== 'all' && mapPriority(task) !== filters.priority) return false;
+  if (filters.preset === 'active' && task.status !== 'in_progress') return false;
+  if (
+    filters.preset === 'blocked_agents' &&
+    !(
+      task.status === 'blocked' &&
+      (Boolean(task.assignee) || task.labels.some((label) => label === 'gt:agent' || label.startsWith('agent:')))
+    )
+  ) {
+    return false;
+  }
+  return true;
+}
+
+export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFiltersChange }: LeftPanelProps) {
+  const { view, setView } = useUrlState();
+  const entries = useMemo(() => buildEntries(issues), [issues]);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const hasActiveFilters =
+    filters.query.trim().length > 0 ||
+    filters.status !== 'all' ||
+    filters.priority !== 'all' ||
+    filters.preset !== 'all' ||
+    filters.hideClosed;
+
+  const views: Array<{ id: ViewType; label: string }> = [
+    { id: 'social', label: 'Social' },
+    { id: 'graph', label: 'Graph' },
+    { id: 'swarm', label: 'Swarm' },
+  ];
 
   return (
-    <div
-      className={cn(
-        'flex flex-col h-full overflow-hidden transition-all duration-300',
-        !isDesktop && 'hidden lg:flex'
-      )}
-      style={{ width: '20rem' }}
-      data-testid="left-panel"
-    >
-      <div className="flex h-full flex-col bg-[radial-gradient(circle_at_4%_14%,rgba(212,165,116,0.38),transparent_44%),radial-gradient(circle_at_96%_86%,rgba(91,168,160,0.34),transparent_40%),linear-gradient(165deg,rgba(49,49,62,0.97),rgba(37,40,54,0.98))] shadow-[14px_0_34px_-18px_rgba(0,0,0,0.86)]">
-        {/* Header */}
-        <div className="flex items-center justify-between bg-[linear-gradient(90deg,rgba(212,165,116,0.16),rgba(91,168,160,0.12))] p-5 shadow-[0_12px_22px_-18px_rgba(0,0,0,0.9)]">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Workstreams</span>
-          <div className="flex gap-2 text-[10px] font-mono text-[var(--color-text-muted)]/60">
-            <span>{epicTree.length} ACTIVE</span>
+    <aside className="flex h-full flex-col bg-[var(--ui-bg-shell)] shadow-[inset_-1px_0_0_rgba(0,0,0,0.55),24px_0_40px_-34px_rgba(0,0,0,0.98)]" data-testid="left-panel">
+      <div className="px-4 py-3 shadow-[0_14px_24px_-20px_rgba(0,0,0,0.92)]">
+        <div className="mb-3 flex items-center gap-1 rounded-xl bg-[#101c2b] p-1 shadow-[0_12px_24px_-18px_rgba(0,0,0,0.88)]">
+          {views.map((item) => {
+            const active = view === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setView(item.id)}
+                className={cn(
+                  'flex-1 rounded-lg px-2 py-1 text-xs font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)]',
+                  active
+                    ? 'bg-[#183149] text-[var(--ui-text-primary)]'
+                    : 'text-[var(--ui-text-muted)] hover:text-[var(--ui-text-primary)]',
+                )}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="space-y-2 rounded-xl bg-[#101a27] p-2.5 shadow-[0_16px_26px_-20px_rgba(0,0,0,0.92)]">
+          <div className="grid grid-cols-1 gap-2">
+            <input
+              value={filters.query}
+              onChange={(event) => onFiltersChange({ ...filters, query: event.target.value })}
+              className="ui-field rounded-lg border-transparent px-2.5 py-2 text-xs shadow-[0_10px_20px_-16px_rgba(0,0,0,0.9)]"
+              placeholder="Filter Tasks…"
+              aria-label="Filter tasks"
+              autoComplete="off"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={filters.status}
+                onChange={(event) => onFiltersChange({ ...filters, status: event.target.value as LeftPanelStatusFilter })}
+                className="ui-field ui-select rounded-lg border-transparent px-2.5 py-2 text-xs shadow-[0_10px_20px_-16px_rgba(0,0,0,0.9)]"
+                aria-label="Status filter"
+              >
+                <option className="ui-option" value="all">All Status</option>
+                <option className="ui-option" value="ready">Ready</option>
+                <option className="ui-option" value="in_progress">In Progress</option>
+                <option className="ui-option" value="blocked">Blocked</option>
+                <option className="ui-option" value="deferred">Deferred</option>
+                <option className="ui-option" value="done">Done</option>
+              </select>
+              <select
+                value={filters.priority}
+                onChange={(event) => onFiltersChange({ ...filters, priority: event.target.value as LeftPanelPriorityFilter })}
+                className="ui-field ui-select rounded-lg border-transparent px-2.5 py-2 text-xs shadow-[0_10px_20px_-16px_rgba(0,0,0,0.9)]"
+                aria-label="Priority filter"
+              >
+                <option className="ui-option" value="all">All Priority</option>
+                <option className="ui-option" value="P0">P0</option>
+                <option className="ui-option" value="P1">P1</option>
+                <option className="ui-option" value="P2">P2</option>
+                <option className="ui-option" value="P3">P3</option>
+                <option className="ui-option" value="P4">P4</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => onFiltersChange({ ...filters, preset: filters.preset === 'active' ? 'all' : 'active' })}
+              className={cn(
+                'flex-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.11em] shadow-[0_8px_18px_-16px_rgba(0,0,0,0.9)] transition-colors',
+                filters.preset === 'active'
+                  ? 'bg-[#2f2618] text-[var(--ui-accent-warning)]'
+                  : 'bg-[#0f1824] text-[var(--ui-text-muted)]',
+              )}
+              aria-pressed={filters.preset === 'active'}
+            >
+              Active
+            </button>
+            <button
+              type="button"
+              onClick={() => onFiltersChange({ ...filters, preset: filters.preset === 'blocked_agents' ? 'all' : 'blocked_agents' })}
+              className={cn(
+                'flex-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.11em] shadow-[0_8px_18px_-16px_rgba(0,0,0,0.9)] transition-colors',
+                filters.preset === 'blocked_agents'
+                  ? 'bg-[#2f1621] text-[var(--ui-accent-blocked)]'
+                  : 'bg-[#0f1824] text-[var(--ui-text-muted)]',
+              )}
+              aria-pressed={filters.preset === 'blocked_agents'}
+            >
+              Agent Blocked
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => onFiltersChange({ ...filters, hideClosed: !filters.hideClosed })}
+            className={cn(
+              'w-full rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.11em] shadow-[0_8px_18px_-16px_rgba(0,0,0,0.9)] transition-colors',
+              filters.hideClosed
+                ? 'bg-[#1d2b1a] text-[var(--ui-accent-ready)]'
+                : 'bg-[#0f1824] text-[var(--ui-text-muted)]',
+            )}
+            aria-pressed={filters.hideClosed}
+          >
+            Hide Closed
+          </button>
+        </div>
+
+        <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--ui-text-muted)]">Navigation / Epics</p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-3 py-3 custom-scrollbar">
+        {entries.map((entry) => {
+          const {
+            epic,
+            children,
+            blockedCount,
+            activeCount,
+            readyCount,
+            deferredCount,
+            doneCount,
+            agentBlockedCount,
+            latestTimestamp,
+          } = entry;
+          const matchedChildren = children.filter((task) => isTaskMatch(task, filters));
+          const total = children.length;
+          const donePercent = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+          const readyPercent = total > 0 ? Math.round((readyCount / total) * 100) : 0;
+          const activePercent = total > 0 ? Math.round((activeCount / total) * 100) : 0;
+          const blockedPercent = total > 0 ? Math.round((blockedCount / total) * 100) : 0;
+          const isExpanded = expanded[epic.id] ?? false;
+          const isSelected = selectedEpicId === epic.id;
+          const laneColor = blockedCount > 0 ? 'var(--ui-accent-blocked)' : activeCount > 0 ? 'var(--ui-accent-warning)' : 'var(--ui-accent-ready)';
+          const rowBackground = rowTone(entry);
+
+          if (matchedChildren.length === 0 && hasActiveFilters && !isSelected) {
+            return null;
+          }
+
+          return (
+            <div key={epic.id} className="mb-2">
+              <div
+                className={cn(
+                  'rounded-2xl px-3 py-3 transition-colors shadow-[0_18px_28px_-22px_rgba(0,0,0,0.96)]',
+                  isSelected
+                    ? 'text-[var(--ui-text-primary)] ring-1 ring-[rgba(143,156,175,0.45)]'
+                    : 'text-[var(--ui-text-muted)] hover:text-[var(--ui-text-primary)]',
+                )}
+                style={{
+                  boxShadow: `inset 3px 0 0 ${laneColor}, 0 18px 30px -24px rgba(0,0,0,0.95)`,
+                  background: rowBackground,
+                }}
+              >
+                <div className="mb-1.5 flex items-start gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setExpanded((current) => ({ ...current, [epic.id]: !isExpanded }))}
+                    className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded text-[var(--ui-text-muted)] transition-colors hover:bg-white/5 hover:text-[var(--ui-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)]"
+                    aria-label={isExpanded ? `Collapse ${epic.title}` : `Expand ${epic.title}`}
+                    aria-expanded={isExpanded}
+                  >
+                    {isExpanded ? <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" /> : <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onEpicSelect?.(isSelected ? null : epic.id)}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      {isExpanded ? <FolderOpen className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" /> : <Folder className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />}
+                      <p className="truncate text-[15px] font-semibold leading-tight text-[var(--ui-text-primary)]">{epic.title}</p>
+                    </div>
+                    <p className="mt-0.5 truncate font-mono text-[11px] text-[var(--ui-text-muted)]">{epic.id}</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onEpicSelect?.(epic.id)}
+                    className="inline-flex h-5 w-5 items-center justify-center rounded bg-[#0e1823] text-[var(--ui-text-muted)] shadow-[0_10px_16px_-12px_rgba(0,0,0,0.9)] transition-colors hover:text-[var(--ui-text-primary)]"
+                    aria-label={`Focus ${epic.title}`}
+                  >
+                    <Star className="h-3 w-3" aria-hidden="true" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3 text-[11px]">
+                  <p><span className="text-[var(--ui-text-primary)]">{total}</span> tasks</p>
+                  <p><span className="text-[var(--ui-accent-warning)]">{activeCount}</span> active</p>
+                  <p><span className="text-[var(--ui-accent-blocked)]">{agentBlockedCount}</span> ag-blocked</p>
+                  <p className="ml-auto text-[var(--ui-text-muted)]">{formatRelative(latestTimestamp)}</p>
+                </div>
+
+                <div className="mt-2">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-[#0a111a]">
+                    <div className="flex h-full w-full">
+                      <div style={{ width: `${readyPercent}%`, background: 'var(--ui-accent-ready)' }} />
+                      <div style={{ width: `${activePercent}%`, background: 'var(--ui-accent-warning)' }} />
+                      <div style={{ width: `${blockedPercent}%`, background: 'var(--ui-accent-blocked)' }} />
+                      <div style={{ width: `${Math.max(0, 100 - readyPercent - activePercent - blockedPercent)}%`, background: 'var(--ui-text-muted)' }} />
+                    </div>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-[10px] text-[var(--ui-text-muted)]">
+                    <span>{donePercent}% done</span>
+                    <span><span className="text-[var(--ui-accent-ready)]">{readyCount}</span> ready</span>
+                  </div>
+                </div>
+
+                {deferredCount + doneCount + blockedCount > 0 ? (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[10px] text-[var(--ui-text-muted)]">
+                    {blockedCount > 0 ? <span>{blockedCount} blocked</span> : null}
+                    {deferredCount > 0 ? <span>{deferredCount} deferred</span> : null}
+                    {doneCount > 0 ? <span>{doneCount} done</span> : null}
+                  </div>
+                ) : null}
+              </div>
+
+              {isExpanded ? (
+                <div className="ml-8 mt-1 space-y-1 pl-3">
+                  {matchedChildren.slice(0, 7).map((task) => (
+                    <button
+                      key={task.id}
+                      type="button"
+                      onClick={() => onEpicSelect?.(epic.id)}
+                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-[var(--ui-text-muted)] transition-colors hover:bg-[#112133] hover:text-[var(--ui-text-primary)]"
+                    >
+                      <span className={cn('h-1.5 w-1.5 rounded-full', statusDot(task.status))} />
+                      <span className="min-w-0 flex-1 truncate">{task.title}</span>
+                      <span className="font-mono text-[10px] text-[var(--ui-text-muted)]">{task.id}</span>
+                    </button>
+                  ))}
+                  {matchedChildren.length > 7 ? (
+                    <p className="px-1.5 py-0.5 text-[10px] text-[var(--ui-text-muted)]">+ {matchedChildren.length - 7} more</p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+
+      <footer className="border-t border-[var(--ui-border-soft)] px-4 py-3">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full bg-[linear-gradient(135deg,#9cb6bf,#f1dcc6)]" />
+          <div>
+            <p className="text-sm font-semibold text-[var(--ui-text-primary)]">Alex Chen</p>
+            <p className="text-xs text-[var(--ui-text-muted)]">Lead Ops</p>
           </div>
         </div>
-
-        {/* Tree */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-4">
-          {[
-            { label: 'Featured', items: featuredEpics, tier: 'featured' as const },
-            { label: 'Active', items: standardEpics, tier: 'standard' as const },
-            { label: 'Queue', items: compactEpics, tier: 'compact' as const },
-          ].map((section) => (
-            <div key={section.label} className={cn(section.items.length === 0 && 'hidden')}>
-              <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#97A0AF]/75">
-                {section.label}
-              </p>
-              <div className={cn(section.tier === 'compact' ? 'space-y-1.5' : 'space-y-2.5')}>
-                {section.items.map(({ epic, children, stats, status }) => {
-                  const isExpanded = expandedEpics.has(epic.id);
-                  const isSelected = selectedEpicId === epic.id;
-
-                  const statusStyle = {
-                    blocked:
-                      'bg-[radial-gradient(circle_at_100%_50%,rgba(201,122,122,0.3),transparent_58%),rgba(92,58,58,0.8)] hover:bg-[radial-gradient(circle_at_100%_50%,rgba(201,122,122,0.38),transparent_58%),rgba(106,64,64,0.85)]',
-                    in_progress:
-                      'bg-[radial-gradient(circle_at_100%_50%,rgba(212,165,116,0.34),transparent_58%),rgba(92,70,45,0.82)] hover:bg-[radial-gradient(circle_at_100%_50%,rgba(212,165,116,0.44),transparent_58%),rgba(108,82,51,0.88)]',
-                    ready:
-                      'bg-[radial-gradient(circle_at_100%_50%,rgba(124,185,122,0.34),transparent_60%),rgba(54,84,55,0.84)] hover:bg-[radial-gradient(circle_at_100%_50%,rgba(124,185,122,0.44),transparent_60%),rgba(61,95,61,0.9)]',
-                    done:
-                      'bg-[radial-gradient(circle_at_100%_50%,rgba(91,168,160,0.3),transparent_58%),rgba(52,72,77,0.78)] hover:bg-[radial-gradient(circle_at_100%_50%,rgba(91,168,160,0.38),transparent_58%),rgba(59,82,87,0.84)]',
-                    empty:
-                      'bg-[radial-gradient(circle_at_100%_50%,rgba(74,104,130,0.2),transparent_58%),rgba(44,49,65,0.76)] hover:bg-[radial-gradient(circle_at_100%_50%,rgba(74,104,130,0.28),transparent_58%),rgba(49,56,74,0.82)]',
-                  }[status];
-
-                  if (section.tier === 'compact') {
-                    return (
-                      <button
-                        key={epic.id}
-                        type="button"
-                        onClick={() => onEpicSelect?.(epic.id === selectedEpicId ? null : epic.id)}
-                        className={cn(
-                          'w-full rounded-lg px-2.5 py-2 text-left transition-all duration-200',
-                          'flex items-center justify-between gap-2',
-                          statusStyle,
-                          isSelected
-                            ? 'shadow-[0_14px_22px_-14px_rgba(0,0,0,0.88),0_0_0_1px_rgba(255,255,255,0.08)_inset]'
-                            : 'shadow-[0_8px_16px_-12px_rgba(0,0,0,0.82)]',
-                        )}
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate font-mono text-[10px] text-[#C7D0DF]/70">{epic.id}</p>
-                          <p className="truncate text-xs font-semibold text-white/90">{epic.title}</p>
-                        </div>
-                        <div className="shrink-0 text-right">
-                          <p className="text-[10px] font-mono text-[#C7D0DF]/70">{stats.total}</p>
-                          <StatusIndicator status={status} />
-                        </div>
-                      </button>
-                    );
-                  }
-
-                  const isFeatured = section.tier === 'featured';
-                  const cardPadding = isFeatured ? 'p-4' : 'p-3';
-                  const titleClass = isFeatured ? 'text-base' : 'text-sm';
-                  const activeStyle = isSelected
-                    ? 'shadow-[0_24px_34px_-16px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.08)_inset] scale-[1.01]'
-                    : 'shadow-[0_10px_20px_-14px_rgba(0,0,0,0.85)]';
-
-                  return (
-                    <div key={epic.id} className="group">
-                      <button
-                        type="button"
-                        onClick={() => handleEpicClick(epic.id)}
-                        className={cn(
-                          'w-full flex flex-col rounded-xl text-left transition-all duration-300 relative overflow-hidden',
-                          cardPadding,
-                          statusStyle,
-                          activeStyle,
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            'absolute left-0 top-0 bottom-0 w-1.5',
-                            status === 'blocked'
-                              ? 'bg-[#C97A7A]'
-                              : status === 'in_progress'
-                                ? 'bg-[#D4A574]'
-                                : status === 'ready'
-                                  ? 'bg-[#7CB97A]'
-                                  : 'bg-[#5BA8A0]',
-                          )}
-                        />
-
-                        <div className="pl-3 w-full">
-                          <div className="flex items-center justify-between w-full mb-1">
-                            <span className="text-[10px] font-mono text-text-muted/70 tracking-tight">{epic.id}</span>
-                            {stats.blocked > 0 && (
-                              <span className="rounded bg-[color:rgba(201,122,122,0.24)] px-1.5 text-[9px] font-bold text-[#F0C9C9]">
-                                {stats.blocked} BLOCKED
-                              </span>
-                            )}
-                          </div>
-
-                          <div className={cn('truncate font-bold text-white/90 mb-2 leading-snug', titleClass)}>
-                            {epic.title}
-                          </div>
-
-                          <div className="flex h-1.5 w-full items-center gap-1 overflow-hidden rounded-full bg-black/20">
-                            <div style={{ width: `${(stats.closed / (stats.total || 1)) * 100}%` }} className="h-full bg-[#5BA8A0]/75" />
-                            <div style={{ width: `${(stats.in_progress / (stats.total || 1)) * 100}%` }} className="h-full bg-[#D4A574]" />
-                            <div style={{ width: `${(stats.blocked / (stats.total || 1)) * 100}%` }} className="h-full bg-[#C97A7A]" />
-                            <div style={{ width: `${(stats.ready / (stats.total || 1)) * 100}%` }} className="h-full bg-[#7CB97A]" />
-                          </div>
-
-                          <div className="flex justify-between mt-1.5 text-[9px] font-mono text-text-muted/50">
-                            <span>{Math.round(((stats.closed + stats.in_progress) / (stats.total || 1)) * 100)}% Done</span>
-                            <span>{stats.total} Tasks</span>
-                          </div>
-                        </div>
-                      </button>
-
-                      {isExpanded && children.length > 0 && (
-                        <div className="ml-4 mt-2 space-y-1 pl-3">
-                          {children.slice(0, 5).map((child) => (
-                            <div
-                              key={child.id}
-                              className="group/child flex cursor-pointer items-center justify-between rounded px-2 py-1.5 transition-colors hover:bg-[rgba(212,165,116,0.16)]"
-                            >
-                              <span className="text-[10px] font-mono text-text-muted/60">{child.id}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] text-text-muted/60 truncate max-w-[80px]">{child.title}</span>
-                                <StatusIndicator status={child.status} />
-                              </div>
-                            </div>
-                          ))}
-                          {children.length > 5 && (
-                            <div className="px-2 py-1 text-[9px] text-text-muted/30 italic">+{children.length - 5} more</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Footer */}
-        <div className="bg-black/18 p-4 shadow-[0_-10px_22px_-18px_rgba(0,0,0,0.82)]">
-          <label className="group flex cursor-pointer items-center gap-3 rounded px-2 py-1 transition-colors hover:bg-white/5">
-            <div className={`h-3 w-3 rounded-full ${selectedEpicId === null ? 'bg-[var(--status-ready)] shadow-[0_0_8px_rgba(124,185,122,0.7)]' : 'bg-white/25'}`} />
-            <span className={cn(
-              "text-xs font-medium transition-colors",
-              selectedEpicId === null ? "text-[#9BD2CB]" : "text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)]"
-            )}>
-              Global Scope
-            </span>
-          </label>
-        </div>
-      </div>
-    </div>
+      </footer>
+    </aside>
   );
 }
 

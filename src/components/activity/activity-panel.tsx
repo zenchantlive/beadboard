@@ -110,25 +110,25 @@ function formatRelativeTime(timestamp: string): string {
 function getAgentTone(status: AgentStatus): AgentTone {
   const tones: Record<AgentStatus, AgentTone> = {
     active: {
-      cardClass: 'bg-[radial-gradient(circle_at_86%_18%,rgba(124,185,122,0.28),transparent_58%),rgba(45,64,47,0.74)]',
+      cardClass: 'bg-[#173126]',
       labelClass: 'text-[#7CB97A]',
       ringClass: 'ring-[#7CB97A]/45',
       glowClass: 'bg-[#7CB97A]/30',
     },
     stale: {
-      cardClass: 'bg-[radial-gradient(circle_at_86%_18%,rgba(212,165,116,0.28),transparent_58%),rgba(73,61,46,0.74)]',
+      cardClass: 'bg-[#322817]',
       labelClass: 'text-[#D4A574]',
       ringClass: 'ring-[#D4A574]/45',
       glowClass: 'bg-[#D4A574]/30',
     },
     stuck: {
-      cardClass: 'bg-[radial-gradient(circle_at_86%_18%,rgba(201,122,122,0.28),transparent_58%),rgba(74,52,54,0.76)]',
+      cardClass: 'bg-[#341a1f]',
       labelClass: 'text-[#C97A7A]',
       ringClass: 'ring-[#C97A7A]/45',
       glowClass: 'bg-[#C97A7A]/30',
     },
     dead: {
-      cardClass: 'bg-[radial-gradient(circle_at_86%_18%,rgba(136,104,112,0.26),transparent_58%),rgba(60,55,60,0.74)]',
+      cardClass: 'bg-[#2b232b]',
       labelClass: 'text-[#A78A94]',
       ringClass: 'ring-[#A78A94]/40',
       glowClass: 'bg-[#A78A94]/25',
@@ -146,84 +146,84 @@ function getEventTone(kind: string): EventTone {
       label: 'Created',
       labelClass: 'text-[#7CB97A]',
       dotClass: 'bg-[#7CB97A]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(124,185,122,0.26),transparent_55%),rgba(42,62,44,0.68)]',
+      cardClass: 'bg-[#182f25]',
       idClass: 'text-[#9ACB98]',
     },
     opened: {
       label: 'Opened',
       labelClass: 'text-[#7CB97A]',
       dotClass: 'bg-[#7CB97A]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(124,185,122,0.26),transparent_55%),rgba(42,62,44,0.68)]',
+      cardClass: 'bg-[#182f25]',
       idClass: 'text-[#9ACB98]',
     },
     closed: {
       label: 'Closed',
       labelClass: 'text-[#D4A574]',
       dotClass: 'bg-[#D4A574]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(212,165,116,0.28),transparent_55%),rgba(66,56,44,0.7)]',
+      cardClass: 'bg-[#332716]',
       idClass: 'text-[#DAB891]',
     },
     reopened: {
       label: 'Reopened',
       labelClass: 'text-[#5B95E8]',
       dotClass: 'bg-[#5B95E8]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(91,149,232,0.3),transparent_55%),rgba(42,51,66,0.7)]',
+      cardClass: 'bg-[#1b2b43]',
       idClass: 'text-[#8DB4EF]',
     },
     status_changed: {
       label: 'Status changed',
       labelClass: 'text-[#D4A574]',
       dotClass: 'bg-[#D4A574]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(212,165,116,0.24),transparent_55%),rgba(63,54,44,0.68)]',
+      cardClass: 'bg-[#2f2518]',
       idClass: 'text-[#DAB891]',
     },
     priority_changed: {
       label: 'Priority changed',
       labelClass: 'text-[#D4A574]',
       dotClass: 'bg-[#D4A574]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(212,165,116,0.24),transparent_55%),rgba(63,54,44,0.68)]',
+      cardClass: 'bg-[#2f2518]',
       idClass: 'text-[#DAB891]',
     },
     assignee_changed: {
       label: 'Assigned',
       labelClass: 'text-[#D4A574]',
       dotClass: 'bg-[#D4A574]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(212,165,116,0.24),transparent_55%),rgba(63,54,44,0.68)]',
+      cardClass: 'bg-[#2f2518]',
       idClass: 'text-[#DAB891]',
     },
     dependency_added: {
       label: 'Dependency added',
       labelClass: 'text-[#D4A574]',
       dotClass: 'bg-[#D4A574]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(212,165,116,0.24),transparent_55%),rgba(63,54,44,0.68)]',
+      cardClass: 'bg-[#2f2518]',
       idClass: 'text-[#DAB891]',
     },
     dependency_removed: {
       label: 'Dependency removed',
       labelClass: 'text-[#C97A7A]',
       dotClass: 'bg-[#C97A7A]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(201,122,122,0.24),transparent_55%),rgba(65,47,50,0.7)]',
+      cardClass: 'bg-[#321b21]',
       idClass: 'text-[#D9A9A9]',
     },
     heartbeat: {
       label: 'Heartbeat',
       labelClass: 'text-[#5BA8A0]',
       dotClass: 'bg-[#5BA8A0]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(91,168,160,0.26),transparent_55%),rgba(42,58,60,0.7)]',
+      cardClass: 'bg-[#173034]',
       idClass: 'text-[#8BC9C1]',
     },
     commented: {
       label: 'Commented',
       labelClass: 'text-[#5BA8A0]',
       dotClass: 'bg-[#5BA8A0]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(91,168,160,0.26),transparent_55%),rgba(42,58,60,0.7)]',
+      cardClass: 'bg-[#173034]',
       idClass: 'text-[#8BC9C1]',
     },
     comment_added: {
       label: 'Commented',
       labelClass: 'text-[#5BA8A0]',
       dotClass: 'bg-[#5BA8A0]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(91,168,160,0.26),transparent_55%),rgba(42,58,60,0.7)]',
+      cardClass: 'bg-[#173034]',
       idClass: 'text-[#8BC9C1]',
     },
   };
@@ -233,7 +233,7 @@ function getEventTone(kind: string): EventTone {
       label: normalized.replace(/_/g, ' '),
       labelClass: 'text-[#5BA8A0]',
       dotClass: 'bg-[#5BA8A0]',
-      cardClass: 'bg-[radial-gradient(circle_at_88%_18%,rgba(91,168,160,0.24),transparent_55%),rgba(42,58,60,0.68)]',
+      cardClass: 'bg-[#173034]',
       idClass: 'text-[#8BC9C1]',
     }
   );
@@ -335,9 +335,9 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
   }
 
   return (
-    <div className="flex flex-col h-full bg-[radial-gradient(circle_at_8%_5%,rgba(91,168,160,0.16),transparent_30%),radial-gradient(circle_at_94%_88%,rgba(212,165,116,0.14),transparent_34%),rgba(26,26,28,0.96)] backdrop-blur-xl">
+    <div className="flex flex-col h-full bg-[#070f19] backdrop-blur-xl">
       {/* AGENT ROSTER SECTION */}
-      <div className="flex-shrink-0 p-4 bg-black/10 shadow-[0_16px_24px_-24px_rgba(0,0,0,0.9)]">
+      <div className="flex-shrink-0 p-4 bg-[#0b1625] shadow-[0_16px_24px_-24px_rgba(0,0,0,0.9)]">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
@@ -354,7 +354,7 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
           <div className="grid grid-cols-1 gap-2">
             {agentRoster.map(agent => (
               <div key={agent.beadId} className={cn(
-                'group flex items-center gap-3 p-2 rounded-xl transition-all duration-300 shadow-[0_12px_22px_-14px_rgba(0,0,0,0.85)]',
+                'group flex items-center gap-3 p-2 rounded-xl transition-all duration-300 shadow-[0_14px_24px_-14px_rgba(0,0,0,0.92)]',
                 getAgentTone(agent.status).cardClass,
               )}>
                 <div className="relative">
@@ -412,7 +412,7 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
                 return (
                   <div key={activity.id} className="group relative">
                     <div className={cn(
-                      "p-3 rounded-xl transition-all duration-300 shadow-[0_12px_22px_-14px_rgba(0,0,0,0.88)]",
+                      "p-3 rounded-xl transition-all duration-300 shadow-[0_14px_24px_-14px_rgba(0,0,0,0.94)]",
                       eventTone.cardClass
                     )}>
                       <div className="flex items-center gap-2 mb-1.5">

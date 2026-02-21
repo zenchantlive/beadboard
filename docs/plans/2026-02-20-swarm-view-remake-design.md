@@ -120,23 +120,24 @@ This view only renders if a mission (Epic) is selected. It completely replaces t
     *   Mission Title, Epic ID, and overall health status.
     *   **Action Strip:** Buttons for "Summon Polecats" (assign agents based on a template), "Halt Swarm", and "Run Debrief".
 *   **Convoy Stepper:** The visual orchestration pipeline (Planning -> Deployment -> Execution -> Debrief).
-*   **The Telemetry Grid (Replacing the DAG):**
-    *   **Card 1: Active Roster (Who is here?):** A list of all agents currently assigned to tasks within this epic. Displays their Name, Avatar (colored by Archetype), current Bead ID, and status (e.g., "Writing Code", "Waiting for API").
-    *   **Card 2: Priority Attention (What is blocked?):** A focused feed of *only* the `blocked` beads or beads that require Human-In-The-Loop (HITL) intervention for this specific mission.
-    *   **Card 3: Mission Metrics:** Simple burn-down stats or a mini-feed of the last 5 completed tasks to show velocity.
+*   **The Telemetry Grid (Hybrid Layout):**
+    *   **Top/Left Pane (Specialized Agent DAG):** Unlike the generic global graph, this graph specifically visualizes *who* is doing *what*. Nodes should emphasize Agent Avatars and archetype colors. Edges should represent the flow of work between agents (e.g., Coder -> Reviewer) rather than just raw task dependencies.
+    *   **Bottom/Right Pane (Metrics & Attention):**
+        *   **Priority Attention (What is blocked?):** A highly focused feed of *only* the `blocked` beads or beads that require Human-In-The-Loop (HITL) intervention for this specific mission.
+        *   **Mission Roster:** A quick summary of active agents.
 
 ### 4.3 Tab 2: `<ArchetypesArmory />`
 *   **Layout:** CSS Grid of archetype cards.
 *   **Card Design:** Shows Name, Color badge, Capabilities tags, and truncated description.
 *   **Interaction:** 
-    * Cards are highly interactive. Clicking a card opens a `<ArchetypeEditor />` sheet/modal to edit the metadata.
+    * Cards are highly interactive. Clicking a card opens a central popup (reusing the app's existing Dialog/Popup pattern) to edit the metadata.
     * Includes a focused text area to edit the raw `systemPrompt`.
     * A primary "Create New Archetype" button exists at the top.
 
 ### 4.4 Tab 3: `<TemplatesManager />`
 *   **Layout:** List or Grid view of templates.
 *   **Interaction:** 
-    * Cards are highly interactive. Clicking a card opens a `<TemplateEditor />` sheet/modal.
+    * Cards are highly interactive. Clicking a card opens a central `<TemplateEditor />` popup.
     * **Key UI Feature:** An intuitive interface to build the `team` array (e.g., click "Add Role", select "Architect" from the Archetypes list, set count to "1").
     * A primary "Create New Template" button exists at the top.
 

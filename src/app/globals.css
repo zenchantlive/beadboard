@@ -3,45 +3,64 @@
 @tailwind utilities;
 
 :root {
-  /* ========== EARTHY-DARK DESIGN SYSTEM TOKENS (PRD v2.0) ========== */
-  
-  /* Backgrounds */
-  --color-bg-base: #2D2D2D;
-  --color-bg-card: #363636;
-  --color-bg-input: #404040;
+  /* ========== VISUAL-TRUTH UI TOKEN CONTRACT (bb-vt.1.1) ========== */
+  --ui-bg-app: #070d16;
+  --ui-bg-shell: #0c1420;
+  --ui-bg-panel: #111c2a;
+  --ui-bg-card: #1a2431;
 
-  /* Accents */
-  --color-accent-green: #7CB97A;
-  --color-accent-amber: #D4A574;
-  --color-accent-teal: #5BA8A0;
+  --ui-border-soft: rgba(153, 171, 190, 0.2);
+  --ui-border-strong: rgba(153, 171, 190, 0.34);
 
-  /* Text */
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #B8B8B8;
-  --color-text-muted: #888888;
-  --color-text-on-primary: #1A1A1A;
+  --ui-text-primary: #e8edf5;
+  --ui-text-muted: #8f9caf;
 
-  /* Borders */
-  --color-border-default: #4A4A4A;
-  --color-border-subtle: #3A3A3A;
+  --ui-accent-ready: #35d98f;
+  --ui-accent-blocked: #ff4c72;
+  --ui-accent-warning: #ffb24a;
+  --ui-accent-info: #35c9ff;
+  --ui-accent-action-green: #35d98f;
+  --ui-accent-action-red: #ff4c72;
+
+  --ui-font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --ui-font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+  --ui-tracking-tight: -0.011em;
+  --ui-numeric-tabular: tabular-nums;
+
+  /* ========== LEGACY-COMPATIBLE MAPPINGS ========== */
+  --color-bg-base: var(--ui-bg-app);
+  --color-bg-card: var(--ui-bg-shell);
+  --color-bg-input: var(--ui-bg-panel);
+
+  --color-accent-green: var(--ui-accent-ready);
+  --color-accent-amber: var(--ui-accent-warning);
+  --color-accent-teal: var(--ui-accent-info);
+
+  --color-text-primary: var(--ui-text-primary);
+  --color-text-secondary: #c4cfdb;
+  --color-text-muted: var(--ui-text-muted);
+  --color-text-on-primary: #10161d;
+
+  --color-border-default: var(--ui-border-strong);
+  --color-border-subtle: var(--ui-border-soft);
 
   /* Status colors */
-  --status-open: #5BA8A0;
-  --status-ready: #5BA8A0;
-  --status-in-progress: #7CB97A;
-  --status-progress: #7CB97A;
-  --status-blocked: #D4A574;
-  --status-blocked-earthy: #D4A574;
-  --status-closed: #888888;
-  --status-closed-earthy: #888888;
-  --status-deferred: #888888;
+  --status-open: var(--ui-accent-info);
+  --status-ready: var(--ui-accent-ready);
+  --status-in-progress: var(--ui-accent-warning);
+  --status-progress: var(--ui-accent-warning);
+  --status-blocked: var(--ui-accent-blocked);
+  --status-blocked-earthy: var(--ui-accent-blocked);
+  --status-closed: #7f8b98;
+  --status-closed-earthy: #7f8b98;
+  --status-deferred: #7f8b98;
 
   /* Liveness colors */
-  --liveness-active: #7CB97A;
-  --liveness-stale: #D4A574;
-  --liveness-stuck: #C97A7A;
-  --liveness-dead: #C97A7A;
-  --liveness-idle: #888888;
+  --liveness-active: var(--ui-accent-ready);
+  --liveness-stale: var(--ui-accent-warning);
+  --liveness-stuck: var(--ui-accent-action-red);
+  --liveness-dead: var(--ui-accent-action-red);
+  --liveness-idle: #7f8b98;
 
   /* Agent Role Colors */
   --agent-role-ui: #6B9BD2;
@@ -77,8 +96,8 @@
   --shadow-soft-xl: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
 
   /* ========== TYPOGRAPHY ========== */
-  --font-ui-stack: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-mono-stack: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  --font-ui-stack: var(--ui-font-sans);
+  --font-mono-stack: var(--ui-font-mono);
   
   --font-size-h1: 2rem;
   --font-size-h2: 1.5rem;
@@ -110,7 +129,17 @@
   /* ========== LAYOUT ========== */
   --sidebar-left-width: 13.75rem;
   --sidebar-right-width: 17.5rem;
-  --topbar-height: 3rem;
+  --topbar-height: 3.75rem;
+
+  --glass-base: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ui-bg-card) 72%, black),
+    color-mix(in srgb, var(--ui-bg-panel) 78%, black)
+  );
+  --edge-top: color-mix(in srgb, var(--ui-border-strong) 80%, white 20%);
+  --edge-bottom: color-mix(in srgb, var(--ui-border-soft) 75%, black 25%);
+  --elevation-ambient: 0 20px 40px -16px rgba(0, 0, 0, 0.78);
+  --elevation-tight: 0 10px 24px -12px rgba(0, 0, 0, 0.7);
 
   /* ========== LEGACY COMPATIBILITY TOKENS ========== */
   /* For existing components that reference these */
@@ -134,11 +163,10 @@ body {
 }
 
 body {
-  /* Earthy-dark base from PRD (replaces Aero Chrome) */
-  background-color: var(--color-bg-base);
-  color: var(--color-text-secondary);
-  font-family: var(--font-ui-stack);
-  letter-spacing: -0.011em;
+  background-color: var(--ui-bg-app);
+  color: var(--ui-text-primary);
+  font-family: var(--ui-font-sans);
+  letter-spacing: var(--ui-tracking-tight);
   position: relative;
   isolation: isolate;
 }
@@ -266,22 +294,50 @@ body {
 
 .ui-select option,
 .ui-option {
-  background-color: #10141d;
-  color: #e2e8f0;
+  background-color: var(--ui-bg-panel);
+  color: var(--ui-text-primary);
 }
 
 .ui-text {
-  font-family: var(--font-ui-stack);
+  font-family: var(--ui-font-sans);
   font-weight: 500;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--ui-tracking-tight);
   line-height: 1.35;
 }
 
 .system-data {
-  font-family: var(--font-mono-stack);
-  font-variant-numeric: tabular-nums;
+  font-family: var(--ui-font-mono);
+  font-variant-numeric: var(--ui-numeric-tabular);
   font-weight: 450;
   letter-spacing: 0.015em;
+}
+
+.ui-shell-app {
+  background: var(--ui-bg-app);
+  color: var(--ui-text-primary);
+  font-family: var(--ui-font-sans);
+  letter-spacing: var(--ui-tracking-tight);
+}
+
+.ui-shell-topbar {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-panel) 92%, black), var(--ui-bg-shell));
+  border-bottom: 1px solid color-mix(in srgb, var(--ui-accent-info) 22%, var(--ui-border-soft));
+  box-shadow: 0 10px 24px -20px rgba(0, 0, 0, 0.9);
+}
+
+.ui-shell-middle {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-app) 74%, black), color-mix(in srgb, var(--ui-bg-app) 90%, black));
+  border-left: 1px solid color-mix(in srgb, var(--ui-accent-info) 20%, var(--ui-border-soft));
+  border-right: 1px solid color-mix(in srgb, var(--ui-accent-info) 20%, var(--ui-border-soft));
+}
+
+.ui-shell-panel {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-shell) 86%, black), color-mix(in srgb, var(--ui-bg-panel) 84%, black));
+  border-left: 1px solid color-mix(in srgb, var(--ui-accent-info) 30%, var(--ui-border-soft));
+}
+
+.ui-tabular-nums {
+  font-variant-numeric: var(--ui-numeric-tabular);
 }
 
 

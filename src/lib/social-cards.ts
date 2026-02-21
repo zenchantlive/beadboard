@@ -74,20 +74,21 @@ function extractAgents(bead: BeadIssue): AgentInfo[] {
 }
 
 export function buildSocialCards(beads: BeadIssue[]): SocialCard[] {
+  const taskBeads = beads.filter((bead) => bead.issue_type !== 'epic');
   const beadMap = new Map<string, BeadIssue>();
-  for (const bead of beads) {
+  for (const bead of taskBeads) {
     beadMap.set(bead.id, bead);
   }
 
   const blocksIncoming = new Map<string, string[]>();
   const blocksOutgoing = new Map<string, string[]>();
 
-  for (const bead of beads) {
+  for (const bead of taskBeads) {
     blocksIncoming.set(bead.id, []);
     blocksOutgoing.set(bead.id, []);
   }
 
-  for (const bead of beads) {
+  for (const bead of taskBeads) {
     for (const dep of bead.dependencies) {
       if (dep.type === 'blocks' && beadMap.has(dep.target)) {
         const outgoing = blocksOutgoing.get(bead.id) ?? [];
@@ -101,15 +102,30 @@ export function buildSocialCards(beads: BeadIssue[]): SocialCard[] {
     }
   }
 
-  return beads.map((bead) => ({
-    id: bead.id,
-    title: bead.title,
-    status: mapStatus(bead.status),
-    blocks: blocksOutgoing.get(bead.id) ?? [],   // what I block (amber)
-    unblocks: blocksIncoming.get(bead.id) ?? [], // what blocks me (rose)
-    agents: extractAgents(bead),
-    lastActivity: new Date(bead.updated_at),
-    priority: mapPriority(bead.priority),
-  }));
-}
+  return taskBeads.map((bead) => {
+    const explicitStatus = mapStatus(bead.status);
+    const incomingBlockers = blocksIncoming.get(bead.id) ?? [];
+    const hasUnresolvedIncomingBlockers = incomingBlockers.some((blockerId) => {
+      const blocker = beadMap.get(blockerId);
+      return blocker ? blocker.status !== 'closed' && blocker.status !== 'tombstone' : false;
+    });
 
+    const effectiveStatus: SocialCardStatus =
+      explicitStatus === 'closed' || explicitStatus === 'in_progress' || explicitStatus === 'blocked'
+        ? explicitStatus
+        : hasUnresolvedIncomingBlockers
+          ? 'blocked'
+          : explicitStatus;
+
+    return {
+      id: bead.id,
+      title: bead.title,
+      status: effectiveStatus,
+      blocks: blocksOutgoing.get(bead.id) ?? [],   // what I block (amber)
+      unblocks: incomingBlockers, // what blocks me (rose)
+      agents: extractAgents(bead),
+      lastActivity: new Date(bead.updated_at),
+      priority: mapPriority(bead.priority),
+    };
+  });
+}

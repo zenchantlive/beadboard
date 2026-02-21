@@ -22,6 +22,14 @@ bd close <id> --reason "<what was completed>"
 bd sync
 ```
 
+## Bead Prompting Standard
+
+1. When creating or rewriting bead details, follow `docs/protocols/bead-prompting.md`.
+2. Bead descriptions must be model-facing prompts, not internal prose notes.
+3. Include explicit `Scope` and `Out of Scope` in every bead.
+4. Treat `Success Criteria` as the completion contract.
+5. Keep dependency flow minimal and execution-correct.
+
 ## Start-of-Task Protocol
 
 1. Read the target bead and acceptance criteria (`bd show <id>`).

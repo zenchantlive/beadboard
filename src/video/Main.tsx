@@ -1,6 +1,6 @@
 import { interpolate, useCurrentFrame, useVideoConfig, AbsoluteFill, Sequence, Img, staticFile, spring } from 'remotion';
 import React from 'react';
-import { loadFont } from "@remotion/google-fonts/Inter";
+import { loadFont } from '@remotion/google-fonts/inter';
 import { Background } from './components/Background';
 import { TerminalScene } from './components/TerminalScene';
 import { TimelineScene } from './components/TimelineScene';

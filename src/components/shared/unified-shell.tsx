@@ -115,6 +115,7 @@ export function UnifiedShell({
       return (
         <SwarmWorkspace
           selectedMissionId={swarmId ?? undefined}
+          issues={filteredIssues}
         />
       );
     }

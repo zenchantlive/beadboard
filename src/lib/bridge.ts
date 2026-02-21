@@ -102,10 +102,16 @@ export async function runBdCommand(
 
     const shellCommand = buildShellCommand(command, args);
 
+    const mingwBin = 'C:\\msys64\\mingw64\\bin';
+    const existingPath = deps.env.Path ?? deps.env.PATH ?? '';
+    const enhancedPath = existingPath.includes('mingw64')
+      ? existingPath
+      : `${mingwBin};${existingPath}`;
+
     const { stdout, stderr } = await deps.exec(shellCommand, {
       cwd,
       timeout: timeoutMs,
-      env: deps.env,
+      env: { ...deps.env, Path: enhancedPath, PATH: enhancedPath },
     });
 
     return {

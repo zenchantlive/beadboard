@@ -1,4 +1,4 @@
-import type { MouseEventHandler } from 'react';
+import type { KeyboardEvent, MouseEventHandler } from 'react';
 import { Activity, Clock3, GitBranch, Link2, MessageCircle, Orbit } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -20,67 +20,90 @@ interface SocialCardProps {
   dependencyCount?: number;
   commentCount?: number;
   unreadCount?: number;
+  blockedByDetails?: Array<{ id: string; title: string; epic?: string }>;
+  unblocksDetails?: Array<{ id: string; title: string; epic?: string }>;
 }
 
-type StatusTone = {
-  accent: string;
-  glow: string;
-  badgeClass: string;
-  surface: string;
-  accentChip: string;
-};
+function handleCardKeyDown(event: KeyboardEvent<HTMLDivElement>, onClick?: MouseEventHandler<HTMLDivElement>) {
+  if (!onClick) return;
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  event.preventDefault();
+  onClick(event as unknown as Parameters<MouseEventHandler<HTMLDivElement>>[0]);
+}
 
-const STATUS_TONES: Record<SocialCardData['status'], StatusTone> = {
-  ready: {
-    accent: '#7CB97A',
-    glow: 'rgba(124,185,122,0.26)',
-    badgeClass: 'bg-[#7CB97A]/26 text-[#DCEED8] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
-    surface:
-      'radial-gradient(circle at 80% 78%, rgba(124,185,122,0.46), transparent 76%), radial-gradient(circle at 8% 6%, rgba(124,185,122,0.26), transparent 68%), linear-gradient(145deg, rgba(45,78,45,0.99), rgba(35,62,35,0.99))',
-    accentChip: 'bg-[#7CB97A]/18 text-[#D2E4CE] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
-  },
-  in_progress: {
-    accent: '#D4A574',
-    glow: 'rgba(212,165,116,0.28)',
-    badgeClass: 'bg-[#D4A574]/28 text-[#EED9C1] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
-    surface:
-      'radial-gradient(circle at 80% 78%, rgba(212,165,116,0.48), transparent 76%), radial-gradient(circle at 8% 6%, rgba(212,165,116,0.28), transparent 68%), linear-gradient(145deg, rgba(86,64,40,0.99), rgba(68,49,30,0.99))',
-    accentChip: 'bg-[#D4A574]/20 text-[#E0C6A7] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
-  },
-  blocked: {
-    accent: '#C97A7A',
-    glow: 'rgba(201,122,122,0.26)',
-    badgeClass: 'bg-[#C97A7A]/28 text-[#EDD3D3] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
-    surface:
-      'radial-gradient(circle at 80% 78%, rgba(201,122,122,0.46), transparent 76%), radial-gradient(circle at 8% 6%, rgba(201,122,122,0.27), transparent 68%), linear-gradient(145deg, rgba(76,46,46,0.99), rgba(60,36,36,0.99))',
-    accentChip: 'bg-[#C97A7A]/18 text-[#E1C0C0] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
-  },
-  closed: {
-    accent: 'var(--status-closed)',
-    glow: 'rgba(136,136,136,0.16)',
-    badgeClass: 'bg-[#888888]/26 text-[#CECECE] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
-    surface:
-      'radial-gradient(circle at 80% 78%, rgba(136,136,136,0.32), transparent 76%), radial-gradient(circle at 8% 6%, rgba(136,136,136,0.16), transparent 68%), linear-gradient(145deg, rgba(56,56,56,0.99), rgba(44,44,44,0.99))',
-    accentChip: 'bg-[#888888]/16 text-[#BEBEBE] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]',
-  },
-};
-
-function renderDependencyPreview(ids: string[], toneClass: string, label: string) {
-  if (ids.length === 0) {
-    return null;
+function statusVisual(status: SocialCardData['status']) {
+  if (status === 'blocked') {
+    return {
+      border: 'color-mix(in srgb, var(--ui-accent-blocked) 50%, var(--ui-border-soft))',
+      cardBg:
+        'linear-gradient(160deg, color-mix(in srgb, var(--ui-accent-blocked) 20%, #1a0f15), color-mix(in srgb, var(--ui-bg-shell) 92%, black))',
+      badgeBg: 'color-mix(in srgb, var(--ui-accent-blocked) 24%, transparent)',
+      badgeText: '#ffd5df',
+      chipText: 'Blocked',
+    };
   }
 
+  if (status === 'in_progress') {
+    return {
+      border: 'color-mix(in srgb, var(--ui-accent-warning) 50%, var(--ui-border-soft))',
+      cardBg:
+        'linear-gradient(160deg, color-mix(in srgb, var(--ui-accent-warning) 16%, #1a1510), color-mix(in srgb, var(--ui-bg-shell) 92%, black))',
+      badgeBg: 'color-mix(in srgb, var(--ui-accent-warning) 24%, transparent)',
+      badgeText: '#ffe5c7',
+      chipText: 'Active',
+    };
+  }
+
+  if (status === 'ready') {
+    return {
+      border: 'color-mix(in srgb, var(--ui-accent-ready) 50%, var(--ui-border-soft))',
+      cardBg:
+        'linear-gradient(160deg, color-mix(in srgb, var(--ui-accent-ready) 16%, #101a15), color-mix(in srgb, var(--ui-bg-shell) 92%, black))',
+      badgeBg: 'color-mix(in srgb, var(--ui-accent-ready) 24%, transparent)',
+      badgeText: '#d6ffe7',
+      chipText: 'Ready',
+    };
+  }
+
+  return {
+    border: 'var(--ui-border-strong)',
+    cardBg: 'linear-gradient(160deg, color-mix(in srgb, var(--ui-bg-card) 95%, black), color-mix(in srgb, var(--ui-bg-shell) 90%, black))',
+    badgeBg: 'color-mix(in srgb, var(--ui-border-strong) 24%, transparent)',
+    badgeText: 'var(--ui-text-muted)',
+    chipText: 'Closed',
+  };
+}
+
+function dependencyPanel(
+  title: string,
+  color: string,
+  details: Array<{ id: string; title: string; epic?: string }>,
+) {
+  if (details.length === 0) return null;
+
   return (
-    <div className="min-w-0 rounded-lg bg-black/20 px-2 py-1.5 shadow-[0_10px_18px_-14px_rgba(0,0,0,0.85)]">
-      <p className={cn('mb-1 text-[10px] font-semibold uppercase tracking-[0.12em]', toneClass)}>{label}</p>
-      <div className="flex flex-wrap gap-1">
-        {ids.slice(0, 2).map((id) => (
-          <span key={id} className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[10px] text-[#DCDCDC] shadow-[0_8px_12px_-12px_rgba(0,0,0,0.88)]">
-            {id}
-          </span>
+    <div className="rounded-md border border-[var(--ui-border-soft)] bg-[color-mix(in_srgb,var(--ui-bg-panel)_82%,black)] px-2.5 py-2">
+      <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color }}>
+        {title}
+      </p>
+      <div className="space-y-1.5">
+        {details.slice(0, 1).map((item) => (
+          <div
+            key={`${title}-${item.id}`}
+            className="rounded border border-[var(--ui-border-soft)] bg-[color-mix(in_srgb,var(--ui-bg-card)_88%,black)] px-2 py-1.5"
+          >
+            <div className="mb-0.5 flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--ui-accent-info)]" />
+              <span className="font-mono text-[10px] text-[var(--ui-text-muted)]">{item.id}</span>
+            </div>
+            <p className="line-clamp-1 text-xs text-[var(--ui-text-primary)]">{item.title}</p>
+            {item.epic ? (
+              <p className="line-clamp-1 text-[10px] text-[var(--ui-accent-info)]">↳ {item.epic}</p>
+            ) : null}
+          </div>
         ))}
-        {ids.length > 2 ? <span className="text-[10px] text-[#8E8E8E]">+{ids.length - 2}</span> : null}
       </div>
+      {details.length > 1 ? <p className="mt-1 text-[11px] text-[var(--ui-text-muted)]">+{details.length - 1} more</p> : null}
     </div>
   );
 }
@@ -98,131 +121,116 @@ export function SocialCard({
   dependencyCount,
   commentCount,
   unreadCount = 0,
+  blockedByDetails = [],
+  unblocksDetails = [],
 }: SocialCardProps) {
-  const tone = STATUS_TONES[data.status];
+  const status = statusVisual(data.status);
 
   return (
     <div
       onClick={onClick}
+      onKeyDown={(event) => handleCardKeyDown(event, onClick)}
       role="button"
       tabIndex={0}
+      aria-label={`Open ${data.title}`}
       className={cn(
-        'group relative flex h-full min-h-[18rem] cursor-pointer flex-col rounded-2xl px-4 py-4 text-left transition-all duration-200 ease-out',
-        'hover:-translate-y-0.5',
-        selected && 'translate-y-[-2px]',
+        'group relative flex min-h-[290px] cursor-pointer flex-col rounded-[14px] border px-3.5 py-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)]',
         className,
       )}
       style={{
-        background: tone.surface,
+        background: status.cardBg,
+        borderColor: selected ? status.border : 'var(--ui-border-soft)',
         boxShadow: selected
-          ? `0 24px 50px -18px ${tone.glow}, 0 10px 24px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.12)`
-          : `0 12px 24px -20px ${tone.glow}, 0 6px 14px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.06)`,
+          ? '0 24px 40px -26px rgba(0,0,0,0.85), 0 0 0 1px color-mix(in srgb, var(--ui-border-strong) 66%, transparent)'
+          : '0 12px 26px -24px rgba(0,0,0,0.82)',
       }}
     >
-      <div className="absolute inset-x-0 top-0 h-[4px]" style={{ backgroundColor: tone.accent }} />
-      <div
-        className="pointer-events-none absolute right-3 top-3 h-10 w-10 rounded-full blur-xl"
-        style={{ backgroundColor: tone.glow }}
-      />
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate font-mono text-[11px] text-[#A8D0CB]">{data.id}</span>
+          <Badge className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ backgroundColor: status.badgeBg, color: status.badgeText }}>
+            {status.chipText}
+          </Badge>
+          <span className="font-mono text-[11px] text-[var(--ui-accent-info)]">{data.priority}</span>
+          <span className="truncate font-mono text-[11px] text-[var(--ui-text-muted)]">{data.id}</span>
           {unreadCount > 0 ? (
-            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#E24A3A] px-1 text-[10px] font-semibold text-white">
+            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--ui-accent-action-red)] px-1 text-[10px] font-semibold text-white">
               {unreadCount}
             </span>
           ) : null}
         </div>
-        <div className="flex items-center gap-2">
-          <Badge className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold', tone.badgeClass)}>
-            {data.status.replace('_', ' ')}
-          </Badge>
-          <Badge className="rounded-full bg-black/25 px-2 py-0.5 font-mono text-[10px] text-[#D0D0D0] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)]">
-            {data.priority}
-          </Badge>
-        </div>
       </div>
 
-      <h3 className="line-clamp-2 text-[1.7rem] font-semibold leading-[1.1] tracking-[-0.02em] text-white">
-        {data.title}
-      </h3>
-
-      <p className="mt-2 line-clamp-2 min-h-[2.6rem] text-sm leading-relaxed text-[#B8B8B8]">
+      <h3 className="line-clamp-2 text-[27px] font-semibold leading-[1.13] tracking-[-0.01em] text-[var(--ui-text-primary)]">{data.title}</h3>
+      <p className="mt-1.5 line-clamp-3 min-h-[56px] text-[13px] leading-relaxed text-[var(--ui-text-muted)]">
         {description || 'No summary provided yet.'}
       </p>
 
-      <div className="mt-2 flex flex-wrap gap-2">
-        <span className="rounded-full bg-[#D4A574]/28 px-2 py-0.5 text-[10px] font-semibold text-[#F5DFC2] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.82)]">
-          {data.blocks.length} blocking
-        </span>
-        <span className="rounded-full bg-[#E57373]/24 px-2 py-0.5 text-[10px] font-semibold text-[#F3C2C2] shadow-[0_8px_16px_-12px_rgba(0,0,0,0.82)]">
-          {data.unblocks.length} blocked by
-        </span>
+      <div className="mt-2 flex flex-col gap-2">
+        {dependencyPanel('Blocked By', 'var(--ui-accent-blocked)', blockedByDetails)}
+        {dependencyPanel('Unblocks', 'var(--ui-accent-ready)', unblocksDetails)}
       </div>
 
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        {renderDependencyPreview(data.unblocks, 'text-[#D4A574]', 'Blocked By')}
-        {renderDependencyPreview(data.blocks, 'text-[#5BA8A0]', 'Unblocks')}
+      <div className="mt-2 flex items-center gap-2">
+        {data.agents.slice(0, 3).map((agent) => (
+          <AgentAvatar
+            key={`${data.id}-${agent.name}`}
+            name={agent.name}
+            status={agent.status as AgentStatus}
+            role={agent.role}
+            size="sm"
+          />
+        ))}
+        {data.agents.length === 0 ? <span className="text-xs text-[var(--ui-text-muted)]">No crew</span> : null}
       </div>
 
-      <div className="mt-auto flex items-end justify-between gap-3 pt-4">
-        <div className="space-y-1.5 text-xs text-[#9A9A9A]">
-          <p className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />{updatedLabel}</p>
-          <div className="flex items-center gap-3">
-            <p className="inline-flex items-center gap-1"><Link2 className="h-3.5 w-3.5" />{dependencyCount ?? data.blocks.length + data.unblocks.length}</p>
-            <p className="inline-flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />{commentCount ?? 0}</p>
+      <div className="mt-auto border-t border-[var(--ui-border-soft)] pt-1.5">
+        <div className="mb-1.5 flex items-center justify-between text-xs text-[var(--ui-text-muted)]">
+          <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" aria-hidden="true" />{updatedLabel}</span>
+          <span className="font-mono text-[11px] text-[var(--ui-accent-ready)]">stage active</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 text-xs text-[var(--ui-text-muted)]">
+            <span className="inline-flex items-center gap-1"><Link2 className="h-3.5 w-3.5" aria-hidden="true" />{dependencyCount ?? data.blocks.length + data.unblocks.length}</span>
+            <span className="inline-flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />{commentCount ?? 0}</span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onJumpToGraph?.(data.id);
+              }}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[var(--ui-border-soft)] bg-[var(--ui-bg-panel)] text-[var(--ui-accent-info)] transition-colors hover:bg-white/5"
+              aria-label="Open in graph"
+            >
+              <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onJumpToActivity?.(data.id);
+              }}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[var(--ui-border-soft)] bg-[var(--ui-bg-panel)] text-[var(--ui-accent-warning)] transition-colors hover:bg-white/5"
+              aria-label="Open in activity"
+            >
+              <Orbit className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenThread?.();
+              }}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[var(--ui-border-soft)] bg-[var(--ui-bg-panel)] text-[var(--ui-accent-ready)] transition-colors hover:bg-white/5"
+              aria-label="Open thread"
+            >
+              <Activity className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
           </div>
         </div>
-
-        <div className="flex items-center -space-x-2">
-          {data.agents.slice(0, 4).map((agent) => (
-            <div key={`${data.id}-${agent.name}`} className="rounded-full ring-2 ring-[#2C2C2C]">
-              <AgentAvatar
-                name={agent.name}
-                status={agent.status as AgentStatus}
-                role={agent.role}
-                size="sm"
-              />
-            </div>
-          ))}
-          {data.agents.length === 0 ? <span className="text-xs text-[#808080]">No crew</span> : null}
-        </div>
-      </div>
-
-      <div className="mt-3 flex items-center justify-end gap-1 pt-2 shadow-[inset_0_10px_12px_-14px_rgba(0,0,0,0.88)]">
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            onJumpToGraph?.(data.id);
-          }}
-          className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#5BA8A0]/24 text-[#AFE2DC] shadow-[0_10px_16px_-12px_rgba(0,0,0,0.8)] transition-colors hover:bg-[#5BA8A0]/36"
-          title="Jump to graph view"
-        >
-          <GitBranch className="h-3.5 w-3.5" />
-        </button>
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            onJumpToActivity?.(data.id);
-          }}
-          className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#D4A574]/24 text-[#E8D0B3] shadow-[0_10px_16px_-12px_rgba(0,0,0,0.8)] transition-colors hover:bg-[#D4A574]/36"
-          title="Jump to activity view"
-        >
-          <Orbit className="h-3.5 w-3.5" />
-        </button>
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            onOpenThread?.();
-          }}
-          className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#7CB97A]/24 text-[#D2EACF] shadow-[0_10px_16px_-12px_rgba(0,0,0,0.8)] transition-colors hover:bg-[#7CB97A]/36"
-          title="Open thread"
-        >
-          <Activity className="h-3.5 w-3.5" />
-        </button>
       </div>
     </div>
   );
