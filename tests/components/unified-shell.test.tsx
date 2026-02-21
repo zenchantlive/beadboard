@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-// We'll use bun test to add a specific rendering test
+// @ts-ignore
 import { expect, test as bunTest } from 'bun:test';
 
 describe('UnifiedShell Component Contract', () => {
@@ -27,7 +27,7 @@ describe('UnifiedShell Component Contract', () => {
 
 bunTest('UnifiedShell handles swarm view conditionally', async () => {
   const mod = await import('../../src/components/shared/unified-shell');
-  const UnifiedShell = mod.UnifiedShell;
+  const _UnifiedShell = mod.UnifiedShell;
 
   // Create a minimal mock state to just render the function
   // We mock out the hooks if we can, but since this is a Server Component or uses context, it might be tricky.

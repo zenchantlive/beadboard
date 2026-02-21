@@ -11,7 +11,7 @@ const useMissionList = () => ({
 });
 
 export function SwarmMissionPicker() {
-    const { setUrlState, swarmId } = useUrlState();
+    const { setView, setSwarmId, swarmId } = useUrlState();
     const { missions } = useMissionList();
 
     return (
@@ -20,7 +20,10 @@ export function SwarmMissionPicker() {
             {missions.map(m => (
                 <button
                     key={m.id}
-                    onClick={() => setUrlState({ view: 'swarm', swarmId: m.id })}
+                    onClick={() => {
+                        setView('swarm');
+                        setSwarmId(m.id);
+                    }}
                     className={`flex flex-col items-start p-3 min-h-[44px] rounded-md hover:bg-accent transition-colors w-full focus:outline-none focus:ring-2 focus:ring-ring ${swarmId === m.id ? 'bg-accent border' : ''}`}
                 >
                     <span className="font-medium text-sm">{m.title}</span>

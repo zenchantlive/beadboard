@@ -1,3 +1,4 @@
+// @ts-ignore
 import { expect, test, describe, mock } from 'bun:test';
 import { GET } from '../../../src/app/api/swarm/archetypes/route';
 
