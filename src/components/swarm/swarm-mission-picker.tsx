@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useUrlState } from '@/hooks/use-url-state';
+import { useUrlState } from '../../hooks/use-url-state';
 
 // Mock hook for now, would connect to actual beads data
 const useMissionList = () => ({
