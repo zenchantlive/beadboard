@@ -137,7 +137,7 @@ export function UnifiedShell({
         {/* LEFT PANEL: 20rem generic tree or 20rem swarm mission picker */}
         {view === 'swarm' ? (
           <div className="border-r bg-[var(--color-bg-base)] h-full overflow-y-auto">
-            <SwarmMissionPicker />
+            <SwarmMissionPicker issues={issues} />
           </div>
         ) : (
           <LeftPanel
