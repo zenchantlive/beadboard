@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { SwarmCardData, SwarmStatusFromApi } from '../../lib/swarm-api';
+import type { SwarmStatusFromApi } from '../../lib/swarm-api';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { CheckCircle2, PlayCircle, Clock, AlertCircle, Loader2, Users } from 'lucide-react';
 import { AgentAvatar } from '../shared/agent-avatar';
 import { useAgentPool } from '../../hooks/use-agent-pool';
@@ -36,7 +35,7 @@ export function SwarmInspector({ swarmId, projectRoot }: SwarmInspectorProps) {
   const [status, setStatus] = useState<SwarmStatusFromApi | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { agents, getAgentsBySwarm } = useAgentPool(projectRoot);
+  const { getAgentsBySwarm } = useAgentPool(projectRoot);
 
   useEffect(() => {
     async function fetchStatus() {
@@ -52,7 +51,7 @@ export function SwarmInspector({ swarmId, projectRoot }: SwarmInspectorProps) {
         } else {
           setError(payload.error?.message || 'Failed to load swarm status');
         }
-      } catch (e) {
+      } catch {
         setError('Failed to fetch swarm status');
       } finally {
         setIsLoading(false);
@@ -100,7 +99,7 @@ export function SwarmInspector({ swarmId, projectRoot }: SwarmInspectorProps) {
         {/* Agent Roster */}
         <section>
           <div className="flex items-center justify-between mb-3">
-             <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
               <Users className="h-3 w-3" />
               Assigned Agents
             </h4>
@@ -108,21 +107,21 @@ export function SwarmInspector({ swarmId, projectRoot }: SwarmInspectorProps) {
               {assignedAgents.length}
             </span>
           </div>
-          
+
           {assignedAgents.length === 0 ? (
-             <div className="text-xs text-slate-500 italic p-3 border border-dashed border-slate-800 rounded-lg text-center">
-               No agents currently assigned.
-               <br/>
-               <span className="text-[10px]">Use "Join" on the main card.</span>
-             </div>
+            <div className="text-xs text-slate-500 italic p-3 border border-dashed border-slate-800 rounded-lg text-center">
+              No agents currently assigned.
+              <br />
+              <span className="text-[10px]">Use &quot;Join&quot; on the main card.</span>
+            </div>
           ) : (
             <div className="space-y-2">
               {assignedAgents.map(agent => (
                 <div key={agent.agent_id} className="flex items-center gap-3 p-2 rounded-lg bg-slate-800/50 border border-slate-800">
-                  <AgentAvatar 
-                    name={agent.display_name} 
-                    status={agent.status as any} 
-                    size="sm" 
+                  <AgentAvatar
+                    name={agent.display_name}
+                    status={agent.status as any}
+                    size="sm"
                   />
                   <div>
                     <p className="text-xs font-medium text-slate-300">{agent.display_name}</p>

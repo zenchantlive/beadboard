@@ -41,29 +41,39 @@ export class IssuesWatchManager {
   }>;
 
   constructor(options: WatchManagerOptions = {}) {
-    const debounceMs = options.debounceMs ?? 150;
+    const debounceMs = options.debounceMs ?? 450;
     this.eventBus = options.eventBus ?? issuesEventBus;
     this.activityBus = options.activityBus ?? activityEventBus;
     this.coalescer = new ProjectEventCoalescer(debounceMs, async ({ projectRoot, payload }) => {
       console.log(`[Watcher] Processing event for ${projectRoot}: ${payload.kind} (${payload.changedPath})`);
-      
+
       // 1. Emit basic file change event
-      // If it's just last-touched or a DB file change, we treat it as telemetry
+      // If it's just last-touched or a DB file change, we treat it as telemetry initially
       const changedPath = payload.changedPath || '';
       const isIssuesJsonl = changedPath.endsWith('issues.jsonl') || changedPath.endsWith('issues.jsonl.new');
       const isLastTouched = changedPath.includes('last-touched');
       const isDbPulse = changedPath.includes('beads.db');
+      const isArchetype = changedPath.includes('.beads') && changedPath.includes('archetypes');
+      const isTemplate = changedPath.includes('.beads') && changedPath.includes('templates');
 
-      const kind = (isLastTouched || isDbPulse) && !isIssuesJsonl ? 'telemetry' : payload.kind;
-      this.eventBus.emit(projectRoot, payload.changedPath, kind);
+      const isBaseTelemetry = (isLastTouched || isDbPulse) && !isIssuesJsonl && !isArchetype && !isTemplate;
+
+      console.log(`[Watcher] Base Telemetry Emit -> ${isBaseTelemetry ? 'telemetry' : payload.kind}`);
+      this.eventBus.emit(projectRoot, payload.changedPath, isBaseTelemetry ? 'telemetry' : payload.kind);
 
       // 2. Perform snapshot diffing if issues.jsonl changed
       const isBeadsDb = changedPath.includes('beads.db') || isLastTouched;
       const isGlobalMessages = changedPath.includes('.beadboard') && changedPath.includes('messages');
-      
+
       if (isIssuesJsonl || isBeadsDb) {
         console.log(`[Watcher] Issues changed. Syncing activity for ${projectRoot}...`);
-        await this.syncActivity(projectRoot);
+        const hadMutations = await this.syncActivity(projectRoot);
+
+        // If it was just a telemetry pulse, but we discovered actual structural changes, emit an issues event to refresh UI
+        if (hadMutations && isBaseTelemetry) {
+          console.log(`[Watcher] Structural changes found in telemetry pulse. Upgrading to issues event.`);
+          this.eventBus.emit(projectRoot, payload.changedPath, payload.kind);
+        }
       } else if (isGlobalMessages) {
         console.log(`[Watcher] Global agent messages changed. Triggering refresh for ${projectRoot}.`);
         // No need to syncActivity (diff issues) if only messages changed, 
@@ -72,35 +82,45 @@ export class IssuesWatchManager {
     });
   }
 
-  private async syncActivity(projectRoot: string): Promise<void> {
+  private async syncActivity(projectRoot: string): Promise<boolean> {
     const projectKey = windowsPathKey(projectRoot);
     const previous = this.snapshots.get(projectKey) ?? null;
-    
+
     try {
       const current = await readIssuesFromDisk({ projectRoot, preferBd: true, skipAgentFilter: true });
       const events = diffSnapshots(previous, current);
-      
+
+      console.log(`[Watcher] syncActivity for ${projectRoot}: generated ${events.length} events (prev: ${previous?.length ?? 0}, current: ${current.length})`);
+
       this.snapshots.set(projectKey, current);
-      
+
       events.forEach(event => {
         this.activityBus.emit(event);
       });
+
+      return events.length > 0;
     } catch (error) {
       console.error(`[Watcher] Failed to sync activity for ${projectRoot}:`, error);
+      return false;
     }
   }
 
   async startWatch(projectRoot: string): Promise<void> {
     const projectKey = windowsPathKey(projectRoot);
     if (this.registrations.has(projectKey)) {
+      console.log(`[Watcher] Already watching: ${projectKey}`);
       return;
     }
+
+    console.log(`[Watcher] Starting watch for: ${projectRoot} (key: ${projectKey})`);
 
     // Pre-populate snapshot to avoid "all created" burst on first change
     try {
       const initial = await readIssuesFromDisk({ projectRoot, preferBd: true, skipAgentFilter: true });
       this.snapshots.set(projectKey, initial);
-    } catch {
+      console.log(`[Watcher] Initial snapshot: ${initial.length} issues`);
+    } catch (err) {
+      console.log(`[Watcher] Initial snapshot failed:`, err);
       // Ignore initial read failure, will retry on first change
     }
 
@@ -109,8 +129,14 @@ export class IssuesWatchManager {
     watchedPaths.push(path.join(projectRoot, '.beads', 'beads.db-wal'));
     watchedPaths.push(path.join(projectRoot, '.beads', 'last-touched'));
     
+    // Watch archetypes and templates directories for real-time updates
+    watchedPaths.push(path.join(projectRoot, '.beads', 'archetypes'));
+    watchedPaths.push(path.join(projectRoot, '.beads', 'templates'));
+
     // Add global agent messages to enable cross-project communication real-time updates
     watchedPaths.push(getGlobalAgentMessagesPath());
+
+    console.log(`[Watcher] Watching paths:`, watchedPaths);
 
     const watcher = chokidar.watch(watchedPaths, {
       ignoreInitial: true,
@@ -121,6 +147,7 @@ export class IssuesWatchManager {
     });
 
     const onFileEvent = (eventName: FileEventName, changedPath: string) => {
+      console.log(`[Watcher] File event: ${eventName} on ${changedPath}`);
       const kind: IssuesChangeKind = eventName === 'unlink' ? 'renamed' : 'changed';
       this.queueCoalescedEvent(projectRoot, changedPath, kind);
     };

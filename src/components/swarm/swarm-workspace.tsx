@@ -11,15 +11,15 @@ import { useTemplates } from '../../hooks/use-templates';
 import { ArchetypeInspector } from './archetype-inspector';
 import { TemplateInspector } from './template-inspector';
 
-export function SwarmWorkspace({ selectedMissionId, issues = [] }: { selectedMissionId?: string, issues?: BeadIssue[] }) {
+export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: { selectedMissionId?: string, issues?: BeadIssue[], projectRoot: string }) {
     const [activeTab, setActiveTab] = useState<'operations' | 'archetypes' | 'templates'>('operations');
 
     // Inspector State
     const [inspectingArchetypeId, setInspectingArchetypeId] = useState<string | null>(null);
     const [inspectingTemplateId, setInspectingTemplateId] = useState<string | null>(null);
 
-    const { archetypes, isLoading: archetypesLoading } = useArchetypes();
-    const { templates, isLoading: templatesLoading } = useTemplates();
+    const { archetypes, isLoading: archetypesLoading, saveArchetype, deleteArchetype } = useArchetypes(projectRoot);
+    const { templates, isLoading: templatesLoading, saveTemplate, deleteTemplate } = useTemplates(projectRoot);
 
     // Simulation State
     const [isSimulating, setIsSimulating] = useState(false);
@@ -152,7 +152,15 @@ export function SwarmWorkspace({ selectedMissionId, issues = [] }: { selectedMis
             case 'archetypes':
                 return (
                     <div className="p-6 bg-[#0f1824]/30 rounded-xl border border-[var(--ui-border-soft)] h-full animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto custom-scrollbar">
-                        <h3 className="text-xl font-bold text-[var(--ui-text-primary)] mb-2">Agent Archetypes</h3>
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xl font-bold text-[var(--ui-text-primary)]">Agent Archetypes</h3>
+                            <button
+                                onClick={() => setInspectingArchetypeId('')}
+                                className="px-3 py-1.5 bg-[var(--ui-accent-info)] hover:bg-[var(--ui-accent-info)]/90 text-white rounded-md text-xs font-semibold shadow-md transition-colors"
+                            >
+                                + Create Archetype
+                            </button>
+                        </div>
                         <p className="text-[var(--ui-text-muted)] text-sm mb-6">Manage the base roles and system prompts available to your swarms.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {archetypesLoading ? (
@@ -207,7 +215,15 @@ export function SwarmWorkspace({ selectedMissionId, issues = [] }: { selectedMis
             case 'templates':
                 return (
                     <div className="p-6 bg-[#0f1824]/30 rounded-xl border border-[var(--ui-border-soft)] h-full animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto custom-scrollbar">
-                        <h3 className="text-xl font-bold text-[var(--ui-text-primary)] mb-2">Swarm Templates</h3>
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xl font-bold text-[var(--ui-text-primary)]">Swarm Templates</h3>
+                            <button
+                                onClick={() => setInspectingTemplateId('')}
+                                className="px-3 py-1.5 bg-[var(--ui-accent-info)] hover:bg-[var(--ui-accent-info)]/90 text-white rounded-md text-xs font-semibold shadow-md transition-colors"
+                            >
+                                + Create Template
+                            </button>
+                        </div>
                         <p className="text-[var(--ui-text-muted)] text-sm mb-6">Define predefined teams and formulas for rapid mission deployment.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {templatesLoading ? (
@@ -324,18 +340,22 @@ export function SwarmWorkspace({ selectedMissionId, issues = [] }: { selectedMis
             </main>
 
             {/* Popups */}
-            {inspectingArchetypeId && (
+            {inspectingArchetypeId !== null && (
                 <ArchetypeInspector
-                    archetype={archetypes.find(a => a.id === inspectingArchetypeId)!}
+                    archetype={archetypes.find(a => a.id === inspectingArchetypeId)}
                     onClose={() => setInspectingArchetypeId(null)}
+                    onSave={saveArchetype}
+                    onDelete={deleteArchetype}
                 />
             )}
 
-            {inspectingTemplateId && (
+            {inspectingTemplateId !== null && (
                 <TemplateInspector
-                    template={templates.find(t => t.id === inspectingTemplateId)!}
+                    template={templates.find(t => t.id === inspectingTemplateId)}
                     archetypes={archetypes}
                     onClose={() => setInspectingTemplateId(null)}
+                    onSave={saveTemplate}
+                    onDelete={deleteTemplate}
                 />
             )}
         </div>

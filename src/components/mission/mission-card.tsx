@@ -27,47 +27,47 @@ export interface MissionCardProps {
 }
 
 const STATUS_CONFIG = {
-  planning: { 
-    color: 'text-blue-400', 
-    border: 'border-blue-500/30', 
-    bg: 'bg-blue-500/5', 
+  planning: {
+    color: 'text-blue-400',
+    border: 'border-blue-500/30',
+    bg: 'bg-blue-500/5',
     label: 'PLANNING',
     icon: Circle
   },
-  active: { 
-    color: 'text-emerald-400', 
-    border: 'border-emerald-500/30', 
-    bg: 'bg-emerald-500/5', 
+  active: {
+    color: 'text-emerald-400',
+    border: 'border-emerald-500/30',
+    bg: 'bg-emerald-500/5',
     label: 'ACTIVE',
     icon: Activity
   },
-  blocked: { 
-    color: 'text-rose-400', 
-    border: 'border-rose-500/30', 
-    bg: 'bg-rose-500/5', 
+  blocked: {
+    color: 'text-rose-400',
+    border: 'border-rose-500/30',
+    bg: 'bg-rose-500/5',
     label: 'BLOCKED',
     icon: AlertTriangle
   },
-  completed: { 
-    color: 'text-slate-400', 
-    border: 'border-slate-500/30', 
-    bg: 'bg-slate-500/5', 
+  completed: {
+    color: 'text-slate-400',
+    border: 'border-slate-500/30',
+    bg: 'bg-slate-500/5',
     label: 'COMPLETE',
     icon: CheckCircle2
   },
 };
 
-export function MissionCard({ id, projectRoot, title, description, status, stats, agents, onDeploy, onClick }: MissionCardProps) {
+export function MissionCard({ id, projectRoot, title, description, status, agents, onDeploy, onClick }: MissionCardProps) {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.planning;
   const StatusIcon = config.icon;
   const { topology, isLoading } = useSwarmTopology(projectRoot, id);
-  
+
   const isUnstaffed = agents.length === 0;
   const isWorking = agents.some(a => a.status === 'working');
   const showPulse = status === 'active' || isWorking;
-  
+
   return (
-    <Card 
+    <Card
       onClick={onClick}
       className="group relative flex flex-col h-[320px] cursor-pointer overflow-hidden rounded-2xl border border-[var(--ui-border-soft)] bg-[var(--ui-bg-card)] hover:border-[var(--ui-accent-info)] hover:shadow-xl hover:shadow-black/20 transition-all duration-300"
     >
@@ -106,7 +106,7 @@ export function MissionCard({ id, projectRoot, title, description, status, stats
 
       {/* GRAPH VISUALIZATION */}
       <div className="px-5 py-2 flex-1 flex flex-col justify-end">
-         <SwarmGraph topology={topology} isLoading={isLoading} />
+        <SwarmGraph topology={topology} isLoading={isLoading} />
       </div>
 
       {/* FOOTER: SQUAD */}
@@ -129,14 +129,14 @@ export function MissionCard({ id, projectRoot, title, description, status, stats
           )}
         </div>
 
-        <Button 
-          size="sm" 
+        <Button
+          size="sm"
           variant="ghost"
           onClick={(e) => { e.stopPropagation(); onDeploy(); }}
           className={cn(
             "h-7 px-3 text-[10px] font-bold uppercase tracking-wider border transition-all",
-            isUnstaffed 
-              ? "border-blue-500/20 text-blue-400 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/40" 
+            isUnstaffed
+              ? "border-blue-500/20 text-blue-400 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/40"
               : "border-slate-700 text-slate-400 hover:text-white hover:bg-white/5 hover:border-slate-500"
           )}
         >

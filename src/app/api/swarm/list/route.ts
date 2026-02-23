@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 
 import { runBdCommand } from '../../../../lib/bridge';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
   const projectRoot = searchParams.get('projectRoot');
@@ -29,11 +31,11 @@ export async function GET(request: Request): Promise<Response> {
     const rawData = JSON.parse(result.stdout);
     // Filter out items that look like agents (start with "Agent:" or have gt:agent style IDs if discernible)
     // Real swarms/molecules usually don't start with "Agent:".
-    const swarms = (rawData.swarms || []).filter((s: any) => 
-      !s.title.startsWith('Agent: ') && 
+    const swarms = (rawData.swarms || []).filter((s: any) =>
+      !s.title.startsWith('Agent: ') &&
       !s.title.startsWith('Agent:')
     );
-    
+
     return NextResponse.json({ ok: true, data: { swarms } });
   } catch {
     return NextResponse.json(

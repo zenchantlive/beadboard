@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
@@ -17,6 +17,7 @@ import { SwarmMissionPicker } from '../swarm/swarm-mission-picker';
 import { buildSocialCards } from '../../lib/social-cards';
 import { ActivityPanel } from '../activity/activity-panel';
 import { useSwarmList } from '../../hooks/use-swarm-list';
+import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
 
 export interface UnifiedShellProps {
   issues: BeadIssue[];
@@ -27,12 +28,15 @@ export interface UnifiedShellProps {
 }
 
 export function UnifiedShell({
-  issues,
+  issues: initialIssues,
   projectRoot,
   projectScopeOptions,
 }: UnifiedShellProps) {
   const router = useRouter();
   const { view, taskId, setTaskId, swarmId, setSwarmId, graphTab, setGraphTab, panel, drawer, setDrawer, epicId, setEpicId } = useUrlState();
+
+  // Subscribe to SSE for real-time updates on ALL views
+  const { issues, refresh } = useBeadsSubscription(initialIssues, projectRoot);
 
   const [filters, setFilters] = useState<LeftPanelFilters>({
     query: '',
@@ -116,6 +120,7 @@ export function UnifiedShell({
         <SwarmWorkspace
           selectedMissionId={swarmId ?? undefined}
           issues={filteredIssues}
+          projectRoot={projectRoot}
         />
       );
     }
@@ -157,7 +162,7 @@ export function UnifiedShell({
 
         {/* RIGHT PANEL: Activity or Custom */}
         <RightPanel isOpen={panel === 'open'}>
-          {customRightPanel || <ActivityPanel issues={issues} />}
+          {customRightPanel || <ActivityPanel issues={issues} projectRoot={projectRoot} />}
         </RightPanel>
       </div>
 

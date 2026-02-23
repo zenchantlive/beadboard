@@ -1,0 +1,18 @@
+{
+  "id": "standard-app",
+  "name": "Standard Application Swarm",
+  "description": "A balanced team of an Architect and two Coders for standard feature development.",
+  "team": [
+    {
+      "archetypeId": "architect",
+      "count": 1
+    },
+    {
+      "archetypeId": "coder",
+      "count": 2
+    }
+  ],
+  "createdAt": "2026-02-21T03:22:04.089Z",
+  "updatedAt": "2026-02-21T19:39:45.443Z",
+  "isBuiltIn": true
+}

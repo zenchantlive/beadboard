@@ -1,0 +1,4 @@
+✓ Created issue: beadboard-o5j
+  Title: Design New Component
+  Priority: P1
+  Status: open

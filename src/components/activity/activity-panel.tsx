@@ -34,6 +34,7 @@ interface AgentRosterEntry {
 interface ActivityPanelProps {
   issues: BeadIssue[];
   collapsed?: boolean;
+  projectRoot: string;
 }
 
 const AGENT_LABEL = 'gt:agent';
@@ -243,7 +244,7 @@ function getInitials(name: string): string {
   return name.split(/[-_\s]/).map(p => p[0]).join('').toUpperCase().slice(0, 2);
 }
 
-export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps) {
+export function ActivityPanel({ issues, collapsed = false, projectRoot }: ActivityPanelProps) {
   const [activities, setActivities] = useState<ActivityEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -270,13 +271,16 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
   
   // Subscribe to real-time activity
   useEffect(() => {
-    const source = new EventSource('/api/events');
+    console.log('[ActivityPanel] Connecting to SSE for:', projectRoot);
+    const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
     
     const onActivity = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
-        if (data?.event) {
-          setActivities(prev => [data.event, ...prev].slice(0, 50));
+        console.log('[ActivityPanel] Received activity event:', data);
+        // data IS the activity event directly (not wrapped in { event: ... })
+        if (data?.beadId) {
+          setActivities(prev => [data, ...prev].slice(0, 50));
         }
       } catch (e) {
         // Ignore parse errors
@@ -286,10 +290,11 @@ export function ActivityPanel({ issues, collapsed = false }: ActivityPanelProps)
     source.addEventListener('activity', onActivity as EventListener);
     
     return () => {
+      console.log('[ActivityPanel] Closing SSE connection');
       source.removeEventListener('activity', onActivity as EventListener);
       source.close();
     };
-  }, []);
+  }, [projectRoot]);
 
   const activeAgents = agentRoster.filter(a => a.status === 'active').length;
   if (collapsed) {

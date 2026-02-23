@@ -93,8 +93,6 @@ export function ThreadDrawer({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<'ready' | 'saving' | 'saved' | 'error'>('ready');
   const [comments, setComments] = useState<CommentFromApi[]>([]);
-  const [commentsLoading, setCommentsLoading] = useState(false);
-
   // Fetch comments when drawer opens
   useEffect(() => {
     if (!isOpen || !id || !projectRoot) {
@@ -103,7 +101,6 @@ export function ThreadDrawer({
     }
 
     const fetchComments = async () => {
-      setCommentsLoading(true);
       try {
         const response = await fetch(`/api/beads/${id}/comments?projectRoot=${encodeURIComponent(projectRoot)}`);
         const payload = (await response.json()) as { ok: boolean; comments?: CommentFromApi[] };
@@ -112,8 +109,6 @@ export function ThreadDrawer({
         }
       } catch (error) {
         console.error('Failed to fetch comments:', error);
-      } finally {
-        setCommentsLoading(false);
       }
     };
 
@@ -239,12 +234,12 @@ export function ThreadDrawer({
   const frameShellStyle = takeover
     ? undefined
     : {
-        width: embedded ? '100%' : '26rem',
-        background: 'linear-gradient(180deg, var(--ui-bg-card), var(--ui-bg-shell))',
-        borderLeft: embedded ? 'none' : '1px solid var(--color-border-default)',
-        boxShadow: embedded ? 'none' : '-20px 0 48px rgba(0,0,0,0.45)',
-        overscrollBehavior: 'contain' as const,
-      };
+      width: embedded ? '100%' : '26rem',
+      background: 'linear-gradient(180deg, var(--ui-bg-card), var(--ui-bg-shell))',
+      borderLeft: embedded ? 'none' : '1px solid var(--color-border-default)',
+      boxShadow: embedded ? 'none' : '-20px 0 48px rgba(0,0,0,0.45)',
+      overscrollBehavior: 'contain' as const,
+    };
 
   const conversationSection = (
     <section className="rounded-xl border border-[var(--ui-border-soft)] bg-[var(--ui-bg-shell)] p-3 shadow-[0_12px_28px_-22px_rgba(0,0,0,0.7)]">
@@ -406,34 +401,34 @@ export function ThreadDrawer({
       style={
         isMobile
           ? {
-              paddingTop: takeover ? 'max(1rem, env(safe-area-inset-top))' : undefined,
-              paddingBottom: takeover ? 'max(1rem, env(safe-area-inset-bottom))' : undefined,
-            }
+            paddingTop: takeover ? 'max(1rem, env(safe-area-inset-top))' : undefined,
+            paddingBottom: takeover ? 'max(1rem, env(safe-area-inset-bottom))' : undefined,
+          }
           : undefined
       }
     >
       <div className={frameShellClass} style={frameShellStyle}>
         <header className="border-b border-[var(--ui-border-soft)] bg-[var(--ui-bg-shell)] px-4 py-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="mb-1 flex items-center gap-2">
-              <p className="font-mono text-xs font-semibold text-[var(--ui-accent-info)]">#{id}</p>
-              <span className="rounded-full border border-[var(--ui-accent-ready)]/45 bg-[var(--ui-accent-ready)]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#d8ffe8]">
-                In Progress
-              </span>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="mb-1 flex items-center gap-2">
+                <p className="font-mono text-xs font-semibold text-[var(--ui-accent-info)]">#{id}</p>
+                <span className="rounded-full border border-[var(--ui-accent-ready)]/45 bg-[var(--ui-accent-ready)]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#d8ffe8]">
+                  In Progress
+                </span>
+              </div>
+              <h2 className="truncate text-[40px] font-semibold leading-[1.12] tracking-[-0.02em] text-[var(--ui-text-primary)]" title={title}>{title}</h2>
+              <p className="mt-1 text-xs text-[var(--ui-text-muted)]">{threadItems.length} events</p>
             </div>
-            <h2 className="truncate text-[40px] font-semibold leading-[1.12] tracking-[-0.02em] text-[var(--ui-text-primary)]" title={title}>{title}</h2>
-            <p className="mt-1 text-xs text-[var(--ui-text-muted)]">{threadItems.length} events</p>
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              className="h-8 w-8 rounded-full p-0 text-[var(--ui-text-muted)] hover:bg-white/10 hover:text-[var(--ui-text-primary)]"
+              aria-label="Close thread"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-          <Button
-            onClick={onClose}
-            variant="ghost"
-            className="h-8 w-8 rounded-full p-0 text-[var(--ui-text-muted)] hover:bg-white/10 hover:text-[var(--ui-text-primary)]"
-            aria-label="Close thread"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
         </header>
 
         <ScrollArea className="flex-1">
@@ -457,11 +452,11 @@ export function ThreadDrawer({
           style={
             isMobile
               ? {
-                  paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
-                  position: 'sticky',
-                  bottom: 0,
-                  zIndex: 10,
-                }
+                paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
+                position: 'sticky',
+                bottom: 0,
+                zIndex: 10,
+              }
               : undefined
           }
         >

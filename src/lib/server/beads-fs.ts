@@ -5,6 +5,84 @@ import { AgentArchetype, SwarmTemplate } from '../types-swarm';
 const ARCHE_DIR = path.join(process.cwd(), '.beads', 'archetypes');
 const TEMPLATE_DIR = path.join(process.cwd(), '.beads', 'templates');
 
+export function slugify(name: string): string {
+    return name
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+}
+
+export type SaveArchetypeInput = Partial<AgentArchetype> & {
+    name: string;
+    description: string;
+    systemPrompt: string;
+    capabilities: string[];
+    color: string;
+};
+
+export async function saveArchetype(input: SaveArchetypeInput): Promise<AgentArchetype> {
+    await fs.mkdir(ARCHE_DIR, { recursive: true });
+
+    const id = input.id || slugify(input.name);
+    const now = new Date().toISOString();
+
+    let isBuiltIn = input.isBuiltIn ?? false;
+    let createdAt = input.createdAt || now;
+
+    try {
+        const existingContent = await fs.readFile(path.join(ARCHE_DIR, `${id}.json`), 'utf-8');
+        const existing = JSON.parse(existingContent);
+        if (existing.isBuiltIn) {
+            isBuiltIn = true; // Protect built-in status
+        }
+        if (existing.createdAt) {
+            createdAt = existing.createdAt;
+        }
+    } catch {
+        // File doesn't exist, which is fine
+    }
+
+    const archetype: AgentArchetype = {
+        id,
+        name: input.name,
+        description: input.description,
+        systemPrompt: input.systemPrompt,
+        capabilities: input.capabilities,
+        color: input.color,
+        createdAt,
+        updatedAt: now,
+        isBuiltIn
+    };
+
+    await fs.writeFile(
+        path.join(ARCHE_DIR, `${id}.json`),
+        JSON.stringify(archetype, null, 2)
+    );
+
+    return archetype;
+}
+
+export async function deleteArchetype(id: string): Promise<void> {
+    const filePath = path.join(ARCHE_DIR, `${id}.json`);
+
+    let archetype: AgentArchetype;
+    try {
+        const content = await fs.readFile(filePath, 'utf-8');
+        archetype = JSON.parse(content);
+    } catch {
+        throw new Error(`Archetype not found: ${id}`);
+    }
+
+    if (archetype.isBuiltIn) {
+        throw new Error(`Cannot delete built-in archetype: ${id}`);
+    }
+
+    await fs.unlink(filePath);
+}
+
 const SEED_ARCHETYPES: AgentArchetype[] = [
     {
         id: 'architect',
@@ -112,4 +190,78 @@ export async function getTemplates(): Promise<SwarmTemplate[]> {
         console.error('Error in getTemplates:', e);
         return [];
     }
+}
+
+export type SaveTemplateInput = Partial<SwarmTemplate> & {
+    name: string;
+    description: string;
+    team: { archetypeId: string; count: number }[];
+};
+
+export async function saveTemplate(input: SaveTemplateInput): Promise<SwarmTemplate> {
+    await fs.mkdir(TEMPLATE_DIR, { recursive: true });
+
+    const archetypes = await getArchetypes();
+    const validArchetypeIds = new Set(archetypes.map(a => a.id));
+
+    for (const member of input.team) {
+        if (!validArchetypeIds.has(member.archetypeId)) {
+            throw new Error(`Invalid archetype ID in team: ${member.archetypeId}`);
+        }
+    }
+
+    const id = input.id || slugify(input.name);
+    const now = new Date().toISOString();
+
+    let isBuiltIn = input.isBuiltIn ?? false;
+    let createdAt = input.createdAt || now;
+
+    try {
+        const existingContent = await fs.readFile(path.join(TEMPLATE_DIR, `${id}.json`), 'utf-8');
+        const existing = JSON.parse(existingContent);
+        if (existing.isBuiltIn) {
+            isBuiltIn = true; // Protect built-in status
+        }
+        if (existing.createdAt) {
+            createdAt = existing.createdAt;
+        }
+    } catch {
+        // File doesn't exist, which is fine
+    }
+
+    const template: SwarmTemplate = {
+        id,
+        name: input.name,
+        description: input.description,
+        team: input.team,
+        protoFormula: input.protoFormula,
+        createdAt,
+        updatedAt: now,
+        isBuiltIn
+    };
+
+    await fs.writeFile(
+        path.join(TEMPLATE_DIR, `${id}.json`),
+        JSON.stringify(template, null, 2)
+    );
+
+    return template;
+}
+
+export async function deleteTemplate(id: string): Promise<void> {
+    const filePath = path.join(TEMPLATE_DIR, `${id}.json`);
+
+    let template: SwarmTemplate;
+    try {
+        const content = await fs.readFile(filePath, 'utf-8');
+        template = JSON.parse(content);
+    } catch {
+        throw new Error(`Template not found: ${id}`);
+    }
+
+    if (template.isBuiltIn) {
+        throw new Error(`Cannot delete built-in template: ${id}`);
+    }
+
+    await fs.unlink(filePath);
 }

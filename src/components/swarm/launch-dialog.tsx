@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Plus, Rocket } from 'lucide-react';
+import { Loader2, Rocket } from 'lucide-react';
 
 interface LaunchSwarmDialogProps {
   projectRoot: string;
@@ -51,7 +51,7 @@ export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogP
       } else {
         setError(json.error);
       }
-    } catch (e) {
+    } catch {
       setError('Failed to fetch formulas');
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogP
           proto: selectedFormula,
         }),
       });
-      
+
       const json = await res.json();
       if (json.ok) {
         setOpen(false);
@@ -92,7 +92,7 @@ export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogP
       } else {
         setError(json.error);
       }
-    } catch (e) {
+    } catch {
       setError('Failed to launch swarm');
     } finally {
       setLoading(false);
@@ -102,9 +102,9 @@ export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogP
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="gap-2 border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300"
         >
           <Rocket className="h-4 w-4" />
@@ -127,7 +127,7 @@ export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogP
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
                 {formulas.length === 0 && !loading && (
-                   <div className="p-2 text-xs text-slate-500 text-center">No formulas found</div>
+                  <div className="p-2 text-xs text-slate-500 text-center">No formulas found</div>
                 )}
                 {formulas.map((f) => (
                   <SelectItem key={f.name} value={f.name} className="focus:bg-slate-700 focus:text-slate-100">
@@ -148,7 +148,7 @@ export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogP
               disabled={loading}
             />
           </div>
-          
+
           {error && (
             <div className="text-xs text-rose-400 bg-rose-950/20 p-2 rounded border border-rose-900/30">
               {error}
@@ -156,9 +156,9 @@ export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogP
           )}
         </form>
         <DialogFooter>
-          <Button 
-            type="submit" 
-            onClick={handleSubmit} 
+          <Button
+            type="submit"
+            onClick={handleSubmit}
             disabled={loading || !title || !selectedFormula}
             className="bg-emerald-600 hover:bg-emerald-500 text-white"
           >

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { runBdCommand } from '../../../../lib/bridge';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const projectRoot = searchParams.get('projectRoot');
@@ -23,7 +25,7 @@ export async function GET(request: Request) {
     // If output is empty or not JSON array, handle gracefully
     const json = JSON.parse(result.stdout || '[]');
     return NextResponse.json({ ok: true, data: json });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ ok: false, error: 'Failed to parse formulas' }, { status: 500 });
   }
 }

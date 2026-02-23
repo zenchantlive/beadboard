@@ -16,7 +16,8 @@ interface FetchResponse {
 }
 
 async function fetchIssues(projectRoot: string): Promise<BeadIssue[]> {
-  const response = await fetch(`/api/beads/read?projectRoot=${encodeURIComponent(projectRoot)}`, {
+  const timestamp = Date.now();
+  const response = await fetch(`/api/beads/read?projectRoot=${encodeURIComponent(projectRoot)}&_t=${timestamp}`, {
     cache: 'no-store',
   });
   const payload = (await response.json()) as FetchResponse;
@@ -67,15 +68,15 @@ export function useBeadsSubscription(
   useEffect(() => {
     console.log('[SSE] Connecting to event source for:', projectRoot);
     const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
-    
+
     source.onopen = () => {
       console.log('[SSE] Connection opened');
     };
-    
+
     source.onerror = (err) => {
       console.error('[SSE] Connection error:', err);
     };
-    
+
     const onIssues = (event: MessageEvent) => {
       console.log('🚨 SSE ISSUES RECEIVED:', event.data);
       onUpdate?.('issues');

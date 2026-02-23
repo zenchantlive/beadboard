@@ -1,0 +1,50 @@
+Manage state on agent beads for ZFC-compliant state reporting.
+
+Agent beads (labeled gt:agent) can self-report their state using these commands.
+This enables the Witness and other monitoring systems to track agent health.
+
+States:
+  idle      - Agent is waiting for work
+  spawning  - Agent is starting up
+  running   - Agent is executing (general)
+  working   - Agent is actively working on a task
+  stuck     - Agent is blocked and needs help
+  done      - Agent completed its current work
+  stopped   - Agent has cleanly shut down
+  dead      - Agent died without clean shutdown (set by Witness via timeout)
+
+Examples:
+  bd agent state gt-emma running     # Set emma's state to running
+  bd agent heartbeat gt-emma         # Update emma's last_activity timestamp
+  bd agent show gt-emma              # Show emma's agent details
+
+Usage:
+  bd agent [command]
+
+Available Commands:
+  backfill-labels Backfill role_type/rig labels on existing agent beads
+  heartbeat       Update agent last_activity timestamp
+  show            Show agent bead details
+  state           Set agent state
+
+Flags:
+  -h, --help   help for agent
+
+Global Flags:
+      --actor string              Actor name for audit trail (default: $BD_ACTOR, git user.name, $USER)
+      --allow-stale               Allow operations on potentially stale data (skip staleness check)
+      --db string                 Database path (default: auto-discover .beads/*.db)
+      --dolt-auto-commit string   Dolt backend: auto-commit after write commands (off|on). Default from config key dolt.auto-commit
+      --json                      Output in JSON format
+      --lock-timeout duration     SQLite busy timeout (0 = fail immediately if locked) (default 30s)
+      --no-auto-flush             Disable automatic JSONL sync after CRUD operations
+      --no-auto-import            Disable automatic JSONL import when newer than DB
+      --no-daemon                 Force direct storage mode, bypass daemon if running
+      --no-db                     Use no-db mode: load from JSONL, no SQLite
+      --profile                   Generate CPU profile for performance analysis
+  -q, --quiet                     Suppress non-essential output (errors only)
+      --readonly                  Read-only mode: block write operations (for worker sandboxes)
+      --sandbox                   Sandbox mode: disables daemon and auto-sync
+  -v, --verbose                   Enable verbose/debug output
+
+Use "bd agent [command] --help" for more information about a command.

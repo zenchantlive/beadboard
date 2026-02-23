@@ -22,9 +22,9 @@ export function useSwarmTopology(projectRoot: string, swarmId: string) {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/mission/${swarmId}/topology?projectRoot=${encodeURIComponent(projectRoot)}`);
+        const response = await fetch(`/api/mission/${swarmId}/topology?projectRoot=${encodeURIComponent(projectRoot)}`, { cache: 'no-store' });
         const result = await response.json();
-        
+
         if (mounted) {
           if (result.ok) {
             setTopology(result.data);
@@ -32,7 +32,7 @@ export function useSwarmTopology(projectRoot: string, swarmId: string) {
             setError(result.error);
           }
         }
-      } catch (err) {
+      } catch (_err) {
         if (mounted) setError('Failed to load topology');
       } finally {
         if (mounted) setIsLoading(false);

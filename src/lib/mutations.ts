@@ -1,4 +1,5 @@
 import { runBdCommand, type RunBdCommandResult } from './bridge';
+import { issuesEventBus } from './realtime';
 
 export type MutationOperation = 'create' | 'update' | 'close' | 'reopen' | 'comment';
 export type MutationStatus = 'open' | 'in_progress' | 'blocked' | 'deferred' | 'closed';
@@ -297,6 +298,9 @@ export async function executeMutation(
       },
     };
   }
+
+  // Emit event to notify SSE clients of the change
+  issuesEventBus.emit(payload.projectRoot, undefined, 'changed');
 
   return {
     ok: true,

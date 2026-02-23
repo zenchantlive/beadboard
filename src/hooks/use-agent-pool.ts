@@ -13,14 +13,14 @@ interface UseAgentPoolResult {
 
 async function fetchAgents(projectRoot: string): Promise<AgentRecord[]> {
   try {
-    const response = await fetch(`/api/agents/list?projectRoot=${encodeURIComponent(projectRoot)}`);
+    const response = await fetch(`/api/agents/list?projectRoot=${encodeURIComponent(projectRoot)}`, { cache: 'no-store' });
     const payload = await response.json();
-    
+
     if (!response.ok || !payload.ok) {
       console.error('Agent fetch failed:', payload.error);
       return [];
     }
-    
+
     return (payload.data || []) as AgentRecord[];
   } catch (err) {
     console.error('Agent fetch error:', err);

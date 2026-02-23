@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 
 import { runBdCommand } from '../../../../lib/bridge';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
   const projectRoot = searchParams.get('projectRoot');

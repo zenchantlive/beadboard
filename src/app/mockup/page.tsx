@@ -189,7 +189,7 @@ export default function MockupPage() {
     setDraftLabels(selectedTask.labels.join(", "))
     setDraftBlockedReason(selectedTask.blockedReason)
     setThreadEditMode(false)
-  }, [selectedTask?.id])
+  }, [selectedTask, selectedTask?.id])
 
   const saveTaskChanges = () => {
     if (!selectedTask) return
@@ -202,26 +202,26 @@ export default function MockupPage() {
         epic.id !== selectedEpicId
           ? epic
           : {
-              ...epic,
-              tasks: epic.tasks.map((task) =>
-                task.id !== selectedTask.id
-                  ? task
-                  : {
-                      ...task,
-                      title: draftTitle,
-                      description: draftDescription,
-                      status: draftStatus,
-                      priority: draftPriority,
-                      issueType: draftIssueType,
-                      assignee: draftAssignee,
-                      owner: draftOwner,
-                      labels: nextLabels,
-                      blockedReason: draftBlockedReason,
-                      updatedAgo: "now",
-                      blockedByCount: draftStatus === "blocked" ? Math.max(task.blockedByCount, 1) : 0,
-                    }
-              ),
-            }
+            ...epic,
+            tasks: epic.tasks.map((task) =>
+              task.id !== selectedTask.id
+                ? task
+                : {
+                  ...task,
+                  title: draftTitle,
+                  description: draftDescription,
+                  status: draftStatus,
+                  priority: draftPriority,
+                  issueType: draftIssueType,
+                  assignee: draftAssignee,
+                  owner: draftOwner,
+                  labels: nextLabels,
+                  blockedReason: draftBlockedReason,
+                  updatedAgo: "now",
+                  blockedByCount: draftStatus === "blocked" ? Math.max(task.blockedByCount, 1) : 0,
+                }
+            ),
+          }
       )
     )
     setSavePulse(true)
@@ -250,29 +250,29 @@ export default function MockupPage() {
             <Card className={panelClass} style={{ backgroundColor: palette.surface, borderColor: palette.border }}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                {leftMode === "tasks" ? (
-                  <Button variant="ghost" className="h-8 px-2" onClick={() => setLeftMode("epics")}>
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to epics
-                  </Button>
-                ) : (
-                  <CardTitle className="text-lg">Epics</CardTitle>
-                )}
-                <Badge className="rounded-full" style={{ backgroundColor: palette.mutedBg, color: palette.textSecondary }}>{selectedEpic.openCount} open</Badge>
+                  {leftMode === "tasks" ? (
+                    <Button variant="ghost" className="h-8 px-2" onClick={() => setLeftMode("epics")}>
+                      <ArrowLeft className="mr-2 h-4 w-4" /> Back to epics
+                    </Button>
+                  ) : (
+                    <CardTitle className="text-lg">Epics</CardTitle>
+                  )}
+                  <Badge className="rounded-full" style={{ backgroundColor: palette.mutedBg, color: palette.textSecondary }}>{selectedEpic.openCount} open</Badge>
                 </div>
                 <CardDescription style={{ color: palette.textSecondary }}>Select an epic, then choose a task.</CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
-              <Input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={leftMode === "epics" ? "Search epics" : "Search tasks"}
-                className="mb-3"
-                style={{ backgroundColor: palette.mutedBg, borderColor: palette.border }}
-              />
-              <ScrollArea className="h-[520px] pr-2">
-                <div className="space-y-2">
-                  {leftMode === "epics"
-                    ? epics
+                <Input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={leftMode === "epics" ? "Search epics" : "Search tasks"}
+                  className="mb-3"
+                  style={{ backgroundColor: palette.mutedBg, borderColor: palette.border }}
+                />
+                <ScrollArea className="h-[520px] pr-2">
+                  <div className="space-y-2">
+                    {leftMode === "epics"
+                      ? epics
                         .filter((epic) => epic.name.toLowerCase().includes(query.toLowerCase()))
                         .map((epic) => (
                           <button
@@ -291,7 +291,7 @@ export default function MockupPage() {
                             <p className="mt-1 text-xs" style={{ color: palette.textSecondary }}>{epic.id}</p>
                           </button>
                         ))
-                    : filteredTasks.map((task) => (
+                      : filteredTasks.map((task) => (
                         <button
                           key={task.id}
                           type="button"
@@ -299,11 +299,10 @@ export default function MockupPage() {
                             setSelectedTaskId(task.id)
                             closeThread()
                           }}
-                          className={`${subPanelClass} w-full p-3 text-left transition duration-200 ${
-                            selectedTask?.id === task.id
+                          className={`${subPanelClass} w-full p-3 text-left transition duration-200 ${selectedTask?.id === task.id
                               ? "shadow-[0_12px_26px_rgba(0,0,0,0.4)]"
                               : "hover:-translate-y-[1px] hover:shadow-[0_10px_22px_rgba(0,0,0,0.33)]"
-                          }`}
+                            }`}
                           style={{
                             backgroundColor: selectedTask?.id === task.id ? palette.mutedBg : palette.surface,
                             borderColor: selectedTask?.id === task.id ? palette.primary : palette.border,
@@ -318,68 +317,68 @@ export default function MockupPage() {
                           </div>
                         </button>
                       ))}
-                </div>
-              </ScrollArea>
+                  </div>
+                </ScrollArea>
               </CardContent>
             </Card>
 
             <Card className={panelClass} style={{ backgroundColor: palette.surface, borderColor: palette.border }}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">{selectedEpic.name}</CardTitle>
-                  <CardDescription style={{ color: palette.textSecondary }}>Task cards + thread context</CardDescription>
-                </div>
-                <Button className="h-8 rounded-full px-4 text-white" style={{ backgroundColor: palette.primary }}>New update</Button>
+                  <div>
+                    <CardTitle className="text-lg">{selectedEpic.name}</CardTitle>
+                    <CardDescription style={{ color: palette.textSecondary }}>Task cards + thread context</CardDescription>
+                  </div>
+                  <Button className="h-8 rounded-full px-4 text-white" style={{ backgroundColor: palette.primary }}>New update</Button>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-              <ScrollArea className="h-[430px] pr-2">
-                <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-                  {filteredTasks.map((task) => (
-                    <button
-                      key={task.id}
-                      type="button"
-                      onClick={() => setSelectedTaskId(task.id)}
-                      className={`rounded-xl border p-4 text-left transition duration-200 hover:-translate-y-[1px] hover:shadow-[0_14px_28px_rgba(0,0,0,0.35)] ${statusClasses(task.status)}`}
-                      style={{ borderColor: selectedTask?.id === task.id ? palette.primary : palette.border }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold" style={{ color: palette.eggplant }}>{task.id}</span>
-                        <Badge className={`rounded-full px-2 py-0.5 text-[11px] ${statusBadge(task.status)}`}>{task.status.replace("_", " ")}</Badge>
-                      </div>
-                      <p className="mt-3 text-[1.7rem] font-semibold leading-[1.15]">{task.title}</p>
-                      <p className="mt-2 line-clamp-2 text-sm" style={{ color: palette.textSecondary }}>{task.description}</p>
-                      <div className="mt-4 flex items-center gap-3 text-xs" style={{ color: palette.textSecondary }}>
-                        <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />{task.updatedAgo}</span>
-                        <span className="inline-flex items-center gap-1"><Link2 className="h-3.5 w-3.5" />{task.dependencyCount}</span>
-                        <span className="inline-flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />{task.commentCount}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </ScrollArea>
-              <Separator className="my-4" />
-              <div className={`${subPanelClass} p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]`} style={{ borderColor: palette.border, backgroundColor: palette.mutedBg }}>
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-sm font-semibold">Conversation: {selectedTask?.id}</p>
-                <Button variant="ghost" className="h-7 px-2" style={{ color: palette.secondary }} onClick={() => setThreadOpen(true)}>
-                  Open thread <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-                </Button>
-                </div>
-                <div className="space-y-2">
-                  <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "#5A5D6A", backgroundColor: "#2A2B37" }}>
-                    <span className="font-semibold" style={{ color: palette.success }}>alex.chen</span>
-                    <span className="mx-1 text-xs" style={{ color: "#8F92A3" }}>2m</span>
-                    <span style={{ color: palette.textSecondary }}>Need confirmation that detail strip stays sticky while card grid scrolls.</span>
+                <ScrollArea className="h-[430px] pr-2">
+                  <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+                    {filteredTasks.map((task) => (
+                      <button
+                        key={task.id}
+                        type="button"
+                        onClick={() => setSelectedTaskId(task.id)}
+                        className={`rounded-xl border p-4 text-left transition duration-200 hover:-translate-y-[1px] hover:shadow-[0_14px_28px_rgba(0,0,0,0.35)] ${statusClasses(task.status)}`}
+                        style={{ borderColor: selectedTask?.id === task.id ? palette.primary : palette.border }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold" style={{ color: palette.eggplant }}>{task.id}</span>
+                          <Badge className={`rounded-full px-2 py-0.5 text-[11px] ${statusBadge(task.status)}`}>{task.status.replace("_", " ")}</Badge>
+                        </div>
+                        <p className="mt-3 text-[1.7rem] font-semibold leading-[1.15]">{task.title}</p>
+                        <p className="mt-2 line-clamp-2 text-sm" style={{ color: palette.textSecondary }}>{task.description}</p>
+                        <div className="mt-4 flex items-center gap-3 text-xs" style={{ color: palette.textSecondary }}>
+                          <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />{task.updatedAgo}</span>
+                          <span className="inline-flex items-center gap-1"><Link2 className="h-3.5 w-3.5" />{task.dependencyCount}</span>
+                          <span className="inline-flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />{task.commentCount}</span>
+                        </div>
+                      </button>
+                    ))}
                   </div>
-                  <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "#5A5D6A", backgroundColor: "#2A2B37" }}>
-                    <span className="font-semibold" style={{ color: palette.secondary }}>sarah.lee</span>
-                    <span className="mx-1 text-xs" style={{ color: "#8F92A3" }}>1m</span>
-                    <span style={{ color: palette.textSecondary }}>Approved if right rail remains visible at 1280px breakpoint.</span>
+                </ScrollArea>
+                <Separator className="my-4" />
+                <div className={`${subPanelClass} p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]`} style={{ borderColor: palette.border, backgroundColor: palette.mutedBg }}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-sm font-semibold">Conversation: {selectedTask?.id}</p>
+                    <Button variant="ghost" className="h-7 px-2" style={{ color: palette.secondary }} onClick={() => setThreadOpen(true)}>
+                      Open thread <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "#5A5D6A", backgroundColor: "#2A2B37" }}>
+                      <span className="font-semibold" style={{ color: palette.success }}>alex.chen</span>
+                      <span className="mx-1 text-xs" style={{ color: "#8F92A3" }}>2m</span>
+                      <span style={{ color: palette.textSecondary }}>Need confirmation that detail strip stays sticky while card grid scrolls.</span>
+                    </div>
+                    <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "#5A5D6A", backgroundColor: "#2A2B37" }}>
+                      <span className="font-semibold" style={{ color: palette.secondary }}>sarah.lee</span>
+                      <span className="mx-1 text-xs" style={{ color: "#8F92A3" }}>1m</span>
+                      <span style={{ color: palette.textSecondary }}>Approved if right rail remains visible at 1280px breakpoint.</span>
+                    </div>
                   </div>
                 </div>
-              </div>
               </CardContent>
             </Card>
 
@@ -389,27 +388,27 @@ export default function MockupPage() {
                 <CardDescription style={{ color: palette.textSecondary }}>Persistent awareness while working tasks.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-0">
-              <div className={`${subPanelClass} p-3 shadow-[0_8px_20px_rgba(0,0,0,0.25)]`} style={{ borderColor: palette.border, backgroundColor: palette.mutedBg }}>
-                <p className="mb-2 text-sm font-semibold">Live Agents</p>
-                <div className="space-y-1 text-sm">
-                  <p className="flex items-center justify-between"><span>swarm-view-integrator</span><span style={{ color: palette.success }}>online</span></p>
-                  <p className="flex items-center justify-between"><span>social-view-integrator</span><span style={{ color: palette.warning }}>away</span></p>
-                  <p className="flex items-center justify-between"><span>graph-integrator</span><span style={{ color: palette.info }}>busy</span></p>
+                <div className={`${subPanelClass} p-3 shadow-[0_8px_20px_rgba(0,0,0,0.25)]`} style={{ borderColor: palette.border, backgroundColor: palette.mutedBg }}>
+                  <p className="mb-2 text-sm font-semibold">Live Agents</p>
+                  <div className="space-y-1 text-sm">
+                    <p className="flex items-center justify-between"><span>swarm-view-integrator</span><span style={{ color: palette.success }}>online</span></p>
+                    <p className="flex items-center justify-between"><span>social-view-integrator</span><span style={{ color: palette.warning }}>away</span></p>
+                    <p className="flex items-center justify-between"><span>graph-integrator</span><span style={{ color: palette.info }}>busy</span></p>
+                  </div>
                 </div>
-              </div>
-              <div className={`${subPanelClass} p-3 shadow-[0_8px_20px_rgba(0,0,0,0.25)]`} style={{ borderColor: palette.border, backgroundColor: palette.mutedBg }}>
-                <p className="mb-2 text-sm font-semibold">Recent Activity</p>
-                <div className="space-y-1 text-xs" style={{ color: palette.textSecondary }}>
-                  <p>5m · bb-z6s moved to in progress</p>
-                  <p>11m · bb-atf received 2 comments</p>
-                  <p>18m · bb-3ha marked closed</p>
-                  <p>33m · bb-nuy dependency changed</p>
+                <div className={`${subPanelClass} p-3 shadow-[0_8px_20px_rgba(0,0,0,0.25)]`} style={{ borderColor: palette.border, backgroundColor: palette.mutedBg }}>
+                  <p className="mb-2 text-sm font-semibold">Recent Activity</p>
+                  <div className="space-y-1 text-xs" style={{ color: palette.textSecondary }}>
+                    <p>5m · bb-z6s moved to in progress</p>
+                    <p>11m · bb-atf received 2 comments</p>
+                    <p>18m · bb-3ha marked closed</p>
+                    <p>33m · bb-nuy dependency changed</p>
+                  </div>
                 </div>
-              </div>
-              <div className={`${subPanelClass} p-3 shadow-[0_8px_20px_rgba(0,0,0,0.22)]`} style={{ borderColor: "#6A4E2F", backgroundColor: "#3A332B" }}>
-                <p className="mb-2 text-sm font-semibold">Attention</p>
-                <p className="flex items-center gap-2 text-sm" style={{ color: "#F2C684" }}><TriangleAlert className="h-4 w-4" /> 2 blocked tasks in selected epic</p>
-              </div>
+                <div className={`${subPanelClass} p-3 shadow-[0_8px_20px_rgba(0,0,0,0.22)]`} style={{ borderColor: "#6A4E2F", backgroundColor: "#3A332B" }}>
+                  <p className="mb-2 text-sm font-semibold">Attention</p>
+                  <p className="flex items-center gap-2 text-sm" style={{ color: "#F2C684" }}><TriangleAlert className="h-4 w-4" /> 2 blocked tasks in selected epic</p>
+                </div>
               </CardContent>
             </Card>
           </section>

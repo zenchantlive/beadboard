@@ -1,0 +1,14 @@
+{
+  "id": "test",
+  "name": "test",
+  "description": "test",
+  "team": [
+    {
+      "archetypeId": "architect",
+      "count": 1
+    }
+  ],
+  "createdAt": "2026-02-21T19:37:35.674Z",
+  "updatedAt": "2026-02-21T19:37:35.674Z",
+  "isBuiltIn": false
+}

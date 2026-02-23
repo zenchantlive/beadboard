@@ -26,13 +26,13 @@ interface UseMissionListResult {
 
 async function fetchMissions(projectRoot: string): Promise<MissionData[]> {
   try {
-    const response = await fetch(`/api/mission/list?projectRoot=${encodeURIComponent(projectRoot)}`);
+    const response = await fetch(`/api/mission/list?projectRoot=${encodeURIComponent(projectRoot)}`, { cache: 'no-store' });
     const payload = await response.json();
-    
+
     if (!response.ok || !payload.ok) {
       throw new Error(payload.error?.message || 'Failed to fetch missions');
     }
-    
+
     return payload.data.missions || [];
   } catch (err) {
     console.error('Mission fetch error:', err);

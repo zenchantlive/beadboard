@@ -1,0 +1,26 @@
+bun test v1.3.6 (d530ed99)
+
+tests\lib\watcher.test.ts:
+(pass) IssuesWatchManager startWatch is idempotent per project [32.00ms]
+40 |   await new Promise((resolve) => setTimeout(resolve, 220));
+41 | 
+42 |   stop();
+43 |   await manager.stopAll();
+44 | 
+45 |   assert.equal(events.length >= 1, true);
+              ^
+AssertionError: Expected values to be strictly equal:
+
+false !== true
+
+ generatedMessage: true,
+     actual: false,
+   expected: true,
+   operator: "strictEqual",
+       code: "ERR_ASSERTION"
+
+      at C:\Users\Zenchant\codex\beadboard\tests\lib\watcher.test.ts:45:10
+      at processTicksAndRejections (native:7:39)
+(fail) IssuesWatchManager emits event after file change in watched .beads path [609.00ms]
+Ran 2 tests across 1 file. [746.00ms]
+Bailed out after 1 failure

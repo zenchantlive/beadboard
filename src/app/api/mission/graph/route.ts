@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { runBdCommand } from '../../../../lib/bridge';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const projectRoot = searchParams.get('projectRoot');
@@ -23,24 +25,24 @@ export async function GET(request: Request) {
   });
 
   if (!headResult.success) {
-     return NextResponse.json({ ok: false, error: 'Failed to fetch mission head' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Failed to fetch mission head' }, { status: 500 });
   }
 
   try {
     const head = JSON.parse(headResult.stdout);
     let children = [];
     if (childrenResult.success && childrenResult.stdout.trim()) {
-        children = JSON.parse(childrenResult.stdout);
+      children = JSON.parse(childrenResult.stdout);
     }
 
     const headObj = Array.isArray(head) ? head[0] : head;
-    
+
     // Transform for graph view (if needed, or just return raw issues and let UI handle it)
     // The WorkflowGraph component expects BeadIssue[]
     const nodes = [headObj, ...children];
 
     return NextResponse.json({ ok: true, data: { nodes } });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ ok: false, error: 'Failed to parse graph data' }, { status: 500 });
   }
 }

@@ -38,9 +38,9 @@ export class IssuesEventBus {
   private nextSubscriberId = 1;
 
   emit(projectRoot: string, changedPath?: string, kind: IssuesChangeKind = 'changed'): IssuesChangedEvent {
-    console.log(`[IssuesBus] Emitting event: ${kind} for ${projectRoot} (${changedPath})`);
     const canonicalProjectRoot = canonicalizeWindowsPath(projectRoot);
     const projectKey = windowsPathKey(canonicalProjectRoot);
+    console.log(`[IssuesBus] Emitting event: ${kind} for ${projectKey} (path: ${changedPath}, subscribers: ${this.subscribers.size})`);
     const event: IssuesChangedEvent = {
       id: this.nextEventId,
       projectRoot: canonicalProjectRoot,
@@ -50,11 +50,14 @@ export class IssuesEventBus {
     };
     this.nextEventId += 1;
 
+    let delivered = 0;
     for (const subscriber of this.subscribers.values()) {
       if (!subscriber.projectKey || subscriber.projectKey === projectKey) {
         subscriber.listener(event);
+        delivered++;
       }
     }
+    console.log(`[IssuesBus] Delivered to ${delivered} subscribers`);
 
     return event;
   }

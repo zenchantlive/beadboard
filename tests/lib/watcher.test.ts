@@ -22,9 +22,11 @@ test('IssuesWatchManager startWatch is idempotent per project', async () => {
 test('IssuesWatchManager emits event after file change in watched .beads path', async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'beadboard-watch-'));
   const beadsDir = path.join(root, '.beads');
-  const issuesPath = path.join(beadsDir, 'issues.jsonl');
+
   await fs.mkdir(beadsDir, { recursive: true });
-  await fs.writeFile(issuesPath, '', 'utf8');
+
+  // Initialize bd in temp dir
+  execSync('bd init --prefix bb --force', { cwd: root, stdio: 'ignore' });
 
   const bus = new IssuesEventBus();
   const manager = new IssuesWatchManager({ eventBus: bus, debounceMs: 40 });
@@ -36,21 +38,37 @@ test('IssuesWatchManager emits event after file change in watched .beads path', 
 
   await manager.startWatch(root);
 
-  await fs.writeFile(issuesPath, `${JSON.stringify({ id: 'bb-1', title: 'watch' })}\n`, 'utf8');
-  await new Promise((resolve) => setTimeout(resolve, 220));
+  // Wait for initial read to settle
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  // Create issue via bd to trigger a valid mutation
+  execSync('bd create "Task watch" --id bb-1', { cwd: root, stdio: 'ignore' });
+
+  let found = false;
+  for (let i = 0; i < 10; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    if (events.length >= 1) {
+      found = true;
+      break;
+    }
+  }
 
   stop();
   await manager.stopAll();
 
-  assert.equal(events.length >= 1, true);
+  assert.equal(found, true, 'Expected event from file change');
 });
 
 test('IssuesWatchManager emits telemetry event after beads.db change (not issues)', async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'beadboard-watch-db-'));
   const beadsDir = path.join(root, '.beads');
   const dbPath = path.join(beadsDir, 'beads.db');
+
   await fs.mkdir(beadsDir, { recursive: true });
-  await fs.writeFile(dbPath, 'seed', 'utf8');
+
+  // Initialize bd to create valid db
+  execSync('bd init --prefix bb --force', { cwd: root, stdio: 'ignore' });
+  execSync('bd create "Task A" --id bb-1', { cwd: root, stdio: 'ignore' });
 
   const bus = new IssuesEventBus();
   const manager = new IssuesWatchManager({ eventBus: bus, debounceMs: 40 });
@@ -62,8 +80,18 @@ test('IssuesWatchManager emits telemetry event after beads.db change (not issues
 
   await manager.startWatch(root);
 
-  await fs.writeFile(dbPath, `seed-${Date.now()}`, 'utf8');
-  await new Promise((resolve) => setTimeout(resolve, 220));
+  // Wait for initial read to settle
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  // Touch beads.db directly without mutating issues to simulate a connection write/telemetry pulse
+  await fs.appendFile(dbPath, ' ', 'utf8');
+
+  for (let i = 0; i < 10; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    if (events.length >= 1) {
+      break;
+    }
+  }
 
   stop();
   await manager.stopAll();
@@ -81,9 +109,14 @@ test('IssuesWatchManager emits telemetry event after beads.db change (not issues
 test('IssuesWatchManager emits event after beads.db-wal change', async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'beadboard-watch-wal-'));
   const beadsDir = path.join(root, '.beads');
-  const walPath = path.join(beadsDir, 'beads.db-wal');
+
   await fs.mkdir(beadsDir, { recursive: true });
-  await fs.writeFile(walPath, 'seed', 'utf8');
+
+  // Initialize bd in temp dir
+  execSync('bd init --prefix bb --force', { cwd: root, stdio: 'ignore' });
+
+  // Initial state: 1 issue via bd
+  execSync('bd create "Task A" --id bb-1', { cwd: root, stdio: 'ignore' });
 
   const bus = new IssuesEventBus();
   const manager = new IssuesWatchManager({ eventBus: bus, debounceMs: 40 });
@@ -95,21 +128,33 @@ test('IssuesWatchManager emits event after beads.db-wal change', async () => {
 
   await manager.startWatch(root);
 
-  await fs.writeFile(walPath, `seed-${Date.now()}`, 'utf8');
-  await new Promise((resolve) => setTimeout(resolve, 220));
+  // Wait for initial read to settle
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  // Modify issue via bd: status change. This updates beads.db-wal
+  execSync('bd update bb-1 --status in_progress', { cwd: root, stdio: 'ignore' });
+
+  let found = false;
+  for (let i = 0; i < 10; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    if (events.length >= 1) {
+      found = true;
+      break;
+    }
+  }
 
   stop();
   await manager.stopAll();
 
-  assert.equal(events.length >= 1, true);
+  assert.equal(found, true, 'Expected event from db-wal change');
 });
 
 test('IssuesWatchManager emits ActivityEvent on issue change', async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'beadboard-watch-activity-'));
   const beadsDir = path.join(root, '.beads');
-  
+
   await fs.mkdir(beadsDir, { recursive: true });
-  
+
   // Initialize bd in temp dir
   execSync('bd init --prefix bb --force', { cwd: root, stdio: 'ignore' });
 
@@ -119,10 +164,10 @@ test('IssuesWatchManager emits ActivityEvent on issue change', async () => {
 
   const issuesBus = new IssuesEventBus();
   const activityBus = new ActivityEventBus();
-  const manager = new IssuesWatchManager({ 
-    eventBus: issuesBus, 
-    activityBus, 
-    debounceMs: 50 
+  const manager = new IssuesWatchManager({
+    eventBus: issuesBus,
+    activityBus,
+    debounceMs: 50
   });
 
   const activities: string[] = [];
@@ -132,7 +177,7 @@ test('IssuesWatchManager emits ActivityEvent on issue change', async () => {
 
   // Start watching (should load initial snapshot silently)
   await manager.startWatch(root);
-  
+
   // Wait for initial read to settle
   await new Promise((resolve) => setTimeout(resolve, 100));
 

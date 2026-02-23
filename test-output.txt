@@ -1,0 +1,6 @@
+[0m[1mbun test [0m[2mv1.3.6 (d530ed99)[0m
+[Watcher] Processing event for C:\Users\Zenchant\AppData\Local\Temp\beadboard-watch-activity-aNhYFE: renamed (C:\Users\Zenchant\AppData\Local\Temp\beadboard-watch-activity-aNhYFE\.beads\beads.db-wal)
+[IssuesBus] Emitting event: telemetry for C:\Users\Zenchant\AppData\Local\Temp\beadboard-watch-activity-aNhYFE (C:\Users\Zenchant\AppData\Local\Temp\beadboard-watch-activity-aNhYFE\.beads\beads.db-wal)
+[Watcher] Issues changed. Syncing activity for C:\Users\Zenchant\AppData\Local\Temp\beadboard-watch-activity-aNhYFE...
+[Watcher] Structural changes found in telemetry pulse. Upgrading to issues event.
+[IssuesBus] Emitting event: renamed for C:\Users\Zenchant\AppData\Local\Temp\beadboard-watch-activity-aNhYFE (C:\Users\Zenchant\AppData\Local\Temp\beadboard-watch-activity-aNhYFE\.beads\beads.db-wal)

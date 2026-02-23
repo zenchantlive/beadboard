@@ -69,10 +69,10 @@ export function diffSnapshots(
 
     // 4. Collection Changes (Labels)
     if (!areArraysEqual(prev.labels, curr.labels)) {
-      events.push(createEvent('labels_changed', curr, now, { 
-        field: 'labels', 
-        from: prev.labels.join(','), 
-        to: curr.labels.join(',') 
+      events.push(createEvent('labels_changed', curr, now, {
+        field: 'labels',
+        from: prev.labels.join(','),
+        to: curr.labels.join(',')
       }));
     }
 
@@ -81,6 +81,16 @@ export function diffSnapshots(
       events.push(createEvent(kindAndTarget.kind, curr, now, { to: kindAndTarget.target }));
     });
   });
+
+  // 6. Detect Deleted Issues
+  if (previous) {
+    const currMap = new Set(current.map(c => c.id));
+    previous.forEach(prev => {
+      if (!currMap.has(prev.id)) {
+        events.push(createEvent('deleted' as any, prev, now)); // Force cast as 'deleted' may not be in ActivityEventKind type
+      }
+    });
+  }
 
   return events;
 }
@@ -125,7 +135,7 @@ function diffDependencies(
   curr: BeadDependency[]
 ): { kind: 'dependency_added' | 'dependency_removed', target: string }[] {
   const changes: { kind: 'dependency_added' | 'dependency_removed', target: string }[] = [];
-  
+
   const prevTargets = new Set(prev.map(d => d.target));
   const currTargets = new Set(curr.map(d => d.target));
 

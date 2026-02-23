@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { listAgents } from '../../../../lib/agent-registry';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const projectRoot = searchParams.get('projectRoot');

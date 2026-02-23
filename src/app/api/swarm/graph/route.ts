@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { runBdCommand } from '../../../../lib/bridge';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const projectRoot = searchParams.get('projectRoot');
@@ -23,7 +25,7 @@ export async function GET(request: Request) {
   });
 
   if (!epicResult.success) {
-     return NextResponse.json({ ok: false, error: 'Failed to fetch epic' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Failed to fetch epic' }, { status: 500 });
   }
 
   try {
@@ -31,15 +33,15 @@ export async function GET(request: Request) {
     // Handle list returning empty or error gracefully
     let children = [];
     if (childrenResult.success && childrenResult.stdout.trim()) {
-        children = JSON.parse(childrenResult.stdout);
-        // bd list returns array, bd show returns object (or array of 1)
+      children = JSON.parse(childrenResult.stdout);
+      // bd list returns array, bd show returns object (or array of 1)
     }
 
     const epicObj = Array.isArray(epic) ? epic[0] : epic;
     const issues = [epicObj, ...children];
 
     return NextResponse.json({ ok: true, data: issues });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ ok: false, error: 'Failed to parse graph data' }, { status: 500 });
   }
 }

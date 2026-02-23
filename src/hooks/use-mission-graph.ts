@@ -21,7 +21,8 @@ export function useMissionGraph(projectRoot: string, missionId: string): UseMiss
       setError(null);
       try {
         const response = await fetch(
-          `/api/mission/graph?projectRoot=${encodeURIComponent(projectRoot)}&id=${encodeURIComponent(missionId)}`
+          `/api/mission/graph?projectRoot=${encodeURIComponent(projectRoot)}&id=${encodeURIComponent(missionId)}`,
+          { cache: 'no-store' }
         );
         const payload = await response.json();
         if (payload.ok && payload.data) {
@@ -29,7 +30,7 @@ export function useMissionGraph(projectRoot: string, missionId: string): UseMiss
         } else {
           setError(payload.error || 'Failed to load graph');
         }
-      } catch (e) {
+      } catch (_e) {
         setError('Failed to fetch mission graph');
       } finally {
         setIsLoading(false);
