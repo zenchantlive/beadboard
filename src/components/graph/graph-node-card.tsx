@@ -113,18 +113,40 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
     const isClosed = data.status === 'closed';
 
     const handleAssignAgent = async (archetypeId: string) => {
+        // Don't do anything if this archetype is already assigned
+        const labelToAdd = `agent:${archetypeId}`;
+        if (assignedArchetypes.some(a => a.id === archetypeId)) {
+            return;
+        }
+
         setIsAssigning(true);
         setAssignError(null);
         setAssignSuccess(null);
 
-        // Optimistic update
-        const labelToAdd = `agent:${archetypeId}`;
+        // Track the new label as pending
         pendingOptimisticLabels.current.add(labelToAdd);
-        if (!localLabels.includes(labelToAdd)) {
-            setLocalLabels([...localLabels, labelToAdd]);
-        }
+
+        // Get current agent labels to remove (single archetype constraint)
+        const currentAgentLabels = localLabels.filter(l => l.startsWith('agent:'));
+
+        // Optimistic update: remove all agent: labels, add new one
+        const previousLabels = localLabels;
+        setLocalLabels(prev => [...prev.filter(l => !l.startsWith('agent:')), labelToAdd]);
 
         try {
+            // First remove existing agent labels (if any)
+            if (currentAgentLabels.length > 0) {
+                for (const existingLabel of currentAgentLabels) {
+                    const existingArchetypeId = existingLabel.replace('agent:', '');
+                    await fetch('/api/swarm/prep', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ beadId: id, archetypeId: existingArchetypeId }),
+                    });
+                }
+            }
+
+            // Then add the new label
             const response = await fetch('/api/swarm/prep', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -140,9 +162,9 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
             setAssignSuccess(`Assigned ${archetype?.name ?? archetypeId}`);
             setTimeout(() => setAssignSuccess(null), 2000);
         } catch (err) {
-            // Revert on error
+            // Revert on error - restore previous labels
             pendingOptimisticLabels.current.delete(labelToAdd);
-            setLocalLabels(prev => prev.filter(l => l !== labelToAdd));
+            setLocalLabels(previousLabels);
             setAssignError(err instanceof Error ? err.message : 'Failed to assign agent');
             setTimeout(() => setAssignError(null), 3000);
         } finally {
