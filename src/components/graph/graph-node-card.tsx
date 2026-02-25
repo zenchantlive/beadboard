@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Loader2, ChevronDown, UserPlus, X } from 'lucide-react';
@@ -92,9 +92,20 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
     // Local state for labels with optimistic updates
     const [localLabels, setLocalLabels] = useState<string[]>(data.labels ?? []);
 
-    // Sync local labels when parent data changes (e.g., on page refresh)
+    // Track pending optimistic labels to prevent SSE overwrites
+    const pendingOptimisticLabels = useRef<Set<string>>(new Set());
+
+    // Sync local labels when parent data changes, but preserve pending optimistic updates
     useEffect(() => {
-        setLocalLabels(data.labels ?? []);
+        const serverLabels = data.labels ?? [];
+        const pending = pendingOptimisticLabels.current;
+        if (pending.size === 0) {
+            setLocalLabels(serverLabels);
+        } else {
+            // Merge: include pending labels that aren't yet in server data
+            const merged = new Set([...serverLabels, ...pending]);
+            setLocalLabels(Array.from(merged));
+        }
     }, [data.labels]);
 
     const archetypes = data.archetypes ?? [];
@@ -108,6 +119,7 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
 
         // Optimistic update
         const labelToAdd = `agent:${archetypeId}`;
+        pendingOptimisticLabels.current.add(labelToAdd);
         if (!localLabels.includes(labelToAdd)) {
             setLocalLabels([...localLabels, labelToAdd]);
         }
@@ -129,10 +141,12 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
             setTimeout(() => setAssignSuccess(null), 2000);
         } catch (err) {
             // Revert on error
+            pendingOptimisticLabels.current.delete(labelToAdd);
             setLocalLabels(prev => prev.filter(l => l !== labelToAdd));
             setAssignError(err instanceof Error ? err.message : 'Failed to assign agent');
             setTimeout(() => setAssignError(null), 3000);
         } finally {
+            pendingOptimisticLabels.current.delete(labelToAdd);
             setIsAssigning(false);
         }
     };
