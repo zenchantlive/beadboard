@@ -533,6 +533,7 @@ export function DependencyGraphPage({
           isCycleNode: cycleNodeIdSet.has(issue.id),
           isDimmed: selectedId ? !chainNodeIds.has(issue.id) : false,
           blockerTooltipLines: externalBlockerNames.get(issue.id) ?? blockerTooltipMap.get(issue.id) ?? [],
+          labels: issue.labels,
         },
         position: { x: 0, y: 0 },
         sourcePosition: Position.Right,

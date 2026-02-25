@@ -12,7 +12,6 @@ export function SwarmMissionPicker({ issues }: { issues: BeadIssue[] }) {
     const views: Array<{ id: ViewType; label: string }> = [
         { id: 'social', label: 'Social' },
         { id: 'graph', label: 'Graph' },
-        { id: 'swarm', label: 'Swarm' },
     ];
 
     // Filter issues to find epics (Missions)
@@ -62,8 +61,8 @@ export function SwarmMissionPicker({ issues }: { issues: BeadIssue[] }) {
                         return (
                             <button
                                 key={m.id}
-                                onClick={() => {
-                                    setView('swarm');
+                            onClick={() => {
+                                    setView('graph');
                                     setSwarmId(m.id);
                                 }}
                                 className={cn(

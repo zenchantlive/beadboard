@@ -11,7 +11,7 @@ describe('Mobile Navigation - Hamburger Menu', () => {
     }
   });
 
-  it('renders three tab buttons: Social, Graph, Swarm', async () => {
+  it('renders tab buttons: Social, Graph', async () => {
     try {
       const mod = await import('../../../src/components/shared/mobile-nav');
       assert.ok(mod.MobileNav, 'MobileNav should exist');

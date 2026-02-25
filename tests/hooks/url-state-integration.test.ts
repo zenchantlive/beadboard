@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { parseUrlState, buildUrlParams, type ViewType, type GraphTabType } from '../../src/hooks/use-url-state';
+import { parseUrlState, buildUrlParams } from '../../src/hooks/use-url-state';
 
 /**
  * URL State Integration Tests - bb-ui2.22
@@ -80,23 +80,24 @@ describe('URL State Integration - bb-ui2.22', () => {
     });
   });
 
-  describe('Valid URL Patterns - Swarm View', () => {
-    it('/?view=swarm - swarm view default', () => {
+  describe('Deprecated Swarm View Fallback', () => {
+    it('/?view=swarm - falls back to social (swarm view deprecated)', () => {
       const sp = createMockSearchParams({ view: 'swarm' });
       const state = parseUrlState(sp);
-      assert.strictEqual(state.view, 'swarm');
+      assert.strictEqual(state.view, 'social');
     });
 
-    it('/?view=swarm&swarm=bb-buff - specific swarm selected', () => {
+    it('/?view=swarm&swarm=bb-buff - falls back to social but preserves swarmId', () => {
       const sp = createMockSearchParams({ view: 'swarm', swarm: 'bb-buff' });
       const state = parseUrlState(sp);
-      assert.strictEqual(state.view, 'swarm');
+      assert.strictEqual(state.view, 'social');
       assert.strictEqual(state.swarmId, 'bb-buff');
     });
 
-    it('/?view=swarm&swarm=bb-buff&panel=open - swarm with panel open', () => {
+    it('/?view=swarm&swarm=bb-buff&panel=open - falls back to social with panel open', () => {
       const sp = createMockSearchParams({ view: 'swarm', swarm: 'bb-buff', panel: 'open' });
       const state = parseUrlState(sp);
+      assert.strictEqual(state.view, 'social');
       assert.strictEqual(state.swarmId, 'bb-buff');
       assert.strictEqual(state.panel, 'open');
     });

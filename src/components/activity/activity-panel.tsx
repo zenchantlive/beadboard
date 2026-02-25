@@ -16,7 +16,7 @@ type AgentTone = {
   glowClass: string;
 };
 
-type EventTone = {
+export type EventTone = {
   label: string;
   labelClass: string;
   dotClass: string;
@@ -42,11 +42,11 @@ const AGENT_LABEL = 'gt:agent';
 // Determine agent status based on last activity
 function deriveAgentStatus(lastSeenAt: string | null): AgentStatus {
   if (!lastSeenAt) return 'dead';
-  
+
   const lastSeen = new Date(lastSeenAt);
   const now = new Date();
   const minutesSince = (now.getTime() - lastSeen.getTime()) / (1000 * 60);
-  
+
   if (minutesSince < 15) return 'active';
   if (minutesSince < 30) return 'stale';
   if (minutesSince < 60) return 'stuck';
@@ -57,25 +57,25 @@ function deriveAgentStatus(lastSeenAt: string | null): AgentStatus {
 function extractAgentName(issue: BeadIssue): string | null {
   const agentMatch = issue.title.match(/Agent:\s*(\S+)/i);
   if (agentMatch) return agentMatch[1];
-  
+
   const agentLabel = issue.labels.find(l => l.startsWith('agent:'));
   if (agentLabel) return agentLabel.replace('agent:', '');
-  
+
   return null;
 }
 
 // Build agent roster - filter out dead agents unless none are active
 function buildAgentRoster(issues: BeadIssue[]): AgentRosterEntry[] {
-  const agentIssues = issues.filter(issue => 
-    issue.labels.includes(AGENT_LABEL) || 
+  const agentIssues = issues.filter(issue =>
+    issue.labels.includes(AGENT_LABEL) ||
     issue.labels.some(l => l.startsWith('gt:agent')) ||
     issue.labels.includes('agent')
   );
-  
+
   const roster = agentIssues.map(issue => {
     const name = extractAgentName(issue) || issue.title.replace('Agent: ', '') || issue.id;
     const status = deriveAgentStatus(issue.updated_at);
-    
+
     return {
       name,
       status,
@@ -92,19 +92,19 @@ function buildAgentRoster(issues: BeadIssue[]): AgentRosterEntry[] {
 }
 
 // Format relative time
-function formatRelativeTime(timestamp: string): string {
+export function formatRelativeTime(timestamp: string): string {
   const date = new Date(timestamp);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
+
   if (diffMins < 1) return 'just now';
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
-  
+
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
@@ -140,7 +140,7 @@ function getAgentTone(status: AgentStatus): AgentTone {
 }
 
 // reopened=blue, closed=amber, created/opened=green, others semantic
-function getEventTone(kind: string): EventTone {
+export function getEventTone(kind: string): EventTone {
   const normalized = kind.toLowerCase();
   const byKind: Record<string, EventTone> = {
     created: {
@@ -240,16 +240,16 @@ function getEventTone(kind: string): EventTone {
   );
 }
 
-function getInitials(name: string): string {
+export function getInitials(name: string): string {
   return name.split(/[-_\s]/).map(p => p[0]).join('').toUpperCase().slice(0, 2);
 }
 
 export function ActivityPanel({ issues, collapsed = false, projectRoot }: ActivityPanelProps) {
   const [activities, setActivities] = useState<ActivityEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const agentRoster = useMemo(() => buildAgentRoster(issues), [issues]);
-  
+
   // Fetch activity history
   useEffect(() => {
     async function fetchActivity() {
@@ -265,15 +265,15 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
         setIsLoading(false);
       }
     }
-    
+
     fetchActivity();
   }, []);
-  
+
   // Subscribe to real-time activity
   useEffect(() => {
     console.log('[ActivityPanel] Connecting to SSE for:', projectRoot);
     const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
-    
+
     const onActivity = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
@@ -286,9 +286,9 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
         // Ignore parse errors
       }
     };
-    
+
     source.addEventListener('activity', onActivity as EventListener);
-    
+
     return () => {
       console.log('[ActivityPanel] Closing SSE connection');
       source.removeEventListener('activity', onActivity as EventListener);
@@ -307,14 +307,14 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
               <div className={cn(
                 "absolute -inset-1 rounded-full blur-[2px] transition-opacity duration-500",
                 agent.status === 'active' ? 'bg-[#7CB97A]/20 opacity-100 animate-pulse' :
-                agent.status === 'stale' ? 'bg-[#D4A574]/14 opacity-80' :
-                agent.status === 'stuck' ? 'bg-[#C97A7A]/20 opacity-100' : 'bg-[#A78A94]/18 opacity-90'
+                  agent.status === 'stale' ? 'bg-[#D4A574]/14 opacity-80' :
+                    agent.status === 'stuck' ? 'bg-[#C97A7A]/20 opacity-100' : 'bg-[#A78A94]/18 opacity-90'
               )} />
               <Avatar className={cn(
                 "h-9 w-9 ring-2 transition-all duration-300 relative z-10",
                 agent.status === 'active' ? 'ring-[#7CB97A]/45' :
-                agent.status === 'stale' ? 'ring-[#D4A574]/45' :
-                agent.status === 'stuck' ? 'ring-[#C97A7A]/45' : 'ring-[#A78A94]/40'
+                  agent.status === 'stale' ? 'ring-[#D4A574]/45' :
+                    agent.status === 'stuck' ? 'ring-[#C97A7A]/45' : 'ring-[#A78A94]/40'
               )}>
                 <AvatarFallback className="text-[10px] font-bold bg-[#1a1a1a] text-text-muted">
                   {getInitials(agent.name)}
@@ -323,17 +323,17 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
             </div>
           ))}
         </div>
-        
+
         <div className="w-6 h-[1px] bg-white/20 mx-auto" />
-        
+
         {/* Activity Pulses */}
         <div className="flex flex-col gap-2 opacity-40">
-           {activities.slice(0, 8).map((act) => (
-             <div key={act.id} className={cn(
-               "w-1 h-1 rounded-full",
-               getEventTone(act.kind).dotClass
-             )} />
-           ))}
+          {activities.slice(0, 8).map((act) => (
+            <div key={act.id} className={cn(
+              "w-1 h-1 rounded-full",
+              getEventTone(act.kind).dotClass
+            )} />
+          ))}
         </div>
       </div>
     );
@@ -352,7 +352,7 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
             {activeAgents} ONLINE
           </div>
         </div>
-        
+
         {agentRoster.length === 0 ? (
           <p className="text-xs text-text-muted/40 italic text-center py-4">No agents broadcasting</p>
         ) : (
@@ -392,14 +392,14 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
           </div>
         )}
       </div>
-      
+
       {/* ACTIVITY FEED SECTION */}
       <div className="flex-1 min-h-0 flex flex-col">
         <div className="p-4 flex items-center gap-2 shadow-[0_14px_24px_-24px_rgba(0,0,0,0.9)]">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted/60"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
           <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-text-muted">Telemetry Stream</h3>
         </div>
-        
+
         <ScrollArea className="flex-1">
           {isLoading ? (
             <div className="p-10 flex flex-col items-center gap-3">
@@ -432,11 +432,11 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
                           {formatRelativeTime(activity.timestamp)}
                         </span>
                       </div>
-                      
+
                       <p className="text-xs font-medium text-text-secondary leading-snug line-clamp-2 mb-2 group-hover:text-text-primary transition-colors">
                         {activity.beadTitle}
                       </p>
-                      
+
                       <div className="flex items-center justify-between">
                         <span className={cn("text-[10px] font-mono", eventTone.idClass)}>
                           {activity.beadId}

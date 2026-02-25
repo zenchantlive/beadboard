@@ -23,7 +23,7 @@ describe('TopBar Component Contract', () => {
 });
 
 describe('TopBar View Tabs', () => {
-  it('renders three view tabs: Social, Graph, Swarm', async () => {
+  it('renders view tabs: Social, Graph', async () => {
     try {
       const mod = await import('../../../src/components/shared/top-bar');
       assert.ok(mod.TopBar, 'TopBar should exist');

@@ -6,7 +6,6 @@ import { useUrlState, ViewType } from '../../hooks/use-url-state';
 const tabs: { id: ViewType; label: string; icon: string }[] = [
   { id: 'social', label: 'Social', icon: '≡' },
   { id: 'graph', label: 'Graph', icon: '◊' },
-  { id: 'swarm', label: 'Swarm', icon: '≋' },
 ];
 
 export function MobileNav() {

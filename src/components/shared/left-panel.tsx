@@ -187,11 +187,10 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
   const views: Array<{ id: ViewType; label: string }> = [
     { id: 'social', label: 'Social' },
     { id: 'graph', label: 'Graph' },
-    { id: 'swarm', label: 'Swarm' },
   ];
 
   return (
-    <aside className="flex h-full flex-col bg-[var(--ui-bg-shell)] shadow-[inset_-1px_0_0_rgba(0,0,0,0.55),24px_0_40px_-34px_rgba(0,0,0,0.98)]" data-testid="left-panel">
+    <aside className="flex h-full min-h-0 overflow-hidden flex-col bg-[var(--ui-bg-shell)] shadow-[inset_-1px_0_0_rgba(0,0,0,0.55),24px_0_40px_-34px_rgba(0,0,0,0.98)]" data-testid="left-panel">
       <div className="px-4 py-3 shadow-[0_14px_24px_-20px_rgba(0,0,0,0.92)]">
         <div className="mb-3 flex items-center gap-1 rounded-xl bg-[#101c2b] p-1 shadow-[0_12px_24px_-18px_rgba(0,0,0,0.88)]">
           {views.map((item) => {
@@ -405,21 +404,23 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
 
               {isExpanded ? (
                 <div className="ml-8 mt-1 space-y-1 pl-3">
-                  {matchedChildren.slice(0, 7).map((task) => (
+                  {matchedChildren.map((task) => (
                     <button
                       key={task.id}
                       type="button"
                       onClick={() => onEpicSelect?.(epic.id)}
                       className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-[var(--ui-text-muted)] transition-colors hover:bg-[#112133] hover:text-[var(--ui-text-primary)]"
                     >
-                      <span className={cn('h-1.5 w-1.5 rounded-full', statusDot(task.status))} />
+                      <span className={cn('h-1.5 w-1.5 rounded-full flex-shrink-0', statusDot(task.status))} />
                       <span className="min-w-0 flex-1 truncate">{task.title}</span>
-                      <span className="font-mono text-[10px] text-[var(--ui-text-muted)]">{task.id}</span>
+                      {task.assignee ? (
+                        <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-white/10 text-[var(--ui-text-primary)]">
+                          {task.assignee.slice(0, 2)}
+                        </span>
+                      ) : null}
+                      <span className="font-mono text-[10px] text-[var(--ui-text-muted)] flex-shrink-0">{task.id}</span>
                     </button>
                   ))}
-                  {matchedChildren.length > 7 ? (
-                    <p className="px-1.5 py-0.5 text-[10px] text-[var(--ui-text-muted)]">+ {matchedChildren.length - 7} more</p>
-                  ) : null}
                 </div>
               ) : null}
             </div>

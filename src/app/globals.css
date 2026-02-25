@@ -84,8 +84,10 @@
 
   /* ========== RADI ========== */
   --radius-sm: 0.375rem;
-  --radius-card: 1.5rem; /* rounded-3xl for soft feel */
-  --radius-xl: 1.5rem; /* rounded-3xl */
+  --radius-card: 1.5rem;
+  /* rounded-3xl for soft feel */
+  --radius-xl: 1.5rem;
+  /* rounded-3xl */
   --radius-modal: 1rem;
   --radius-pill: 9999px;
 
@@ -98,7 +100,7 @@
   /* ========== TYPOGRAPHY ========== */
   --font-ui-stack: var(--ui-font-sans);
   --font-mono-stack: var(--ui-font-mono);
-  
+
   --font-size-h1: 2rem;
   --font-size-h2: 1.5rem;
   --font_size-h3: 1.125rem;
@@ -131,11 +133,9 @@
   --sidebar-right-width: 17.5rem;
   --topbar-height: 3.75rem;
 
-  --glass-base: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--ui-bg-card) 72%, black),
-    color-mix(in srgb, var(--ui-bg-panel) 78%, black)
-  );
+  --glass-base: linear-gradient(180deg,
+      color-mix(in srgb, var(--ui-bg-card) 72%, black),
+      color-mix(in srgb, var(--ui-bg-panel) 78%, black));
   --edge-top: color-mix(in srgb, var(--ui-border-strong) 80%, white 20%);
   --edge-bottom: color-mix(in srgb, var(--ui-border-soft) 75%, black 25%);
   --elevation-ambient: 0 20px 40px -16px rgba(0, 0, 0, 0.78);
@@ -387,6 +387,7 @@ body {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;

@@ -1,22 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
-import dynamic from 'next/dynamic';
+
 import { Loader2, AlertCircle, Bot, Zap } from 'lucide-react';
 import type { BeadIssue } from '../../lib/types';
 import type { AgentArchetype } from '../../lib/types-swarm';
 
-const SpecializedAgentDagLazy = dynamic(
-    () => import('./specialized-agent-dag').then((m) => m.SpecializedAgentDag),
-    {
-        ssr: false,
-        loading: () => (
-            <div className="flex items-center justify-center p-8 w-full h-full min-h-[200px]">
-                <Loader2 className="animate-spin text-muted-foreground" />
-            </div>
-        ),
-    }
-);
+import { WorkflowGraph } from '../shared/workflow-graph';
 
 interface TelemetryGridProps {
     epicId: string;
@@ -99,11 +89,12 @@ export function TelemetryGrid({ epicId, issues, archetypes }: TelemetryGridProps
                     <span className="text-xs font-semibold tracking-wide uppercase text-[var(--ui-text-primary)]">Agent Flow</span>
                 </div>
                 <div className="flex-1 w-full h-full">
-                    <SpecializedAgentDagLazy
+                    <WorkflowGraph
                         beads={beads}
                         archetypes={archetypes}
-                        selectedId={selectedBeadId}
+                        selectedId={selectedBeadId || undefined}
                         onSelect={setSelectedBeadId}
+                        hideClosed={false}
                     />
                 </div>
             </div>
