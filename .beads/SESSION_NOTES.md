@@ -83,3 +83,28 @@ From `bd ready`:
 - beadboard-58u (P3): DependencyFlowStrip
 - bb-18e.1 (P2): Cycle warning card
 - bb-18e.2 (P1): Plain-English edge labels
+
+## Post-Session Bug Fix
+
+### SSE Overwrite Bug
+User discovered: "An archetype can only exist on one task at a time - when
+I try to make the next task have the same arch, it deleted the one I added."
+
+### Root Cause
+The SSE subscription refreshes data whenever any change happens. This
+created a race condition:
+1. User assigns archetype -> optimistic update
+2. SSE fires -> fetches server data (without new label yet)
+3. useEffect overwrites localLabels with stale server data
+4. Label disappears
+
+### Solution
+Track pending optimistic labels in useRef Set, merge with server data
+during sync. This prevents SSE overwrites of in-flight operations.
+
+### Test Coverage
+Added 10 new tests in graph-node-labels-optimistic.test.tsx to ensure
+this bug doesn't regress.
+
+### Commit
+bd3b3da - fix(graph): prevent SSE overwrites of optimistic label updates
