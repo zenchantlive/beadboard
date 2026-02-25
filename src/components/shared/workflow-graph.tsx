@@ -16,8 +16,8 @@ import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
 
 import type { BeadIssue } from '../../lib/types';
-import { buildGraphModel } from '../../lib/graph';
-import { analyzeBlockedChain, detectDependencyCycles } from '../../lib/graph-view';
+import type { AgentArchetype } from '../../lib/types-swarm';
+import { useGraphAnalysis } from '../../hooks/use-graph-analysis';
 import { GraphNodeCard, type GraphNodeData } from '../graph/graph-node-card';
 
 export interface WorkflowGraphProps {
@@ -26,6 +26,8 @@ export interface WorkflowGraphProps {
   onSelect?: (id: string) => void;
   className?: string;
   hideClosed?: boolean;
+  archetypes?: AgentArchetype[];
+  assignMode?: boolean;
 }
 
 const NODE_WIDTH = 320;
@@ -64,72 +66,20 @@ function WorkflowGraphInner({
   onSelect,
   className = '',
   hideClosed = false,
+  archetypes = [],
+  assignMode = false,
 }: WorkflowGraphProps) {
   const { fitView } = useReactFlow();
 
-  const graphModel = useMemo(() => buildGraphModel(beads, { projectKey: 'workflow' }), [beads]);
-
-  const signalById = useMemo(() => {
-    const map = new Map<string, { blockedBy: number; blocks: number }>();
-    for (const issue of beads) {
-      const adjacency = graphModel.adjacency[issue.id];
-      map.set(issue.id, {
-        blockedBy: adjacency?.incoming.length ?? 0,
-        blocks: adjacency?.outgoing.length ?? 0,
-      });
-    }
-    return map;
-  }, [graphModel.adjacency, beads]);
-
-  const cycleAnalysis = useMemo(() => detectDependencyCycles(graphModel), [graphModel]);
-  const cycleNodeIdSet = useMemo(() => new Set(cycleAnalysis.cycleNodeIds), [cycleAnalysis]);
-
-  const blockerAnalysis = useMemo(() => {
-    if (!selectedId) return null;
-    return analyzeBlockedChain(graphModel, { focusId: selectedId });
-  }, [graphModel, selectedId]);
-
-  const chainNodeIds = useMemo(() => {
-    if (!selectedId || !blockerAnalysis) return new Set<string>();
-    const ids = new Set<string>([selectedId, ...blockerAnalysis.blockerNodeIds]);
-    return ids;
-  }, [selectedId, blockerAnalysis]);
-
-  const actionableNodeIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const issue of beads) {
-      if (issue.status === 'closed') continue;
-      const adjacency = graphModel.adjacency[issue.id];
-      if (!adjacency) continue;
-      const hasOpenBlocker = adjacency.incoming.some((edge) => {
-        if (edge.type !== 'blocks') return false;
-        const sourceNode = beads.find((i) => i.id === edge.source);
-        return sourceNode ? sourceNode.status !== 'closed' : false;
-      });
-      if (!hasOpenBlocker) {
-        ids.add(issue.id);
-      }
-    }
-    return ids;
-  }, [graphModel.adjacency, beads]);
-
-  const blockerTooltipMap = useMemo(() => {
-    const map = new Map<string, string[]>();
-    for (const issue of beads) {
-      const adjacency = graphModel.adjacency[issue.id];
-      if (!adjacency) continue;
-      const lines: string[] = [];
-      for (const edge of adjacency.incoming) {
-        if (edge.type !== 'blocks') continue;
-        const source = beads.find((i) => i.id === edge.source);
-        if (source && source.status !== 'closed') {
-          lines.push(`${source.id} (${source.status}) - "${source.title}"`);
-        }
-      }
-      map.set(issue.id, lines);
-    }
-    return map;
-  }, [graphModel.adjacency, beads]);
+  // Use the extracted hook for all graph analysis
+  const {
+    signalById,
+    cycleNodeIdSet,
+    actionableNodeIds,
+    blockerTooltipMap,
+    blockerAnalysis,
+    chainNodeIds,
+  } = useGraphAnalysis(beads, 'workflow', selectedId);
 
   const flowModel = useMemo(() => {
     const visibleBeads = beads.filter((issue) => (!hideClosed ? true : issue.status !== 'closed'));
@@ -138,25 +88,41 @@ function WorkflowGraphInner({
       return { nodes: [] as Node<GraphNodeData>[], edges: [] as Edge[] };
     }
 
-    const baseNodes: Node<GraphNodeData>[] = visibleBeads.map((issue) => ({
-      id: issue.id,
-      data: {
-        title: issue.title,
-        kind: 'issue' as const,
-        status: issue.status,
-        priority: issue.priority,
-        blockedBy: signalById.get(issue.id)?.blockedBy ?? 0,
-        blocks: signalById.get(issue.id)?.blocks ?? 0,
-        isActionable: actionableNodeIds.has(issue.id),
-        isCycleNode: cycleNodeIdSet.has(issue.id),
-        isDimmed: selectedId ? !chainNodeIds.has(issue.id) : false,
-        blockerTooltipLines: blockerTooltipMap.get(issue.id) ?? [],
-      },
-      position: { x: 0, y: 0 },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-      type: 'flowNode',
-    }));
+    const baseNodes: Node<GraphNodeData>[] = visibleBeads.map((issue) => {
+      let matchedArchetype: AgentArchetype | undefined;
+      if (archetypes && issue.assignee) {
+        const assigneeStr = issue.assignee.toLowerCase();
+        matchedArchetype = archetypes.find(a =>
+          assigneeStr.includes(a.id.toLowerCase()) ||
+          assigneeStr.includes(a.name.toLowerCase())
+        );
+      }
+
+      return {
+        id: issue.id,
+        data: {
+          title: issue.title,
+          kind: 'issue' as const,
+          status: issue.status,
+          priority: issue.priority,
+          blockedBy: signalById.get(issue.id)?.blockedBy ?? 0,
+          blocks: signalById.get(issue.id)?.blocks ?? 0,
+          isActionable: actionableNodeIds.has(issue.id),
+          isCycleNode: cycleNodeIdSet.has(issue.id),
+          isDimmed: selectedId ? !chainNodeIds.has(issue.id) : false,
+          blockerTooltipLines: blockerTooltipMap.get(issue.id) ?? [],
+          assignee: issue.assignee,
+          archetype: matchedArchetype,
+          isAssignMode: assignMode,
+          labels: issue.labels,
+          archetypes: archetypes,
+        },
+        position: { x: 0, y: 0 },
+        sourcePosition: Position.Right,
+        targetPosition: Position.Left,
+        type: 'flowNode',
+      };
+    });
 
     const visibleIds = new Set(baseNodes.map((node) => node.id));
     const graphEdges: Edge[] = [];
@@ -170,13 +136,15 @@ function WorkflowGraphInner({
 
         const edgeId = `${dep.target}:blocks:${issue.id}`;
         const linkedToSelection = selectedId ? issue.id === selectedId || dep.target === selectedId : false;
+        const sourceIssue = beads.find((i) => i.id === dep.target);
+        const isInProgressEdge = issue.status === 'in_progress' || sourceIssue?.status === 'in_progress';
 
         graphEdges.push({
           id: edgeId,
           source: dep.target,
           target: issue.id,
           className: linkedToSelection ? 'workflow-edge-selected' : 'workflow-edge-muted',
-          animated: linkedToSelection,
+          animated: linkedToSelection || isInProgressEdge,
           label: 'BLOCKS',
           labelStyle: {
             fill: linkedToSelection ? '#e2e8f0' : '#cbd5e1',
@@ -210,7 +178,7 @@ function WorkflowGraphInner({
       nodes: layoutDagre(baseNodes, graphEdges),
       edges: graphEdges,
     };
-  }, [beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap]);
+  }, [beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap, archetypes, assignMode]);
 
   const nodeTypes: NodeTypes = useMemo(
     () => ({
@@ -286,7 +254,7 @@ function WorkflowGraphInner({
         <Background gap={32} size={1} color="rgba(255,255,255,0.03)" />
       </ReactFlow>
     </div>
-  );
+    );
 }
 
 export function WorkflowGraph(props: WorkflowGraphProps) {
@@ -296,3 +264,4 @@ export function WorkflowGraph(props: WorkflowGraphProps) {
     </ReactFlowProvider>
   );
 }
+
