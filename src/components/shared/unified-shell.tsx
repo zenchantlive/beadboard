@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
@@ -10,12 +10,11 @@ import { RightPanel } from './right-panel';
 import { MobileNav } from './mobile-nav';
 import { ThreadDrawer } from './thread-drawer';
 import { useUrlState } from '../../hooks/use-url-state';
-import { GraphView } from '../graph/graph-view';
+import { SmartDag } from '../graph/smart-dag';
 import { SocialPage } from '../social/social-page';
-import { SwarmWorkspace } from '../swarm/swarm-workspace';
-import { SwarmMissionPicker } from '../swarm/swarm-mission-picker';
 import { buildSocialCards } from '../../lib/social-cards';
-import { ActivityPanel } from '../activity/activity-panel';
+import { ContextualRightPanel } from '../activity/contextual-right-panel';
+import { AssignmentPanel } from '../graph/assignment-panel';
 import { useSwarmList } from '../../hooks/use-swarm-list';
 import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
 
@@ -33,10 +32,10 @@ export function UnifiedShell({
   projectScopeOptions,
 }: UnifiedShellProps) {
   const router = useRouter();
-  const { view, taskId, setTaskId, swarmId, setSwarmId, graphTab, setGraphTab, panel, drawer, setDrawer, epicId, setEpicId } = useUrlState();
+  const { view, taskId, setTaskId, swarmId, graphTab, panel, drawer, setDrawer, epicId, setEpicId } = useUrlState();
 
   // Subscribe to SSE for real-time updates on ALL views
-  const { issues, refresh } = useBeadsSubscription(initialIssues, projectRoot);
+  const { issues } = useBeadsSubscription(initialIssues, projectRoot);
 
   const [filters, setFilters] = useState<LeftPanelFilters>({
     query: '',
@@ -47,6 +46,10 @@ export function UnifiedShell({
   });
 
   const [customRightPanel, setCustomRightPanel] = useState<React.ReactNode | null>(null);
+
+  // Assign mode state for graph view
+  const [assignMode, setAssignMode] = useState(false);
+  const [selectedAssignIssue, setSelectedAssignIssue] = useState<BeadIssue | null>(null);
 
   const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
   const { swarms: swarmCards } = useSwarmList(projectRoot);
@@ -63,23 +66,33 @@ export function UnifiedShell({
   const handleCardSelect = useMemo(() => (id: string) => {
     if (view === 'social') {
       setTaskId(id, true);
-    } else if (view === 'swarm') {
-      setSwarmId(id, true);
-      // SwarmPage will handle setting the panel content via effect or prop
     }
-  }, [view, setTaskId, setSwarmId]);
+  }, [view, setTaskId]);
 
   const handleCloseDrawer = useMemo(() => () => {
     setDrawer('closed');
   }, [setDrawer]);
+
+  // Handle assign mode change from SmartDag
+  const handleAssignModeChange = useMemo(() => (mode: boolean) => {
+    setAssignMode(mode);
+    if (!mode) {
+      setSelectedAssignIssue(null);
+    }
+  }, []);
+
+  // Handle selected issue change from SmartDag (for assignment panel)
+  const handleSelectedIssueChange = useMemo(() => (issue: BeadIssue | null) => {
+    setSelectedAssignIssue(issue);
+  }, []);
 
   // Chat Mode Logic: If a card is selected (drawer='open'), we show Chat popup
   const isChatOpen = drawer === 'open' && (!!taskId || !!swarmId);
   const drawerTitle = selectedSocialCard?.title || selectedSwarmCard?.title || '';
   const drawerId = taskId || swarmId || '';
 
-  // Grid Layout: Fixed width for right panel (activity only)
-  const rightPanelWidth = '17rem';
+  // Grid Layout: Fixed width for right panel to match right-panel.tsx
+  const rightPanelWidth = panel === 'open' ? '20.75rem' : '0rem';
 
   const renderMiddleContent = () => {
     // Filter issues by Epic if selected (Global Filter)
@@ -93,13 +106,15 @@ export function UnifiedShell({
 
     if (view === 'graph') {
       return (
-        <GraphView
-          beads={filteredIssues}
-          selectedId={taskId ?? undefined}
-          onSelect={handleGraphSelect}
-          graphTab={graphTab}
-          onGraphTabChange={setGraphTab}
-          hideClosed={false}
+        <SmartDag
+          issues={filteredIssues}
+          epicId={epicId}
+          selectedTaskId={taskId ?? undefined}
+          onSelectTask={handleGraphSelect}
+          projectRoot={projectRoot}
+          hideClosed={graphTab !== 'flow'}
+          onAssignModeChange={handleAssignModeChange}
+          onSelectedIssueChange={handleSelectedIssueChange}
         />
       );
     }
@@ -115,17 +130,29 @@ export function UnifiedShell({
       );
     }
 
-    if (view === 'swarm') {
+    return null;
+  };
+
+  // Render right panel content based on view and assign mode
+  const renderRightPanelContent = () => {
+    if (customRightPanel) {
+      return customRightPanel;
+    }
+
+    // Show AssignmentPanel when in graph view with assign mode enabled
+    if (view === 'graph' && assignMode) {
       return (
-        <SwarmWorkspace
-          selectedMissionId={swarmId ?? undefined}
-          issues={filteredIssues}
+        <AssignmentPanel
+          selectedIssue={selectedAssignIssue}
           projectRoot={projectRoot}
+          issues={issues}
+          epicId={epicId ?? undefined}
         />
       );
     }
 
-    return null;
+    // Default: ContextualRightPanel
+    return <ContextualRightPanel epicId={epicId} issues={issues} projectRoot={projectRoot} />;
   };
 
   return (
@@ -140,29 +167,23 @@ export function UnifiedShell({
         style={{ gridTemplateColumns: `20rem 1fr ${rightPanelWidth}` }}
         data-testid="main-area"
       >
-        {/* LEFT PANEL: 20rem generic tree or 20rem swarm mission picker */}
-        {view === 'swarm' ? (
-          <div className="border-r bg-[var(--color-bg-base)] h-full overflow-y-auto">
-            <SwarmMissionPicker issues={issues} />
-          </div>
-        ) : (
-          <LeftPanel
-            issues={issues}
-            selectedEpicId={epicId}
-            onEpicSelect={setEpicId}
-            filters={filters}
-            onFiltersChange={setFilters}
-          />
-        )}
+        {/* LEFT PANEL: 20rem unified Epic/Task tree */}
+        <LeftPanel
+          issues={issues}
+          selectedEpicId={epicId}
+          onEpicSelect={setEpicId}
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
 
         {/* MIDDLE CONTENT: flex-1 */}
         <div className="relative overflow-hidden bg-black/10 shadow-inner" data-testid="middle-content">
           {renderMiddleContent()}
         </div>
 
-        {/* RIGHT PANEL: Activity or Custom */}
+        {/* RIGHT PANEL: Activity or Assignment */}
         <RightPanel isOpen={panel === 'open'}>
-          {customRightPanel || <ActivityPanel issues={issues} projectRoot={projectRoot} />}
+          {renderRightPanelContent()}
         </RightPanel>
       </div>
 
