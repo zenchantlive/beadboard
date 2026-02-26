@@ -1,14 +1,42 @@
 import { NextResponse } from 'next/server';
+import path from 'node:path';
 import { readIssuesFromDisk } from '../../../lib/read-issues';
 import { activityEventBus } from '../../../lib/realtime';
 import { buildSessionTaskFeed, getCommunicationSummary, getAgentLivenessMap, calculateIncursions } from '../../../lib/agent-sessions';
 import { listAgents } from '../../../lib/agent-registry';
 
+function isValidProjectRoot(root: string): boolean {
+  try {
+    const resolved = path.resolve(root);
+    if (!path.isAbsolute(resolved)) {
+      return false;
+    }
+    // Prevent path traversal by ensuring resolved path stays within the project root
+    const allowedBase = process.cwd();
+    const relative = path.relative(allowedBase, resolved);
+    // If "resolved" is outside "allowedBase", "relative" will start with ".."
+    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
-  const projectRoot = url.searchParams.get('projectRoot') ?? process.cwd();
+  const projectRootParam = url.searchParams.get('projectRoot');
+  const projectRoot = projectRootParam ?? process.cwd();
+
+  if (projectRootParam && !isValidProjectRoot(projectRoot)) {
+    return NextResponse.json(
+      { ok: false, error: { classification: 'validation', message: 'Invalid projectRoot path' } },
+      { status: 400 }
+    );
+  }
 
   try {
     const issues = await readIssuesFromDisk({ projectRoot, preferBd: true });
@@ -16,7 +44,7 @@ export async function GET(request: Request): Promise<Response> {
     const communication = await getCommunicationSummary();
     const livenessMap = await getAgentLivenessMap(projectRoot, activity);
     const incursions = await calculateIncursions();
-    const agentsResult = await listAgents({});
+    const agentsResult = await listAgents({}, { projectRoot });
 
     const feed = buildSessionTaskFeed(issues, activity, communication, livenessMap);
 
@@ -33,8 +61,8 @@ export async function GET(request: Request): Promise<Response> {
       {
         ok: false,
         error: {
-          classification: 'unknown',
-          message: error instanceof Error ? error.message : 'Failed to load session feed.',
+          classification: 'internal_error',
+          message: 'An internal error occurred while loading the session feed.',
         },
       },
       { status: 500 },

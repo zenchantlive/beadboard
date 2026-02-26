@@ -77,7 +77,14 @@ function asNonEmptyString(value: unknown, field: string): string {
   if (typeof value !== 'string' || !value.trim()) {
     throw new MutationValidationError(`"${field}" is required.`);
   }
-  return value.trim();
+  const trimmed = value.trim();
+  // Remove control characters that could cause issues in command execution
+  // Preserve backslashes for Windows paths and punctuation for user text
+  const sanitized = trimmed.replace(/[\x00-\x1f\x7f]/g, '');
+  if (!sanitized) {
+    throw new MutationValidationError(`"${field}" contains only invalid characters.`);
+  }
+  return sanitized;
 }
 
 function asOptionalString(value: unknown): string | undefined {

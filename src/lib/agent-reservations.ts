@@ -215,6 +215,49 @@ async function readActiveReservations(): Promise<AgentReservation[]> {
   }
 }
 
+// Simple mutex-based locking using a shared lock file to prevent race conditions
+const LOCK_FILE_PATH = path.join(reservationsRoot(), '.lock');
+
+async function lockActiveReservations(): Promise<void> {
+  // Ensure the directory exists
+  await fs.mkdir(path.dirname(LOCK_FILE_PATH), { recursive: true });
+  
+  // Use a simple file-based mutex - create file exclusively, fail if exists
+  let attempts = 0;
+  const maxAttempts = 100;
+  
+  while (attempts < maxAttempts) {
+    try {
+      await fs.writeFile(LOCK_FILE_PATH, String(process.pid), { flag: 'wx' });
+      return;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+        // Lock file exists, wait and retry
+        await new Promise(resolve => setTimeout(resolve, 50));
+        attempts++;
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error('Failed to acquire lock after maximum attempts');
+}
+
+async function unlockActiveReservations(): Promise<void> {
+  try {
+    const content = await fs.readFile(LOCK_FILE_PATH, 'utf8');
+    // Only release if we own the lock
+    if (content.trim() === String(process.pid)) {
+      await fs.unlink(LOCK_FILE_PATH);
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      throw error;
+    }
+    // Lock file doesn't exist, ignore
+  }
+}
+
 async function atomicWriteJson(filePath: string, payload: string): Promise<void> {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
 
@@ -317,6 +360,9 @@ export async function reserveAgentScope(
   }
 
   try {
+    // Acquire exclusive lock to prevent race conditions
+    await lockActiveReservations();
+    
     const now = deps.now ? deps.now() : new Date().toISOString();
     const reservations = await readActiveReservations();
     const normalizedScope = normalizePath(scope);
@@ -384,6 +430,8 @@ export async function reserveAgentScope(
     return success(command, created);
   } catch (error) {
     return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to reserve scope.');
+  } finally {
+    await unlockActiveReservations();
   }
 }
 
@@ -405,6 +453,9 @@ export async function releaseAgentReservation(
   }
 
   try {
+    // Acquire exclusive lock to prevent race conditions
+    await lockActiveReservations();
+    
     const now = deps.now ? deps.now() : new Date().toISOString();
     const reservations = await readActiveReservations();
     const normalizedScope = normalizePath(scope);
@@ -436,6 +487,8 @@ export async function releaseAgentReservation(
     return success(command, released);
   } catch (error) {
     return invalid(command, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Failed to release reservation.');
+  } finally {
+    await unlockActiveReservations();
   }
 }
 

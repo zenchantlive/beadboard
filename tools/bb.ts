@@ -46,7 +46,11 @@ function printResponse(response: AnyCommandResponse, json: boolean) {
         console.log(`Agent: ${d.agent_id}\nRole: ${d.role}\nStatus: ${d.status}\nLast Seen: ${d.last_seen_at}`);
     } else if (response.command === 'agent activity-lease') {
         const d = response.data;
-        console.log(`✓ Activity lease extended: ${d.agent_id} (version: ${d.version})`);
+        if (d) {
+          console.log(`✓ Activity lease extended: ${d.agent_id} (version: ${d.version})`);
+        } else {
+          console.log(`✓ Activity lease extended.`);
+        }
     } else if (response.command === 'agent send') {
         const d = response.data;
         console.log(`✓ Message sent: ${d.message_id} (state: ${d.state})`);
@@ -176,7 +180,7 @@ async function main() {
         // we extend their lease as a side-effect of real work.
         // This provides observability WITHOUT background workers or popups.
         const targetAgent = stringArg(values.agent) || stringArg(values.from) || stringArg(values.name);
-        if (targetAgent && command !== 'register') {
+        if (targetAgent && command !== 'register' && command !== 'activity-lease') {
             await extendActivityLease({ agent: targetAgent }, deps).catch(() => {});
         }
 

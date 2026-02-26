@@ -36,6 +36,21 @@ Understand the "Why" and "What's Next".
 - **Focus Mode**: Minimizable dependency strip and deep-linking support for sharing exact views.
 - **Smart Metadata**: See bead counts, priorities, and status health at a glance.
 
+### 4. Agent Sessions Hub (`/sessions`)
+Coordinate multi-agent workflows with social-dense visibility.
+- **Epic-Grouped Task Feed**: Tasks organized by parent Epic with session state indicators (active, reviewing, needs_input, stale).
+- **Cross-Agent Communication**: Built-in messaging with HANDOFF, BLOCKED, and INFO categories.
+- **Agent Productivity Metrics**: Real-time stats showing active tasks, completions, and recent wins.
+- **Derived Activity Engine**: O(N) snapshot diffing computes project history on-demand without separate event storage.
+- **`bb agent` CLI Integration**: Visualizes data from agent registry, reservations, and mailboxes.
+
+### 5. Chronological Timeline (`/timeline`)
+Real-time activity feed for all project events.
+- **Live Updates**: Server-Sent Events stream changes instantly.
+- **Date Grouping**: Events organized by day (Today, Yesterday, etc.).
+- **Polymorphic Cards**: Distinct visual styles for Status, Lifecycle, and Diff events.
+- **History Buffer**: Recent events preserved across server restarts.
+
 ## 🛠️ Stack
 - **Framework**: Next.js 15 (App Router)
 - **UI Engine**: React 19 + Framer Motion
