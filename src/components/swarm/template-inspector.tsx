@@ -1,8 +1,24 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { X, Save, Trash2, Plus, Network, ShieldAlert } from 'lucide-react';
+import { X, Save, Trash2, Plus, Network, ShieldAlert, Palette, Smile, Copy } from 'lucide-react';
 import type { SwarmTemplate, AgentArchetype } from '../../lib/types-swarm';
+
+const COLOR_PRESETS = [
+    '#3b82f6', '#2563eb', '#1d4ed8', '#0ea5e9', '#06b6d4',
+    '#10b981', '#059669', '#22c55e', '#84cc16', '#a3e635',
+    '#8b5cf6', '#7c3aed', '#a855f7', '#c084fc', '#e879f9',
+    '#ef4444', '#dc2626', '#f97316', '#fb923c', '#fbbf24',
+    '#ec4899', '#db2777', '#f472b6', '#f9a8d4', '#fda4af',
+    '#6366f1', '#64748b', '#78716c', '#57534e', '#1e293b',
+];
+
+const EMOJI_PRESETS = [
+    '🏗️', '⚙️', '🔍', '🧪', '🚀', '🤖', '👨‍💻', '👩‍💻', '🧙‍♂️', '🧙‍♀️',
+    '🔧', '📝', '🎯', '⚡', '🛡️', '📊', '🗂️', '💡', '🔮', '🧩',
+    '⭐', '🔥', '💎', '🚦', '🎪', '🎨', '🎭', '🃏', '👑', '🏆',
+    '🦅', '🐺', '🦁', '🐻', '🦊', '🐙', '🐝', '🦋', '🌿', '🌊',
+];
 
 interface TemplateInspectorProps {
     template?: SwarmTemplate;
@@ -10,18 +26,24 @@ interface TemplateInspectorProps {
     onClose: () => void;
     onSave: (data: Partial<SwarmTemplate>) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
+    onClone?: (template: SwarmTemplate) => Promise<void>;
 }
 
-export function TemplateInspector({ template, archetypes, onClose, onSave, onDelete }: TemplateInspectorProps) {
+export function TemplateInspector({ template, archetypes, onClose, onSave, onDelete, onClone }: TemplateInspectorProps) {
     const isNew = !template;
 
     const [name, setName] = useState(template?.name || '');
     const [description, setDescription] = useState(template?.description || '');
     const [team, setTeam] = useState<{ archetypeId: string; count: number }[]>(template?.team || []);
     const [protoFormula, setProtoFormula] = useState(template?.protoFormula || '');
+    const [color, setColor] = useState(template?.color || '#f59e0b');
+    const [icon, setIcon] = useState(template?.icon || '');
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isCloning, setIsCloning] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showColorPicker, setShowColorPicker] = useState(false);
 
     useEffect(() => {
         if (template) {
@@ -29,6 +51,8 @@ export function TemplateInspector({ template, archetypes, onClose, onSave, onDel
             setDescription(template.description);
             setTeam(template.team);
             setProtoFormula(template.protoFormula || '');
+            setColor(template.color || '#f59e0b');
+            setIcon(template.icon || '');
         }
     }, [template]);
 
@@ -71,6 +95,8 @@ export function TemplateInspector({ template, archetypes, onClose, onSave, onDel
                 description: description.trim(),
                 team,
                 protoFormula: protoFormula.trim() || undefined,
+                color,
+                icon: icon || undefined,
                 isBuiltIn: template?.isBuiltIn
             });
             onClose();
@@ -99,7 +125,32 @@ export function TemplateInspector({ template, archetypes, onClose, onSave, onDel
         }
     };
 
+    const handleClone = async () => {
+        if (!template || !onClone) return;
+
+        setIsCloning(true);
+        setError(null);
+
+        try {
+            await onClone(template);
+            onClose();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to clone');
+        } finally {
+            setIsCloning(false);
+        }
+    };
+
     const totalAgents = team.reduce((acc, curr) => acc + curr.count, 0);
+    const displayChar = icon || totalAgents;
+
+    const getArchetypeName = (id: string) => {
+        return archetypes.find(a => a.id === id)?.name || id;
+    };
+
+    const getArchetypeColor = (id: string) => {
+        return archetypes.find(a => a.id === id)?.color || '#64748b';
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -107,8 +158,11 @@ export function TemplateInspector({ template, archetypes, onClose, onSave, onDel
 
                 <div className="flex items-center justify-between border-b border-[var(--ui-border-soft)] px-5 py-4 bg-[#14202e]">
                     <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 font-bold text-lg">
-                            {totalAgents}
+                        <div 
+                            className="h-12 w-12 rounded-xl flex items-center justify-center text-xl font-bold border-2"
+                            style={{ backgroundColor: `${color}20`, color: color, borderColor: `${color}50` }}
+                        >
+                            {displayChar}
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
@@ -165,6 +219,97 @@ export function TemplateInspector({ template, archetypes, onClose, onSave, onDel
                             placeholder="Describe the purpose of this swarm template..."
                             className="w-full bg-[#0a111a] border border-[var(--ui-border-soft)] rounded-md px-3 py-2 text-sm text-[var(--ui-text-primary)] focus:outline-none focus:border-[var(--ui-accent-info)] resize-none"
                         />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="flex items-center gap-2 text-sm font-medium text-[var(--ui-text-secondary)] mb-1.5">
+                                <Palette className="w-4 h-4" />
+                                Color
+                            </label>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div
+                                    className="h-8 w-8 rounded-lg border-2 border-white/20"
+                                    style={{ backgroundColor: color }}
+                                />
+                                <input
+                                    type="text"
+                                    value={color}
+                                    onChange={(e) => setColor(e.target.value)}
+                                    className="flex-1 px-3 py-1.5 rounded-lg bg-[var(--ui-bg-soft)] border border-[var(--ui-border-soft)] text-[var(--ui-text-primary)] font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowColorPicker(!showColorPicker)}
+                                    className="px-3 py-1.5 rounded-lg bg-[var(--ui-bg-soft)] border border-[var(--ui-border-soft)] text-[var(--ui-text-secondary)] hover:bg-white/5 text-sm"
+                                >
+                                    {showColorPicker ? 'Hide' : 'Pick'}
+                                </button>
+                            </div>
+                            {showColorPicker && (
+                                <div className="grid grid-cols-10 gap-1.5 p-2 bg-[var(--ui-bg-soft)] rounded-lg border border-[var(--ui-border-soft)]">
+                                    {COLOR_PRESETS.map((presetColor) => (
+                                        <button
+                                            key={presetColor}
+                                            type="button"
+                                            onClick={() => {
+                                                setColor(presetColor);
+                                                setShowColorPicker(false);
+                                            }}
+                                            className={`h-6 w-6 rounded-md border-2 transition-all hover:scale-110 ${color === presetColor ? 'border-white ring-2 ring-white/30' : 'border-transparent'}`}
+                                            style={{ backgroundColor: presetColor }}
+                                            title={presetColor}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="flex items-center gap-2 text-sm font-medium text-[var(--ui-text-secondary)] mb-1.5">
+                                <Smile className="w-4 h-4" />
+                                Icon / Emoji
+                            </label>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div
+                                    className="h-8 w-8 rounded-lg flex items-center justify-center text-lg border border-[var(--ui-border-soft)] bg-[var(--ui-bg-soft)]"
+                                    style={{ color }}
+                                >
+                                    {icon || '?'}
+                                </div>
+                                <input
+                                    type="text"
+                                    value={icon}
+                                    onChange={(e) => setIcon(e.target.value)}
+                                    className="flex-1 px-3 py-1.5 rounded-lg bg-[var(--ui-bg-soft)] border border-[var(--ui-border-soft)] text-[var(--ui-text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                    placeholder="Emoji or leave empty"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                    className="px-3 py-1.5 rounded-lg bg-[var(--ui-bg-soft)] border border-[var(--ui-border-soft)] text-[var(--ui-text-secondary)] hover:bg-white/5 text-sm"
+                                >
+                                    {showEmojiPicker ? 'Hide' : 'Pick'}
+                                </button>
+                            </div>
+                            {showEmojiPicker && (
+                                <div className="grid grid-cols-10 gap-1.5 p-2 bg-[var(--ui-bg-soft)] rounded-lg border border-[var(--ui-border-soft)]">
+                                    {EMOJI_PRESETS.map((emoji) => (
+                                        <button
+                                            key={emoji}
+                                            type="button"
+                                            onClick={() => {
+                                                setIcon(emoji);
+                                                setShowEmojiPicker(false);
+                                            }}
+                                            className={`h-6 w-6 rounded-md flex items-center justify-center text-base transition-all hover:scale-110 hover:bg-white/10 ${icon === emoji ? 'bg-white/20 ring-2 ring-white/30' : ''}`}
+                                        >
+                                            {emoji}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="border-t border-[var(--ui-border-soft)] pt-5">
@@ -228,12 +373,58 @@ export function TemplateInspector({ template, archetypes, onClose, onSave, onDel
                         />
                     </div>
 
+                    <div className="border-t border-[var(--ui-border-soft)] pt-4">
+                        <h3 className="text-sm font-medium text-[var(--ui-text-secondary)] mb-3">Live Preview</h3>
+                        <div className="p-4 rounded-xl bg-[var(--ui-bg-soft)] border border-[var(--ui-border-soft)]">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div
+                                    className="h-10 w-10 rounded-xl flex items-center justify-center text-lg font-bold border-2"
+                                    style={{ 
+                                        backgroundColor: `${color}20`, 
+                                        color: color, 
+                                        borderColor: `${color}50` 
+                                    }}
+                                >
+                                    {displayChar}
+                                </div>
+                                <div>
+                                    <div className="font-semibold text-[var(--ui-text-primary)]">
+                                        {name || 'Template Name'}
+                                    </div>
+                                    <div className="text-xs text-[var(--ui-text-muted)]">
+                                        {description || 'No description'}
+                                    </div>
+                                </div>
+                            </div>
+                            {team.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5">
+                                    {team.map((member, idx) => (
+                                        <span
+                                            key={idx}
+                                            className="px-2 py-0.5 rounded-full text-[10px] font-medium"
+                                            style={{ 
+                                                backgroundColor: `${getArchetypeColor(member.archetypeId)}20`, 
+                                                color: getArchetypeColor(member.archetypeId)
+                                            }}
+                                        >
+                                            {getArchetypeName(member.archetypeId)} ×{member.count}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            {protoFormula && (
+                                <div className="mt-3 p-2 rounded-lg bg-black/20 text-xs text-[var(--ui-text-muted)] font-mono line-clamp-2">
+                                    {protoFormula}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                 </div>
 
-                {/* Footer Controls */}
                 <div className="border-t border-[var(--ui-border-soft)] bg-[#0A111A] p-4 flex items-center justify-between flex-shrink-0 rounded-b-xl">
-                    <div>
-                        {!isNew && !template?.isBuiltIn && (
+                    <div className="flex items-center gap-2">
+                        {!isNew && !template?.isBuiltIn && onDelete && (
                             <button
                                 type="button"
                                 onClick={handleDelete}
@@ -242,6 +433,17 @@ export function TemplateInspector({ template, archetypes, onClose, onSave, onDel
                             >
                                 <Trash2 className="w-4 h-4" />
                                 {isDeleting ? 'Deleting...' : 'Delete'}
+                            </button>
+                        )}
+                        {!isNew && onClone && (
+                            <button
+                                type="button"
+                                onClick={handleClone}
+                                disabled={isCloning}
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg text-[var(--ui-text-secondary)] hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <Copy className="w-4 h-4" />
+                                {isCloning ? 'Cloning...' : 'Clone'}
                             </button>
                         )}
                     </div>
