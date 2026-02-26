@@ -1,0 +1,117 @@
+/**
+ * Theme Tokens - Variable Names Only
+ * 
+ * This file defines all CSS custom property names.
+ * Values are assigned in theme-specific files (aurora.css, etc.)
+ * 
+ * Usage in components:
+ *   bg-[var(--surface-primary)]
+ *   text-[var(--text-secondary)]
+ *   border-[var(--border-default)]
+ */
+
+:root {
+  /* ==========================================================================
+     1. SURFACE LAYERS (Backgrounds)
+     ========================================================================== */
+  --surface-backdrop:     /* Page/app background */
+  --surface-elevated:     /* Header - visually sits on top */
+  --surface-primary:      /* Left sidebar */
+  --surface-secondary:    /* Main content area */
+  --surface-tertiary:     /* Panels within sidebars */
+  --surface-quaternary:   /* Cards */
+  --surface-overlay:      /* Modals, dropdowns, drawers */
+  --surface-input:        /* Form fields, inputs */
+  --surface-hover:        /* Hover states */
+  --surface-active:       /* Active/selected states */
+  --surface-tooltip:      /* Tooltips, popovers */
+
+  /* ==========================================================================
+     2. BORDERS
+     ========================================================================== */
+  --border-subtle:        /* Dividers between sections */
+  --border-default:       /* Card borders */
+  --border-strong:        /* Focus rings, selected states */
+  --border-accent:        /* Colored status borders */
+
+  /* ==========================================================================
+     3. TEXT
+     ========================================================================== */
+  --text-primary:         /* Headlines, important text */
+  --text-secondary:       /* Body text */
+  --text-tertiary:        /* Muted, hints */
+  --text-disabled:        /* Disabled elements */
+  --text-inverse:         /* Text on colored backgrounds */
+
+  /* ==========================================================================
+     4. ACCENTS (Functional)
+     ========================================================================== */
+  --accent-info:          /* Cyan - links, actions */
+  --accent-success:       /* Green - ready, done */
+  --accent-warning:       /* Amber - in progress */
+  --accent-danger:        /* Red - blocked, errors */
+
+  /* ==========================================================================
+     5. ACCENT GLOWS (Aurora Effects)
+     ========================================================================== */
+  --glow-info:            /* Box-shadow for info glow */
+  --glow-success:         /* Box-shadow for success glow */
+  --glow-warning:         /* Box-shadow for warning glow */
+  --glow-danger:          /* Box-shadow for danger glow */
+
+  /* ==========================================================================
+     6. GRAPH COLORS (ReactFlow)
+     ========================================================================== */
+  --graph-node-default:   /* Default node background */
+  --graph-node-epic:      /* Epic node accent tint */
+  --graph-edge-default:   /* Default edge color */
+  --graph-edge-selected:  /* Selected edge color */
+  --graph-edge-cycle:     /* Cycle warning color */
+
+  /* ==========================================================================
+     7. SEMANTIC ALPHAS (Replacing bg-white/5, bg-black/40)
+     ========================================================================== */
+  --alpha-white-low:      /* 5% white overlay */
+  --alpha-white-medium:   /* 10% white overlay */
+  --alpha-white-high:     /* 20% white overlay */
+  --alpha-black-low:      /* 10% black overlay */
+  --alpha-black-medium:   /* 40% black overlay */
+  --alpha-black-high:     /* 80% black overlay */
+
+  /* ==========================================================================
+     8. STATUS COLORS
+     ========================================================================== */
+  --status-ready:         /* Ready/open status tint */
+  --status-in-progress:   /* In progress status tint */
+  --status-blocked:       /* Blocked status tint */
+  --status-closed:        /* Closed/done status tint */
+  --status-deferred:      /* Deferred status tint */
+
+  /* ==========================================================================
+     9. SHADOWS
+     ========================================================================== */
+  --shadow-sm:            /* Subtle elevation */
+  --shadow-md:            /* Cards */
+  --shadow-lg:            /* Modals, drawers */
+
+  /* ==========================================================================
+     10. AGENT ROLE COLORS
+     ========================================================================== */
+  --agent-role-ui:        /* UI role color */
+  --agent-role-graph:     /* Graph role color */
+  --agent-role-orchestrator: /* Orchestrator role */
+  --agent-role-researcher:   /* Researcher role */
+
+  /* ==========================================================================
+     11. SCROLLBARS
+     ========================================================================== */
+  --scrollbar-track:      /* Scrollbar track background */
+  --scrollbar-thumb:      /* Scrollbar thumb */
+  --scrollbar-thumb-hover: /* Scrollbar thumb hover state */
+
+  /* ==========================================================================
+     12. CODE/SYNTAX
+     ========================================================================== */
+  --code-background:      /* Code block background */
+  --code-text:            /* Code text color */
+}

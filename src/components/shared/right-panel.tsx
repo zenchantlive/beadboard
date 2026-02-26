@@ -20,7 +20,7 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
   if (isDesktop) {
     return (
       <div
-        className="flex overflow-hidden h-full bg-[var(--ui-bg-panel)] border-l border-[var(--ui-border-strong)]"
+        className="flex overflow-hidden h-full bg-[var(--surface-tertiary)] border-l border-[var(--border-strong)]"
         style={{
           boxShadow: isOpen ? '-8px 0 20px -12px rgba(0,0,0,0.4)' : 'none',
         }}
@@ -30,12 +30,12 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
           <>
             {/* Main Content (Chat or Activity) */}
             <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
-              <div className="border-l border-[var(--ui-border-soft)] bg-[var(--ui-bg-panel)]">
-                <div className="px-3 py-2 border-b border-[var(--ui-border-soft)]">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Agent Pool Monitor</p>
+              <div className="border-l border-[var(--border-subtle)] bg-[var(--surface-tertiary)]">
+                <div className="px-3 py-2 border-b border-[var(--border-subtle)]">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--text-tertiary)]">Agent Pool Monitor</p>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-0 bg-[var(--ui-bg-shell)]">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-0 bg-[var(--surface-secondary)]">
                  {/* Remove default padding to allow edge-to-edge chat */}
                  {children || <span>Right Panel</span>}
               </div>
@@ -46,8 +46,8 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
               <div
                 className="h-full w-10 flex-shrink-0 shadow-[-10px_0_20px_-18px_rgba(0,0,0,0.9)]"
                 style={{
-                  background: 'var(--ui-bg-shell)',
-                  borderLeft: '1px solid var(--ui-border-soft)',
+                  background: 'var(--surface-secondary)',
+                  borderLeft: '1px solid var(--border-subtle)',
                 }}
               >
                 {rail}
@@ -76,7 +76,7 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
       <div
         className="fixed inset-0 z-50"
         style={{
-          backgroundColor: 'var(--ui-bg-panel)',
+          backgroundColor: 'var(--surface-tertiary)',
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
           overscrollBehavior: 'contain',
@@ -88,8 +88,8 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
         <div className="flex justify-end px-4 py-3">
           <button
             onClick={handleCloseClick}
-            className="p-2 rounded-md hover:bg-white/10"
-            style={{ color: 'var(--ui-text-muted)' }}
+            className="p-2 rounded-md hover:bg-[var(--alpha-white-low)]"
+            style={{ color: 'var(--text-tertiary)' }}
             data-testid="right-panel-close"
             aria-label="Close panel"
           >
@@ -100,7 +100,7 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
           className="overflow-y-auto px-4 pb-4"
           style={{
             height: 'calc(100% - 4rem)',
-            color: 'var(--ui-text-primary)',
+            color: 'var(--text-primary)',
             overscrollBehavior: 'contain',
           }}
         >

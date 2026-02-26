@@ -158,7 +158,7 @@ export function UnifiedShell({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--ui-bg-app)]" data-testid="unified-shell">
+    <div className="flex flex-col h-screen bg-[var(--surface-backdrop)]" data-testid="unified-shell">
       {/* TOP BAR: 3rem fixed */}
       <TopBar />
 
@@ -182,7 +182,7 @@ export function UnifiedShell({
         <ResizeHandle direction="left" onResize={handleLeftResize} />
 
         {/* MIDDLE CONTENT: flex-1 */}
-        <div className="flex-1 relative overflow-hidden bg-[var(--ui-bg-main)]" data-testid="middle-content">
+        <div className="flex-1 relative overflow-hidden bg-[var(--surface-secondary)]" data-testid="middle-content">
           {renderMiddleContent()}
         </div>
 

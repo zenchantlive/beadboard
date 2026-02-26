@@ -131,10 +131,10 @@ function buildEntries(issues: BeadIssue[]): EpicEntry[] {
 }
 
 function statusDot(status: BeadIssue['status']): string {
-  if (status === 'blocked') return 'bg-[var(--ui-accent-blocked)]';
-  if (status === 'in_progress') return 'bg-[var(--ui-accent-warning)]';
-  if (status === 'closed') return 'bg-[var(--ui-text-muted)]';
-  return 'bg-[var(--ui-accent-ready)]';
+  if (status === 'blocked') return 'bg-[var(--accent-danger)]';
+  if (status === 'in_progress') return 'bg-[var(--accent-warning)]';
+  if (status === 'closed') return 'bg-[var(--text-tertiary)]';
+  return 'bg-[var(--accent-success)]';
 }
 
 function rowTone(entry: EpicEntry): string {
@@ -147,7 +147,7 @@ function rowTone(entry: EpicEntry): string {
   if (entry.readyCount > 0) {
     return 'rgba(53, 217, 143, 0.08)';
   }
-  return 'var(--ui-bg-panel)';
+  return 'var(--surface-tertiary)';
 }
 
 function isTaskMatch(task: BeadIssue, filters: LeftPanelFilters): boolean {
@@ -190,9 +190,9 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
   ];
 
   return (
-    <aside className="flex h-full min-h-0 overflow-hidden flex-col bg-[var(--ui-bg-shell)] border-r border-[var(--ui-border-strong)]" data-testid="left-panel">
+    <aside className="flex h-full min-h-0 overflow-hidden flex-col bg-[var(--surface-primary)] border-r border-[var(--border-strong)]" data-testid="left-panel">
       <div className="px-4 py-3">
-        <div className="mb-3 flex items-center gap-1 rounded-xl bg-[var(--ui-bg-panel)] p-1 border border-[var(--ui-border-strong)]">
+        <div className="mb-3 flex items-center gap-1 rounded-xl bg-[var(--surface-tertiary)] p-1 border border-[var(--border-strong)]">
           {views.map((item) => {
             const active = view === item.id;
             return (
@@ -201,10 +201,10 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
                 type="button"
                 onClick={() => setView(item.id)}
                 className={cn(
-                  'flex-1 rounded-lg px-2 py-1 text-xs font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)]',
+                  'flex-1 rounded-lg px-2 py-1 text-xs font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]',
                   active
-                    ? 'bg-[#183149] text-[var(--ui-text-primary)]'
-                    : 'text-[var(--ui-text-muted)] hover:text-[var(--ui-text-primary)]',
+                    ? 'bg-[var(--accent-info)]/20 text-[var(--accent-info)]'
+                    : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]',
                 )}
               >
                 {item.label}
@@ -213,7 +213,7 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
           })}
         </div>
 
-        <div className="space-y-2 rounded-xl bg-[var(--ui-bg-card)] p-2.5 border border-[var(--ui-border-soft)]">
+        <div className="space-y-2 rounded-xl bg-[var(--surface-quaternary)] p-2.5 border border-[var(--border-subtle)]">
           <div className="grid grid-cols-1 gap-2">
             <input
               value={filters.query}
@@ -257,10 +257,10 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
               type="button"
               onClick={() => onFiltersChange({ ...filters, preset: filters.preset === 'active' ? 'all' : 'active' })}
               className={cn(
-                'flex-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.11em] shadow-[0_8px_18px_-16px_rgba(0,0,0,0.9)] transition-colors',
+                'flex-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.11em] transition-colors border',
                 filters.preset === 'active'
-                  ? 'bg-[#2f2618] text-[var(--ui-accent-warning)]'
-                  : 'bg-[#0f1824] text-[var(--ui-text-muted)]',
+                  ? 'bg-[var(--accent-warning)]/15 border-[var(--accent-warning)]/40 text-[var(--accent-warning)]'
+                  : 'bg-[var(--surface-quaternary)] border-[var(--border-subtle)] text-[var(--text-tertiary)]',
               )}
               aria-pressed={filters.preset === 'active'}
             >
@@ -270,10 +270,10 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
               type="button"
               onClick={() => onFiltersChange({ ...filters, preset: filters.preset === 'blocked_agents' ? 'all' : 'blocked_agents' })}
               className={cn(
-                'flex-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.11em] shadow-[0_8px_18px_-16px_rgba(0,0,0,0.9)] transition-colors',
+                'flex-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.11em] transition-colors border',
                 filters.preset === 'blocked_agents'
-                  ? 'bg-[#2f1621] text-[var(--ui-accent-blocked)]'
-                  : 'bg-[#0f1824] text-[var(--ui-text-muted)]',
+                  ? 'bg-[var(--accent-danger)]/15 border-[var(--accent-danger)]/40 text-[var(--accent-danger)]'
+                  : 'bg-[var(--surface-quaternary)] border-[var(--border-subtle)] text-[var(--text-tertiary)]',
               )}
               aria-pressed={filters.preset === 'blocked_agents'}
             >
@@ -286,8 +286,8 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
             className={cn(
               'w-full rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.11em] transition-colors border',
               filters.hideClosed
-                ? 'bg-[var(--ui-accent-ready)]/15 border-[var(--ui-accent-ready)]/40 text-[var(--ui-accent-ready)]'
-                : 'bg-[var(--ui-bg-card)] border-[var(--ui-border-soft)] text-[var(--ui-text-muted)]',
+                ? 'bg-[var(--accent-success)]/15 border-[var(--accent-success)]/40 text-[var(--accent-success)]'
+                : 'bg-[var(--surface-quaternary)] border-[var(--border-subtle)] text-[var(--text-tertiary)]',
             )}
             aria-pressed={filters.hideClosed}
           >
@@ -295,7 +295,7 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
           </button>
         </div>
 
-        <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--ui-text-muted)]">Navigation / Epics</p>
+        <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--text-tertiary)]">Navigation / Epics</p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 py-3 custom-scrollbar">
@@ -319,7 +319,7 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
           const blockedPercent = total > 0 ? Math.round((blockedCount / total) * 100) : 0;
           const isExpanded = expanded[epic.id] ?? false;
           const isSelected = selectedEpicId === epic.id;
-          const laneColor = blockedCount > 0 ? 'var(--ui-accent-blocked)' : activeCount > 0 ? 'var(--ui-accent-warning)' : 'var(--ui-accent-ready)';
+          const laneColor = blockedCount > 0 ? 'var(--accent-danger)' : activeCount > 0 ? 'var(--accent-warning)' : 'var(--accent-success)';
           const rowBackground = rowTone(entry);
 
           if (matchedChildren.length === 0 && hasActiveFilters && !isSelected) {
@@ -330,10 +330,10 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
             <div key={epic.id} className="mb-2">
               <div
                 className={cn(
-                  'rounded-xl px-3 py-3 transition-colors border border-[var(--ui-border-soft)]',
+                  'rounded-xl px-3 py-3 transition-colors border border-[var(--border-subtle)]',
                   isSelected
-                    ? 'text-[var(--ui-text-primary)] ring-1 ring-[var(--ui-accent-info)]/30'
-                    : 'text-[var(--ui-text-muted)] hover:text-[var(--ui-text-primary)]',
+                    ? 'text-[var(--text-primary)] ring-1 ring-[var(--accent-info)]/30'
+                    : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]',
                 )}
                 style={{
                   borderLeft: `3px solid ${laneColor}`,
@@ -344,7 +344,7 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
                   <button
                     type="button"
                     onClick={() => setExpanded((current) => ({ ...current, [epic.id]: !isExpanded }))}
-                    className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded text-[var(--ui-text-muted)] transition-colors hover:bg-white/5 hover:text-[var(--ui-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)]"
+                    className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded text-[var(--text-tertiary)] transition-colors hover:bg-[var(--alpha-white-low)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
                     aria-label={isExpanded ? `Collapse ${epic.title}` : `Expand ${epic.title}`}
                     aria-expanded={isExpanded}
                   >
@@ -357,14 +357,14 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
                   >
                     <div className="flex min-w-0 items-center gap-1.5">
                       {isExpanded ? <FolderOpen className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" /> : <Folder className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />}
-                      <p className="truncate text-[15px] font-semibold leading-tight text-[var(--ui-text-primary)]">{epic.title}</p>
+                      <p className="truncate text-[15px] font-semibold leading-tight text-[var(--text-primary)]">{epic.title}</p>
                     </div>
-                    <p className="mt-0.5 truncate font-mono text-[11px] text-[var(--ui-text-muted)]">{epic.id}</p>
+                    <p className="mt-0.5 truncate font-mono text-[11px] text-[var(--text-tertiary)]">{epic.id}</p>
                   </button>
                   <button
                     type="button"
                     onClick={() => onEpicSelect?.(epic.id)}
-                    className="inline-flex h-5 w-5 items-center justify-center rounded bg-[var(--ui-bg-card)] text-[var(--ui-text-muted)] border border-[var(--ui-border-soft)] transition-colors hover:text-[var(--ui-text-primary)]"
+                    className="inline-flex h-5 w-5 items-center justify-center rounded bg-[var(--surface-quaternary)] text-[var(--text-tertiary)] border border-[var(--border-subtle)] transition-colors hover:text-[var(--text-primary)]"
                     aria-label={`Focus ${epic.title}`}
                   >
                     <Star className="h-3 w-3" aria-hidden="true" />
@@ -372,29 +372,29 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
                 </div>
 
                 <div className="flex items-center gap-3 text-[11px]">
-                  <p><span className="text-[var(--ui-text-primary)]">{total}</span> tasks</p>
-                  <p><span className="text-[var(--ui-accent-warning)]">{activeCount}</span> active</p>
-                  <p><span className="text-[var(--ui-accent-blocked)]">{agentBlockedCount}</span> ag-blocked</p>
-                  <p className="ml-auto text-[var(--ui-text-muted)]">{formatRelative(latestTimestamp)}</p>
+                  <p><span className="text-[var(--text-primary)]">{total}</span> tasks</p>
+                  <p><span className="text-[var(--accent-warning)]">{activeCount}</span> active</p>
+                  <p><span className="text-[var(--accent-danger)]">{agentBlockedCount}</span> ag-blocked</p>
+                  <p className="ml-auto text-[var(--text-tertiary)]">{formatRelative(latestTimestamp)}</p>
                 </div>
 
                 <div className="mt-2">
                   <div className="h-1.5 overflow-hidden rounded-full bg-[#0a111a]">
                     <div className="flex h-full w-full">
-                      <div style={{ width: `${readyPercent}%`, background: 'var(--ui-accent-ready)' }} />
-                      <div style={{ width: `${activePercent}%`, background: 'var(--ui-accent-warning)' }} />
-                      <div style={{ width: `${blockedPercent}%`, background: 'var(--ui-accent-blocked)' }} />
-                      <div style={{ width: `${Math.max(0, 100 - readyPercent - activePercent - blockedPercent)}%`, background: 'var(--ui-text-muted)' }} />
+                      <div style={{ width: `${readyPercent}%`, background: 'var(--accent-success)' }} />
+                      <div style={{ width: `${activePercent}%`, background: 'var(--accent-warning)' }} />
+                      <div style={{ width: `${blockedPercent}%`, background: 'var(--accent-danger)' }} />
+                      <div style={{ width: `${Math.max(0, 100 - readyPercent - activePercent - blockedPercent)}%`, background: 'var(--text-tertiary)' }} />
                     </div>
                   </div>
-                  <div className="mt-1 flex items-center justify-between text-[10px] text-[var(--ui-text-muted)]">
+                  <div className="mt-1 flex items-center justify-between text-[10px] text-[var(--text-tertiary)]">
                     <span>{donePercent}% done</span>
-                    <span><span className="text-[var(--ui-accent-ready)]">{readyCount}</span> ready</span>
+                    <span><span className="text-[var(--accent-success)]">{readyCount}</span> ready</span>
                   </div>
                 </div>
 
                 {deferredCount + doneCount + blockedCount > 0 ? (
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[10px] text-[var(--ui-text-muted)]">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[10px] text-[var(--text-tertiary)]">
                     {blockedCount > 0 ? <span>{blockedCount} blocked</span> : null}
                     {deferredCount > 0 ? <span>{deferredCount} deferred</span> : null}
                     {doneCount > 0 ? <span>{doneCount} done</span> : null}
@@ -409,16 +409,16 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
                       key={task.id}
                       type="button"
                       onClick={() => onEpicSelect?.(epic.id)}
-                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-[var(--ui-text-muted)] transition-colors hover:bg-[#112133] hover:text-[var(--ui-text-primary)]"
+                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-[var(--text-tertiary)] transition-colors hover:bg-[var(--surface-tertiary)] hover:text-[var(--text-primary)]"
                     >
                       <span className={cn('h-1.5 w-1.5 rounded-full flex-shrink-0', statusDot(task.status))} />
                       <span className="min-w-0 flex-1 truncate">{task.title}</span>
                       {task.assignee ? (
-                        <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-white/10 text-[var(--ui-text-primary)]">
+                        <span className="flex-shrink-0 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-[var(--alpha-white-low)] text-[var(--text-primary)]">
                           {task.assignee.slice(0, 2)}
                         </span>
                       ) : null}
-                      <span className="font-mono text-[10px] text-[var(--ui-text-muted)] flex-shrink-0">{task.id}</span>
+                      <span className="font-mono text-[10px] text-[var(--text-tertiary)] flex-shrink-0">{task.id}</span>
                     </button>
                   ))}
                 </div>
@@ -428,12 +428,12 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
         })}
       </div>
 
-      <footer className="border-t border-[var(--ui-border-soft)] px-4 py-3">
+      <footer className="border-t border-[var(--border-subtle)] px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-[linear-gradient(135deg,#9cb6bf,#f1dcc6)]" />
           <div>
-            <p className="text-sm font-semibold text-[var(--ui-text-primary)]">Alex Chen</p>
-            <p className="text-xs text-[var(--ui-text-muted)]">Lead Ops</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">Alex Chen</p>
+            <p className="text-xs text-[var(--text-tertiary)]">Lead Ops</p>
           </div>
         </div>
       </footer>

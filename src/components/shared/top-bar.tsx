@@ -25,17 +25,17 @@ interface MetricTileProps {
 function MetricTile({ label, value, accent = 'info' }: MetricTileProps) {
   const accentColor =
     accent === 'ready'
-      ? 'var(--ui-accent-ready)'
+      ? 'var(--accent-success)'
       : accent === 'blocked'
-        ? 'var(--ui-accent-blocked)'
+        ? 'var(--accent-danger)'
         : accent === 'warning'
-          ? 'var(--ui-accent-warning)'
-          : 'var(--ui-accent-info)';
+          ? 'var(--accent-warning)'
+          : 'var(--accent-info)';
 
   return (
-    <div className="hidden items-center gap-2 rounded-md border border-[var(--ui-border-soft)] bg-[var(--ui-bg-panel)] px-2.5 py-1 text-xs md:inline-flex">
-      <p className="font-mono text-[10px] uppercase tracking-[0.13em] text-[var(--ui-text-muted)]">{label}</p>
-      <p className="font-mono text-sm leading-none text-[var(--ui-text-primary)]">{value}</p>
+    <div className="hidden items-center gap-2 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-tertiary)] px-2.5 py-1 text-xs md:inline-flex">
+      <p className="font-mono text-[10px] uppercase tracking-[0.13em] text-[var(--text-tertiary)]">{label}</p>
+      <p className="font-mono text-sm leading-none text-[var(--text-primary)]">{value}</p>
       <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
     </div>
   );
@@ -55,12 +55,12 @@ export function TopBar({
   const { isDesktop } = useResponsive();
 
   return (
-    <header className="flex h-[var(--topbar-height)] items-center justify-between border-b border-[var(--ui-border-strong)] bg-[var(--ui-bg-header)]" data-testid="top-bar">
+    <header className="flex h-[var(--topbar-height)] items-center justify-between border-b border-[var(--border-strong)] bg-[var(--surface-elevated)]" data-testid="top-bar">
       <div className="flex min-w-0 items-center">
         <button
           type="button"
           onClick={toggleLeftPanel}
-          className="ml-3 mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--ui-text-muted)] transition-colors hover:bg-white/5 hover:text-[var(--ui-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)]"
+          className="ml-3 mr-2 inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-tertiary)] transition-colors hover:bg-[var(--alpha-white-low)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
           aria-label={leftPanel === 'open' ? 'Collapse Sidebar' : 'Expand Sidebar'}
           aria-pressed={leftPanel === 'open'}
           data-testid="hamburger-button"
@@ -68,13 +68,13 @@ export function TopBar({
           {leftPanel === 'open' ? <SidebarClose className="h-4 w-4" aria-hidden="true" /> : <Sidebar className="h-4 w-4" aria-hidden="true" />}
         </button>
 
-        <div className="mr-3 flex min-w-[210px] items-center gap-2 border-r border-[var(--ui-border-soft)] px-2 py-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[var(--ui-bg-card)] text-[var(--ui-accent-ready)]">
+        <div className="mr-3 flex min-w-[210px] items-center gap-2 border-r border-[var(--border-subtle)] px-2 py-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[var(--surface-quaternary)] text-[var(--accent-success)]">
             <LayoutGrid className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.04em] text-[var(--ui-text-primary)]">Command Grid</p>
-            <p className="font-mono text-[10px] text-[var(--ui-text-muted)]">v2.4.0-stable</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.04em] text-[var(--text-primary)]">Command Grid</p>
+            <p className="font-mono text-[10px] text-[var(--text-tertiary)]">v2.4.0-stable</p>
           </div>
         </div>
 
@@ -93,21 +93,21 @@ export function TopBar({
               type="button"
               onClick={toggleBlockedOnly}
               aria-pressed={blockedOnly}
-              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold uppercase tracking-[0.11em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)]"
+              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold uppercase tracking-[0.11em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
               style={{
                 borderColor: blockedOnly
-                  ? 'rgba(255, 76, 114, 0.6)'
-                  : 'var(--ui-border-soft)',
+                  ? 'var(--accent-danger)'
+                  : 'var(--border-default)',
                 backgroundColor: blockedOnly
-                  ? 'rgba(255, 76, 114, 0.15)'
-                  : 'var(--ui-bg-panel)',
-                color: blockedOnly ? '#ffd4dd' : 'var(--ui-text-primary)',
+                  ? 'var(--status-blocked)'
+                  : 'var(--surface-tertiary)',
+                color: blockedOnly ? '#ffd4dd' : 'var(--text-primary)',
               }}
               data-testid="blocked-items-button"
             >
               <Lock className="h-3.5 w-3.5" aria-hidden="true" />
               Blocked Items
-              <span className="rounded-full bg-[color-mix(in_srgb,var(--ui-accent-blocked)_84%,black)] px-1.5 py-0.5 font-mono text-[10px] text-[#fff0f3]">
+              <span className="rounded-full bg-[var(--accent-danger)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--text-inverse)]">
                 {criticalAlerts}
               </span>
             </button>
@@ -118,7 +118,7 @@ export function TopBar({
                 void onCreateTask?.();
               }}
               disabled={isCreatingTask}
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--ui-accent-ready)] bg-[var(--ui-accent-ready)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.11em] text-[#072514] transition-colors hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)] disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--accent-success)] bg-[var(--accent-success)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.11em] text-[var(--text-inverse)] transition-colors hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)] disabled:opacity-60"
               data-testid="new-task-button"
             >
               <Plus className="h-3.5 w-3.5" aria-hidden="true" />
@@ -131,7 +131,7 @@ export function TopBar({
           <button
             type="button"
             onClick={toggleRightPanel}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--ui-text-muted)] transition-colors hover:bg-white/5 hover:text-[var(--ui-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)]"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-tertiary)] transition-colors hover:bg-[var(--alpha-white-low)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
             aria-label={rightPanel === 'open' ? 'Collapse Right Sidebar' : 'Expand Right Sidebar'}
             aria-pressed={rightPanel === 'open'}
             data-testid="settings-button"

@@ -1,0 +1,24 @@
+/**
+ * Theme System Entry Point
+ * 
+ * Import this file in your main CSS to enable the theme system.
+ * The data-theme attribute on <html> controls which theme is active.
+ * 
+ * Example:
+ *   <html data-theme="aurora">
+ *   <html data-theme="midnight"> (future)
+ */
+
+@import './tokens.css';
+@import './aurora.css';
+
+/* Default theme fallback */
+html:not([data-theme]) {
+  /* Inherits aurora as default since it's imported above */
+}
+
+/* 
+ * Future themes would be added here:
+ * @import './midnight.css';
+ * @import './forest.css';
+ */
