@@ -1,4 +1,4 @@
-                                                          ⚡WORK IN PROGRESS⚡
+                                                         ⚡WORK IN PROGRESS⚡
 # BeadBoard
 
 **The Windows-native Control Center for [Beads](https://github.com/steveyegge/beads).**
