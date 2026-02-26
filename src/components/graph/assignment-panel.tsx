@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Zap, Users, Blocks, FileCode2, Loader2, UserPlus, Clock, AlertCircle } from 'lucide-react';
+import { Zap, Users, FileCode2, Loader2, UserPlus, Clock, AlertCircle, ChevronDown, ChevronRight, Blocks, Layers } from 'lucide-react';
 import { ArchetypeInspector } from '../swarm/archetype-inspector';
 import { TemplateInspector } from '../swarm/template-inspector';
+import { ArchetypePicker } from '../swarm/archetype-picker';
+import { TemplatePicker } from '../swarm/template-picker';
 import { useArchetypes } from '../../hooks/use-archetypes';
 import { useTemplates } from '../../hooks/use-templates';
 import { useGraphAnalysis } from '../../hooks/use-graph-analysis';
 import type { BeadIssue } from '../../lib/types';
-import type { AgentArchetype } from '../../lib/types-swarm';
+import type { AgentArchetype, SwarmTemplate } from '../../lib/types-swarm';
+import { getArchetypeDisplayChar } from '../../lib/utils';
 
 export interface AssignmentPanelProps {
     selectedIssue: BeadIssue | null;
@@ -34,24 +37,47 @@ function truncateTitle(title: string, maxLength: number = 30): string {
     return title.slice(0, maxLength - 3) + '...';
 }
 
+function getTemplateId(issue: BeadIssue): string | null {
+    if (issue.metadata?.templateId && typeof issue.metadata.templateId === 'string') {
+        return issue.metadata.templateId;
+    }
+    return issue.templateId;
+}
+
 export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: AssignmentPanelProps) {
     const [inspectingArchetypeId, setInspectingArchetypeId] = useState<string | null>(null);
     const [inspectingTemplateId, setInspectingTemplateId] = useState<string | null>(null);
+    const [showArchetypeList, setShowArchetypeList] = useState(false);
+    const [showTemplateList, setShowTemplateList] = useState(false);
     const [selectedArchetypeForPrep, setSelectedArchetypeForPrep] = useState<string>('');
     const [isPrepping, setIsPrepping] = useState(false);
     const [prepSuccess, setPrepSuccess] = useState(false);
     const [quickAssignDropdown, setQuickAssignDropdown] = useState<string | null>(null);
 
+    const [needsAgentCollapsed, setNeedsAgentCollapsed] = useState(false);
+    const [preAssignedCollapsed, setPreAssignedCollapsed] = useState(false);
+    const [squadRosterCollapsed, setSquadRosterCollapsed] = useState(false);
+
     const { archetypes, saveArchetype, deleteArchetype } = useArchetypes(projectRoot);
     const { templates, saveTemplate, deleteTemplate } = useTemplates(projectRoot);
     const { actionableNodeIds } = useGraphAnalysis(issues, projectRoot, null);
+
+    const selectedEpic = useMemo(() => {
+        if (!epicId) return null;
+        return issues.find(issue => issue.id === epicId && issue.issue_type === 'epic') || null;
+    }, [issues, epicId]);
+
+    const epicTemplate = useMemo(() => {
+        const templateId = selectedEpic ? getTemplateId(selectedEpic) : null;
+        if (!templateId) return null;
+        return templates.find(t => t.id === templateId) || null;
+    }, [templates, selectedEpic]);
 
     const needsAgentTasks = useMemo(() => {
         return issues.filter(issue => {
             if (issue.status === 'closed') return false;
             if (!actionableNodeIds.has(issue.id)) return false;
             if (hasAgentLabel(issue.labels)) return false;
-            // Filter by selected epic
             if (epicId) {
                 const hasParentEpic = issue.dependencies.some(
                     dep => dep.type === 'parent' && dep.target === epicId
@@ -67,7 +93,6 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
             if (issue.status === 'in_progress') return false;
             if (issue.status === 'closed') return false;
             if (!hasAgentLabel(issue.labels)) return false;
-            // Filter by selected epic
             if (epicId) {
                 const hasParentEpic = issue.dependencies.some(
                     dep => dep.type === 'parent' && dep.target === epicId
@@ -99,6 +124,50 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
             return { issue, archetype: matchedArchetype };
         });
     }, [issues, archetypes, epicId]);
+
+    const handleApplyTemplateToEpic = async (templateId: string, targetEpicId: string) => {
+        try {
+            const res = await fetch('/api/beads/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    projectRoot,
+                    id: targetEpicId,
+                    metadata: { templateId }
+                })
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to apply template');
+            }
+
+            console.log('Template applied successfully:', { templateId, epicId: targetEpicId });
+        } catch (error) {
+            console.error('Failed to apply template:', error);
+        }
+    };
+
+    const handleRemoveTemplateFromEpic = async (targetEpicId: string) => {
+        try {
+            const res = await fetch('/api/beads/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    projectRoot,
+                    id: targetEpicId,
+                    metadata: { templateId: null }
+                })
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to remove template');
+            }
+
+            console.log('Template removed successfully');
+        } catch (error) {
+            console.error('Failed to remove template:', error);
+        }
+    };
 
     const handlePrepTask = async () => {
         if (!selectedIssue || !selectedArchetypeForPrep) return;
@@ -158,6 +227,22 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
         );
     };
 
+    const cloneTemplate = async (template: SwarmTemplate) => {
+        await saveTemplate({
+            name: `${template.name} (Copy)`,
+            description: template.description,
+            team: template.team,
+            protoFormula: template.protoFormula,
+            color: template.color,
+            icon: template.icon,
+            isBuiltIn: false
+        });
+    };
+
+    const getArchetypeCountInTeam = (template: SwarmTemplate, archetypeId: string): number => {
+        return template.team.filter(member => member.archetypeId === archetypeId).length;
+    };
+
     const renderTaskItem = (issue: BeadIssue, showAssignButton: boolean = false, archetypeBadges: AgentArchetype[] = []) => (
         <div key={issue.id} className="flex items-center gap-2 p-2 bg-[#0a111a] rounded-md border border-[var(--ui-border-soft)]">
             <div className="flex-1 min-w-0">
@@ -210,22 +295,152 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
         <div className="flex flex-col h-full gap-4 p-4 overflow-y-auto custom-scrollbar">
             <div className="flex gap-2">
                 <button
-                    onClick={() => setInspectingArchetypeId('')}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#111f2b] hover:bg-[#1a2d3d] border border-[var(--ui-border-soft)] rounded-lg text-sm font-medium text-[var(--ui-text-primary)] transition-colors"
+                    onClick={() => setShowArchetypeList(!showArchetypeList)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium text-[var(--ui-text-primary)] transition-colors ${showArchetypeList ? 'bg-[#1a2d3d] border-[var(--ui-accent-info)]' : 'bg-[#111f2b] hover:bg-[#1a2d3d] border-[var(--ui-border-soft)]'}`}
                 >
                     <Blocks className="w-4 h-4 text-[var(--ui-accent-info)]" />
                     Archetypes
                 </button>
                 <button
-                    onClick={() => setInspectingTemplateId('')}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#111f2b] hover:bg-[#1a2d3d] border border-[var(--ui-border-soft)] rounded-lg text-sm font-medium text-[var(--ui-text-primary)] transition-colors"
+                    onClick={() => setShowTemplateList(!showTemplateList)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium text-[var(--ui-text-primary)] transition-colors ${showTemplateList ? 'bg-[#1a2d3d] border-amber-500' : 'bg-[#111f2b] hover:bg-[#1a2d3d] border-[var(--ui-border-soft)]'}`}
                 >
                     <FileCode2 className="w-4 h-4 text-amber-500" />
                     Templates
                 </button>
             </div>
 
-            {selectedIssue && (
+            <ArchetypePicker
+                archetypes={archetypes}
+                isOpen={showArchetypeList}
+                onClose={() => setShowArchetypeList(false)}
+                onSelect={(archetype) => {
+                    setSelectedArchetypeForPrep(archetype.id);
+                    setShowArchetypeList(false);
+                }}
+                onEdit={(archetypeId) => {
+                    setInspectingArchetypeId(archetypeId);
+                    setShowArchetypeList(false);
+                }}
+                onCreateNew={() => {
+                    setInspectingArchetypeId('');
+                    setShowArchetypeList(false);
+                }}
+            />
+
+            <TemplatePicker
+                templates={templates}
+                isOpen={showTemplateList}
+                onClose={() => setShowTemplateList(false)}
+                onSelect={(template) => {
+                    if (selectedEpic) {
+                        handleApplyTemplateToEpic(template.id, selectedEpic.id);
+                    }
+                    setShowTemplateList(false);
+                }}
+                onEdit={(templateId) => {
+                    setInspectingTemplateId(templateId);
+                    setShowTemplateList(false);
+                }}
+                onCreateNew={() => {
+                    setInspectingTemplateId('');
+                    setShowTemplateList(false);
+                }}
+            />
+
+            {selectedEpic && (
+                <div className="bg-[#111f2b] rounded-xl border border-purple-500/30 flex flex-col overflow-hidden">
+                    <div className="px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-purple-400" />
+                        <h3 className="font-semibold text-sm text-[var(--ui-text-primary)]">Epic Template</h3>
+                    </div>
+                    <div className="p-4 space-y-3">
+                        <div>
+                            <div className="text-[10px] font-mono text-[var(--ui-text-muted)] uppercase tracking-wider mb-1">{selectedEpic.id}</div>
+                            <div className="text-sm font-semibold text-[var(--ui-text-primary)] leading-snug">{selectedEpic.title}</div>
+                        </div>
+
+                        {epicTemplate ? (
+                            <div className="space-y-3">
+                                <div className="bg-[#0a111a] rounded-md p-3 border border-[var(--ui-border-soft)]">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div
+                                            className="h-6 w-6 rounded flex items-center justify-center text-xs font-bold"
+                                            style={{
+                                                backgroundColor: epicTemplate.color ? `${epicTemplate.color}20` : '#88888820',
+                                                color: epicTemplate.color || '#888888'
+                                            }}
+                                        >
+                                            {epicTemplate.icon || 'T'}
+                                        </div>
+                                        <div className="font-semibold text-sm text-[var(--ui-text-primary)]">{epicTemplate.name}</div>
+                                    </div>
+                                    {epicTemplate.description && (
+                                        <div className="text-xs text-[var(--ui-text-muted)] mb-3">{epicTemplate.description}</div>
+                                    )}
+                                    <div>
+                                        <div className="text-[10px] font-mono text-[var(--ui-text-muted)] uppercase tracking-wider mb-2">Team Roster</div>
+                                        <div className="space-y-1">
+                                            {Array.from(new Set(epicTemplate.team.map(m => m.archetypeId))).map(archetypeId => {
+                                                const archetype = archetypes.find((a: AgentArchetype) => a.id === archetypeId);
+                                                const count = getArchetypeCountInTeam(epicTemplate, archetypeId);
+                                                if (!archetype) return null;
+                                                return (
+                                                    <div key={archetypeId} className="flex items-center gap-2 text-xs">
+                                                        <div
+                                                            className="h-4 w-4 rounded flex items-center justify-center text-[10px] font-bold"
+                                                            style={{
+                                                                backgroundColor: `${archetype.color}20`,
+                                                                color: archetype.color
+                                                            }}
+                                                        >
+                                                            {getArchetypeDisplayChar(archetype)}
+                                                        </div>
+                                                        <span className="text-[var(--ui-text-primary)]">{archetype.name}</span>
+                                                        <span className="text-[var(--ui-text-muted)] ml-auto">x{count}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setShowTemplateList(true)}
+                                        className="flex-1 py-1.5 text-xs font-medium text-[var(--ui-text-muted)] bg-[#0a111a] border border-[var(--ui-border-soft)] rounded-md hover:bg-[#14202e] transition-colors"
+                                    >
+                                        Change Template
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (selectedEpic) {
+                                                handleRemoveTemplateFromEpic(selectedEpic.id);
+                                            }
+                                        }}
+                                        className="py-1.5 px-3 text-xs font-medium text-red-400 bg-red-500/10 border border-red-500/20 rounded-md hover:bg-red-500/20 transition-colors"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <div className="text-xs text-[var(--ui-text-muted)] text-center py-3">
+                                    No template assigned
+                                </div>
+                                <button
+                                    onClick={() => setShowTemplateList(true)}
+                                    className="w-full py-2 text-sm font-medium text-purple-400 bg-purple-500/10 border border-purple-500/20 rounded-md hover:bg-purple-500/20 transition-colors"
+                                >
+                                    Assign Template
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {selectedIssue && selectedIssue.issue_type !== 'epic' && (
                 <div className="bg-[#111f2b] rounded-xl border border-[var(--ui-accent-info)]/30 flex flex-col overflow-hidden">
                     <div className="px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2">
                         <Zap className="w-4 h-4 text-[var(--ui-accent-info)]" />
@@ -271,76 +486,94 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
             )}
 
             <div className="bg-[#111f2b] rounded-xl border border-[var(--ui-border-soft)] flex flex-col overflow-hidden">
-                <div className="px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2">
+                <button
+                    onClick={() => setNeedsAgentCollapsed(!needsAgentCollapsed)}
+                    className="w-full px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2 hover:bg-[#1a2d3d] transition-colors"
+                >
+                    {needsAgentCollapsed ? <ChevronRight className="w-4 h-4 text-[var(--ui-text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--ui-text-muted)]" />}
                     <AlertCircle className="w-4 h-4 text-orange-400" />
                     <h3 className="font-semibold text-sm text-[var(--ui-text-primary)]">Needs Agent</h3>
                     <span className="ml-auto text-xs text-[var(--ui-text-muted)]">{needsAgentTasks.length}</span>
-                </div>
-                <div className="max-h-40 overflow-y-auto p-3 space-y-2 custom-scrollbar">
-                    {needsAgentTasks.length === 0 ? (
-                        <div className="text-center text-[var(--ui-text-muted)] text-xs py-2">
-                            All actionable tasks have agents assigned
-                        </div>
-                    ) : (
-                        needsAgentTasks.map(issue => renderTaskItem(issue, true))
-                    )}
-                </div>
+                </button>
+                {!needsAgentCollapsed && (
+                    <div className="max-h-40 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+                        {needsAgentTasks.length === 0 ? (
+                            <div className="text-center text-[var(--ui-text-muted)] text-xs py-2">
+                                All actionable tasks have agents assigned
+                            </div>
+                        ) : (
+                            needsAgentTasks.map(issue => renderTaskItem(issue, true))
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="bg-[#111f2b] rounded-xl border border-[var(--ui-border-soft)] flex flex-col overflow-hidden">
-                <div className="px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2">
+                <button
+                    onClick={() => setPreAssignedCollapsed(!preAssignedCollapsed)}
+                    className="w-full px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2 hover:bg-[#1a2d3d] transition-colors"
+                >
+                    {preAssignedCollapsed ? <ChevronRight className="w-4 h-4 text-[var(--ui-text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--ui-text-muted)]" />}
                     <Clock className="w-4 h-4 text-amber-400" />
                     <h3 className="font-semibold text-sm text-[var(--ui-text-primary)]">Pre-assigned</h3>
                     <span className="ml-auto text-xs text-[var(--ui-text-muted)]">{preAssignedTasks.length}</span>
-                </div>
-                <div className="max-h-40 overflow-y-auto p-3 space-y-2 custom-scrollbar">
-                    {preAssignedTasks.length === 0 ? (
-                        <div className="text-center text-[var(--ui-text-muted)] text-xs py-2">
-                            No pre-assigned tasks waiting
-                        </div>
-                    ) : (
-                        preAssignedTasks.map(issue => {
-                            const agentLabels = getAgentLabels(issue.labels);
-                            const archetypeBadges = agentLabels
-                                .map(label => getArchetypeForAgentLabel(label))
-                                .filter((a): a is AgentArchetype => a !== undefined);
-                            return renderTaskItem(issue, false, archetypeBadges);
-                        })
-                    )}
-                </div>
+                </button>
+                {!preAssignedCollapsed && (
+                    <div className="max-h-40 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+                        {preAssignedTasks.length === 0 ? (
+                            <div className="text-center text-[var(--ui-text-muted)] text-xs py-2">
+                                No pre-assigned tasks waiting
+                            </div>
+                        ) : (
+                            preAssignedTasks.map(issue => {
+                                const agentLabels = getAgentLabels(issue.labels);
+                                const archetypeBadges = agentLabels
+                                    .map(label => getArchetypeForAgentLabel(label))
+                                    .filter((a): a is AgentArchetype => a !== undefined);
+                                return renderTaskItem(issue, false, archetypeBadges);
+                            })
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="flex-1 bg-[#111f2b] rounded-xl border border-[var(--ui-border-soft)] flex flex-col overflow-hidden min-h-0">
-                <div className="px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2">
+                <button
+                    onClick={() => setSquadRosterCollapsed(!squadRosterCollapsed)}
+                    className="w-full px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2 hover:bg-[#1a2d3d] transition-colors"
+                >
+                    {squadRosterCollapsed ? <ChevronRight className="w-4 h-4 text-[var(--ui-text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--ui-text-muted)]" />}
                     <Users className="w-4 h-4 text-emerald-500" />
                     <h3 className="font-semibold text-sm text-[var(--ui-text-primary)]">Squad Roster</h3>
                     <span className="ml-auto text-xs text-[var(--ui-text-muted)]">{activeRoster.length} active</span>
-                </div>
-                <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
-                    {activeRoster.length === 0 ? (
-                        <div className="text-center text-[var(--ui-text-muted)] text-xs py-4">
-                            No active agents
-                        </div>
-                    ) : (
-                        activeRoster.map(({ issue, archetype }) => (
-                            <div key={issue.id} className="flex items-center gap-2 p-2 bg-[#0a111a] rounded-md border border-[var(--ui-border-soft)]">
-                                <div
-                                    className="h-6 w-6 rounded flex items-center justify-center text-xs font-bold"
-                                    style={{
-                                        backgroundColor: archetype ? `${archetype.color}20` : '#88888820',
-                                        color: archetype?.color || '#888888'
-                                    }}
-                                >
-                                    {archetype?.name.charAt(0) || '?'}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-xs font-medium text-[var(--ui-text-primary)] truncate">{issue.assignee}</div>
-                                    <div className="text-[10px] text-[var(--ui-text-muted)] truncate">{issue.id}</div>
-                                </div>
+                </button>
+                {!squadRosterCollapsed && (
+                    <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+                        {activeRoster.length === 0 ? (
+                            <div className="text-center text-[var(--ui-text-muted)] text-xs py-4">
+                                No active agents
                             </div>
-                        ))
-                    )}
-                </div>
+                        ) : (
+                            activeRoster.map(({ issue, archetype }) => (
+                                <div key={issue.id} className="flex items-center gap-2 p-2 bg-[#0a111a] rounded-md border border-[var(--ui-border-soft)]">
+                                    <div
+                                        className="h-6 w-6 rounded flex items-center justify-center text-xs font-bold"
+                                        style={{
+                                            backgroundColor: archetype ? `${archetype.color}20` : '#88888820',
+                                            color: archetype?.color || '#888888'
+                                        }}
+                                    >
+                                        {archetype ? getArchetypeDisplayChar(archetype) : '?'}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-xs font-medium text-[var(--ui-text-primary)] truncate">{issue.assignee}</div>
+                                        <div className="text-[10px] text-[var(--ui-text-muted)] truncate">{issue.id}</div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
             </div>
 
             {inspectingArchetypeId !== null && (
@@ -359,6 +592,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                     onClose={() => setInspectingTemplateId(null)}
                     onSave={saveTemplate}
                     onDelete={deleteTemplate}
+                    onClone={cloneTemplate}
                 />
             )}
         </div>
