@@ -182,7 +182,7 @@ export function UnifiedShell({
         <ResizeHandle direction="left" onResize={handleLeftResize} />
 
         {/* MIDDLE CONTENT: flex-1 */}
-        <div className="flex-1 relative overflow-hidden bg-[var(--ui-bg-shell)]" data-testid="middle-content">
+        <div className="flex-1 relative overflow-hidden bg-[var(--ui-bg-main)]" data-testid="middle-content">
           {renderMiddleContent()}
         </div>
 

@@ -4,17 +4,20 @@
 
 :root {
   /* ========== VISUAL-TRUTH UI TOKEN CONTRACT (bb-vt.1.1) ========== */
-  /* Lightened aurora palette */
-  --ui-bg-app: #0d1219;
-  --ui-bg-shell: #131b26;
-  --ui-bg-panel: #1a2330;
-  --ui-bg-card: #222d3d;
+  /* Warm charcoal aurora palette - DISTINCT LAYERS */
+  --ui-bg-app: #181716;        /* Darkest - page background */
+  --ui-bg-header: #131211;     /* Header - darker than sidebar */
+  --ui-bg-shell: #1f1e1d;      /* Sidebar - distinct from main */
+  --ui-bg-panel: #282725;      /* Panels/cards within sidebar */
+  --ui-bg-main: #242322;       /* Main content area - distinct */
+  --ui-bg-card: #302e2c;       /* Cards - lightest layer */
+  --ui-bg-elevated: #3a3836;   /* Elevated/selected elements */
 
-  --ui-border-soft: rgba(153, 171, 190, 0.2);
-  --ui-border-strong: rgba(153, 171, 190, 0.34);
+  --ui-border-soft: rgba(180, 175, 165, 0.2);
+  --ui-border-strong: rgba(180, 175, 165, 0.35);
 
-  --ui-text-primary: #e8edf5;
-  --ui-text-muted: #8f9caf;
+  --ui-text-primary: #f0eeea;
+  --ui-text-muted: #a8a49a;
 
   --ui-accent-ready: #35d98f;
   --ui-accent-blocked: #ff4c72;

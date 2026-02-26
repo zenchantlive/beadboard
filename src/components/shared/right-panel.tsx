@@ -20,9 +20,9 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
   if (isDesktop) {
     return (
       <div
-        className="ui-shell-panel flex overflow-hidden h-full"
+        className="flex overflow-hidden h-full bg-[var(--ui-bg-panel)] border-l border-[var(--ui-border-strong)]"
         style={{
-          boxShadow: isOpen ? '-12px 0 24px -16px rgba(0,0,0,0.5)' : 'none',
+          boxShadow: isOpen ? '-8px 0 20px -12px rgba(0,0,0,0.4)' : 'none',
         }}
         data-testid="right-panel-desktop"
       >

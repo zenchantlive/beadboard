@@ -34,9 +34,8 @@ function handleCardKeyDown(event: KeyboardEvent<HTMLDivElement>, onClick?: Mouse
 function statusVisual(status: SocialCardData['status']) {
   if (status === 'blocked') {
     return {
-      border: 'rgba(255, 76, 114, 0.5)',
-      cardBg: 'rgba(255, 76, 114, 0.08)',
-      badgeBg: 'rgba(255, 76, 114, 0.2)',
+      border: '#ff4c72',
+      badgeBg: 'rgba(255, 76, 114, 0.25)',
       badgeText: '#ffd5df',
       chipText: 'Blocked',
     };
@@ -44,9 +43,8 @@ function statusVisual(status: SocialCardData['status']) {
 
   if (status === 'in_progress') {
     return {
-      border: 'rgba(255, 178, 74, 0.5)',
-      cardBg: 'rgba(255, 178, 74, 0.08)',
-      badgeBg: 'rgba(255, 178, 74, 0.2)',
+      border: '#ffb24a',
+      badgeBg: 'rgba(255, 178, 74, 0.25)',
       badgeText: '#ffe5c7',
       chipText: 'Active',
     };
@@ -54,9 +52,8 @@ function statusVisual(status: SocialCardData['status']) {
 
   if (status === 'ready') {
     return {
-      border: 'rgba(53, 217, 143, 0.5)',
-      cardBg: 'rgba(53, 217, 143, 0.08)',
-      badgeBg: 'rgba(53, 217, 143, 0.2)',
+      border: '#35d98f',
+      badgeBg: 'rgba(53, 217, 143, 0.25)',
       badgeText: '#d6ffe7',
       chipText: 'Ready',
     };
@@ -64,8 +61,7 @@ function statusVisual(status: SocialCardData['status']) {
 
   return {
     border: 'var(--ui-border-strong)',
-    cardBg: 'var(--ui-bg-card)',
-    badgeBg: 'rgba(143, 156, 175, 0.15)',
+    badgeBg: 'rgba(168, 164, 154, 0.15)',
     badgeText: 'var(--ui-text-muted)',
     chipText: 'Closed',
   };
@@ -131,15 +127,15 @@ export function SocialCard({
       tabIndex={0}
       aria-label={`Open ${data.title}`}
       className={cn(
-        'group relative flex min-h-[290px] cursor-pointer flex-col rounded-[14px] border px-3.5 py-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)]',
+        'group relative flex min-h-[290px] cursor-pointer flex-col rounded-[14px] border px-3.5 py-3 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)]',
         className,
       )}
       style={{
-        background: status.cardBg,
-        borderColor: selected ? status.border : 'var(--ui-border-soft)',
+        background: 'var(--ui-bg-card)',
+        borderColor: selected ? status.border : 'var(--ui-border-strong)',
         boxShadow: selected
-          ? `0 0 0 1px ${status.border}, 0 20px 40px -20px rgba(0,0,0,0.6)`
-          : '0 8px 24px -16px rgba(0,0,0,0.5)',
+          ? `0 0 0 2px ${status.border}, 0 20px 40px -20px rgba(0,0,0,0.6)`
+          : '0 4px 12px -6px rgba(0,0,0,0.4)',
       }}
     >
       <div className="mb-2 flex items-center justify-between gap-2">

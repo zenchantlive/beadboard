@@ -55,7 +55,7 @@ export function TopBar({
   const { isDesktop } = useResponsive();
 
   return (
-    <header className="ui-shell-topbar flex h-[var(--topbar-height)] items-center justify-between border-b border-[var(--ui-border-soft)]" data-testid="top-bar">
+    <header className="flex h-[var(--topbar-height)] items-center justify-between border-b border-[var(--ui-border-strong)] bg-[var(--ui-bg-header)]" data-testid="top-bar">
       <div className="flex min-w-0 items-center">
         <button
           type="button"

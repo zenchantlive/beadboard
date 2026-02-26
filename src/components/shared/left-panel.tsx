@@ -190,9 +190,9 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
   ];
 
   return (
-    <aside className="flex h-full min-h-0 overflow-hidden flex-col bg-[var(--ui-bg-shell)] shadow-[inset_-1px_0_0_rgba(0,0,0,0.55),24px_0_40px_-34px_rgba(0,0,0,0.98)]" data-testid="left-panel">
-      <div className="px-4 py-3 shadow-[0_14px_24px_-20px_rgba(0,0,0,0.92)]">
-        <div className="mb-3 flex items-center gap-1 rounded-xl bg-[#101c2b] p-1 shadow-[0_12px_24px_-18px_rgba(0,0,0,0.88)]">
+    <aside className="flex h-full min-h-0 overflow-hidden flex-col bg-[var(--ui-bg-shell)] border-r border-[var(--ui-border-strong)]" data-testid="left-panel">
+      <div className="px-4 py-3">
+        <div className="mb-3 flex items-center gap-1 rounded-xl bg-[var(--ui-bg-panel)] p-1 border border-[var(--ui-border-strong)]">
           {views.map((item) => {
             const active = view === item.id;
             return (
@@ -213,7 +213,7 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
           })}
         </div>
 
-        <div className="space-y-2 rounded-xl bg-[var(--ui-bg-panel)] p-2.5 border border-[var(--ui-border-soft)]">
+        <div className="space-y-2 rounded-xl bg-[var(--ui-bg-card)] p-2.5 border border-[var(--ui-border-soft)]">
           <div className="grid grid-cols-1 gap-2">
             <input
               value={filters.query}
