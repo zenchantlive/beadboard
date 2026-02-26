@@ -1,0 +1,343 @@
+○ beadboard-xte [● P0] [epic] - DAG Views UX Overhaul (Macro/Micro Contexts)
+✓ beadboard-03r [P0] [bug] - Fix Real-time SSE Refresh Across All Views
+○ beadboard-43c [● P0] [task] - Diff test issue
+○ beadboard-dp2 [● P0] [task] - Testing from curl
+✓ beadboard-8af [P0] [task] - Testing file system events
+○ beadboard-hhy [● P0] [task] - Testing another flow
+○ beadboard-1sc [● P0] [task] - Testing SSE Flow
+○ beadboard-6lq [● P0] [task] - Testing CURL
+○ beadboard-0ui [● P0] [task] - Test Live Updates Cache Busting
+✓ beadboard-8rg [P0] [task] - Fix live updates bug in watcher.ts
+○ beadboard-yg7 [● P0] [task] - Make Archetypes and Templates Editable in Swarm View
+✓ bb-ui2.29 [P0] [task] - bb-ui2.29: Activity View - ActivityPanel with agent roster + timeline (blocked by: bb-ui2)
+○ bb-atf [● P0] [task] [gt:agent role:ui swarm:beadboard-2on] - Agent: swarm-view-integrator
+○ bb-z6s [● P0] [task] [gt:agent role:ui] - Agent: social-view-integrator
+○ bb-54x [● P0] [task] [gt:agent role:graph] - Agent: graph-integrator
+○ bb-nuy [● P0] [task] [gt:agent role:ui] - Agent: swarm-card-builder
+○ bb-98c [● P0] [task] [gt:agent role:ui] - Agent: social-card-builder
+○ bb-3ha [● P0] [task] [gt:agent role:ui] - Agent: sessions-integrator
+○ bb-22l [● P0] [task] [gt:agent role:ui] - Agent: mobile-nav-builder
+○ bb-5am [● P0] [task] [gt:agent role:ui] - Agent: topbar-builder
+○ bb-dwz [● P0] [task] [gt:agent role:ui] - Agent: leftpanel-builder
+○ bb-3dv [● P0] [task] [gt:agent role:ui] - Agent: rightpanel-builder
+✓ bb-ui2.0 [P0] [task] - BLOCKER: Update all bb-ui2 bead descriptions with proper prompt format (blocks: bb-ui2.14, bb-ui2.7, bb-ui2.2, bb-ui2.20, bb-ui2.3, bb-ui2.19, bb-ui2.11, bb-ui2.1, bb-ui2.4, bb-ui2.15, bb-ui2.6, bb-ui2.8, bb-ui2.12, bb-ui2.10, bb-ui2.5, bb-ui2.17, bb-ui2.16, bb-ui2.9, bb-ui2.13, bb-ui2.18)
+○ bb-only-ui-agent [● P0] [task] [gt:agent role:ui] - Agent: only-ui-agent
+○ bb-graph-agent-1 [● P0] [task] [gt:agent role:graph] - Agent: graph-agent-1
+○ bb-ui-agent-2 [● P0] [task] [gt:agent role:ui] - Agent: ui-agent-2
+○ bb-ui-agent-1 [● P0] [task] [gt:agent role:ui] - Agent: ui-agent-1
+○ bb-verify-mlnavzwu [● P0] [task] [gt:agent swarm:bb-buff] - Agent: verify-mlnavzwu
+○ bb-final-mlnar702 [● P0] [task] [gt:agent swarm:bb-buff swarm:debug] - Agent: final-mlnar702
+○ bb-verify2-mlnaouad [● P0] [task] [gt:agent] - Agent: verify2-mlnaouad
+○ bb-final-mlnalaqz [● P0] [task] [gt:agent swarm:bb-buff] - Agent: final-mlnalaqz
+○ bb-bridge-fix-mlnaja4j [● P0] [task] [gt:agent] - Agent: bridge-fix-mlnaja4j
+○ bb-verify-mlnadaip [● P0] [task] [gt:agent swarm:manual-test swarm:shell-test] - Agent: verify-mlnadaip
+○ bb-switch-mlna9nbo [● P0] [task] [gt:agent swarm:bb-buff.2] - Agent: switch-mlna9nbo
+○ bb-join-mlna9nbo [● P0] [task] [gt:agent] - Agent: join-mlna9nbo
+○ bb-invepic-mln9perd [● P0] [task] [gt:agent] - Agent: invepic-mln9perd
+○ bb-m2-mln9perd [● P0] [task] [gt:agent swarm:bb-buff] - Agent: m2-mln9perd
+○ bb-invalid-epic-mln9hraq [● P0] [task] [gt:agent] - Agent: invalid-epic-mln9hraq
+○ bb-m1-mln9perd [● P0] [task] [gt:agent] - Agent: m1-mln9perd
+○ bb-leave-mln9perd [● P0] [task] [gt:agent] - Agent: leave-mln9perd
+○ bb-member3-mln9hraq [● P0] [task] [gt:agent] - Agent: member3-mln9hraq
+○ bb-member2-mln9hraq [● P0] [task] [gt:agent] - Agent: member2-mln9hraq
+○ bb-member1-mln9hraq [● P0] [task] [gt:agent role:tester] - Agent: member1-mln9hraq
+○ bb-switch-mln9perd [● P0] [task] [gt:agent] - Agent: switch-mln9perd
+○ bb-nolabel-test-mln9hraq [● P0] [task] [gt:agent] - Agent: nolabel-test-mln9hraq
+○ bb-join-mln9perd [● P0] [task] [gt:agent swarm:bb-buff] - Agent: join-mln9perd
+○ bb-leave-test-mln9hraq [● P0] [task] [gt:agent] - Agent: leave-test-mln9hraq
+○ bb-idem-test-mln9hraq [● P0] [task] [gt:agent swarm:bb-buff] - Agent: idem-test-mln9hraq
+○ bb-debug-mln9knzs [● P0] [task] [gt:agent swarm:bb-buff] - Agent: debug-mln9knzs
+○ bb-switch-test-mln9hraq [● P0] [task] [gt:agent] - Agent: switch-test-mln9hraq
+○ bb-join-test-mln9hraq [● P0] [task] [gt:agent] - Agent: join-test-mln9hraq
+○ bb-smoke-mln9e525 [● P0] [task] [gt:agent swarm:test] - Agent: smoke-mln9e525
+○ bb-idem-test-mln97lyt [● P0] [task] [gt:agent] - Agent: idem-test-mln97lyt
+○ bb-switch-test-mln97lyt [● P0] [task] [gt:agent] - Agent: switch-test-mln97lyt
+○ bb-join-test-mln97lyt [● P0] [task] [gt:agent] - Agent: join-test-mln97lyt
+○ bb-switch-test-mln8xxn4 [● P0] [task] [gt:agent] - Agent: switch-test-mln8xxn4
+○ bb-join-test-mln8xxn4 [● P0] [task] [gt:agent role:tester] - Agent: join-test-mln8xxn4
+○ bb-nolabel-test-mln8pdgh [● P0] [task] [gt:agent] - Agent: nolabel-test-mln8pdgh
+○ bb-leave-test-mln8pdgh [● P0] [task] [gt:agent] - Agent: leave-test-mln8pdgh
+○ bb-idem-test-mln8pdgh [● P0] [task] [gt:agent] - Agent: idem-test-mln8pdgh
+○ bb-switch-test-mln8pdgh [● P0] [task] [gt:agent] - Agent: switch-test-mln8pdgh
+○ bb-join-test-mln8pdgh [● P0] [task] [gt:agent] - Agent: join-test-mln8pdgh
+○ bb-leave-test-mln8hp8j [● P0] [task] [gt:agent] - Agent: leave-test-mln8hp8j
+○ bb-idem-test-mln8hp8j [● P0] [task] [gt:agent] - Agent: idem-test-mln8hp8j
+○ bb-switch-test-mln8hp8j [● P0] [task] [gt:agent] - Agent: switch-test-mln8hp8j
+○ bb-join-test-mln8hp8j [● P0] [task] [gt:agent] - Agent: join-test-mln8hp8j
+○ bb-daemon-test-mln8e4tf [● P0] [task] [gt:agent role:tester swarm:daemon-test] - Agent: daemon-test-mln8e4tf
+○ bb-fresh-test-mln8canu [● P0] [task] [gt:agent] - Agent: fresh-test-mln8canu
+✓ bb-upd-test-mln8981k [P0] [task] [gt:agent swarm:manual-test] - Agent: upd-test-mln8981k
+✓ bb-step-test-mln872rm [P0] [task] [gt:agent] - Agent: step-test-mln872rm
+✓ bb-debug-test-mln83q18 [P0] [task] [gt:agent] - Agent: debug-test-mln83q18
+✓ bb-switch-test-mln7xyls [P0] [task] [gt:agent] - Agent: switch-test-mln7xyls
+✓ bb-join-test-mln7xyls [P0] [task] [gt:agent] - Agent: join-test-mln7xyls
+✓ bb-linus-swarm [P0] [task] [gt:agent swarm:debug swarm:debug-allow-stale swarm:debug-test swarm:test-flush] - Agent: linus-swarm
+✓ bb-ff6 [P0] [bug] - P0: Infinite refresh loop during agent heartbeats
+✓ bb-agent-graph-1 [P0] [task] [gt:agent role:graph] - Agent: agent-graph-1
+✓ bb-1xj [P0] [task] [agent gt:agent] - Agent: linus
+✓ bb-agent-a [P0] [task] [gt:agent role:ui] - Agent: agent-a
+✓ bb-agent-b [P0] [task] [gt:agent role:backend] - Agent: agent-b
+✓ bb-active-agent [P0] [task] [gt:agent role:infra] - Agent: active-agent
+✓ bb-agent-ui-1 [P0] [task] [gt:agent role:ui] - Agent: UI Agent 1
+✓ bb-green-falcon [P0] [task] [gt:agent role:ui] - Agent: green-falcon
+✓ bb-zenchantlive [P0] [task] [gt:agent role:architect] - Agent: zenchantlive
+◐ bb-silver-castle [● P0] [task] [gt:agent role:backend] - Agent: silver-castle
+✓ bb-test-agent [P0] [task] [gt:agent] - Agent: bb-test-agent
+✓ bb-9p8 [P0] [task] - ARCHITECTURAL DECISION: Agent Identity Consolidation
+✓ bb-yre [P0] [task] - Protocol Specification: Identity, Heartbeat, and Overlap Contracts
+✓ bb-xtu [P0] [bug] @green-falcon [graph p0 polling realtime] - P0: /graph page stale polling/realtime updates
+✓ bb-u6f.3 [P0] [task] @green-falcon [agents metrics] - Implement Social-Dense Sessions UI (blocked by: bb-u6f, bb-u6f.2, bb-u6f.4, blocks: bb-u6f.5)
+✓ bb-bvn [P0] [epic] [graph react-flow] - Dependency Graph (React Flow) (blocked by: bb-trz, blocks: bb-xhm, bb-29x)
+✓ bb-ymg.2 [P0] [task] [api mutation] - Implement mutation API for create/update/close/reopen/comment operations (blocked by: bb-ymg, bb-ymg.1, bb-ymg.1.1, blocks: bb-ymg.3, bb-ymg.4)
+✓ bb-ymg.1 [P0] [task] @zenchantlive [bridge execfile] - Implement bd bridge using child_process.execFile with project-scoped cwd (blocked by: bb-ymg, bb-6aj.2, blocks: bb-ymg.2)
+✓ bb-tpc.3 [P0] [task] [api sse] - Implement SSE events API endpoint with heartbeat and event IDs (blocked by: bb-tpc, bb-tpc.2, bb-tpc.5, blocks: bb-tpc.4)
+✓ bb-tpc.2 [P0] [task] [stability watcher] - Add debounce/coalescing and transient lock handling for file change bursts (blocked by: bb-tpc, bb-tpc.1, bb-tpc.5, blocks: bb-xhm.2, bb-tpc.3)
+✓ bb-tpc.1 [P0] [task] [chokidar watcher] - Implement chokidar watch manager for registered projects (blocked by: bb-tpc, bb-6aj.2, bb-tpc.5, blocks: bb-tpc.2)
+✓ bb-tpc [P0] [epic] [realtime sse watcher] - Live File Watching and SSE Transport (blocks: bb-ymg, bb-u6f, bb-xhm)
+✓ bb-6aj.3 [P0] [task] @zenchantlive [performance scanner] - Build scanner with profile-root default and depth/ignore controls (blocked by: bb-6aj, bb-6aj.1, bb-6aj.5)
+✓ bb-6aj.2 [P0] [task] @agent-a [api registry] - Implement registry API for add/remove/list operations (blocked by: bb-6aj, bb-6aj.1, blocks: bb-ymg.1, bb-6aj.4, bb-tpc.1)
+✓ bb-6aj.1 [P0] [task] @agent-a [config registry] - Persist project registry in %USERPROFILE%\\.beadboard\\projects.json (blocked by: bb-6aj, blocks: bb-6aj.2, bb-6aj.3)
+✓ bb-6aj [P0] [epic] [multi-project scanner] - Project Registry and Multi-Project Scanner (blocked by: bb-92d)
+✓ bb-92d.6 [P0] [task] [guardrail safety] - Add guardrail test preventing direct writes to .beads/issues.jsonl (blocked by: bb-92d)
+✓ bb-92d.5 [P0] [task] [paths windows] - Implement Windows path normalization utilities (blocked by: bb-92d)
+✓ bb-92d.4 [P0] [task] [jsonl parser] - Implement JSONL parser with defaults and malformed-line tolerance (blocked by: bb-92d, bb-92d.3, blocks: bb-trz.1)
+✓ bb-92d.3 [P0] [task] [schema types] - Define canonical Beads TypeScript schema types (blocked by: bb-92d, blocks: bb-92d.4)
+✓ bb-92d.1 [P0] [task] [foundation nextjs] - Bootstrap Next.js 15 + React 19 + TypeScript strict (blocked by: bb-92d)
+✓ bb-92d [P0] [epic] [beadboard foundation windows] - Foundation and Read/Write Boundary (blocks: bb-6aj, bb-bc4, bb-trz)
+✓ beadboard-gb0.5 [P1] [task] - Wire assign mode into UnifiedShell (blocked by: beadboard-gb0, beadboard-gb0.1, beadboard-gb0.3, blocks: beadboard-gb0.7)
+✓ beadboard-gb0.4 [P1] [task] - Create useGraphAnalysis hook (blocked by: beadboard-gb0, blocks: beadboard-gb0.1)
+✓ beadboard-gb0.3 [P1] [task] - Create AssignmentPanel component (blocked by: beadboard-gb0, blocks: beadboard-gb0.5)
+✓ beadboard-gb0.2 [P1] [task] - Add assign mode to WorkflowGraph + GraphNodeCard (blocked by: beadboard-gb0)
+✓ beadboard-gb0.1 [P1] [task] - Rewrite SmartDag with progressive disclosure (blocked by: beadboard-gb0, beadboard-gb0.4, blocks: beadboard-gb0.5)
+○ beadboard-gb0 [● P1] [epic] - Unify Graph + Swarm into Single Enhanced Graph View
+✓ beadboard-7jp.7 [P1] [task] @Antigravity (Engineer) - Templates UI edit mode (blocked by: beadboard-7jp, beadboard-7jp.4, blocks: beadboard-7jp.6)
+✓ beadboard-7jp.5 [P1] [task] @Antigravity (Engineer) - Archetypes UI edit mode (blocked by: beadboard-7jp, beadboard-7jp.3, blocks: beadboard-7jp.6)
+✓ beadboard-7jp.4 [P1] [task] @Antigravity (Engineer) - Templates API routes (blocked by: beadboard-7jp, beadboard-7jp.2, blocks: beadboard-7jp.7)
+✓ beadboard-7jp.3 [P1] [task] @Antigravity (Engineer) - Archetypes API routes (blocked by: beadboard-7jp, beadboard-7jp.1, blocks: beadboard-7jp.5)
+✓ beadboard-7jp.2 [P1] [task] - Templates server functions (blocked by: beadboard-7jp, blocks: beadboard-7jp.4)
+✓ beadboard-7jp.1 [P1] [task] - Archetypes server functions (blocked by: beadboard-7jp, blocks: beadboard-7jp.3)
+○ beadboard-7jp [● P1] [epic] - Swarm Archetypes & Templates CRUD
+○ beadboard-yad [● P1] [task] [agent:coder] - Implement Frontend UI (blocked by: beadboard-eo8)
+◐ beadboard-eo8 [● P1] [task] @sysarchitect-01 [agent:architect] - Design New Component (blocked by: beadboard-c08, blocks: beadboard-yad)
+✓ beadboard-c08 [P1] [task] @sysarchitect-01 [agent:architect agent:system-architect status:documenting] - Analyze Legacy System (blocks: beadboard-eo8)
+○ beadboard-2ua [● P1] [task] - Implement Frontend UI
+○ beadboard-2on [● P1] [molecule] - Swarm: Unified UX - Earthy Dark Shell with Social/Graph/Swarm Views
+○ bb-ui2.36 [● P1] [task] - Fix zod dependency conflict for eslint (blocked by: bb-ui2)
+○ bb-ui2.35 [● P1] [task] - Graph View Filtering - Handle swarm and task URL params (blocked by: bb-ui2)
+○ bb-ui2.34 [● P1] [task] - Swarm Card Deep Links - Wire up jump icons to URL state (blocked by: bb-ui2)
+○ bb-ui2.33 [● P1] [task] - Social Card Deep Links - Wire up jump icons to URL state (blocked by: bb-ui2)
+○ bb-ui2.32 [● P1] [task] - bb-ui2.32: Mobile 4-Tab Navigation - Add Activity tab (blocked by: bb-ui2)
+✓ bb-ui2.31 [P1] [task] - bb-ui2.31: Thread Drawer - Card detail slide-out panel (blocked by: bb-ui2)
+○ bb-ui2.30 [● P1] [task] - bb-ui2.30: Activity Deep Linking - Agent filtering from cards (blocked by: bb-ui2)
+✓ bb-ui2.28 [P1] [task] @bb-3ha [bb-ui2.9.2] - Sessions Access from Shell (blocked by: bb-ui2)
+✓ bb-ui2.27 [P1] [task] @bb-22l [bb-ui2.9.1] - Mobile Navigation: Hamburger + Bottom Tabs (blocked by: bb-ui2)
+○ bb-ui2.25 [● P1] [task] - 5.4 Final Gates: Run all verification and close epic (blocked by: bb-ui2, bb-ui2.22, bb-ui2.23, bb-ui2.24)
+○ bb-ui2.24 [● P1] [task] - 5.3 Screenshots: Capture all views at all breakpoints (blocked by: bb-ui2, bb-ui2.22, blocks: bb-ui2.25)
+○ bb-ui2.23 [● P1] [task] - 5.2 Mobile Polish: Verify mobile experience (blocked by: bb-ui2, bb-ui2.22, blocks: bb-ui2.25)
+○ bb-ui2.22 [● P1] [task] - 5.1 Deep Links: Verify URL state restoration (blocked by: bb-ui2, bb-ui2.14, bb-ui2.18, bb-ui2.21, blocks: bb-ui2.25, bb-ui2.23, bb-ui2.24)
+✓ bb-ui2.21 [P1] [task] - 4.3 fitView Fix: Fix ReactFlow resize on tab switch (blocked by: bb-ui2, bb-ui2.20, blocks: bb-ui2.22)
+✓ bb-ui2.20 [P1] [task] @bb-54x - 4.2 Graph Tab: Integrate graph into unified shell (blocked by: bb-ui2, bb-ui2.5, bb-ui2.19, bb-ui2.0, blocks: bb-ui2.21)
+✓ bb-ui2.19 [P1] [task] - 4.1 Graph Extract: Extract existing graph into reusable component (blocked by: bb-ui2, bb-ui2.0, blocks: bb-ui2.20)
+✓ bb-ui2.18 [P1] [task] @bb-atf - 3.4 Swarm View: Full integration into shell (blocked by: bb-ui2, bb-ui2.5, bb-ui2.16, bb-ui2.17, bb-ui2.0, blocks: bb-ui2.22)
+✓ bb-ui2.17 [P1] [task] - 3.3 Swarm Detail: Swarm detail for right panel (blocked by: bb-ui2, bb-ui2.8, bb-ui2.15, bb-ui2.0, blocks: bb-ui2.18)
+✓ bb-ui2.16 [P1] [task] @bb-nuy - 3.2 SwarmCard: Swarm health card component (blocked by: bb-ui2, bb-ui2.3, bb-ui2.15, bb-ui2.0, blocks: bb-ui2.18)
+✓ bb-ui2.15 [P1] [task] - 3.1 Swarm Cards: Data builder for SwarmCard type (blocked by: bb-ui2, bb-ui2.0, blocks: bb-ui2.17, bb-ui2.16)
+✓ bb-ui2.14 [P1] [task] @bb-z6s - 2.5 Social View: Full integration into shell (blocked by: bb-ui2, bb-ui2.5, bb-ui2.11, bb-ui2.12, bb-ui2.13, bb-ui2.0, blocks: bb-ui2.22)
+✓ bb-ui2.13 [P1] [task] - 2.4 Thread View: Conversation thread component (blocked by: bb-ui2, bb-ui2.12, bb-ui2.0, blocks: bb-ui2.14)
+✓ bb-ui2.12 [P1] [task] - 2.3 Social Detail: Task detail for right panel (blocked by: bb-ui2, bb-ui2.8, bb-ui2.10, bb-ui2.0, blocks: bb-ui2.14, bb-ui2.13)
+✓ bb-ui2.11 [P1] [task] @bb-98c - 2.2 SocialCard: Task card component (blocked by: bb-ui2, bb-ui2.3, bb-ui2.10, bb-ui2.0, blocks: bb-ui2.14)
+✓ bb-ui2.10 [P1] [task] - 2.1 Social Cards: Data builder for SocialCard type (blocked by: bb-ui2, bb-ui2.0, blocks: bb-ui2.11, bb-ui2.12)
+✓ bb-ui2.9 [P1] [task] - 1.6 Responsive: Integrate and test all breakpoints (blocked by: bb-ui2, bb-ui2.6, bb-ui2.7, bb-ui2.8, bb-ui2.0, bb-ui2.26)
+✓ bb-ui2.8 [P1] [task] @bb-3dv - 1.5 RightPanel: Detail strip with responsive behavior (blocked by: bb-ui2, bb-ui2.5, bb-ui2.0, bb-ui2.26, blocks: bb-ui2.12, bb-ui2.17, bb-ui2.9)
+✓ bb-ui2.7 [P1] [task] @bb-dwz - 1.4 LeftPanel: Channel tree navigation (blocked by: bb-ui2, bb-ui2.5, bb-ui2.0, bb-ui2.26, blocks: bb-ui2.9)
+✓ bb-ui2.6 [P1] [task] @bb-5am - 1.3 TopBar: View tabs and global controls (blocked by: bb-ui2, bb-ui2.5, bb-ui2.0, blocks: bb-ui2.9)
+✓ bb-ui2.5 [P1] [task] - 1.2 UnifiedShell: Main page layout with 3-panel grid (blocked by: bb-ui2, bb-ui2.1, bb-ui2.2, bb-ui2.3, bb-ui2.4, bb-ui2.0, blocks: bb-ui2.14, bb-ui2.7, bb-ui2.20, bb-ui2.6, bb-ui2.8, bb-ui2.18)
+✓ bb-ui2.4 [P1] [task] - 1.1 URL State Hook: URL as single source of truth (blocked by: bb-ui2, bb-ui2.0, blocks: bb-ui2.5)
+✓ bb-ui2.3 [P1] [task] - 0.3 Base Primitives: Shared UI components (blocked by: bb-ui2, bb-ui2.2, bb-ui2.0, blocks: bb-ui2.11, bb-ui2.5, bb-ui2.16)
+✓ bb-ui2.2 [P1] [task] - 0.2 shadcn/ui Setup: Initialize and install components (blocked by: bb-ui2, bb-ui2.0, blocks: bb-ui2.3, bb-ui2.5)
+✓ bb-ui2.1 [P1] [task] - 0.1 Token System: Earthy-dark CSS variables (blocked by: bb-ui2, bb-ui2.0, blocks: bb-ui2.5)
+○ bb-ui2 [● P1] [epic] - Unified UX - Earthy Dark Shell with Social/Graph/Swarm Views
+✓ bb-review-cleanup [P1] [task] [code-quality] - Code review cleanup: fix DEBUG logs and type safety
+✓ bb-buff.2.3 [P1] [task] [notifications orchestration roles routing] - Role-Based Routing (blocked by: bb-buff.2, bb-buff.2.1, bb-buff.2.2, blocks: bb-buff.4, bb-buff.3)
+✓ bb-buff.2.2 [P1] [task] [membership molecules orchestration swarm] - Swarm Molecule Engine (blocked by: bb-buff.2, bb-buff.2.1, blocks: bb-buff.3.1, bb-buff.2.3, bb-buff.3)
+✓ bb-buff.2.1 [P1] [task] @silver-castle [bootstrap fingerprint orchestration rig] - Rig/Role Fingerprinting (blocked by: bb-buff.2, bb-buff.1.3, blocks: bb-buff.2.2, bb-buff.2.3)
+○ bb-buff.2 [● P1] [epic] [molecules orchestration rigs roles swarms] - Orchestration Layer (Swarms and Environment) (blocked by: bb-buff)
+✓ bb-buff.1.3 [P1] [task] @zenchantlive [backend liveness resiliency telemetry] - Backend Liveness Refactor (blocked by: bb-buff.1, bb-buff.1.1, bb-buff.1.2, blocks: bb-buff.3.3, bb-buff.2.1, bb-buff.4, bb-buff.3, bb-buff.3.2)
+✓ bb-buff.1.2 [P1] [task] @zenchantlive [health resiliency state-machine zfc] - ZFC State Integration (blocked by: bb-buff.1, bb-buff.1.1, blocks: bb-buff.1.3, bb-buff.3.2)
+✓ bb-buff.1.1 [P1] [task] @silver-castle [ephemeral resiliency telemetry wisps] - Wisp-Native Telemetry (blocked by: bb-buff.1, blocks: bb-buff.1.2, bb-buff.1.3)
+✓ bb-buff.1 [P1] [epic] [health resiliency telemetry wisps zfc] - Resiliency Layer (Telemetry and Health) (blocked by: bb-buff)
+○ bb-buff [● P1] [epic] [agents molecules orchestration resiliency wisps zfc] - Agent System Overhaul: Molecules, Wisps, and ZFC Runtime
+○ bb-6bx.1 [● P1] [task] - bb-6bx.2: ZFC State Machine Integration (blocked by: bb-6bx)
+✓ bb-jp2.1 [P1] [epic] - Orchestration Layer: Molecules and Role-Based Dispatch (blocked by: bb-jp2)
+✓ bb-6bx [P1] [epic] - Resiliency Layer: Wisp Heartbeats and State Machine Wiring
+✓ bb-jp2 [P1] [epic] - EPIC: Super-Agent Buff (Native bd Orchestration)
+○ bb-u6f.7.5 [● P1] [task] [continuity navigation planning rollout] - Execution Backlog Bootstrap: create implementation beads and rollout map (blocked by: bb-u6f.7, bb-u6f.7.1, bb-u6f.7.2, bb-u6f.7.3, bb-u6f.7.4)
+○ bb-u6f.7.4 [● P1] [task] [architecture continuity navigation planning reuse] - Shared Primitives Plan: reuse-first integration architecture (blocked by: bb-u6f.7, bb-u6f.7.1, bb-u6f.7.2, bb-u6f.7.3, blocks: bb-u6f.7.5)
+○ bb-u6f.7.3 [● P1] [task] [continuity deeplinks navigation planning] - Deep-Link Contract v1: URL/state continuity across views (blocked by: bb-u6f.7, bb-u6f.7.2, blocks: bb-u6f.7.4, bb-u6f.7.5)
+○ bb-u6f.7.2 [● P1] [task] [continuity ia navigation planning] - IA Contract v1: unified navigation semantics and context model (blocked by: bb-u6f.7, bb-u6f.7.1, blocks: bb-u6f.7.4, bb-u6f.7.5, bb-u6f.7.3)
+○ bb-u6f.7.1 [● P1] [task] [audit continuity navigation planning] - Continuity Audit: surface map, dead ends, reuse gaps (blocked by: bb-u6f.7, blocks: bb-u6f.7.2, bb-u6f.7.4, bb-u6f.7.5)
+✓ bb-u6f.7 [P1] [epic] [architecture continuity navigation planning ux] - Unified Cross-Surface Navigation and Continuity (blocked by: bb-u6f)
+✓ bb-79b [P1] [bug] - Fix scope normalization in releaseAgentReservation
+✓ bb-1y7 [P1] [task] @zenchantlive [agents refactor] - Consolidate bb agent identity to bd agent beads (blocked by: bb-u6f.6)
+✓ bb-u6f.6.6 [P1] [task] @zenchantlive [agents protocol sessions verification] - Protocol Track 6: Integrated Acceptance Sweep (gates, screenshots, diff hygiene) (blocked by: bb-u6f.6, bb-u6f.6.2, bb-u6f.6.3, bb-u6f.6.4, bb-u6f.6.5)
+✓ bb-u6f.6.4 [P1] [task] @zenchantlive [agents protocol sessions ui] - Sessions Hub UI: protocol event and incursion visibility (blocked by: bb-u6f.6, bb-u6f.6.1, bb-u6f.6.2, blocks: bb-u6f.6.6, bb-u6f.6.5)
+✓ bb-u6f.6.3 [P1] [task] @zenchantlive [agents cli protocol sessions] - CLI Surface: bb-init and agent heartbeat command (blocked by: bb-u6f.6, bb-u6f.6.2, blocks: bb-u6f.6.6, bb-u6f.6.5)
+✓ bb-u6f.6.2 [P1] [task] @zenchantlive [agents backend protocol sessions] - Backend Engine: heartbeat, stale takeover, overlap, protocol events (blocked by: bb-u6f.6, bb-u6f.6.1, blocks: bb-u6f.6.4, bb-u6f.6.6, bb-u6f.6.3)
+✓ bb-u6f.6.1 [P1] [task] [agents protocol sessions spec] - Protocol Spec Gate: identity, heartbeat, overlap, event schema (blocked by: bb-u6f.6, blocks: bb-u6f.6.4, bb-u6f.6.2)
+✓ bb-u6f.6 [P1] [task] [agents protocol sessions] - Protocol Track 6: Operative Protocol End-to-End Implementation (blocked by: bb-u6f, blocks: bb-1y7)
+✓ bb-6d5 [P1] [task] - CLI Surface: bb-init (Non-Interactive) and Heartbeat Command
+✓ bb-ui0 [P1] [task] - Core Backend: Heartbeat, Takeover, and Overlap Logic
+✓ bb-kp5 [P1] [epic] - EPIC: The Operative Protocol (Agent Coordination v2)
+○ bb-2mx [● P1] [task] @bb-1xj - Deep validation and edge-case testing of Snapshot Diffing engine (blocked by: bb-xhm, blocks: bb-xhm.2)
+✓ bb-u6f.3.7 [P1] [task] @green-falcon - Implement Fluid Session Layout & Refactor Store (blocked by: bb-u6f.3)
+✓ bb-u6f.3.6 [P1] [task] - Implement Dual-Mode Context Sidebar (Productivity/Audit) (blocked by: bb-u6f.3)
+✓ bb-u6f.3.5 [P1] [task] - Implement Slim Social Activity Cards (Audit Feed) (blocked by: bb-u6f.3)
+✓ bb-u6f.3.4 [P1] [task] - Implement Compact Mission Header (Live Monitoring) (blocked by: bb-u6f.3)
+✓ bb-u6f.3.3 [P1] [task] @green-falcon - Implement Dual-Mode Context Sidebar (Productivity/Audit) (blocked by: bb-u6f.3)
+✓ bb-u6f.3.2 [P1] [task] - Implement Slim Social Activity Cards (Audit Feed) (blocked by: bb-u6f.3)
+✓ bb-u6f.3.1 [P1] [task] - Implement Compact Mission Header (Live Monitoring) (blocked by: bb-u6f.3)
+✓ bb-lvl [P1] [bug] @zenchantlive [realtime sse status] - Fix stale bead status rendering and refresh propagation in BeadBoard
+✓ bb-dcv.8 [P1] [task] [agents docs skill] - Create beadboard-driver skill from implemented bb agent workflows (blocked by: bb-dcv, bb-dcv.5, blocks: bb-dcv.3)
+✓ bb-dcv.7 [P1] [task] [agents cli identity] - Implement agent identity registry commands (blocked by: bb-dcv, bb-dcv.2, blocks: bb-dcv.4, bb-dcv.6)
+✓ bb-dcv.6 [P1] [task] [agents cli mail] - Implement agent mail commands (send/inbox/read/ack) (blocked by: bb-dcv, bb-dcv.2, bb-dcv.7, blocks: bb-dcv.5)
+✓ bb-dcv.5 [P1] [task] [agents cli workflow] - Integrate bb agent UX with bd claim workflow (blocked by: bb-dcv, bb-dcv.6, bb-dcv.4, blocks: bb-dcv.3, bb-dcv.8)
+✓ bb-dcv.4 [P1] [task] [agents cli reservations] - Implement reservation commands with TTL (blocked by: bb-dcv, bb-dcv.2, bb-dcv.7, blocks: bb-dcv.5)
+✓ bb-dcv.3 [P1] [task] [agents qa verification] - Final verification and readiness sweep for agent CLI (blocked by: bb-dcv, bb-dcv.5, bb-dcv.8)
+✓ bb-dcv.2 [P1] [task] @zenchantlive [agents cli design] - Define bb agent CLI contract and storage schema (blocked by: bb-dcv, bb-dcv.1, blocks: bb-dcv.4, bb-dcv.6, bb-dcv.7)
+✓ bb-b4j.6.2 [P1] [task] [closeout qa tests] - Verification subtask: typecheck/test regression and closeout notes (blocked by: bb-b4j.6, bb-b4j.6.1)
+✓ bb-b4j.6.1 [P1] [task] [playwright qa visual] - Verification subtask: Playwright capture and visual acceptance review (blocked by: bb-b4j.6, bb-b4j.5.1, bb-b4j.5.2, blocks: bb-b4j.6.2)
+✓ bb-b4j.6 [P1] [task] [playwright qa verification] - Verification evidence and final UI polish closeout (blocked by: bb-b4j, bb-b4j.5)
+✓ bb-b4j.5.2 [P1] [task] [graph responsive tests] - Guard subtask: Graph responsive contract refresh (blocked by: bb-b4j.5, bb-b4j.4.3, blocks: bb-b4j.6.1)
+✓ bb-b4j.5.1 [P1] [task] [kanban responsive tests] - Guard subtask: Kanban responsive contract refresh (blocked by: bb-b4j.5, bb-b4j.3.3, blocks: bb-b4j.6.1)
+✓ bb-b4j.5 [P1] [task] [guards tests ui] - Guardrail contract updates for responsive/UI structure (blocked by: bb-b4j, bb-b4j.3, bb-b4j.4, blocks: bb-b4j.6)
+✓ bb-b4j.4.3 [P1] [task] [graph mobile ux] - Graph subtask: mobile overview/flow density and first-screen value (blocked by: bb-b4j.4, bb-b4j.4.2, blocks: bb-b4j.5.2)
+✓ bb-b4j.4.2 [P1] [task] [graph layout responsive] - Graph subtask: containment, overflow, and scroll behavior hardening (blocked by: bb-b4j.4, bb-b4j.4.1, blocks: bb-b4j.4.3)
+✓ bb-b4j.4.1 [P1] [task] [graph readability ui] - Graph subtask: edge/label readability and contrast upgrade (blocked by: bb-b4j.4, bb-b4j.2.2, blocks: bb-b4j.4.2)
+✓ bb-b4j.4 [P1] [task] [graph ui workflow] - Graph surface migration to Aero Chrome (blocked by: bb-b4j, blocks: bb-b4j.2, bb-b4j.5)
+✓ bb-b4j.3.3 [P1] [task] [cards kanban ui] - Kanban subtask: lane/card volumetric hierarchy and status ambience (blocked by: bb-b4j.3, bb-b4j.3.2, blocks: bb-b4j.5.1)
+✓ bb-b4j.3.2 [P1] [task] [details kanban ui] - Kanban subtask: detail panel structured readability pass (blocked by: bb-b4j.3, bb-b4j.3.1, blocks: bb-b4j.3.3)
+✓ bb-b4j.3.1 [P1] [task] [kanban responsive ui] - Kanban subtask: responsive containment and scroll quality pass (blocked by: bb-b4j.3, bb-b4j.2.2, blocks: bb-b4j.3.2)
+✓ bb-b4j.3 [P1] [task] [kanban ui workflow] - Kanban surface migration to Aero Chrome (blocked by: bb-b4j, bb-b4j.2, blocks: bb-b4j.5)
+✓ bb-b4j.2.2 [P1] [task] [controls mobile ui] - Shared subtask: scope controls and mobile overlay fog pass (blocked by: bb-b4j.2, blocks: bb-b4j.2.1, bb-b4j.3.1, bb-b4j.4.1)
+✓ bb-b4j.2.1 [P1] [task] [components shared ui] - Shared subtask: chip/pill/stat visual hierarchy unification (blocked by: bb-b4j.2, bb-b4j.2.2, bb-b4j.1.3)
+✓ bb-b4j.2 [P1] [task] [design-system shared ui] - Shared primitives migration: chips, pills, scope controls, overlays (blocked by: bb-b4j, bb-b4j.4, blocks: bb-b4j.1, bb-b4j.3)
+✓ bb-b4j.1.2 [P1] [task] [background tokens ui] - Foundation subtask: matte canvas, anti-banding, elevation tokens (blocked by: bb-b4j.1, bb-b4j.1.1, blocks: bb-b4j.1.3)
+✓ bb-b4j.1.1 [P1] [task] [foundation typography ui] - Foundation subtask: app-wide font system and semantic typography (blocked by: bb-b4j.1, blocks: bb-b4j.1.2)
+✓ bb-b4j.1 [P1] [task] [design-system foundation ui] - Global visual foundation: tokens, typography, anti-banding (blocked by: bb-b4j, bb-b4j.2)
+✓ bb-0h7 [P1] [task] [graph kanban tailwind ui] - Implement aero-chrome UI polish on workflow explorer pages
+✓ bb-b4j [P1] [epic] [design-system ui workflow] - Workspace UI polish: Aero Chrome visual system
+✓ bb-6aj.10 [P1] [task] [graph kanban multi-project] - Wire project-scoped reads into Kanban and Graph (blocked by: bb-6aj, bb-6aj.7, blocks: bb-6aj.11, bb-6aj.12)
+✓ bb-6aj.9 [P1] [task] [multi-project scanner ui] - Scanner UX (discover/import projects from safe roots) (blocked by: bb-6aj, bb-6aj.7, blocks: bb-6aj.12)
+✓ bb-6aj.8 [P1] [task] [multi-project registry ui] - Project manager panel (list/add/remove registry roots) (blocked by: bb-6aj, bb-6aj.7, blocks: bb-6aj.12)
+✓ bb-6aj.7 [P1] [task] @zenchantlive [multi-project state ui] - Shared project scope store + URL persistence (blocked by: bb-6aj, bb-6aj.6, blocks: bb-6aj.9, bb-6aj.8, bb-6aj.10)
+✓ bb-6aj.6 [P1] [task] @zenchantlive [multi-project planning ui] - UI multi-project design gate and execution contract (blocked by: bb-6aj, blocks: bb-6aj.7)
+✓ bb-dcv.1 [P1] [task] @zenchantlive - Research & RFC: Agent Skills and Handoff Protocols (blocked by: bb-dcv, blocks: bb-dcv.2)
+✓ bb-dcv [P1] [epic] - Agent Communication & Coordination Patterns (blocks: bb-u6f)
+✓ bb-q1s.3 [P1] [task] [editing graph ui] - Graph detail integration of shared editor (blocked by: bb-q1s, bb-q1s.1, blocks: bb-q1s.4)
+✓ bb-q1s.2 [P1] [task] [editing kanban ui] - Kanban detail integration of shared editor (blocked by: bb-q1s, bb-q1s.1, blocks: bb-q1s.4)
+✓ bb-q1s.1 [P1] [task] [editing lib shared] - Shared edit core: schema + update adapter + state machine (blocked by: bb-q1s, blocks: bb-q1s.3, bb-q1s.2)
+✓ bb-q1s [P1] [epic] [editing mutation ui] - UI Bead Editing Across Kanban + Graph
+○ bb-18e.6 [● P1] [task] [graph interaction ux] - Keep selected node centered during focus navigation (blocked by: bb-18e, bb-18e.2, blocks: bb-18e.9, bb-18e.8)
+○ bb-18e.4 [● P1] [task] [controls graph ux] - Add edge-type toggles to reduce graph noise (blocked by: bb-18e, bb-18e.2, blocks: bb-18e.5, bb-18e.10)
+○ bb-18e.2 [● P1] [task] [graph readability ux] - Add plain-English edge labels + contrast upgrade (blocked by: bb-18e, blocks: bb-18e.4, bb-18e.6)
+✓ bb-1es.4 [P1] [task] [details kanban workflow] - Add execution-readiness checklist to Kanban details (blocked by: bb-1es, bb-1es.1)
+✓ bb-1es.3 [P1] [task] [dependencies kanban signal] - Show downstream impact chip (Unblocks N) on Kanban cards (blocked by: bb-1es, bb-1es.1, blocks: bb-1es.2)
+✓ bb-1es.1 [P1] [task] [kanban triage workflow] - Add Next Actionable task picker to Kanban (blocked by: bb-1es, blocks: bb-1es.3, bb-1es.4)
+✓ bb-1es [P1] [epic] [kanban ux workflow] - Kanban Actionability & Execution Clarity (blocks: bb-18e, bb-18e.1)
+✓ bb-n7p [P1] [task] [kanban status swimlane] - Swimlane status model: ready + dependency-derived blocked
+❄ bb-29x.5 [● P1] [task] - Epic Design Gate: scope, decisions, and acceptance contract (blocked by: bb-29x, blocks: bb-29x.2, bb-29x.3, bb-29x.1, bb-29x.4)
+✓ bb-u6f.4 [P1] [task] - Epic Design Gate: scope, decisions, and acceptance contract (blocked by: bb-u6f, blocks: bb-u6f.3, bb-u6f.2, bb-u6f.1)
+✓ bb-bvn.4 [P1] [task] - Epic Design Gate: scope, decisions, and acceptance contract (blocked by: bb-bvn, blocks: bb-bvn.1, bb-bvn.2, bb-bvn.3)
+✓ bb-xhm.4 [P1] [task] - Epic Design Gate: scope, decisions, and acceptance contract (blocked by: bb-xhm, blocks: bb-xhm.1, bb-xhm.2, bb-xhm.3)
+✓ bb-tpc.5 [P1] [task] - Epic Design Gate: scope, decisions, and acceptance contract (blocked by: bb-tpc, blocks: bb-tpc.1, bb-tpc.2, bb-tpc.3, bb-tpc.4)
+✓ bb-6aj.5 [P1] [task] - Epic Design Gate: scope, decisions, and acceptance contract (blocked by: bb-6aj, blocks: bb-6aj.3)
+✓ bb-3pr [P1] [task] @zenchantlive [api smoke] - Smoke test mutation lifecycle 2
+✓ bb-bc4.5 [P1] [task] [playwright verification visual] - Playwright multi-breakpoint visual verification (blocked by: bb-bc4, bb-bc4.4, bb-bc4.3)
+✓ bb-bc4.4 [P1] [task] [detail-panel mobile ux] - Implement mobile/tablet detail panel interaction model (blocked by: bb-bc4, bb-bc4.2, bb-bc4.3, blocks: bb-bc4.5)
+✓ bb-bc4.3 [P1] [task] [design-system theme tokens] - Redesign tokenized theme and visual hierarchy (blocked by: bb-bc4, bb-bc4.1, blocks: bb-bc4.5, bb-bc4.4)
+✓ bb-bc4.2 [P1] [task] [cards kanban overflow] - Fix column/card sizing and overflow behavior (blocked by: bb-bc4, bb-bc4.1, blocks: bb-bc4.4)
+✓ bb-bc4.1 [P1] [task] [kanban layout responsive] - Rework board responsiveness and horizontal reachability (blocked by: bb-bc4, blocks: bb-bc4.3, bb-bc4.2)
+✓ bb-bc4 [P1] [epic] [design-system kanban responsive ui] - Kanban Responsive Design Hardening (blocked by: bb-92d, bb-trz)
+○ bb-29x.2 [● P1] [task] [integration tests] - Implement API integration tests for read, mutate, and SSE routes (blocked by: bb-29x, bb-29x.1, bb-29x.5, blocks: bb-29x.3, bb-29x.4)
+○ bb-29x.1 [● P1] [task] [tests unit] - Implement unit tests for parser, pathing, scanner, and bd bridge (blocked by: bb-29x, bb-29x.5, blocks: bb-29x.2)
+○ bb-29x [● P1] [epic] [perf quality testing] - Quality Gates, Testing, and Performance Validation (blocked by: bb-ymg, bb-xhm, bb-bvn, bb-u6f)
+✓ bb-u6f.1 [P1] [task] @green-falcon [agents data] - Implement Session Aggregation Library & Data Model (blocked by: bb-u6f, bb-u6f.4, blocks: bb-u6f.2)
+○ bb-u6f [● P1] [epic] [agents sessions] - Agent Session Views and Metrics (blocked by: bb-tpc, bb-xhm, bb-dcv, blocks: bb-29x)
+✓ bb-bvn.2 [P1] [task] @zenchantlive [graph ui] - Implement React Flow graph view with pan/zoom/select interactions (blocked by: bb-bvn, bb-bvn.1, bb-bvn.4, blocks: bb-bvn.3)
+✓ bb-bvn.1 [P1] [task] @zenchantlive [graph parser] - Parse dependency edges and build adjacency structures (blocked by: bb-bvn, bb-bvn.4, blocks: bb-bvn.2)
+✓ bb-xhm.1 [P1] [task] @green-falcon [model timeline] - Define activity event model for created/updated/closed/reopened actions (blocked by: bb-xhm, bb-xhm.4, blocks: bb-xhm.2)
+✓ bb-xhm [P1] [epic] [activity timeline] - Timeline and Activity Feed (blocked by: bb-tpc, bb-bvn, blocks: bb-u6f, bb-29x)
+✓ bb-ymg.4 [P1] [task] [dnd kanban] - Implement drag-and-drop status transitions mapped to bd commands (blocked by: bb-ymg, bb-ymg.2, bb-trz.1)
+✓ bb-ymg.3 [P1] [task] [optimistic state] - Add optimistic updates with rollback and SSE reconciliation (blocked by: bb-ymg, bb-ymg.2)
+✓ bb-ymg.1.1 [P1] [task] [bridge setup] - Resolve bd.exe location from PATH and configuration fallback (blocked by: bb-ymg.1, blocks: bb-ymg.2)
+✓ bb-ymg [P1] [epic] [bd-cli mutation] - CLI Write-Back via bd.exe (blocked by: bb-trz, bb-tpc, blocks: bb-29x)
+✓ bb-trz.4 [P1] [task] @agent-b [filters stats] - Add search/filter/stats controls for status/type/priority/labels (blocked by: bb-trz, bb-trz.2)
+✓ bb-trz.3 [P1] [task] @agent-b [details kanban] - Implement detail slide-out panel with full issue metadata (blocked by: bb-trz, bb-trz.2)
+✓ bb-trz.2 [P1] [task] @agent-b [cards kanban] - Build bead cards with priority/type/labels/assignee/dependency metadata (blocked by: bb-trz, bb-trz.1, blocks: bb-trz.3, bb-trz.4)
+✓ bb-trz.1 [P1] [task] @agent-b [columns kanban] - Implement Kanban column layout for Beads statuses (blocked by: bb-trz, bb-92d.4, blocks: bb-trz.2, bb-ymg.4)
+✓ bb-trz [P1] [epic] [kanban ui] - Kanban Experience (Baseline Dashboard) (blocked by: bb-92d, blocks: bb-ymg, bb-bc4, bb-bvn)
+✓ bb-tpc.4 [P1] [task] [frontend react-query] - Build frontend SSE client with scoped React Query invalidation (blocked by: bb-tpc, bb-tpc.3, bb-tpc.5)
+✓ bb-6aj.4 [P1] [task] @zenchantlive [aggregation data-model] - Implement aggregate project issue context model (blocked by: bb-6aj, bb-6aj.2)
+✓ bb-92d.4.1 [P1] [task] [parser tests] - Add parser tests for priority=0, tombstone filtering, and dependency parsing (blocked by: bb-92d.4)
+✓ bb-92d.2 [P1] [task] [docs license] - Add MIT license and baseline repository docs (blocked by: bb-92d)
+✓ beadboard-gb0.8 [P2] [task] - Remove swarm view from navigation (blocked by: beadboard-gb0, blocks: beadboard-gb0.7)
+❄ beadboard-gb0.7 [● P2] [task] - Delete deprecated swarm files (blocked by: beadboard-gb0, beadboard-gb0.5, beadboard-gb0.8, blocks: beadboard-gb0.6)
+✓ beadboard-6xd [P2] [task] - Realtime Test
+✓ beadboard-uuo [P2] [task] - SSE Test Bead
+✓ beadboard-7jp.6 [P2] [task] @Antigravity (Engineer) - Integration tests (blocked by: beadboard-7jp, beadboard-7jp.5, beadboard-7jp.7)
+○ beadboard-3xc [● P2] [epic] - Swarm Test: Order Processing System
+○ bb-zzr [● P2] [task] [gt:agent swarm:test-swarm-1] - test-swarm-3
+○ bb-1d1 [● P2] [task] [gt:agent swarm:test-swarm-1] - test-swarm-2
+○ bb-5pw [● P2] [task] [gt:agent swarm:test-swarm-1] - test-swarm-1
+○ bb-ui2.26 [● P2] [task] - 1.7 Resizable Panels: Add drag handles for left/right panel width adjustment (blocked by: bb-ui2, blocks: bb-ui2.7, bb-ui2.8, bb-ui2.9)
+○ bb-buff.3.6 [● P2] [task] [grouping rig sessions ui undecided] - Rig-Based Grouping (Undecided) (blocked by: bb-buff.3)
+✓ bb-buff.3.5 [P2] [task] [health sessions swarms ui] - Swarm Health Aggregate (blocked by: bb-buff.3)
+✓ bb-buff.3.4 [P2] [task] [color role sessions ui] - Role-Based Color Coding (blocked by: bb-buff.3)
+○ bb-format-check [● P2] [task] [gt:agent rig:test-rig-xyz] - Format Check
+○ bb-buff.4.5 [● P2] [task] [docs handoff migration skills] - Migration Handoff: v3 to v4 adoption guide (blocked by: bb-buff.4, bb-buff.4.4)
+○ bb-buff.4.4 [● P2] [task] [contracts quality skills tests] - Test Matrix Expansion: skill-local and repo-level v4 coverage (blocked by: bb-buff.4, bb-buff.4.3, blocks: bb-buff.4.5)
+○ bb-buff.4.3 [● P2] [task] [automation diagnostics scripts skills] - Script Alignment: preflight/readiness/driver-lib v4 (blocked by: bb-buff.4, bb-buff.4.2, blocks: bb-buff.4.4)
+○ bb-buff.4.2 [● P2] [task] [docs references skills] - Reference Pack Rewrite: command matrix, lifecycle, failure modes (blocked by: bb-buff.4, bb-buff.4.1, blocks: bb-buff.4.3)
+○ bb-buff.4.1 [● P2] [task] [docs protocol skills] - Core Skill Rewrite: beadboard-driver SKILL.md v4 (blocked by: bb-buff.4, blocks: bb-buff.4.2)
+○ bb-buff.4 [● P2] [epic] [agents docs orchestration resiliency runbook skills] - Skill and Runbook Alignment (Beadboard Driver v4) (blocked by: bb-buff, bb-buff.1.3, bb-buff.2.3, bb-buff.3.3)
+✓ bb-buff.3.3 [P2] [task] [mission-linking pathing sessions ui] - Active Mission Pathing (blocked by: bb-buff.3, bb-buff.3.1, bb-buff.3.2, bb-buff.1.3, blocks: bb-buff.4)
+✓ bb-buff.3.2 [P2] [task] [health-signals sessions states ui] - Critical Visual Signals (blocked by: bb-buff.3, bb-buff.1.2, bb-buff.1.3, blocks: bb-buff.3.3)
+✓ bb-buff.3.1 [P2] [task] [grouping sessions swarms ui] - Swarm-Grouped Header (blocked by: bb-buff.3, bb-buff.2.2, blocks: bb-buff.3.3)
+○ bb-buff.3 [● P2] [epic] [sessions swarms ui visualization war-room] - War Room UI Track (Visual Hub) (blocked by: bb-buff, bb-buff.1.3, bb-buff.2.2, bb-buff.2.3)
+✓ bb-jp2.3 [P2] [task] - Skill Update: The Resilient Operative Handbook v3 (blocked by: bb-jp2)
+✓ bb-jp2.2 [P2] [epic] - Command Center UI: Swarm Visualization and Live Links (blocked by: bb-jp2)
+✓ bb-u6f.6.5 [P2] [task] [agents docs protocol sessions skills] - Protocol Track 6: Skill Closeout (beadboard-driver v2 runbook) (blocked by: bb-u6f.6.3, bb-u6f.6.4, blocks: bb-u6f.6.6)
+✓ bb-ubr [P2] [task] - Skill Closeout: Refactor beadboard-driver for Operative Protocol
+✓ bb-vyf [P2] [task] - Frontend: Social-Dense Hub Overlays and Audit Rendering
+○ bb-u6f.5 [● P2] [task] - Legacy Track: Session Metrics Overlays (blocked by: bb-u6f, bb-u6f.3)
+✓ bb-3wy [P2] [task] [postmortem realtime sse status] - Postmortem: stale bead status refresh regression and SSE recovery
+✓ bb-3vi [P2] [bug] - Fix misleading 'Blocking' label in task cards - should be 'Unlocks'
+✓ bb-b4j.1.3 [P2] [task] [controls ui usability] - Foundation subtask: dark controls and scrollbar polish baseline (blocked by: bb-b4j.1, bb-b4j.1.2, blocks: bb-b4j.2.1)
+✓ bb-6aj.12 [P2] [task] [multi-project qa verification] - Verification pass: multi-project UX, guards, and screenshots (blocked by: bb-6aj, bb-6aj.8, bb-6aj.9, bb-6aj.10, bb-6aj.11)
+✓ bb-6aj.11 [P2] [task] [aggregate multi-project ux] - Aggregate mode (cross-project view) with clear project badges (blocked by: bb-6aj, bb-6aj.10, blocks: bb-6aj.12)
+✓ bb-q1s.4 [P2] [task] [editing ux verification] - Cross-surface verification + UX polish for edit flows (blocked by: bb-q1s, bb-q1s.2, bb-q1s.3)
+○ bb-18e.10 [● P2] [task] [graph signal ux] - Add downstream-impact risk tinting (blocked by: bb-18e, bb-18e.4)
+○ bb-18e.9 [● P2] [task] [graph routing ux] - Persist graph state in URL params (blocked by: bb-18e, bb-18e.6, blocks: bb-18e.11)
+○ bb-18e.7 [● P2] [task] [details graph ux] - Progressive disclosure in graph task details panel (blocked by: bb-18e, bb-18e.3, blocks: bb-18e.8)
+○ bb-18e.5 [● P2] [task] [dependencies filters graph] - Add external-blockers-only filter (blocked by: bb-18e, bb-18e.4)
+✓ bb-18e.3 [P2] [task] [graph orientation ux] - Add directional context hints for dependency reading (blocked by: bb-18e, blocks: bb-18e.7)
+○ bb-18e.1 [● P2] [task] [anomaly graph ux] - Add cycle warning card with focus actions in graph view (blocked by: bb-18e, bb-1es, blocks: bb-18e.11)
+○ bb-18e [● P2] [epic] [backlog graph ux] - Graph Clarity Follow-up (Post-Kanban) (blocked by: bb-1es)
+✓ bb-1es.2 [P2] [task] [kanban triage ux] - Add recency signal (last updated) to Kanban cards (blocked by: bb-1es, bb-1es.3)
+○ bb-sse-smoke [● P2] [task] - SSE smoke 1770870992420
+○ bb-29x.4 [● P2] [task] [docs runbook] - Document operational runbook and boundary rationale (blocked by: bb-29x, bb-29x.2, bb-29x.5)
+○ bb-29x.3 [● P2] [task] [benchmark perf] - Record parser and realtime performance baseline against PRD targets (blocked by: bb-29x, bb-29x.2, bb-29x.5)
+✓ bb-u6f.2 [P2] [task] @green-falcon [agents ui] - Implement Session API & Endpoints (blocked by: bb-u6f, bb-u6f.1, bb-u6f.4, blocks: bb-u6f.3)
+✓ bb-bvn.3 [P2] [task] [analysis graph] - Add blocked-chain highlighting and cycle anomaly signaling (blocked by: bb-bvn, bb-bvn.2, bb-bvn.4)
+✓ bb-xhm.2 [P2] [task] @green-falcon [diff timeline] - Implement snapshot diffing for derived timeline events (blocked by: bb-xhm, bb-xhm.1, bb-tpc.2, bb-xhm.4, bb-2mx, blocks: bb-xhm.3)
+✓ bb-6aj.3.1 [P2] [task] @zenchantlive [optional scanner] - Add explicit full-drive scan mode for C:/D: by user action (blocked by: bb-6aj.3)
+○ beadboard-58u [● P3] [task] - TODO: Add DependencyFlowStrip to SmartDag Dependencies tab
+○ beadboard-gb0.6 [● P3] [task] - Update standalone /graph page (blocked by: beadboard-gb0, beadboard-gb0.7)
+◐ beadboard-o6s [● P3] [task] - Test Bead 2 - SSE Check
+✓ beadboard-m4f [P3] [task] - Test Bead - SSE Refresh Verification
+✓ bb-18e.11 [P3] [task] [ai backlog graph] - AI dependency explanation scaffold (deferred) (blocked by: bb-18e, bb-18e.9, bb-18e.1)
+○ bb-18e.8 [● P3] [task] [accessibility graph productivity] - Add graph keyboard navigation shortcuts (blocked by: bb-18e, bb-18e.6, bb-18e.7)
+✓ bb-atl [P3] [task] [smoke writeback] - Writeback phase smoke
+○ bb-bq6 [● P3] [task] [api smoke] - Smoke test mutation lifecycle
+✓ bb-xhm.3 [P3] [task] @green-falcon [timeline ui] - Build timeline UI with date grouping and project/assignee/event filters (blocked by: bb-xhm, bb-xhm.2, bb-xhm.4)
+✓ bb-ag8 [P4] [task] - TEMP_DELETE_ME

@@ -4,16 +4,16 @@
 
 :root {
   /* ========== VISUAL-TRUTH UI TOKEN CONTRACT (bb-vt.1.1) ========== */
-  --ui-bg-app: #0a0908;
-  --ui-bg-shell: #12100e;
-  --ui-bg-panel: #1a1714;
+  --ui-bg-app: #070d16;
+  --ui-bg-shell: #0c1420;
+  --ui-bg-panel: #111c2a;
   --ui-bg-card: #1a2431;
 
-  --ui-border-soft: rgba(185, 171, 153, 0.15);
-  --ui-border-strong: rgba(185, 171, 153, 0.25);
+  --ui-border-soft: rgba(153, 171, 190, 0.2);
+  --ui-border-strong: rgba(153, 171, 190, 0.34);
 
-  --ui-text-primary: #f0ece1;
-  --ui-text-muted: #9e9589;
+  --ui-text-primary: #e8edf5;
+  --ui-text-muted: #8f9caf;
 
   --ui-accent-ready: #35d98f;
   --ui-accent-blocked: #ff4c72;
@@ -37,9 +37,9 @@
   --color-accent-teal: var(--ui-accent-info);
 
   --color-text-primary: var(--ui-text-primary);
-  --color-text-secondary: #c9c4be;
+  --color-text-secondary: #c4cfdb;
   --color-text-muted: var(--ui-text-muted);
-  --color-text-on-primary: #12100e;
+  --color-text-on-primary: #10161d;
 
   --color-border-default: var(--ui-border-strong);
   --color-border-subtle: var(--ui-border-soft);
@@ -321,19 +321,19 @@ body {
 
 .ui-shell-topbar {
   background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-panel) 92%, black), var(--ui-bg-shell));
-  border-bottom: 1px solid color-mix(in srgb, var(--ui-accent-warning) 15%, var(--ui-border-soft));
+  border-bottom: 1px solid color-mix(in srgb, var(--ui-accent-info) 22%, var(--ui-border-soft));
   box-shadow: 0 10px 24px -20px rgba(0, 0, 0, 0.9);
 }
 
 .ui-shell-middle {
   background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-app) 74%, black), color-mix(in srgb, var(--ui-bg-app) 90%, black));
-  border-left: 1px solid color-mix(in srgb, var(--ui-accent-warning) 12%, var(--ui-border-soft));
-  border-right: 1px solid color-mix(in srgb, var(--ui-accent-warning) 12%, var(--ui-border-soft));
+  border-left: 1px solid color-mix(in srgb, var(--ui-accent-info) 20%, var(--ui-border-soft));
+  border-right: 1px solid color-mix(in srgb, var(--ui-accent-info) 20%, var(--ui-border-soft));
 }
 
 .ui-shell-panel {
   background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-shell) 86%, black), color-mix(in srgb, var(--ui-bg-panel) 84%, black));
-  border-left: 1px solid color-mix(in srgb, var(--ui-accent-warning) 20%, var(--ui-border-soft));
+  border-left: 1px solid color-mix(in srgb, var(--ui-accent-info) 30%, var(--ui-border-soft));
 }
 
 .ui-tabular-nums {
