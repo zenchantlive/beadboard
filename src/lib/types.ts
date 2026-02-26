@@ -40,6 +40,7 @@ export interface BeadIssue {
   priority: number;
   issue_type: BeadIssueType;
   assignee: string | null;
+  templateId: string | null;
   owner: string | null;
   labels: string[];
   dependencies: BeadDependency[];
