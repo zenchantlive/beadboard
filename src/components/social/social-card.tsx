@@ -34,10 +34,9 @@ function handleCardKeyDown(event: KeyboardEvent<HTMLDivElement>, onClick?: Mouse
 function statusVisual(status: SocialCardData['status']) {
   if (status === 'blocked') {
     return {
-      border: 'color-mix(in srgb, var(--ui-accent-blocked) 50%, var(--ui-border-soft))',
-      cardBg:
-        'linear-gradient(160deg, color-mix(in srgb, var(--ui-accent-blocked) 20%, #1a0f15), color-mix(in srgb, var(--ui-bg-shell) 92%, black))',
-      badgeBg: 'color-mix(in srgb, var(--ui-accent-blocked) 24%, transparent)',
+      border: 'rgba(255, 76, 114, 0.5)',
+      cardBg: 'rgba(255, 76, 114, 0.08)',
+      badgeBg: 'rgba(255, 76, 114, 0.2)',
       badgeText: '#ffd5df',
       chipText: 'Blocked',
     };
@@ -45,10 +44,9 @@ function statusVisual(status: SocialCardData['status']) {
 
   if (status === 'in_progress') {
     return {
-      border: 'color-mix(in srgb, var(--ui-accent-warning) 50%, var(--ui-border-soft))',
-      cardBg:
-        'linear-gradient(160deg, color-mix(in srgb, var(--ui-accent-warning) 16%, #1a1510), color-mix(in srgb, var(--ui-bg-shell) 92%, black))',
-      badgeBg: 'color-mix(in srgb, var(--ui-accent-warning) 24%, transparent)',
+      border: 'rgba(255, 178, 74, 0.5)',
+      cardBg: 'rgba(255, 178, 74, 0.08)',
+      badgeBg: 'rgba(255, 178, 74, 0.2)',
       badgeText: '#ffe5c7',
       chipText: 'Active',
     };
@@ -56,10 +54,9 @@ function statusVisual(status: SocialCardData['status']) {
 
   if (status === 'ready') {
     return {
-      border: 'color-mix(in srgb, var(--ui-accent-ready) 50%, var(--ui-border-soft))',
-      cardBg:
-        'linear-gradient(160deg, color-mix(in srgb, var(--ui-accent-ready) 16%, #101a15), color-mix(in srgb, var(--ui-bg-shell) 92%, black))',
-      badgeBg: 'color-mix(in srgb, var(--ui-accent-ready) 24%, transparent)',
+      border: 'rgba(53, 217, 143, 0.5)',
+      cardBg: 'rgba(53, 217, 143, 0.08)',
+      badgeBg: 'rgba(53, 217, 143, 0.2)',
       badgeText: '#d6ffe7',
       chipText: 'Ready',
     };
@@ -67,8 +64,8 @@ function statusVisual(status: SocialCardData['status']) {
 
   return {
     border: 'var(--ui-border-strong)',
-    cardBg: 'linear-gradient(160deg, color-mix(in srgb, var(--ui-bg-card) 95%, black), color-mix(in srgb, var(--ui-bg-shell) 90%, black))',
-    badgeBg: 'color-mix(in srgb, var(--ui-border-strong) 24%, transparent)',
+    cardBg: 'var(--ui-bg-card)',
+    badgeBg: 'rgba(143, 156, 175, 0.15)',
     badgeText: 'var(--ui-text-muted)',
     chipText: 'Closed',
   };
@@ -141,8 +138,8 @@ export function SocialCard({
         background: status.cardBg,
         borderColor: selected ? status.border : 'var(--ui-border-soft)',
         boxShadow: selected
-          ? '0 24px 40px -26px rgba(0,0,0,0.85), 0 0 0 1px color-mix(in srgb, var(--ui-border-strong) 66%, transparent)'
-          : '0 12px 26px -24px rgba(0,0,0,0.82)',
+          ? `0 0 0 1px ${status.border}, 0 20px 40px -20px rgba(0,0,0,0.6)`
+          : '0 8px 24px -16px rgba(0,0,0,0.5)',
       }}
     >
       <div className="mb-2 flex items-center justify-between gap-2">

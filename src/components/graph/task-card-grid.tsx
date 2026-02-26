@@ -75,17 +75,17 @@ function statusDot(status: BeadIssue['status']): string {
 function statusGradient(status: BeadIssue['status']): string {
   switch (status) {
     case 'open':
-      return 'border-l-2 border-emerald-400/60 bg-emerald-400/8';
+      return 'border-l-2 border-emerald-400 bg-emerald-500/15';
     case 'in_progress':
-      return 'border-l-2 border-amber-400/60 bg-amber-400/8';
+      return 'border-l-2 border-amber-400 bg-amber-500/15';
     case 'blocked':
-      return 'border-l-2 border-rose-400/60 bg-rose-400/8';
+      return 'border-l-2 border-rose-400 bg-rose-500/15';
     case 'closed':
-      return 'border-l-2 border-slate-400/40 bg-slate-400/5 opacity-70';
+      return 'border-l-2 border-slate-400/60 bg-slate-500/10 opacity-80';
     case 'deferred':
-      return 'border-l-2 border-slate-400/40 bg-slate-400/5';
+      return 'border-l-2 border-slate-400/60 bg-slate-500/10';
     default:
-      return 'border-l-2 border-slate-400/40 bg-slate-400/5';
+      return 'border-l-2 border-slate-400/60 bg-slate-500/10';
   }
 }
 

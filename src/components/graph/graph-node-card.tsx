@@ -71,8 +71,8 @@ function statusDot(status: BeadIssue['status']): string {
  */
 function nodeStyle(kind: GraphNodeData['kind']): string {
     return kind === 'epic'
-        ? 'bg-[linear-gradient(160deg,rgba(56,189,248,0.06),rgba(15,23,42,0.9))] border-sky-400/15'
-        : 'bg-[linear-gradient(160deg,rgba(255,255,255,0.03),rgba(15,23,42,0.85))] border-white/8';
+        ? 'bg-sky-500/10 border-sky-400/30'
+        : 'bg-slate-800/60 border-white/10';
 }
 
 /**
