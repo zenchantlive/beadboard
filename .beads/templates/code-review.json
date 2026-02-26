@@ -1,0 +1,15 @@
+{
+  "id": "code-review",
+  "name": "Code Review",
+  "description": "Lightweight team for reviewing and improving existing code. Reviewer analyzes, Engineer makes improvements.",
+  "team": [
+    { "archetypeId": "reviewer", "count": 1 },
+    { "archetypeId": "engineer", "count": 1 }
+  ],
+  "protoFormula": "Reviewer analyzes code quality → Engineer implements improvements → Reviewer validates changes",
+  "color": "#f59e0b",
+  "icon": "👁️",
+  "createdAt": "2026-02-25T00:00:00.000Z",
+  "updatedAt": "2026-02-25T00:00:00.000Z",
+  "isBuiltIn": true
+}

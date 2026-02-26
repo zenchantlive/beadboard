@@ -1,0 +1,17 @@
+{
+  "id": "greenfield",
+  "name": "Greenfield Project",
+  "description": "Full team for starting new projects from scratch. Architect designs foundation, Engineers build core, Tester ensures quality, Shipper sets up deployment.",
+  "team": [
+    { "archetypeId": "architect", "count": 1 },
+    { "archetypeId": "engineer", "count": 3 },
+    { "archetypeId": "tester", "count": 1 },
+    { "archetypeId": "shipper", "count": 1 }
+  ],
+  "protoFormula": "Architect creates design and task breakdown → Engineers implement in parallel → Tester validates each component → Shipper prepares deployment pipeline",
+  "color": "#10b981",
+  "icon": "🌱",
+  "createdAt": "2026-02-25T00:00:00.000Z",
+  "updatedAt": "2026-02-25T00:00:00.000Z",
+  "isBuiltIn": true
+}

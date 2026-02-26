@@ -1,18 +1,15 @@
 {
   "id": "standard-app",
-  "name": "Standard Application Swarm",
-  "description": "A balanced team of an Architect and two Coders for standard feature development.",
+  "name": "Standard Application",
+  "description": "Classic balanced team for routine application development. One Architect for design, two Engineers for implementation.",
   "team": [
-    {
-      "archetypeId": "architect",
-      "count": 1
-    },
-    {
-      "archetypeId": "coder",
-      "count": 2
-    }
+    { "archetypeId": "architect", "count": 1 },
+    { "archetypeId": "engineer", "count": 2 }
   ],
+  "protoFormula": "Architect designs and decomposes → Engineers implement in parallel",
+  "color": "#f59e0b",
+  "icon": "📦",
   "createdAt": "2026-02-21T03:22:04.089Z",
-  "updatedAt": "2026-02-21T19:39:45.443Z",
+  "updatedAt": "2026-02-25T00:00:00.000Z",
   "isBuiltIn": true
 }

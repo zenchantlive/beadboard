@@ -1,0 +1,18 @@
+{
+  "id": "research-and-discovery",
+  "name": "Research and Discovery",
+  "description": "",
+  "team": [
+    {
+      "archetypeId": "investigator",
+      "count": 1
+    },
+    {
+      "archetypeId": "architect",
+      "count": 1
+    }
+  ],
+  "createdAt": "2026-02-26T18:13:26.028Z",
+  "updatedAt": "2026-02-26T18:13:26.028Z",
+  "isBuiltIn": false
+}
