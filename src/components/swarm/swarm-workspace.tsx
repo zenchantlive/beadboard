@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { TelemetryGrid } from './telemetry-grid';
 import { ConvoyStepper, type Phase } from './convoy-stepper';
 import { Network, Blocks, FileCode2, Info } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn, getArchetypeDisplayChar, getTemplateDisplayChar, getTemplateColor } from '../../lib/utils';
 import type { BeadIssue } from '../../lib/types';
 import { useArchetypes } from '../../hooks/use-archetypes';
 import { useTemplates } from '../../hooks/use-templates';
@@ -42,6 +42,7 @@ export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: 
                     title: 'Analyze DB Schema',
                     status: 'closed',
                     assignee: 'Alice (Architect)',
+                    templateId: null,
                     owner: null,
                     description: null,
                     issue_type: 'task',
@@ -57,6 +58,7 @@ export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: 
                     title: 'Implement API Routes',
                     status: 'in_progress',
                     assignee: 'Bob (Backend)',
+                    templateId: null,
                     owner: null,
                     description: null,
                     issue_type: 'task',
@@ -75,6 +77,7 @@ export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: 
                     title: 'Build UI Components',
                     status: 'blocked',
                     assignee: 'Charlie (Frontend)',
+                    templateId: null,
                     owner: null,
                     description: null,
                     issue_type: 'task',
@@ -184,7 +187,7 @@ export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: 
                                     >
                                         <div className="flex items-center gap-3 mb-3">
                                             <div className="h-10 w-10 flex-shrink-0 rounded-lg flex items-center justify-center font-bold text-lg border" style={{ backgroundColor: `${arc.color}15`, color: arc.color, borderColor: `${arc.color}30` }}>
-                                                {arc.name.charAt(0)}
+                                                {getArchetypeDisplayChar(arc)}
                                             </div>
                                             <div className="truncate">
                                                 <div className="font-semibold text-[15px] text-[var(--ui-text-primary)] truncate">{arc.name}</div>
@@ -241,16 +244,21 @@ export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: 
                                     No templates found. Create one in the `.beads/templates/` directory.
                                 </div>
                             ) : (
-                                templates.map(tpl => (
+                                templates.map(tpl => {
+                                    const tplColor = getTemplateColor(tpl);
+                                    return (
                                     <button
                                         key={tpl.id}
                                         onClick={() => setInspectingTemplateId(tpl.id)}
-                                        className="bg-[#111f2b] p-5 rounded-xl border border-[var(--ui-border-soft)] flex flex-col gap-4 hover:border-amber-500/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-colors shadow-[0_18px_28px_-22px_rgba(0,0,0,0.96)] text-left w-full"
+                                        className="bg-[#111f2b] p-5 rounded-xl border flex flex-col gap-4 hover:border-amber-500/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-colors shadow-[0_18px_28px_-22px_rgba(0,0,0,0.96)] text-left w-full"
+                                        style={{ borderColor: `${tplColor}30` }}
                                     >
                                         <div className="flex items-center justify-between w-full">
                                             <div className="flex items-center gap-3 w-full pr-2">
-                                                <div className="h-10 w-10 flex-shrink-0 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 font-bold">
-                                                    {tpl.team.reduce((acc, curr) => acc + curr.count, 0)}
+                                                <div className="h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center font-bold border"
+                                                    style={{ backgroundColor: `${tplColor}15`, color: tplColor, borderColor: `${tplColor}30` }}
+                                                >
+                                                    {getTemplateDisplayChar(tpl)}
                                                 </div>
                                                 <div className="truncate">
                                                     <div className="font-semibold text-[15px] text-[var(--ui-text-primary)] truncate">{tpl.name}</div>
@@ -272,7 +280,7 @@ export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: 
                                                     return (
                                                         <div key={idx} className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#0f1824] border border-[var(--ui-border-soft)]">
                                                             <div className="h-4 w-4 rounded text-[9px] flex items-center justify-center font-bold" style={{ backgroundColor: `${arch?.color || '#888'}20`, color: arch?.color || '#888' }}>
-                                                                {arch?.name.charAt(0) || '?'}
+                                                                {arch ? getArchetypeDisplayChar(arch) : '?'}
                                                             </div>
                                                             <span className="text-[11px] text-[var(--ui-text-primary)] font-medium">{member.count}x {arch?.name || member.archetypeId}</span>
                                                         </div>
@@ -281,7 +289,8 @@ export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: 
                                             </div>
                                         </div>
                                     </button>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                     </div>

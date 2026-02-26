@@ -70,6 +70,7 @@ function normalizeBdIssue(raw: unknown): BeadIssue | null {
     priority: typeof data.priority === 'number' ? data.priority : 2,
     issue_type: typeof data.issue_type === 'string' ? data.issue_type : 'task',
     assignee: typeof data.assignee === 'string' ? data.assignee : null,
+    templateId: null,
     owner: typeof data.owner === 'string' ? data.owner : null,
     labels: Array.isArray(data.labels) ? data.labels.filter((x): x is string => typeof x === 'string') : [],
     dependencies: normalizeDependencies(data.dependencies),
