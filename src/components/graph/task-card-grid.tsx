@@ -70,23 +70,23 @@ function statusDot(status: BeadIssue['status']): string {
 }
 
 /**
- * Returns status-tinted gradient background for Aero Chrome styling.
+ * Returns status-tinted gradient background for simplified flat styling.
  */
 function statusGradient(status: BeadIssue['status']): string {
-    switch (status) {
-        case 'open':
-            return 'bg-[linear-gradient(145deg,rgba(34,45,42,0.92)_0%,rgba(24,32,30,0.88)_50%,rgba(18,28,26,0.9)_100%)]';
-        case 'in_progress':
-            return 'bg-[linear-gradient(145deg,rgba(42,40,32,0.92)_0%,rgba(32,30,24,0.88)_50%,rgba(26,24,18,0.9)_100%)]';
-        case 'blocked':
-            return 'bg-[linear-gradient(145deg,rgba(60,24,30,0.95)_0%,rgba(45,18,24,0.9)_50%,rgba(32,12,16,0.92)_100%)]';
-        case 'closed':
-            return 'bg-[linear-gradient(145deg,rgba(28,30,34,0.75)_0%,rgba(22,24,28,0.72)_50%,rgba(18,20,24,0.75)_100%)] opacity-75';
-        case 'deferred':
-            return 'bg-[linear-gradient(145deg,rgba(38,40,48,0.92)_0%,rgba(28,30,36,0.88)_50%,rgba(22,24,30,0.9)_100%)]';
-        default:
-            return 'bg-[linear-gradient(145deg,rgba(38,40,48,0.92)_0%,rgba(28,30,36,0.88)_50%,rgba(22,24,30,0.9)_100%)]';
-    }
+  switch (status) {
+    case 'open':
+      return 'border-l-2 border-emerald-400/60 bg-emerald-400/8';
+    case 'in_progress':
+      return 'border-l-2 border-amber-400/60 bg-amber-400/8';
+    case 'blocked':
+      return 'border-l-2 border-rose-400/60 bg-rose-400/8';
+    case 'closed':
+      return 'border-l-2 border-slate-400/40 bg-slate-400/5 opacity-70';
+    case 'deferred':
+      return 'border-l-2 border-slate-400/40 bg-slate-400/5';
+    default:
+      return 'border-l-2 border-slate-400/40 bg-slate-400/5';
+  }
 }
 
 /**
