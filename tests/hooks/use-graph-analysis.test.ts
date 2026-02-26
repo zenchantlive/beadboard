@@ -15,6 +15,7 @@ function issue(overrides: Partial<BeadIssue>): BeadIssue {
     priority: overrides.priority ?? 2,
     issue_type: overrides.issue_type ?? 'task',
     assignee: overrides.assignee ?? null,
+    templateId: null,
     owner: overrides.owner ?? null,
     labels: overrides.labels ?? [],
     dependencies: overrides.dependencies ?? [],

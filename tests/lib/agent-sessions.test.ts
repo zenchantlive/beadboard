@@ -13,6 +13,7 @@ const MOCK_ISSUE: BeadIssue = {
   priority: 2,
   issue_type: 'task',
   assignee: 'agent-smith',
+  templateId: null,
   owner: 'user',
   labels: [],
   dependencies: [{ type: 'parent', target: 'epic-1' }],

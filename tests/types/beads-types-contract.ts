@@ -24,6 +24,7 @@ const issue: BeadIssue = {
   issue_type: issueType,
   description: 'schema contract',
   assignee: 'agent',
+  templateId: null,
   owner: 'owner@example.com',
   labels: ['test'],
   dependencies: [dependency],
