@@ -16,18 +16,12 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
   const { rightPanel, toggleRightPanel } = useUrlState();
   
   const isOpen = externalIsOpen ?? (rightPanel === 'open');
-  
-  // Calculate width based on content (Standard 17rem vs Chat Mode ~26rem)
-  // If rail is present, we are in "Chat Mode" (Wide Panel + Rail)
-  // If no rail, we are in "Activity Mode" (Standard Panel)
-  const panelWidth = isOpen ? '20.75rem' : '0';
 
   if (isDesktop) {
     return (
       <div
-        className="ui-shell-panel flex overflow-hidden transition-all duration-300"
+        className="ui-shell-panel flex overflow-hidden h-full"
         style={{
-          width: panelWidth,
           boxShadow: isOpen ? '-24px 0 40px -26px rgba(0,0,0,0.95), inset 1px 0 0 rgba(91,168,160,0.22)' : 'none',
         }}
         data-testid="right-panel-desktop"

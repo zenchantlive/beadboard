@@ -9,7 +9,9 @@ import { LeftPanel, type LeftPanelFilters } from './left-panel';
 import { RightPanel } from './right-panel';
 import { MobileNav } from './mobile-nav';
 import { ThreadDrawer } from './thread-drawer';
+import { ResizeHandle } from './resize-handle';
 import { useUrlState } from '../../hooks/use-url-state';
+import { usePanelResize } from '../../hooks/use-panel-resize';
 import { SmartDag } from '../graph/smart-dag';
 import { SocialPage } from '../social/social-page';
 import { buildSocialCards } from '../../lib/social-cards';
@@ -91,8 +93,8 @@ export function UnifiedShell({
   const drawerTitle = selectedSocialCard?.title || selectedSwarmCard?.title || '';
   const drawerId = taskId || swarmId || '';
 
-  // Grid Layout: Fixed width for right panel to match right-panel.tsx
-  const rightPanelWidth = panel === 'open' ? '20.75rem' : '0rem';
+  // Panel resize hook
+  const { leftWidth, rightWidth, handleLeftResize, handleRightResize } = usePanelResize();
 
   const renderMiddleContent = () => {
     // Filter issues by Epic if selected (Global Filter)
@@ -160,31 +162,41 @@ export function UnifiedShell({
       {/* TOP BAR: 3rem fixed */}
       <TopBar />
 
-      {/* MAIN AREA: CSS Grid [18rem | 1fr | RightPanel] */}
-      {/* Increased Left Panel width to 18rem per redesign request */}
+      {/* MAIN AREA: Flex layout for resizable panels */}
       <div
-        className="flex-1 grid overflow-hidden transition-all duration-300"
-        style={{ gridTemplateColumns: `20rem 1fr ${rightPanelWidth}` }}
+        className="flex-1 flex overflow-hidden"
         data-testid="main-area"
       >
-        {/* LEFT PANEL: 20rem unified Epic/Task tree */}
-        <LeftPanel
-          issues={issues}
-          selectedEpicId={epicId}
-          onEpicSelect={setEpicId}
-          filters={filters}
-          onFiltersChange={setFilters}
-        />
+        {/* LEFT PANEL */}
+        <div style={{ width: leftWidth }} className="flex-shrink-0 overflow-hidden">
+          <LeftPanel
+            issues={issues}
+            selectedEpicId={epicId}
+            onEpicSelect={setEpicId}
+            filters={filters}
+            onFiltersChange={setFilters}
+          />
+        </div>
+
+        {/* RESIZE HANDLE: Left */}
+        <ResizeHandle direction="left" onResize={handleLeftResize} />
 
         {/* MIDDLE CONTENT: flex-1 */}
-        <div className="relative overflow-hidden bg-black/10 shadow-inner" data-testid="middle-content">
+        <div className="flex-1 relative overflow-hidden bg-black/10 shadow-inner" data-testid="middle-content">
           {renderMiddleContent()}
         </div>
 
-        {/* RIGHT PANEL: Activity or Assignment */}
-        <RightPanel isOpen={panel === 'open'}>
-          {renderRightPanelContent()}
-        </RightPanel>
+        {/* RESIZE HANDLE: Right (only when panel open) */}
+        {panel === 'open' && <ResizeHandle direction="right" onResize={handleRightResize} />}
+
+        {/* RIGHT PANEL */}
+        {panel === 'open' && (
+          <div style={{ width: rightWidth }} className="flex-shrink-0 overflow-hidden">
+            <RightPanel isOpen={true}>
+              {renderRightPanelContent()}
+            </RightPanel>
+          </div>
+        )}
       </div>
 
       {/* THREAD DRAWER: Popup overlay when a task is selected */}
