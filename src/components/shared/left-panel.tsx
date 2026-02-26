@@ -139,15 +139,15 @@ function statusDot(status: BeadIssue['status']): string {
 
 function rowTone(entry: EpicEntry): string {
   if (entry.blockedCount > 0) {
-    return '#22111a';
+    return 'rgba(255, 76, 114, 0.08)';
   }
   if (entry.activeCount > 0) {
-    return '#221a11';
+    return 'rgba(255, 178, 74, 0.08)';
   }
   if (entry.readyCount > 0) {
-    return '#0f221c';
+    return 'rgba(53, 217, 143, 0.08)';
   }
-  return '#111f2b';
+  return 'var(--ui-bg-panel)';
 }
 
 function isTaskMatch(task: BeadIssue, filters: LeftPanelFilters): boolean {
@@ -213,7 +213,7 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
           })}
         </div>
 
-        <div className="space-y-2 rounded-xl bg-[#101a27] p-2.5 shadow-[0_16px_26px_-20px_rgba(0,0,0,0.92)]">
+        <div className="space-y-2 rounded-xl bg-[var(--ui-bg-panel)] p-2.5 border border-[var(--ui-border-soft)]">
           <div className="grid grid-cols-1 gap-2">
             <input
               value={filters.query}
@@ -284,10 +284,10 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
             type="button"
             onClick={() => onFiltersChange({ ...filters, hideClosed: !filters.hideClosed })}
             className={cn(
-              'w-full rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.11em] shadow-[0_8px_18px_-16px_rgba(0,0,0,0.9)] transition-colors',
+              'w-full rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.11em] transition-colors border',
               filters.hideClosed
-                ? 'bg-[#1d2b1a] text-[var(--ui-accent-ready)]'
-                : 'bg-[#0f1824] text-[var(--ui-text-muted)]',
+                ? 'bg-[var(--ui-accent-ready)]/15 border-[var(--ui-accent-ready)]/40 text-[var(--ui-accent-ready)]'
+                : 'bg-[var(--ui-bg-card)] border-[var(--ui-border-soft)] text-[var(--ui-text-muted)]',
             )}
             aria-pressed={filters.hideClosed}
           >
@@ -330,13 +330,13 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
             <div key={epic.id} className="mb-2">
               <div
                 className={cn(
-                  'rounded-2xl px-3 py-3 transition-colors shadow-[0_18px_28px_-22px_rgba(0,0,0,0.96)]',
+                  'rounded-xl px-3 py-3 transition-colors border border-[var(--ui-border-soft)]',
                   isSelected
-                    ? 'text-[var(--ui-text-primary)] ring-1 ring-[rgba(143,156,175,0.45)]'
+                    ? 'text-[var(--ui-text-primary)] ring-1 ring-[var(--ui-accent-info)]/30'
                     : 'text-[var(--ui-text-muted)] hover:text-[var(--ui-text-primary)]',
                 )}
                 style={{
-                  boxShadow: `inset 3px 0 0 ${laneColor}, 0 18px 30px -24px rgba(0,0,0,0.95)`,
+                  borderLeft: `3px solid ${laneColor}`,
                   background: rowBackground,
                 }}
               >
@@ -364,7 +364,7 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
                   <button
                     type="button"
                     onClick={() => onEpicSelect?.(epic.id)}
-                    className="inline-flex h-5 w-5 items-center justify-center rounded bg-[#0e1823] text-[var(--ui-text-muted)] shadow-[0_10px_16px_-12px_rgba(0,0,0,0.9)] transition-colors hover:text-[var(--ui-text-primary)]"
+                    className="inline-flex h-5 w-5 items-center justify-center rounded bg-[var(--ui-bg-card)] text-[var(--ui-text-muted)] border border-[var(--ui-border-soft)] transition-colors hover:text-[var(--ui-text-primary)]"
                     aria-label={`Focus ${epic.title}`}
                   >
                     <Star className="h-3 w-3" aria-hidden="true" />

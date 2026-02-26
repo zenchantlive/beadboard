@@ -4,10 +4,11 @@
 
 :root {
   /* ========== VISUAL-TRUTH UI TOKEN CONTRACT (bb-vt.1.1) ========== */
-  --ui-bg-app: #070d16;
-  --ui-bg-shell: #0c1420;
-  --ui-bg-panel: #111c2a;
-  --ui-bg-card: #1a2431;
+  /* Lightened aurora palette */
+  --ui-bg-app: #0d1219;
+  --ui-bg-shell: #131b26;
+  --ui-bg-panel: #1a2330;
+  --ui-bg-card: #222d3d;
 
   --ui-border-soft: rgba(153, 171, 190, 0.2);
   --ui-border-strong: rgba(153, 171, 190, 0.34);

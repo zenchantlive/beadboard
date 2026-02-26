@@ -22,7 +22,7 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
       <div
         className="ui-shell-panel flex overflow-hidden h-full"
         style={{
-          boxShadow: isOpen ? '-24px 0 40px -26px rgba(0,0,0,0.95), inset 1px 0 0 rgba(91,168,160,0.22)' : 'none',
+          boxShadow: isOpen ? '-12px 0 24px -16px rgba(0,0,0,0.5)' : 'none',
         }}
         data-testid="right-panel-desktop"
       >
@@ -30,12 +30,12 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
           <>
             {/* Main Content (Chat or Activity) */}
             <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
-              <div className="border-l border-[color-mix(in_srgb,var(--ui-accent-info)_36%,var(--ui-border-soft))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--ui-bg-shell)_96%,black),color-mix(in_srgb,var(--ui-bg-panel)_90%,black))]">
+              <div className="border-l border-[var(--ui-border-soft)] bg-[var(--ui-bg-panel)]">
                 <div className="px-3 py-2 border-b border-[var(--ui-border-soft)]">
                   <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Agent Pool Monitor</p>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-0 bg-[#08111d]">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-0 bg-[var(--ui-bg-shell)]">
                  {/* Remove default padding to allow edge-to-edge chat */}
                  {children || <span>Right Panel</span>}
               </div>
@@ -122,10 +122,9 @@ export function RightPanel({ children, rail, isOpen: externalIsOpen }: RightPane
         className="fixed top-0 right-0 h-full z-50 overflow-y-auto"
         style={{
           width: '17rem',
-          background:
-            'linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-panel) 86%, black), var(--ui-bg-panel))',
+          background: 'var(--ui-bg-panel)',
           borderLeft: '1px solid var(--ui-border-soft)',
-          boxShadow: '-24px 0 44px -26px rgba(0,0,0,0.85)',
+          boxShadow: '-12px 0 24px -16px rgba(0,0,0,0.5)',
         }}
         data-testid="right-panel-tablet"
       >

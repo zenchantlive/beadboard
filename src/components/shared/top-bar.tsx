@@ -33,7 +33,7 @@ function MetricTile({ label, value, accent = 'info' }: MetricTileProps) {
           : 'var(--ui-accent-info)';
 
   return (
-    <div className="hidden items-center gap-2 rounded-md border border-[var(--ui-border-soft)] bg-[color-mix(in_srgb,var(--ui-bg-panel)_84%,black)] px-2.5 py-1 text-xs md:inline-flex">
+    <div className="hidden items-center gap-2 rounded-md border border-[var(--ui-border-soft)] bg-[var(--ui-bg-panel)] px-2.5 py-1 text-xs md:inline-flex">
       <p className="font-mono text-[10px] uppercase tracking-[0.13em] text-[var(--ui-text-muted)]">{label}</p>
       <p className="font-mono text-sm leading-none text-[var(--ui-text-primary)]">{value}</p>
       <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
@@ -69,7 +69,7 @@ export function TopBar({
         </button>
 
         <div className="mr-3 flex min-w-[210px] items-center gap-2 border-r border-[var(--ui-border-soft)] px-2 py-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--ui-accent-ready)_24%,var(--ui-bg-panel))] text-[var(--ui-accent-ready)]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[var(--ui-bg-card)] text-[var(--ui-accent-ready)]">
             <LayoutGrid className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
@@ -96,11 +96,11 @@ export function TopBar({
               className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold uppercase tracking-[0.11em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)]"
               style={{
                 borderColor: blockedOnly
-                  ? 'color-mix(in srgb, var(--ui-accent-blocked) 78%, transparent)'
+                  ? 'rgba(255, 76, 114, 0.6)'
                   : 'var(--ui-border-soft)',
                 backgroundColor: blockedOnly
-                  ? 'color-mix(in srgb, var(--ui-accent-blocked) 20%, var(--ui-bg-panel))'
-                  : 'color-mix(in srgb, var(--ui-bg-panel) 88%, black)',
+                  ? 'rgba(255, 76, 114, 0.15)'
+                  : 'var(--ui-bg-panel)',
                 color: blockedOnly ? '#ffd4dd' : 'var(--ui-text-primary)',
               }}
               data-testid="blocked-items-button"
@@ -118,7 +118,7 @@ export function TopBar({
                 void onCreateTask?.();
               }}
               disabled={isCreatingTask}
-              className="inline-flex items-center gap-2 rounded-xl border border-[color-mix(in_srgb,var(--ui-accent-ready)_80%,black)] bg-[var(--ui-accent-action-green)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.11em] text-[#072514] transition-colors hover:bg-[color-mix(in_srgb,var(--ui-accent-action-green)_84%,white)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)] disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--ui-accent-ready)] bg-[var(--ui-accent-ready)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.11em] text-[#072514] transition-colors hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)] disabled:opacity-60"
               data-testid="new-task-button"
             >
               <Plus className="h-3.5 w-3.5" aria-hidden="true" />
