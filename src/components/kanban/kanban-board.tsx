@@ -30,13 +30,13 @@ const STATUS_META: Record<(typeof KANBAN_STATUSES)[number], { label: string; dot
 
 const STATUS_COLUMN_CLASS: Record<(typeof KANBAN_STATUSES)[number], string> = {
   ready:
-    'bg-[radial-gradient(circle_at_0%_0%,rgba(56,189,248,0.2),transparent_62%),linear-gradient(180deg,rgba(22,27,40,0.66),rgba(10,12,20,0.84))]',
+    'border-t-2 border-sky-400/40 bg-slate-900/50',
   in_progress:
-    'bg-[radial-gradient(circle_at_0%_0%,rgba(251,191,36,0.2),transparent_62%),linear-gradient(180deg,rgba(22,27,40,0.66),rgba(10,12,20,0.84))]',
+    'border-t-2 border-amber-400/40 bg-slate-900/50',
   blocked:
-    'bg-[radial-gradient(circle_at_0%_0%,rgba(244,63,94,0.2),transparent_62%),linear-gradient(180deg,rgba(22,27,40,0.66),rgba(10,12,20,0.84))]',
+    'border-t-2 border-rose-400/40 bg-slate-900/50',
   closed:
-    'bg-[radial-gradient(circle_at_0%_0%,rgba(16,185,129,0.2),transparent_62%),linear-gradient(180deg,rgba(22,27,40,0.66),rgba(10,12,20,0.84))]',
+    'border-t-2 border-emerald-400/40 bg-slate-900/50',
 };
 
 export function KanbanBoard({
