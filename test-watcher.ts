@@ -1,5 +1,5 @@
-import { readIssuesFromDisk } from './src/lib/read-issues.ts';
-import { runBdCommand } from './src/lib/bridge.ts';
+import { readIssuesFromDisk } from './src/lib/read-issues';
+import { runBdCommand } from './src/lib/bridge';
 
 const projectRoot = 'C:\\Users\\Zenchant\\codex\\beadboard';
 

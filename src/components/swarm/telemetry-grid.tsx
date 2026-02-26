@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { Loader2, AlertCircle, Bot, Zap } from 'lucide-react';
 import type { BeadIssue } from '../../lib/types';
 import type { AgentArchetype } from '../../lib/types-swarm';
+import { getArchetypeDisplayChar } from '../../lib/utils';
 
 import { WorkflowGraph } from '../shared/workflow-graph';
 
@@ -190,7 +191,7 @@ export function TelemetryGrid({ epicId, issues, archetypes }: TelemetryGridProps
                                         className="h-8 w-8 rounded flex-shrink-0 flex items-center justify-center font-bold text-sm border"
                                         style={{ backgroundColor: `${r.archetype?.color || '#888'}15`, color: r.archetype?.color || '#888', borderColor: `${r.archetype?.color || '#888'}30` }}
                                     >
-                                        {r.assignee.charAt(0).toUpperCase()}
+                                        {r.archetype ? getArchetypeDisplayChar(r.archetype) : r.assignee.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <div className="text-xs font-bold text-[var(--ui-text-primary)] truncate">{r.assignee}</div>

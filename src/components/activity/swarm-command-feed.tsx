@@ -5,7 +5,7 @@ import type { BeadIssue } from '../../lib/types';
 import type { ActivityEvent } from '../../lib/activity';
 import { useArchetypes } from '../../hooks/use-archetypes';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
+import { cn, getArchetypeDisplayChar } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getEventTone, formatRelativeTime, getInitials } from './activity-panel';
 
@@ -100,8 +100,8 @@ export function SwarmCommandFeed({ epicId, issues, projectRoot }: SwarmCommandFe
                                 <div className="relative">
                                     <div className="absolute -inset-0.5 rounded-full blur-[2px] opacity-70 bg-emerald-500/20" />
                                     <Avatar className="h-9 w-9 relative z-10 ring-2 ring-emerald-500/40">
-                                        <AvatarFallback className="text-[10px] font-bold" style={{ backgroundColor: agent.archetype?.color ? `\${agent.archetype.color}20` : '#252525', color: agent.archetype?.color || '#fff' }}>
-                                            {getInitials(agent.assignee)}
+                                        <AvatarFallback className="text-[10px] font-bold" style={{ backgroundColor: agent.archetype?.color ? `${agent.archetype.color}20` : '#252525', color: agent.archetype?.color || '#fff' }}>
+                                            {agent.archetype ? getArchetypeDisplayChar(agent.archetype) : getInitials(agent.assignee)}
                                         </AvatarFallback>
                                     </Avatar>
                                 </div>
