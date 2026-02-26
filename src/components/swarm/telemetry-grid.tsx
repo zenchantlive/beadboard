@@ -13,9 +13,10 @@ interface TelemetryGridProps {
     epicId: string;
     issues: BeadIssue[];
     archetypes: AgentArchetype[];
+    projectRoot: string;
 }
 
-export function TelemetryGrid({ epicId, issues, archetypes }: TelemetryGridProps) {
+export function TelemetryGrid({ epicId, issues, archetypes, projectRoot }: TelemetryGridProps) {
     const [selectedBeadId, setSelectedBeadId] = useState<string | null>(null);
     const [isPrepping, setIsPrepping] = useState(false);
     const [prepSuccess, setPrepSuccess] = useState(false);
@@ -64,16 +65,15 @@ export function TelemetryGrid({ epicId, issues, archetypes }: TelemetryGridProps
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    projectRoot,
                     beadId: selectedBead.id,
-                    archetypeId: selectedArchetypeForPrep
+                    archetypeId: selectedArchetypeForPrep,
+                    claim: true
                 })
             });
             if (!res.ok) throw new Error('Prep failed');
             setPrepSuccess(true);
             setTimeout(() => setPrepSuccess(false), 3000);
-
-            // Note: The shell's useIssues typically polls or relies on SWR to update. 
-            // In a real app we'd call mutate() here.
         } catch (e) {
             console.error(e);
         } finally {

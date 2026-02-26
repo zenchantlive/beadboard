@@ -204,8 +204,10 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    projectRoot,
                     beadId: issueId,
-                    archetypeId: archetypeId
+                    archetypeId: archetypeId,
+                    claim: true
                 })
             });
 

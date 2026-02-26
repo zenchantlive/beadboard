@@ -134,7 +134,7 @@ export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: 
                                     </div>
                                 </div>
                                 <div className="flex-1 min-h-0">
-                                    <TelemetryGrid epicId={selectedMissionId} issues={displayBeads} archetypes={archetypes} />
+                                    <TelemetryGrid epicId={selectedMissionId} issues={displayBeads} archetypes={archetypes} projectRoot={projectRoot} />
                                 </div>
                             </div>
                         )

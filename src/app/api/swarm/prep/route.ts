@@ -1,55 +1,125 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { runBdCommand } from '../../../../lib/bridge';
+import { issuesEventBus } from '../../../../lib/realtime';
 
-const execAsync = promisify(exec);
+interface PrepRequest {
+    projectRoot: string;
+    beadId: string;
+    archetypeId: string;
+    claim?: boolean; // If true, also claim the task
+}
 
 export async function POST(request: Request) {
     try {
-        const { beadId, archetypeId } = await request.json();
+        const body = await request.json() as PrepRequest;
+        const { projectRoot, beadId, archetypeId, claim = true } = body;
 
-        if (!beadId || !archetypeId) {
-            return NextResponse.json({ error: 'Missing beadId or archetypeId' }, { status: 400 });
+        if (!projectRoot || !beadId || !archetypeId) {
+            return NextResponse.json({ 
+                ok: false, 
+                error: 'Missing required fields: projectRoot, beadId, archetypeId' 
+            }, { status: 400 });
         }
 
-        // Use bd CLI to add the archetype label. We leave it 'open' because Prep just assigns the agent.
-        const cmd = `bd label add ${beadId} "agent:${archetypeId}"`;
-        const { stdout, stderr } = await execAsync(cmd);
+        // Step 1: Add the agent label (marks which archetype is needed)
+        const labelResult = await runBdCommand({
+            projectRoot,
+            args: ['label', 'add', beadId, `agent:${archetypeId}`],
+        });
 
-        if (stderr && !stderr.includes('Warning')) {
-            console.error('bd label add stderr:', stderr);
+        if (!labelResult.success) {
+            console.error('bd label add failed:', labelResult.stderr);
+            // Continue anyway - label might already exist
         }
 
-        return NextResponse.json({ success: true, message: `Prepped ${beadId} for ${archetypeId}`, output: stdout });
+        // Step 2: If claiming, set status to in_progress and assignee
+        if (claim) {
+            const updateResult = await runBdCommand({
+                projectRoot,
+                args: [
+                    'update', 
+                    beadId, 
+                    '-s', 'in_progress',
+                    '-a', archetypeId, // Use archetype as placeholder assignee
+                    '--json'
+                ],
+            });
+
+            if (!updateResult.success) {
+                return NextResponse.json({ 
+                    ok: false, 
+                    error: updateResult.error || updateResult.stderr 
+                }, { status: 500 });
+            }
+
+            // Notify SSE subscribers
+            issuesEventBus.emit('issues');
+
+            return NextResponse.json({ 
+                ok: true, 
+                message: `Claimed ${beadId} for ${archetypeId}`,
+                labelOutput: labelResult.stdout,
+                updateOutput: updateResult.stdout
+            });
+        }
+
+        // Just labeled, not claimed
+        issuesEventBus.emit('issues');
+        return NextResponse.json({ 
+            ok: true, 
+            message: `Prepped ${beadId} for ${archetypeId} (not claimed)`,
+            output: labelResult.stdout 
+        });
 
     } catch (error: any) {
         console.error('Prep task failed:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ 
+            ok: false, 
+            error: error.message 
+        }, { status: 500 });
     }
 }
 
 export async function DELETE(request: Request) {
     try {
-        const { beadId, archetypeId } = await request.json();
+        const body = await request.json();
+        const { projectRoot, beadId, archetypeId } = body;
 
-        if (!beadId) {
-            return NextResponse.json({ error: 'Missing beadId' }, { status: 400 });
+        if (!projectRoot || !beadId) {
+            return NextResponse.json({ 
+                ok: false, 
+                error: 'Missing required fields: projectRoot, beadId' 
+            }, { status: 400 });
         }
 
         // Remove the agent: label
-        // If archetypeId is provided, remove specific label, otherwise remove any agent: label
         const labelToRemove = archetypeId ? `agent:${archetypeId}` : 'agent:';
-        const cmd = `bd label remove ${beadId} "${labelToRemove}"`;
-        const { stdout, stderr } = await execAsync(cmd);
+        const labelResult = await runBdCommand({
+            projectRoot,
+            args: ['label', 'remove', beadId, labelToRemove],
+        });
 
-        if (stderr && !stderr.includes('Warning')) {
-            console.error('bd label remove stderr:', stderr);
-        }
+        // Also reset status to open if it was in_progress
+        const updateResult = await runBdCommand({
+            projectRoot,
+            args: ['update', beadId, '-s', 'open', '--json'],
+        });
 
-        return NextResponse.json({ success: true, message: `Removed assignment from ${beadId}`, output: stdout });
+        // Notify SSE subscribers
+        issuesEventBus.emit('issues');
+
+        return NextResponse.json({ 
+            ok: true, 
+            message: `Removed assignment from ${beadId}`,
+            labelOutput: labelResult.stdout,
+            updateOutput: updateResult.stdout
+        });
 
     } catch (error: any) {
         console.error('Remove assignment failed:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ 
+            ok: false, 
+            error: error.message 
+        }, { status: 500 });
     }
 }
