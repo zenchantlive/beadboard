@@ -1,0 +1,30 @@
+Epic management commands
+
+Usage:
+  bd epic [command]
+
+Available Commands:
+  close-eligible Close epics where all children are complete
+  status         Show epic completion status
+
+Flags:
+  -h, --help   help for epic
+
+Global Flags:
+      --actor string              Actor name for audit trail (default: $BD_ACTOR, git user.name, $USER)
+      --allow-stale               Allow operations on potentially stale data (skip staleness check)
+      --db string                 Database path (default: auto-discover .beads/*.db)
+      --dolt-auto-commit string   Dolt backend: auto-commit after write commands (off|on). Default from config key dolt.auto-commit
+      --json                      Output in JSON format
+      --lock-timeout duration     SQLite busy timeout (0 = fail immediately if locked) (default 30s)
+      --no-auto-flush             Disable automatic JSONL sync after CRUD operations
+      --no-auto-import            Disable automatic JSONL import when newer than DB
+      --no-daemon                 Force direct storage mode, bypass daemon if running
+      --no-db                     Use no-db mode: load from JSONL, no SQLite
+      --profile                   Generate CPU profile for performance analysis
+  -q, --quiet                     Suppress non-essential output (errors only)
+      --readonly                  Read-only mode: block write operations (for worker sandboxes)
+      --sandbox                   Sandbox mode: disables daemon and auto-sync
+  -v, --verbose                   Enable verbose/debug output
+
+Use "bd epic [command] --help" for more information about a command.

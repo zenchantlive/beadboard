@@ -32,6 +32,7 @@ test('applyOptimisticStatus updates selected issue status and timestamps', () =>
       priority: 2,
       issue_type: 'task',
       assignee: null,
+      templateId: null,
       owner: null,
       labels: [],
       dependencies: [],

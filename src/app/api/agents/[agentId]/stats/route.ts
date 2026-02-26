@@ -4,6 +4,8 @@ import { readIssuesFromDisk } from '../../../../../lib/read-issues';
 import { activityEventBus } from '../../../../../lib/realtime';
 import { getAgentMetrics } from '../../../../../lib/agent-sessions';
 
+export const dynamic = 'force-dynamic';
+
 function isValidProjectRoot(root: string): boolean {
   try {
     const resolved = path.resolve(root);

@@ -14,5 +14,8 @@ worktrees/
 # local screenshot artifacts
 artifacts/
 
+# beads socket lock
+.beads/bd.sock.startlock
+
 # beadboard runtime artifacts
 .beadboard/

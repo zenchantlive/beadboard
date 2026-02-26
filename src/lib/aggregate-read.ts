@@ -52,12 +52,14 @@ export async function readIssuesForScope(options: {
   selected: ProjectScopeOption;
   scopeOptions: ProjectScopeOption[];
   preferBd?: boolean;
+  skipAgentFilter?: boolean;
 }): Promise<BeadIssueWithProject[]> {
   if (options.mode === 'single') {
     return readIssuesFromDisk({
       projectRoot: options.selected.root,
       projectSource: options.selected.source,
       preferBd: options.preferBd,
+      skipAgentFilter: options.skipAgentFilter,
     });
   }
 
@@ -67,6 +69,7 @@ export async function readIssuesForScope(options: {
         projectRoot: project.root,
         projectSource: project.source,
         preferBd: options.preferBd,
+        skipAgentFilter: options.skipAgentFilter,
       });
       return scopeIssuesForProject(project, issues);
     }),

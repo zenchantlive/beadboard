@@ -1,0 +1,4 @@
+✓ Created issue: beadboard-egx
+  Title: Analyze Legacy System
+  Priority: P1
+  Status: open

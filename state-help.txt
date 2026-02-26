@@ -1,0 +1,42 @@
+Atomically set operational state on an issue.
+
+This command:
+1. Creates an event bead recording the state change (source of truth)
+2. Removes any existing label for the dimension
+3. Adds the new dimension:value label (fast lookup cache)
+
+State labels follow the convention <dimension>:<value>, for example:
+  patrol:active, patrol:muted
+  mode:normal, mode:degraded
+  health:healthy, health:failing
+
+Examples:
+  bd set-state witness-abc patrol=muted --reason "Investigating stuck polecat"
+  bd set-state witness-abc mode=degraded --reason "High error rate detected"
+  bd set-state witness-abc health=healthy
+
+The --reason flag provides context for the event bead (recommended).
+
+Usage:
+  bd set-state <issue-id> <dimension>=<value> [flags]
+
+Flags:
+  -h, --help            help for set-state
+      --reason string   Reason for the state change (recorded in event)
+
+Global Flags:
+      --actor string              Actor name for audit trail (default: $BD_ACTOR, git user.name, $USER)
+      --allow-stale               Allow operations on potentially stale data (skip staleness check)
+      --db string                 Database path (default: auto-discover .beads/*.db)
+      --dolt-auto-commit string   Dolt backend: auto-commit after write commands (off|on). Default from config key dolt.auto-commit
+      --json                      Output in JSON format
+      --lock-timeout duration     SQLite busy timeout (0 = fail immediately if locked) (default 30s)
+      --no-auto-flush             Disable automatic JSONL sync after CRUD operations
+      --no-auto-import            Disable automatic JSONL import when newer than DB
+      --no-daemon                 Force direct storage mode, bypass daemon if running
+      --no-db                     Use no-db mode: load from JSONL, no SQLite
+      --profile                   Generate CPU profile for performance analysis
+  -q, --quiet                     Suppress non-essential output (errors only)
+      --readonly                  Read-only mode: block write operations (for worker sandboxes)
+      --sandbox                   Sandbox mode: disables daemon and auto-sync
+  -v, --verbose                   Enable verbose/debug output

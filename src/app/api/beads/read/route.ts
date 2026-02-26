@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import path from 'node:path';
 import { readIssuesFromDisk } from '../../../../lib/read-issues';
 
+export const dynamic = 'force-dynamic';
+
 function isValidProjectRoot(root: string): boolean {
   try {
     const resolved = path.resolve(root);

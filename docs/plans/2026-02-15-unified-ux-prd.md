@@ -1,26 +1,34 @@
 # Unified UX PRD - Swimlane Social Hub
 
-> **Version**: 1.0  
-> **Date**: 2026-02-15  
-> **Status**: Planning Complete - Ready for Bead Creation  
-> **Supersedes**: bb-u6f.7 (Unified Cross-Surface Navigation)
+> **Version**: 2.0  
+> **Date**: 2026-02-16  
+> **Status**: UPDATED - Complete Design Specification  
+> **Supersedes**: Previous versions, bb-u6f.7
+
+## Implementation Status
+
+> **Last Updated: 2026-02-16**
+
+### Phase 0: Design Foundation
+- ✅ **bb-ui2.1** (codex-3fn) - Design Tokens Update - COMPLETED
+  - Added complete earthy-dark token system in globals.css
+  - Legacy Aero Chrome classes preserved for backward compatibility (gradual migration)
+- ⏳ **bb-ui2.2** (codex-1ky) - Semantic Rename - READY (blocked by tokens - unblocked)
+- ⏳ **bb-ui2.3** (codex-5vm) - Base Card Component - READY (blocked by tokens - unblocked)
+
+### Phase 1-3: Not Started
+- Planning complete, implementation pending Phase 0 completion
+
 
 ---
 
 ## Executive Summary
 
 ### Problem
-BeadBoard has 4 fragmented pages with:
-- No shared navigation or state
-- Inconsistent design language (Aero Chrome glass-morphism feels dated)
-- /sessions has good tech but missed the UX mark
-- Users cannot supervise multi-agent teams in one cohesive experience
+BeadBoard has 4 fragmented pages with no shared navigation, no shared state, and inconsistent design language. The current Aero Chrome glass-morphism visual style has been rejected by users. Users want ONE cohesive experience for supervising multi-agent teams and managing tasks.
 
 ### Solution
-Single unified shell at `/` with 3 views:
-- **Social** - Task activity feed with blocks/unlocks
-- **Graph** - Dependency visualization
-- **Swarm** - Team health dashboard
+Single unified shell at `/` with 4 switchable views (Social Feed, Swimlanes, Graph, Timeline), new earthy-dark design system, agent-prominent UX, and thoughtful interaction patterns throughout.
 
 ---
 
@@ -28,184 +36,339 @@ Single unified shell at `/` with 3 views:
 
 | # | Decision | Choice | Rationale |
 |---|----------|--------|-----------|
-| 1 | Routing | Single page at `/` with client tabs | Preserves selection state |
-| 2 | Views | 3 tabs: Social, Graph, Swarm | Sessions replaced by Social |
-| 3 | Detail pattern | Right sidebar (desktop), drawer (mobile) | Best use of screens |
-| 4 | Visual style | shadcn/ui + earthy-dark tokens | Replace Aero Chrome |
-| 5 | Tailwind | Stay on v3, use shadcn/ui patterns | v4 has migration risks |
-| 6 | Old pages | Copy page.tsx to page-old.tsx | Safe rollback |
-| 7 | Card pattern | Same base for Social and Swarm | Reusable components |
-| 8 | Threads | In detail strip for both views | Comments + events |
-| 9 | Agent presence | Embedded in swarm cards | Agents primary in Swarm |
-| 10 | Swarm sorting | Health (default), Activity, Progress | Auto-surface attention |
+| 1 | Routing | Single page + client tabs at / | Preserves selection state, panels never unmount |
+| 2 | State Source | URL is Single Source of Truth | Prevents race conditions |
+| 3 | Activity Feed | Context-aware (filters to selection) | Most useful for supervision workflow |
+| 4 | Mobile | Hamburger left + slide-over right + bottom tabs | Standard pattern |
+| 5 | Build Order | Tokens → Shell → Views (tracer bullet) | Real dependency chain |
+| 6 | Card Interaction | Selection + detail strip below grid (desktop) | Grid stays uniform, split-view for conversation |
+| 7 | Mobile Detail | Full-screen overlay (not split) | Keyboard takes 40% of screen |
+| 8 | Visual Style | Earthy-dark design system (NOT Aero Chrome) | User provided full token spec |
+| 9 | Agent Presence | Prominent - agents are the star | Avatars on every card, role-colored borders |
+| 10 | Left Panel | Minimal with counts, nested epic tree | Status dots, hover tooltips |
+| 11 | Card View-Jump | Small icons at card bottom | Jump to views with task pre-selected |
+| 12 | Units | rem-based | Accessibility |
 
 ---
 
-## Skills Required (Non-Negotiable)
+## Design Token Specification
 
-1. **verification-before-completion** - Never claim done without proving commands
-2. **test-driven-development** - Write failing tests first
-3. **beadboard-driver** - Use bd commands for all bead operations
-4. **linus-beads-discipline** - Single source of truth, evidence before assertion
+### Color Palette
+
+**Backgrounds:**
+```css
+--color-bg-base: #2D2D2D      /* primary background */
+--color-bg-card: #363636      /* cards, elevated surfaces */
+--color-bg-input: #404040     /* inputs, hover states */
+```
+
+**Accents:**
+```css
+--color-accent-green: #7CB97A   /* primary CTA, success, in-progress */
+--color-accent-amber: #D4A574   /* warning, blocked */
+--color-accent-teal: #5BA8A0    /* secondary, open/ready */
+```
+
+**Text:**
+```css
+--color-text-primary: #FFFFFF
+--color-text-secondary: #B8B8B8
+--color-text-muted: #888888
+--color-text-on-primary: #1A1A1A
+```
+
+**Borders:**
+```css
+--color-border-default: #4A4A4A
+--color-border-subtle: #3A3A3A
+```
+
+**Status Mapping:**
+- open/ready → teal `#5BA8A0`
+- in_progress → green `#7CB97A`
+- blocked → amber `#D4A574`
+- closed → muted `#888888`
+
+**Agent Role Colors:**
+- ui → `#6B9BD2` (steel blue)
+- graph → `#7CB97A` (green)
+- orchestrator → `#B08ED6` (soft purple)
+- agent → `#B8B8B8` (neutral)
+- researcher → `#D4A574` (amber)
+
+**Liveness Colors:**
+- active → `#7CB97A` (green, pulsing)
+- stale → `#D4A574` (amber)
+- evicted → `#C97A7A` (muted rose)
+- idle → `#888888` (muted)
+
+### Radii
+```css
+--radius-sm: 0.375rem      /* 6px */
+--radius-card: 0.625rem    /* 10px */
+--radius-modal: 1rem       /* 16px */
+--radius-pill: 9999px
+```
+
+### Shadows
+```css
+--shadow-sm: 0 1px 2px rgba(0,0,0,0.1)
+--shadow-md: 0 4px 12px rgba(0,0,0,0.15)
+```
+
+### Typography
+- Font: system sans-serif (Inter if available)
+- H1: 2rem/700, H2: 1.5rem/600, H3: 1.125rem/600
+- Body: 0.875rem/400, Small: 0.75rem/400, Tiny: 0.6875rem/500
+- Line-height: headings 1.2, body 1.5
+
+### Spacing
+- Base: 0.25rem (4px)
+- Card padding: 1rem-1.25rem
+- Gaps: 1rem
+- Section gaps: 2rem-2.5rem
+
+### Icons & Transitions
+- Icons: Lucide React, 1.5-2px stroke, 1rem-1.5rem size
+- Transitions: 150-200ms ease-out for all hover/focus
 
 ---
 
-## Design System Specification
+## Component Anatomy
 
-### Color Palette (Earthy-Dark)
+### Social Feed Card
 
-Backgrounds:
-- --color-bg-base: #2D2D2D
-- --color-bg-card: #363636
-- --color-bg-input: #404040
+```
+┌─────────────────────────────────────┐
+│ [⊕]                           (top-R)│  expand icon
+│                                     │
+│ bb-buff.1.1                         │  task ID (tiny, teal)
+│ Fix login bug on mobile             │  title (bold, white)
+│                                     │
+│ UNLOCKS:                            │  blocked-by (ROSE tint)
+│  ● #123 Blocker task                │
+│                                     │
+│ BLOCKS:                             │  downstream (AMBER tint)
+│  ● #234 Dependent task              │
+│                                     │
+│ "Found the issue in the auth..."    │  latest message (muted)
+│                                     │
+│ [●a-1] [●a-2]                       │  agent avatars (PROMINENT)
+│                          [≡] [◊] [≋]│  view-jump icons
+└─────────────────────────────────────┘
+```
 
-Accents:
-- --color-accent-green: #7CB97A (primary CTA)
-- --color-accent-amber: #D4A574 (warning)
-- --color-accent-teal: #5BA8A0 (secondary)
+**Card Specs:**
+- Background: `#363636`
+- Border: 1px status-colored (teal/green/amber/muted)
+- Border-radius: 10px
+- Status dot on card matches status mapping
+- Agent avatars have **role-colored left border**
+- Blocks/unlocks have tinted backgrounds (rose #E57373/10%, amber #D4A574/10%)
 
-Text:
-- --color-text-primary: #FFFFFF
-- --color-text-secondary: #B8B8B8
-- --color-text-muted: #888888
+**Blocks/Unlocks Pattern (reuse from task-card-grid.tsx):**
+```tsx
+// Container
+rounded-lg p-2 border border-white/5
 
-Status:
-- ready: teal #5BA8A0
-- in_progress: green #7CB97A
-- blocked: amber #D4A574
-- closed: muted #888888
+// "Unlocks" header (rose tint)
+text-[9px] font-bold uppercase tracking-widest text-rose-400/80
+bg-rose-500/10  // background tint
 
-Liveness:
-- active: #7CB97A
-- stale: #D4A574
-- stuck: #E57373
-- dead: #9E4244
+// "Blocks" header (amber tint)
+text-[9px] font-bold uppercase tracking-widest text-amber-400/80
+bg-amber-500/10  // background tint
+
+// Individual item
+rounded border border-white/5 bg-white/5 px-2.5 py-2
+hover:border-sky-400/30 hover:bg-white/10 transition-colors
+```
+
+### ZFC Agent State Visuals
+
+| State | Visual |
+|-------|--------|
+| idle | `#888888` static dot |
+| spawning | `#5BA8A0` pulsing dot |
+| running | `#7CB97A` animated dot |
+| working | `#7CB97A` pulsing glow |
+| stuck | `#D4A574` attention dot (needs help!) |
+| done | `#7CB97A` check |
+| stopped | `#888888` no animation |
+| dead | `#C97A7A` warning |
+
+### Agent Card (Right Panel)
+
+```
+┌──────────────────────┐
+│ [●avatar] agent-1    │  role-colored left border
+│ role: ui             │  role label
+│ ● working · 2m ago   │  ZFC state dot + age
+│ Task: buff.1.1       │  current task
+│ [≡] [◊] [≋] [💬]      │  view-jump + message
+└──────────────────────┘
+```
+
+### Swimlane Header
+- Swarm name + computed counts: "3/8 done · 2 active · 1 ready · 1 blocked"
+- Agent roster with ZFC state labels
+- Collapsible
 
 ---
 
 ## Layout Architecture
 
-Shell Structure (CSS Grid):
-- TOP BAR: 3rem fixed
-- LEFT: 13rem (channel tree)
-- MIDDLE: flex-1 (card grid)
-- RIGHT: 17rem (detail strip)
+### Shell Structure (CSS Grid)
 
-Responsive:
-- < 768px: Full width, drawer overlay
-- 768-1024px: Left collapses, slide-over
-- >= 1024px: Full 3-panel
+```
+┌──────────────────────────────────────────────────────────────────┐
+│ TOP BAR (fixed, 3rem)                                            │
+│ ≡  [Swimlanes|Graph|Timeline|Social]                      ◢     │
+├──────────┬──────────────────────────────────┬────────────────────┤
+│ LEFT     │ MIDDLE                           │ RIGHT              │
+│ 13.75rem │ flex-1                           │ 17.5rem            │
+│          │                                  │                    │
+│ Channel  │ View content (swaps on tab)      │ Agents (~40%)      │
+│ tree     │                                  │ ────────────────── │
+│          │                                  │ Activity (~60%)    │
+└──────────┴──────────────────────────────────┴────────────────────┘
+```
 
-URL State:
-- view: social | graph | swarm
-- task: selected task ID
-- swarm: selected swarm ID
-- panel: open | closed
+**Grid:** `grid-template-columns: 13.75rem 1fr 17.5rem`
 
----
+### Detail Strip Behavior
 
-## View Specifications
+**Desktop (≥1024px):**
+- Grid splits: cards (~45%) | detail strip (~55%)
+- Strip slides in below grid when card selected
+- Cards remain visible above
 
-### Social View
-Card: Task ID (teal), Title (bold), UNLOCKS (rose), BLOCKS (amber), Agents, View-jump icons
+**Mobile (<768px):**
+- Full-screen overlay (z-index above bottom tabs)
+- Required: virtual keyboard takes 40% of screen
+- Split view would leave 0px for conversation
 
-### Graph View
-Keep ReactFlow + Dagre, add fitView() on tab activation
+### Responsive Behavior
 
-### Swarm View
-Card: Swarm ID, Epic title, AGENTS roster with status glow, ATTENTION items, Progress bar, Last activity
-
-Sorting: Health (default), Activity, Progress, Name
-
----
-
-## Dependency Graph (Bead Flow)
-
-PHASE 0: Design Foundation
-[0.1] Token System
-[0.2] shadcn/ui Setup
-[0.3] Base Primitives
-
-PHASE 1: Shell Layout
-[1.1] URL State Hook
-[1.2] UnifiedShell Component <- [0.*][1.1]
-[1.3] TopBar Component <- [1.2]
-[1.4] LeftPanel Component <- [1.2]
-[1.5] RightPanel Component <- [1.2]
-[1.6] Responsive Behavior <- [1.3-1.5]
-
-PHASE 2: Social View
-[2.1] Social Card Data Builder
-[2.2] SocialCard Component <- [0.3][2.1]
-[2.3] Social Detail Strip <- [1.5][2.1]
-[2.4] Thread View Component <- [2.3]
-[2.5] Social View Integration <- [1.2][2.2-2.4]
-
-PHASE 3: Swarm View
-[3.1] Swarm Card Data Builder
-[3.2] SwarmCard Component <- [0.3][3.1]
-[3.3] Swarm Detail Strip <- [1.5][3.1]
-[3.4] Swarm View Integration <- [1.2][3.2-3.3]
-
-PHASE 4: Graph Migration
-[4.1] Graph Component Extraction
-[4.2] Graph Tab Integration <- [1.2][4.1]
-[4.3] fitView Fix <- [4.2]
-
-PHASE 5: Polish
-[5.1] Deep Link Verification <- [all above]
-[5.2] Mobile Responsive Polish
-[5.3] Screenshot Evidence
-[5.4] Final Quality Gates
+| Size | Left | Middle | Right | Detail Strip |
+|------|------|--------|-------|--------------|
+| Desktop (≥1024px) | 13.75rem fixed | flex-1 | 17.5rem fixed | Below grid |
+| Tablet (768-1024px) | Overlay | flex-1 | Overlay | Slide-over |
+| Mobile (<768px) | Overlay | flex-1 | Hidden | Full-screen |
 
 ---
 
-## Verification Gates (Required)
+## Anti-Patterns (Forbidden)
 
-Every bead MUST pass before closing:
-- npm run typecheck
-- npm run lint
-- npm run test
-- Screenshots for UI changes
-
----
-
-## Risk Register
-
-| Risk | Mitigation |
-|------|------------|
-| ReactFlow resize | Use visibility:hidden + fitView() |
-| shadcn + Tailwind v3 | Follow shadcn v3 docs |
-| Mobile keyboard | Full-screen drawer on mobile |
-| URL race conditions | URL is single source of truth |
+- NO glass-morphism / backdrop-blur effects
+- NO arbitrary Tailwind color values (use tokens)
+- NO agent-unaware cards (every card shows agents)
+- NO page-per-view routing (use client tabs)
+- NO localStorage for view state (use URL)
+- NO direct JSONL writes (use bd CLI)
 
 ---
 
-## Migration Checklist
+## Recommended Bead Structure
 
-Pre:
-- [ ] Copy page.tsx to page-old.tsx
-- [ ] Verify tests pass
+### Phase 0: Design Foundation
+**Goal:** Tokens + Primitives only. No views.
 
-During:
-- [ ] Install shadcn/ui
-- [ ] Create globals.css with earthy-dark tokens
-- [ ] Build phases in order
+**bb-ui2.1a** - Token System Update  
+- Update tokens.css with complete spec above
+- Ensure all status/liveness/role colors defined
+- Migrate away from Aero Chrome gradients
 
-Post:
-- [ ] All 3 views functional
-- [ ] Deep links work
-- [ ] Mobile verified
-- [ ] Screenshots captured
+**bb-ui2.2a** - Card Primitive with Blocks/Unlocks  
+- Build reusable Card component
+- Implement blocks/unlocks section pattern (reuse task-card-grid.tsx logic)
+- Status-colored borders
+- Soft gradient backgrounds (amber/teal tints, not harsh Aero Chrome)
+
+**bb-ui2.3a** - Agent Avatar Primitive  
+- Avatar with role-colored ring
+- ZFC state indicator (dot/pulse/glow)
+- Size variants (sm, md, lg)
+
+**bb-ui2.4a** - Status Utilities Update  
+- Rewrite status-utils.tsx for new tokens
+- Status badge component with pill + dot
+- Liveness indicator component
+
+### Phase 1: Layout Polish
+**Goal:** Fix current layout issues, preserve structure
+
+**bb-ui2.22** - Detail Strip Positioning Fix  
+- Move from side drawer to below-grid (desktop)
+- Full-screen overlay (mobile)
+- Preserve URL state behavior
+- Thread content actually shows selected bead data
+
+**bb-ui2.23** - Activity Panel Polish  
+- Split right panel: Agents (40%) + Activity (60%)
+- Agent cards with ZFC states
+- Context-aware activity filtering
+
+**bb-ui2.24** - Mobile Responsive Polish  
+- Bottom tab bar
+- Panel overlays
+- Touch-friendly targets
+
+### Phase 2: Card Design Implementation
+**Goal:** Implement complete card anatomy
+
+**bb-ui2.25** - Social Feed Card Redesign  
+- Full card anatomy from spec
+- Blocks/unlocks with rose/amber tints
+- Prominent agent avatars
+- View-jump icons
+- Expand icon → full-page popup
+
+**bb-ui2.26** - Swimlane Card Redesign  
+- Agent-first layout
+- ZFC state prominent
+- Status-colored border
+- Drag-drop preserved
+
+**bb-ui2.27** - Graph Node Redesign  
+- New design tokens
+- Agent avatars on nodes
+- Selection syncs with store
+
+### Phase 3: Cross-Cutting Polish
+**Goal:** Deep links, mobile, final gates
+
+**bb-ui2.28** - Deep Link Verification  
+- All URL patterns work
+- Browser back/forward
+- Shareable URLs
+
+**bb-ui2.29** - Screenshot Evidence  
+- All breakpoints
+- All views
+- Mobile + desktop
+
+**bb-ui2.30** - Final Gates  
+- typecheck, lint, test
+- Close epic
 
 ---
 
-## Appendix: shadcn/ui Setup
+## Verification Strategy
 
-bash:
-npx shadcn@latest init
-npx shadcn@latest add button card badge avatar input scroll-area separator tooltip dropdown-menu
+After each bead:
+```bash
+npm run typecheck
+npm run lint
+npm run test
+```
+
+Visual verification:
+- Screenshots at 390px, 768px, 1440px
+- Compare against design spec
+- Agent avatars visible on all cards
+- Blocks/unlocks sections tinted correctly
 
 ---
 
-*End of PRD - Ready for Bead Creation*
+*End of PRD v2.0 - Ready for Implementation*

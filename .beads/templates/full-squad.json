@@ -1,0 +1,19 @@
+{
+  "id": "full-squad",
+  "name": "Full Development Squad",
+  "description": "Complete team for complex projects requiring all capabilities. All 6 archetypes working together.",
+  "team": [
+    { "archetypeId": "architect", "count": 1 },
+    { "archetypeId": "engineer", "count": 2 },
+    { "archetypeId": "reviewer", "count": 1 },
+    { "archetypeId": "tester", "count": 1 },
+    { "archetypeId": "investigator", "count": 1 },
+    { "archetypeId": "shipper", "count": 1 }
+  ],
+  "protoFormula": "Architect leads design → Engineers implement → Reviewer ensures quality → Tester validates → Investigator handles unknowns → Shipper deploys",
+  "color": "#ec4899",
+  "icon": "🎯",
+  "createdAt": "2026-02-25T00:00:00.000Z",
+  "updatedAt": "2026-02-25T00:00:00.000Z",
+  "isBuiltIn": true
+}

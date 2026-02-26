@@ -1,0 +1,28 @@
+bun test v1.3.6 (d530ed99)
+
+tests\lib\watcher.test.ts:
+82 |   stop();
+83 |   await manager.stopAll();
+84 | 
+85 |   // REGRESSION: beads.db should emit 'telemetry', not 'issues'
+86 |   // This prevents the "typing interrupt" refresh loop during agent heartbeats
+87 |   assert.equal(events.length >= 1, true, 'Expected at least one event');
+              ^
+AssertionError: Expected at least one event
+
+false !== true
+
+ generatedMessage: false,
+     actual: false,
+   expected: true,
+   operator: "strictEqual",
+       code: "ERR_ASSERTION"
+
+      at C:\Users\Zenchant\codex\beadboard\tests\lib\watcher.test.ts:87:10
+      at processTicksAndRejections (native:7:39)
+(fail) IssuesWatchManager emits telemetry event after beads.db change (not issues) [563.00ms]
+
+ 0 pass
+ 4 filtered out
+ 1 fail
+Ran 1 test across 1 file. [678.00ms]

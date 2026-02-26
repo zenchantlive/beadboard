@@ -7,3 +7,4 @@ export { statusGradient, statusBorder, statusDotColor, sessionStateGlow } from '
 export { EpicChipStrip } from './epic-chip-strip';
 export { WorkspaceHero } from './workspace-hero';
 export { ProjectScopeControls } from './project-scope-controls';
+export { ThreadView, type ThreadItem } from './thread-view';

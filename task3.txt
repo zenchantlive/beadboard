@@ -1,0 +1,4 @@
+✓ Created issue: beadboard-2ua
+  Title: Implement Frontend UI
+  Priority: P1
+  Status: open

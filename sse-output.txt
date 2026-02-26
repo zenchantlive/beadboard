@@ -1,0 +1,287 @@
+: connected
+
+id: 1
+event: telemetry
+data: {"id":1,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:30:26.392Z"}
+
+id: 1
+event: telemetry
+data: {"id":1,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:30:26.392Z"}
+
+id: 2
+event: telemetry
+data: {"id":2,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\beads.db-wal","kind":"telemetry","at":"2026-02-21T20:30:26.483Z"}
+
+id: 1
+event: activity
+data: {"id":"5c308faf-4bfe-4bbc-809f-038b4c133969","kind":"created","beadId":"beadboard-dp2","beadTitle":"Testing from curl","projectId":"c:\\users\\zenchant\\codex\\beadboard","projectName":"beadboard","timestamp":"2026-02-21T20:30:27.123Z","actor":"jordanlive121@gmail.com","payload":{}}
+
+id: 3
+event: issues
+data: {"id":3,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\beads.db-wal","kind":"changed","at":"2026-02-21T20:30:27.126Z"}
+
+id: 4
+event: telemetry
+data: {"id":4,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\beads.db-wal","kind":"telemetry","at":"2026-02-21T20:30:27.239Z"}
+
+id: 5
+event: telemetry
+data: {"id":5,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\beads.db-wal","kind":"telemetry","at":"2026-02-21T20:30:29.514Z"}
+
+: heartbeat
+
+: heartbeat
+
+id: 6
+event: telemetry
+data: {"id":6,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\beads.db-wal","kind":"telemetry","at":"2026-02-21T20:31:03.792Z"}
+
+: heartbeat
+
+id: 7
+event: telemetry
+data: {"id":7,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:31:04.402Z"}
+
+id: 7
+event: telemetry
+data: {"id":7,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:31:04.402Z"}
+
+id: 2
+event: activity
+data: {"id":"b5a6e461-1cff-44ff-9f05-4d80a66d7011","kind":"created","beadId":"beadboard-43c","beadTitle":"Diff test issue","projectId":"c:\\users\\zenchant\\codex\\beadboard","projectName":"beadboard","timestamp":"2026-02-21T20:31:04.443Z","actor":"jordanlive121@gmail.com","payload":{}}
+
+id: 8
+event: issues
+data: {"id":8,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\beads.db-wal","kind":"changed","at":"2026-02-21T20:31:04.445Z"}
+
+id: 9
+event: issues
+data: {"id":9,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\issues.jsonl","kind":"changed","at":"2026-02-21T20:31:04.557Z"}
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+id: 10
+event: telemetry
+data: {"id":10,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\beads.db-wal","kind":"telemetry","at":"2026-02-21T20:36:44.443Z"}
+
+: heartbeat
+
+,"kind":"telemetry","at":"2026-02-21T20:30:20.252Z"}
+
+: heartbeat
+
+id: 212
+event: telemetry
+data: {"id":212,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:30:26.479Z"}
+
+id: 213
+event: telemetry
+data: {"id":213,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:30:26.731Z"}
+
+id: 214
+event: telemetry
+data: {"id":214,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:30:27.040Z"}
+
+id: 48
+event: activity
+data: {"id":"25053a3b-24c8-4065-b96b-0b140ea3da5b","kind":"created","beadId":"beadboard-dp2","beadTitle":"Testing from curl","projectId":"c:\\users\\zenchant\\codex\\beadboard","projectName":"beadboard","timestamp":"2026-02-21T20:30:27.084Z","actor":"jordanlive121@gmail.com","payload":{}}
+
+id: 215
+event: telemetry
+data: {"id":215,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:30:27.216Z"}
+
+id: 215
+event: telemetry
+data: {"id":215,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:30:27.216Z"}
+
+id: 216
+event: telemetry
+data: {"id":216,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\beads.db-wal","kind":"telemetry","at":"2026-02-21T20:30:27.236Z"}
+
+id: 217
+event: telemetry
+data: {"id":217,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\beads.db-wal","kind":"telemetry","at":"2026-02-21T20:30:29.516Z"}
+
+: heartbeat
+
+: heartbeat
+
+id: 218
+event: telemetry
+data: {"id":218,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:31:03.745Z"}
+
+id: 219
+event: telemetry
+data: {"id":219,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\beads.db-wal","kind":"telemetry","at":"2026-02-21T20:31:03.792Z"}
+
+id: 220
+event: telemetry
+data: {"id":220,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:31:04.049Z"}
+
+id: 221
+event: telemetry
+data: {"id":221,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:31:04.296Z"}
+
+id: 221
+event: telemetry
+data: {"id":221,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:31:04.296Z"}
+
+id: 49
+event: activity
+data: {"id":"7a118bbc-21e6-4e0e-a3c6-2f270161b384","kind":"created","beadId":"beadboard-43c","beadTitle":"Diff test issue","projectId":"c:\\users\\zenchant\\codex\\beadboard","projectName":"beadboard","timestamp":"2026-02-21T20:31:04.445Z","actor":"jordanlive121@gmail.com","payload":{}}
+
+id: 222
+event: telemetry
+data: {"id":222,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:31:04.576Z"}
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+vent: telemetry
+data: {"id":220,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:31:04.049Z"}
+
+id: 220
+event: telemetry
+data: {"id":220,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:31:04.049Z"}
+
+id: 221
+event: telemetry
+data: {"id":221,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:31:04.296Z"}
+
+id: 49
+event: activity
+data: {"id":"7a118bbc-21e6-4e0e-a3c6-2f270161b384","kind":"created","beadId":"beadboard-43c","beadTitle":"Diff test issue","projectId":"c:\\users\\zenchant\\codex\\beadboard","projectName":"beadboard","timestamp":"2026-02-21T20:31:04.445Z","actor":"jordanlive121@gmail.com","payload":{}}
+
+id: 222
+event: telemetry
+data: {"id":222,"projectRoot":"C:\\Users\\Zenchant\\codex\\beadboard","changedPath":"C:\\Users\\Zenchant\\codex\\beadboard\\.beads\\last-touched","kind":"telemetry","at":"2026-02-21T20:31:04.576Z"}
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+
+: heartbeat
+

@@ -21,6 +21,7 @@ function createMockIssue(id: string, overrides: Partial<BeadIssueWithProject> = 
     priority: 2,
     issue_type: 'task',
     assignee: null,
+    templateId: null,
     owner: 'owner',
     labels: [],
     dependencies: [],

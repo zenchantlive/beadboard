@@ -1,12 +1,13 @@
 import type { BeadIssue } from './types';
+export type { AgentStatus, AgentRole } from '../components/shared/agent-avatar';
+import type { AgentStatus, AgentRole } from '../components/shared/agent-avatar';
 
 export type SocialCardStatus = 'ready' | 'in_progress' | 'blocked' | 'closed';
-
-export type AgentStatus = 'active' | 'stale' | 'stuck' | 'dead';
 
 export interface AgentInfo {
   name: string;
   status: AgentStatus;
+  role?: AgentRole;
 }
 
 export type SocialCardPriority = 'P0' | 'P1' | 'P2' | 'P3' | 'P4';
@@ -15,8 +16,8 @@ export interface SocialCard {
   id: string;
   title: string;
   status: SocialCardStatus;
-  unlocks: string[];
-  blocks: string[];
+  blocks: string[];     // tasks THIS task blocks (amber) - what I block
+  unblocks: string[];  // tasks blocking THIS task (rose) - what blocks me
   agents: AgentInfo[];
   lastActivity: Date;
   priority: SocialCardPriority;
@@ -57,26 +58,37 @@ function extractAgents(bead: BeadIssue): AgentInfo[] {
       typeof bead.metadata?.agentStatus === 'string' 
         ? (bead.metadata.agentStatus as AgentStatus) 
         : 'active';
-    agents.push({ name: bead.assignee, status: agentStatus });
+    
+    const agentRole: AgentRole | undefined = 
+      typeof bead.metadata?.agentRole === 'string'
+        ? (bead.metadata.agentRole as AgentRole)
+        : undefined;
+
+    agents.push({ 
+      name: bead.assignee, 
+      status: agentStatus,
+      role: agentRole
+    });
   }
   return agents;
 }
 
 export function buildSocialCards(beads: BeadIssue[]): SocialCard[] {
+  const taskBeads = beads.filter((bead) => bead.issue_type !== 'epic');
   const beadMap = new Map<string, BeadIssue>();
-  for (const bead of beads) {
+  for (const bead of taskBeads) {
     beadMap.set(bead.id, bead);
   }
 
   const blocksIncoming = new Map<string, string[]>();
   const blocksOutgoing = new Map<string, string[]>();
 
-  for (const bead of beads) {
+  for (const bead of taskBeads) {
     blocksIncoming.set(bead.id, []);
     blocksOutgoing.set(bead.id, []);
   }
 
-  for (const bead of beads) {
+  for (const bead of taskBeads) {
     for (const dep of bead.dependencies) {
       if (dep.type === 'blocks' && beadMap.has(dep.target)) {
         const outgoing = blocksOutgoing.get(bead.id) ?? [];
@@ -90,14 +102,30 @@ export function buildSocialCards(beads: BeadIssue[]): SocialCard[] {
     }
   }
 
-  return beads.map((bead) => ({
-    id: bead.id,
-    title: bead.title,
-    status: mapStatus(bead.status),
-    unlocks: blocksOutgoing.get(bead.id) ?? [],
-    blocks: blocksIncoming.get(bead.id) ?? [],
-    agents: extractAgents(bead),
-    lastActivity: new Date(bead.updated_at),
-    priority: mapPriority(bead.priority),
-  }));
+  return taskBeads.map((bead) => {
+    const explicitStatus = mapStatus(bead.status);
+    const incomingBlockers = blocksIncoming.get(bead.id) ?? [];
+    const hasUnresolvedIncomingBlockers = incomingBlockers.some((blockerId) => {
+      const blocker = beadMap.get(blockerId);
+      return blocker ? blocker.status !== 'closed' && blocker.status !== 'tombstone' : false;
+    });
+
+    const effectiveStatus: SocialCardStatus =
+      explicitStatus === 'closed' || explicitStatus === 'in_progress' || explicitStatus === 'blocked'
+        ? explicitStatus
+        : hasUnresolvedIncomingBlockers
+          ? 'blocked'
+          : explicitStatus;
+
+    return {
+      id: bead.id,
+      title: bead.title,
+      status: effectiveStatus,
+      blocks: blocksOutgoing.get(bead.id) ?? [],   // what I block (amber)
+      unblocks: incomingBlockers, // what blocks me (rose)
+      agents: extractAgents(bead),
+      lastActivity: new Date(bead.updated_at),
+      priority: mapPriority(bead.priority),
+    };
+  });
 }

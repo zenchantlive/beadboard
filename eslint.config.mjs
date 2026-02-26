@@ -1,11 +1,21 @@
-import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
-import nextTypeScript from 'eslint-config-next/typescript';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { FlatCompat } from '@eslint/eslintrc';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const compat = new FlatCompat({ baseDirectory: __dirname });
 
 const eslintConfig = [
-  ...nextCoreWebVitals,
-  ...nextTypeScript,
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
-    ignores: ['nul'],
+    ignores: [
+      'nul',
+      '.next/**',
+      '.agents/**',
+      'skills/**',
+      'next-env.d.ts',
+    ],
   },
   {
     files: ['**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'],
@@ -14,6 +24,7 @@ const eslintConfig = [
       'prefer-const': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
     },
   },
 ];

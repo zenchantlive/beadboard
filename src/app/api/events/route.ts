@@ -23,10 +23,14 @@ async function readLastTouchedVersion(filePath: string): Promise<number | null> 
   }
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const projectRootSearchParam = url.searchParams.get('projectRoot');
   const projectRoot = canonicalizeWindowsPath(projectRootSearchParam || process.cwd());
+
+  console.log(`[SSE /api/events] Connection request - raw param: "${projectRootSearchParam}", canonicalized: "${projectRoot}"`);
 
   try {
     getIssuesWatchManager().startWatch(projectRoot);
@@ -43,7 +47,7 @@ export async function GET(request: Request): Promise<Response> {
     );
   }
 
-  let cleanup = () => {};
+  let cleanup = () => { };
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
@@ -57,15 +61,20 @@ export async function GET(request: Request): Promise<Response> {
 
       write(SSE_CONNECTED_FRAME);
 
+      console.log(`[SSE /api/events] Subscribing to event bus with projectRoot: ${projectRoot}`);
       const unsubscribeIssues = issuesEventBus.subscribe(
         (event) => {
+          console.log('[SSE /api/events] Received ISSUES event from bus:', event.kind, 'projectRoot:', event.projectRoot);
           write(toSseFrame(event));
         },
         { projectRoot },
       );
 
+      console.log(`[SSE /api/events] Subscriber count after subscribe: ${issuesEventBus.getSubscriberCount()}`);
+
       const unsubscribeActivity = activityEventBus.subscribe(
         (event) => {
+          console.log('[SSE /api/events] Received ACTIVITY event from bus');
           write(toActivitySseFrame(event));
         },
         { projectRoot },

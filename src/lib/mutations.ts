@@ -1,4 +1,5 @@
 import { runBdCommand, type RunBdCommandResult } from './bridge';
+import { issuesEventBus } from './realtime';
 
 export type MutationOperation = 'create' | 'update' | 'close' | 'reopen' | 'comment';
 export type MutationStatus = 'open' | 'in_progress' | 'blocked' | 'deferred' | 'closed';
@@ -26,6 +27,7 @@ export interface UpdateMutationPayload extends MutationBasePayload {
   issueType?: string;
   assignee?: string;
   labels?: string[];
+  metadata?: Record<string, unknown>;
 }
 
 export interface CloseMutationPayload extends MutationBasePayload {
@@ -123,6 +125,16 @@ function asOptionalLabels(value: unknown): string[] | undefined {
   return labels.length ? labels : undefined;
 }
 
+function asOptionalMetadata(value: unknown): Record<string, unknown> | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    throw new MutationValidationError('"metadata" must be a JSON object.');
+  }
+  return value as Record<string, unknown>;
+}
+
 function asOptionalStatus(value: unknown): MutationStatus | undefined {
   if (value === undefined || value === null) {
     return undefined;
@@ -173,6 +185,7 @@ export function validateMutationPayload(operation: MutationOperation, payload: u
       issueType: asOptionalString(data.issueType),
       assignee: asOptionalString(data.assignee),
       labels: asOptionalLabels(data.labels),
+      metadata: asOptionalMetadata(data.metadata),
     };
 
     if (
@@ -182,7 +195,8 @@ export function validateMutationPayload(operation: MutationOperation, payload: u
       mapped.priority === undefined &&
       !mapped.issueType &&
       !mapped.assignee &&
-      !mapped.labels
+      !mapped.labels &&
+      !mapped.metadata
     ) {
       throw new MutationValidationError('At least one update field is required.');
     }
@@ -252,6 +266,9 @@ export function buildBdMutationArgs(operation: MutationOperation, payload: Mutat
     pushOptionalArg(args, '-t', data.issueType);
     pushOptionalArg(args, '-a', data.assignee);
     pushOptionalLabels(args, data.labels);
+    if (data.metadata) {
+      args.push('--metadata', JSON.stringify(data.metadata));
+    }
     args.push('--json');
     return args;
   }
@@ -304,6 +321,8 @@ export async function executeMutation(
       },
     };
   }
+
+  issuesEventBus.emit(payload.projectRoot, undefined, 'changed');
 
   return {
     ok: true,

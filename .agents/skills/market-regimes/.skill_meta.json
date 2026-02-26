@@ -1,0 +1,9 @@
+{
+  "name": "market-regimes",
+  "version": "1.0",
+  "last_updated": "2026-01-17T20:31:30.966657",
+  "total_patterns": 35,
+  "active_patterns": 32,
+  "inactive_patterns": 3,
+  "confidence_threshold": 0.6
+}

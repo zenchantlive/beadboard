@@ -45,6 +45,7 @@ function normalizeIssue(raw: ParseableBeadIssue): BeadIssue {
     priority: typeof raw.priority === 'number' ? raw.priority : 2,
     issue_type: (raw.issue_type ?? 'task') as BeadIssue['issue_type'],
     assignee: typeof raw.assignee === 'string' ? raw.assignee : null,
+    templateId: null,
     owner: typeof raw.owner === 'string' ? raw.owner : null,
     labels: Array.isArray(raw.labels) ? raw.labels.filter((x): x is string => typeof x === 'string') : [],
     dependencies: normalizeDependencies(raw.dependencies),

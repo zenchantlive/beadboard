@@ -12,6 +12,7 @@ function makeBead(overrides: Partial<BeadIssue>): BeadIssue {
     priority: overrides.priority || 0,
     issue_type: overrides.issue_type || 'task',
     assignee: null,
+    templateId: null,
     owner: null,
     labels: overrides.labels || [],
     dependencies: [],
