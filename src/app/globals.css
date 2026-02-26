@@ -393,3 +393,54 @@ body {
     opacity: 1;
   }
 }
+
+/* Aurora Button Styles */
+.btn-aurora {
+  @apply relative overflow-hidden transition-all duration-200;
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.btn-aurora:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  box-shadow: 0 0 16px rgba(148, 163, 184, 0.1);
+}
+
+.btn-aurora-primary {
+  @apply relative overflow-hidden transition-all duration-200;
+  background: transparent;
+  border: 1px solid rgba(53, 201, 255, 0.4);
+  color: var(--ui-accent-info);
+}
+
+.btn-aurora-primary:hover {
+  border-color: rgba(53, 201, 255, 0.7);
+  box-shadow: 0 0 20px rgba(53, 201, 255, 0.2);
+  background: rgba(53, 201, 255, 0.05);
+}
+
+.btn-aurora-success {
+  @apply relative overflow-hidden transition-all duration-200;
+  background: transparent;
+  border: 1px solid rgba(53, 217, 143, 0.4);
+  color: var(--ui-accent-ready);
+}
+
+.btn-aurora-success:hover {
+  border-color: rgba(53, 217, 143, 0.7);
+  box-shadow: 0 0 20px rgba(53, 217, 143, 0.2);
+  background: rgba(53, 217, 143, 0.05);
+}
+
+.btn-aurora-danger {
+  @apply relative overflow-hidden transition-all duration-200;
+  background: transparent;
+  border: 1px solid rgba(255, 76, 114, 0.4);
+  color: var(--ui-accent-blocked);
+}
+
+.btn-aurora-danger:hover {
+  border-color: rgba(255, 76, 114, 0.7);
+  box-shadow: 0 0 20px rgba(255, 76, 114, 0.2);
+  background: rgba(255, 76, 114, 0.05);
+}
