@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { LayoutGrid, Lock, Plus, Sidebar, SidebarClose } from 'lucide-react';
 import { useUrlState } from '../../hooks/use-url-state';
 import { useResponsive } from '../../hooks/use-responsive';
+import { ThemeToggle } from './theme-toggle';
 
 export interface TopBarProps {
   onCreateTask?: () => Promise<void> | void;
@@ -126,6 +127,8 @@ export function TopBar({
             </button>
           </>
         )}
+
+        <ThemeToggle />
 
         {isDesktop ? (
           <button
