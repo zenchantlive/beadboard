@@ -1,75 +1,74 @@
 /**
- * Aurora Theme - Warm Charcoal with Cyan Accents
+ * Forest Theme - Mossy Green-Brown
  * 
- * A dark theme with warm brown-grey charcoal backgrounds
- * and bright cyan/teal accent colors for the "aurora" glow effect.
- * Fixed: Better contrast, warmer tones, more distinct layers
+ * Organic, earthy greens with amber gold accents.
+ * Inspired by forest floors and mossy rocks.
  */
 
-[data-theme="aurora"] {
+[data-theme="forest"] {
   /* ==========================================================================
-     1. SURFACE LAYERS - Warm Charcoal Scale (DISTINCT)
+     1. SURFACE LAYERS - Earthy Moss-Green
      ========================================================================== */
-  --surface-backdrop: #161514;      /* Darkest - page background */
-  --surface-elevated: #0f0e0d;      /* Header - darker for contrast */
-  --surface-primary: #1e1d1b;       /* Sidebar */
-  --surface-secondary: #252422;     /* Main content - lighter than sidebar */
-  --surface-tertiary: #2d2b29;      /* Panels */
-  --surface-quaternary: #353331;    /* Cards - lightest surface */
-  --surface-overlay: #0a0909;       /* Modals */
-  --surface-input: #1a1917;         /* Form fields */
-  --surface-hover: rgba(240, 238, 234, 0.06);
-  --surface-active: rgba(53, 201, 255, 0.12);
-  --surface-tooltip: #1e1d1b;
+  --surface-backdrop: #121510;
+  --surface-elevated: #0a0d08;
+  --surface-primary: #1a1f15;
+  --surface-secondary: #22281a;
+  --surface-tertiary: #2b3320;
+  --surface-quaternary: #353d28;
+  --surface-overlay: #060804;
+  --surface-input: #181c13;
+  --surface-hover: rgba(220, 235, 200, 0.06);
+  --surface-active: rgba(132, 204, 22, 0.12);
+  --surface-tooltip: #1a1f15;
 
   /* ==========================================================================
-     2. BORDERS - Warm Grey (more visible)
+     2. BORDERS - Mossy Grey-Green
      ========================================================================== */
-  --border-subtle: rgba(180, 175, 165, 0.15);
-  --border-default: rgba(180, 175, 165, 0.28);
-  --border-strong: rgba(180, 175, 165, 0.45);
-  --border-accent: rgba(53, 201, 255, 0.55);
+  --border-subtle: rgba(150, 165, 130, 0.15);
+  --border-default: rgba(150, 165, 130, 0.28);
+  --border-strong: rgba(150, 165, 130, 0.45);
+  --border-accent: rgba(132, 204, 22, 0.55);
 
   /* ==========================================================================
-     3. TEXT - Warm White Scale
+     3. TEXT - Warm Moss
      ========================================================================== */
-  --text-primary: #f5f3ef;
-  --text-secondary: #d4d0c7;
-  --text-tertiary: #a8a49a;
-  --text-disabled: #6b6862;
-  --text-inverse: #0f0e0d;
+  --text-primary: #f2f5ed;
+  --text-secondary: #c8d4b5;
+  --text-tertiary: #96a582;
+  --text-disabled: #5e6b50;
+  --text-inverse: #0a0d08;
 
   /* ==========================================================================
-     4. ACCENTS - Aurora Colors
+     4. ACCENTS - Forest Greens & Amber Gold
      ========================================================================== */
-  --accent-info: #4dd4ff;
+  --accent-info: #a3e635;
   --accent-success: #4ade80;
   --accent-warning: #fbbf24;
-  --accent-danger: #fb7185;
+  --accent-danger: #f87171;
 
   /* ==========================================================================
      5. ACCENT GLOWS
      ========================================================================== */
-  --glow-info: 0 0 20px rgba(77, 212, 255, 0.3);
+  --glow-info: 0 0 20px rgba(163, 230, 53, 0.35);
   --glow-success: 0 0 20px rgba(74, 222, 128, 0.3);
   --glow-warning: 0 0 20px rgba(251, 191, 36, 0.3);
-  --glow-danger: 0 0 20px rgba(251, 113, 133, 0.3);
+  --glow-danger: 0 0 20px rgba(248, 113, 113, 0.3);
 
   /* ==========================================================================
      6. GRAPH COLORS
      ========================================================================== */
-  --graph-node-default: rgba(53, 51, 49, 0.95);
-  --graph-node-epic: rgba(77, 212, 255, 0.15);
-  --graph-edge-default: rgba(180, 175, 165, 0.3);
-  --graph-edge-selected: #4dd4ff;
+  --graph-node-default: rgba(53, 61, 40, 0.95);
+  --graph-node-epic: rgba(163, 230, 53, 0.15);
+  --graph-edge-default: rgba(150, 165, 130, 0.3);
+  --graph-edge-selected: #a3e635;
   --graph-edge-cycle: #fbbf24;
 
   /* ==========================================================================
      7. SEMANTIC ALPHAS
      ========================================================================== */
-  --alpha-white-low: rgba(245, 243, 239, 0.06);
-  --alpha-white-medium: rgba(245, 243, 239, 0.12);
-  --alpha-white-high: rgba(245, 243, 239, 0.24);
+  --alpha-white-low: rgba(242, 245, 237, 0.05);
+  --alpha-white-medium: rgba(242, 245, 237, 0.11);
+  --alpha-white-high: rgba(242, 245, 237, 0.22);
   --alpha-black-low: rgba(0, 0, 0, 0.2);
   --alpha-black-medium: rgba(0, 0, 0, 0.45);
   --alpha-black-high: rgba(0, 0, 0, 0.75);
@@ -79,9 +78,9 @@
      ========================================================================== */
   --status-ready: rgba(74, 222, 128, 0.18);
   --status-in-progress: rgba(251, 191, 36, 0.18);
-  --status-blocked: rgba(251, 113, 133, 0.18);
-  --status-closed: rgba(168, 164, 154, 0.12);
-  --status-deferred: rgba(168, 164, 154, 0.08);
+  --status-blocked: rgba(248, 113, 113, 0.18);
+  --status-closed: rgba(150, 165, 130, 0.12);
+  --status-deferred: rgba(150, 165, 130, 0.08);
 
   /* ==========================================================================
      9. SHADOWS
@@ -93,21 +92,21 @@
   /* ==========================================================================
      10. AGENT ROLE COLORS
      ========================================================================== */
-  --agent-role-ui: #7bb3f0;
-  --agent-role-graph: #8fd18f;
-  --agent-role-orchestrator: #c4a5e6;
-  --agent-role-researcher: #e6b88a;
+  --agent-role-ui: #93c5fd;
+  --agent-role-graph: #86efac;
+  --agent-role-orchestrator: #d8b4fe;
+  --agent-role-researcher: #fdba74;
 
   /* ==========================================================================
      11. SCROLLBARS
      ========================================================================== */
-  --scrollbar-track: rgba(245, 243, 239, 0.03);
-  --scrollbar-thumb: rgba(180, 175, 165, 0.22);
-  --scrollbar-thumb-hover: rgba(180, 175, 165, 0.38);
+  --scrollbar-track: rgba(242, 245, 237, 0.03);
+  --scrollbar-thumb: rgba(150, 165, 130, 0.22);
+  --scrollbar-thumb-hover: rgba(150, 165, 130, 0.38);
 
   /* ==========================================================================
      12. CODE/SYNTAX
      ========================================================================== */
-  --code-background: #1a1917;
-  --code-text: #d4d0c7;
+  --code-background: #181c13;
+  --code-text: #c8d4b5;
 }

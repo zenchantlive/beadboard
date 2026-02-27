@@ -4,21 +4,25 @@
  * Import this file in your main CSS to enable the theme system.
  * The data-theme attribute on <html> controls which theme is active.
  * 
- * Example:
- *   <html data-theme="aurora">
- *   <html data-theme="midnight"> (future)
+ * Available themes:
+ *   aurora   - Warm charcoal with cyan accents (default)
+ *   midnight - Cool blue-purple with violet accents
+ *   forest   - Earthy green-brown with lime accents
+ *   dusk     - Warm purple-brown with orange accents
+ *   contrast - Pure black with neon accents (high contrast)
+ * 
+ * To switch themes:
+ *   document.documentElement.setAttribute('data-theme', 'midnight');
  */
 
 @import './tokens.css';
 @import './aurora.css';
+@import './midnight.css';
+@import './forest.css';
+@import './dusk.css';
+@import './contrast.css';
 
 /* Default theme fallback */
 html:not([data-theme]) {
-  /* Inherits aurora as default since it's imported above */
+  /* Aurora is the default theme */
 }
-
-/* 
- * Future themes would be added here:
- * @import './midnight.css';
- * @import './forest.css';
- */

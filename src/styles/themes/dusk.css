@@ -1,75 +1,74 @@
 /**
- * Aurora Theme - Warm Charcoal with Cyan Accents
+ * Dusk Theme - Sunset Orange & Pink
  * 
- * A dark theme with warm brown-grey charcoal backgrounds
- * and bright cyan/teal accent colors for the "aurora" glow effect.
- * Fixed: Better contrast, warmer tones, more distinct layers
+ * Warm oranges, coral pinks, and soft purples.
+ * Inspired by sunset skies and twilight hues.
  */
 
-[data-theme="aurora"] {
+[data-theme="dusk"] {
   /* ==========================================================================
-     1. SURFACE LAYERS - Warm Charcoal Scale (DISTINCT)
+     1. SURFACE LAYERS - Warm Purple-Brown
      ========================================================================== */
-  --surface-backdrop: #161514;      /* Darkest - page background */
-  --surface-elevated: #0f0e0d;      /* Header - darker for contrast */
-  --surface-primary: #1e1d1b;       /* Sidebar */
-  --surface-secondary: #252422;     /* Main content - lighter than sidebar */
-  --surface-tertiary: #2d2b29;      /* Panels */
-  --surface-quaternary: #353331;    /* Cards - lightest surface */
-  --surface-overlay: #0a0909;       /* Modals */
-  --surface-input: #1a1917;         /* Form fields */
-  --surface-hover: rgba(240, 238, 234, 0.06);
-  --surface-active: rgba(53, 201, 255, 0.12);
-  --surface-tooltip: #1e1d1b;
+  --surface-backdrop: #1a1518;
+  --surface-elevated: #110d0f;
+  --surface-primary: #241e21;
+  --surface-secondary: #2d262a;
+  --surface-tertiary: #362e33;
+  --surface-quaternary: #40363c;
+  --surface-overlay: #0c090b;
+  --surface-input: #201a1d;
+  --surface-hover: rgba(255, 230, 240, 0.06);
+  --surface-active: rgba(251, 146, 60, 0.12);
+  --surface-tooltip: #241e21;
 
   /* ==========================================================================
-     2. BORDERS - Warm Grey (more visible)
+     2. BORDERS - Warm Dusty Rose
      ========================================================================== */
-  --border-subtle: rgba(180, 175, 165, 0.15);
-  --border-default: rgba(180, 175, 165, 0.28);
-  --border-strong: rgba(180, 175, 165, 0.45);
-  --border-accent: rgba(53, 201, 255, 0.55);
+  --border-subtle: rgba(180, 160, 165, 0.15);
+  --border-default: rgba(180, 160, 165, 0.28);
+  --border-strong: rgba(180, 160, 165, 0.45);
+  --border-accent: rgba(251, 146, 60, 0.55);
 
   /* ==========================================================================
-     3. TEXT - Warm White Scale
+     3. TEXT - Warm Off-White
      ========================================================================== */
-  --text-primary: #f5f3ef;
-  --text-secondary: #d4d0c7;
-  --text-tertiary: #a8a49a;
-  --text-disabled: #6b6862;
-  --text-inverse: #0f0e0d;
+  --text-primary: #faf0f2;
+  --text-secondary: #e2d0d5;
+  --text-tertiary: #b8a0a8;
+  --text-disabled: #786068;
+  --text-inverse: #110d0f;
 
   /* ==========================================================================
-     4. ACCENTS - Aurora Colors
+     4. ACCENTS - Sunset Oranges & Pinks
      ========================================================================== */
-  --accent-info: #4dd4ff;
+  --accent-info: #fb923c;
   --accent-success: #4ade80;
-  --accent-warning: #fbbf24;
-  --accent-danger: #fb7185;
+  --accent-warning: #facc15;
+  --accent-danger: #f87171;
 
   /* ==========================================================================
      5. ACCENT GLOWS
      ========================================================================== */
-  --glow-info: 0 0 20px rgba(77, 212, 255, 0.3);
+  --glow-info: 0 0 20px rgba(251, 146, 60, 0.35);
   --glow-success: 0 0 20px rgba(74, 222, 128, 0.3);
-  --glow-warning: 0 0 20px rgba(251, 191, 36, 0.3);
-  --glow-danger: 0 0 20px rgba(251, 113, 133, 0.3);
+  --glow-warning: 0 0 20px rgba(250, 204, 21, 0.3);
+  --glow-danger: 0 0 20px rgba(248, 113, 113, 0.3);
 
   /* ==========================================================================
      6. GRAPH COLORS
      ========================================================================== */
-  --graph-node-default: rgba(53, 51, 49, 0.95);
-  --graph-node-epic: rgba(77, 212, 255, 0.15);
-  --graph-edge-default: rgba(180, 175, 165, 0.3);
-  --graph-edge-selected: #4dd4ff;
-  --graph-edge-cycle: #fbbf24;
+  --graph-node-default: rgba(64, 54, 60, 0.95);
+  --graph-node-epic: rgba(251, 146, 60, 0.18);
+  --graph-edge-default: rgba(180, 160, 165, 0.3);
+  --graph-edge-selected: #fb923c;
+  --graph-edge-cycle: #facc15;
 
   /* ==========================================================================
      7. SEMANTIC ALPHAS
      ========================================================================== */
-  --alpha-white-low: rgba(245, 243, 239, 0.06);
-  --alpha-white-medium: rgba(245, 243, 239, 0.12);
-  --alpha-white-high: rgba(245, 243, 239, 0.24);
+  --alpha-white-low: rgba(250, 240, 242, 0.05);
+  --alpha-white-medium: rgba(250, 240, 242, 0.11);
+  --alpha-white-high: rgba(250, 240, 242, 0.22);
   --alpha-black-low: rgba(0, 0, 0, 0.2);
   --alpha-black-medium: rgba(0, 0, 0, 0.45);
   --alpha-black-high: rgba(0, 0, 0, 0.75);
@@ -78,10 +77,10 @@
      8. STATUS COLORS
      ========================================================================== */
   --status-ready: rgba(74, 222, 128, 0.18);
-  --status-in-progress: rgba(251, 191, 36, 0.18);
-  --status-blocked: rgba(251, 113, 133, 0.18);
-  --status-closed: rgba(168, 164, 154, 0.12);
-  --status-deferred: rgba(168, 164, 154, 0.08);
+  --status-in-progress: rgba(250, 204, 21, 0.18);
+  --status-blocked: rgba(248, 113, 113, 0.18);
+  --status-closed: rgba(184, 160, 168, 0.12);
+  --status-deferred: rgba(184, 160, 168, 0.08);
 
   /* ==========================================================================
      9. SHADOWS
@@ -93,21 +92,21 @@
   /* ==========================================================================
      10. AGENT ROLE COLORS
      ========================================================================== */
-  --agent-role-ui: #7bb3f0;
-  --agent-role-graph: #8fd18f;
-  --agent-role-orchestrator: #c4a5e6;
-  --agent-role-researcher: #e6b88a;
+  --agent-role-ui: #fdba74;
+  --agent-role-graph: #86efac;
+  --agent-role-orchestrator: #f9a8d4;
+  --agent-role-researcher: #c4b5fd;
 
   /* ==========================================================================
      11. SCROLLBARS
      ========================================================================== */
-  --scrollbar-track: rgba(245, 243, 239, 0.03);
-  --scrollbar-thumb: rgba(180, 175, 165, 0.22);
-  --scrollbar-thumb-hover: rgba(180, 175, 165, 0.38);
+  --scrollbar-track: rgba(250, 240, 242, 0.03);
+  --scrollbar-thumb: rgba(180, 160, 165, 0.22);
+  --scrollbar-thumb-hover: rgba(180, 160, 165, 0.38);
 
   /* ==========================================================================
      12. CODE/SYNTAX
      ========================================================================== */
-  --code-background: #1a1917;
-  --code-text: #d4d0c7;
+  --code-background: #201a1d;
+  --code-text: #e2d0d5;
 }
