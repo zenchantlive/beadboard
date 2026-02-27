@@ -1,0 +1,111 @@
+/**
+ * Light Theme - Clean & Professional
+ * 
+ * A clean, accessible light theme with subtle greys and vibrant accents
+ */
+
+[data-theme="light"] {
+  /* ==========================================================================
+     1. SURFACE LAYERS - Clean white/grey scale
+     ========================================================================== */
+  --surface-backdrop: #f8fafc;
+  --surface-elevated: #ffffff;
+  --surface-primary: #f1f5f9;
+  --surface-secondary: #ffffff;
+  --surface-tertiary: #e2e8f0;
+  --surface-quaternary: #f8fafc;
+  --surface-overlay: #ffffff;
+  --surface-input: #ffffff;
+  --surface-hover: rgba(15, 23, 42, 0.04);
+  --surface-active: rgba(59, 130, 246, 0.1);
+  --surface-tooltip: #1e293b;
+
+  /* ==========================================================================
+     2. BORDERS - Subtle greys
+     ========================================================================== */
+  --border-subtle: rgba(148, 163, 184, 0.25);
+  --border-default: rgba(148, 163, 184, 0.4);
+  --border-strong: rgba(71, 85, 105, 0.5);
+  --border-accent: rgba(59, 130, 246, 0.6);
+
+  /* ==========================================================================
+     3. TEXT - Slate scale
+     ========================================================================== */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
+  --text-disabled: #94a3b8;
+  --text-inverse: #ffffff;
+
+  /* ==========================================================================
+     4. ACCENTS - Vibrant on light backgrounds
+     ========================================================================== */
+  --accent-info: #3b82f6;
+  --accent-success: #22c55e;
+  --accent-warning: #f59e0b;
+  --accent-danger: #ef4444;
+
+  /* ==========================================================================
+     5. ACCENT GLOWS - Subtle shadows on light
+     ========================================================================== */
+  --glow-info: 0 0 20px rgba(59, 130, 246, 0.25);
+  --glow-success: 0 0 20px rgba(34, 197, 94, 0.25);
+  --glow-warning: 0 0 20px rgba(245, 158, 11, 0.25);
+  --glow-danger: 0 0 20px rgba(239, 68, 68, 0.25);
+
+  /* ==========================================================================
+     6. GRAPH COLORS
+     ========================================================================== */
+  --graph-node-default: rgba(255, 255, 255, 0.98);
+  --graph-node-epic: rgba(59, 130, 246, 0.12);
+  --graph-edge-default: rgba(100, 116, 139, 0.35);
+  --graph-edge-selected: #3b82f6;
+  --graph-edge-cycle: #f59e0b;
+
+  /* ==========================================================================
+     7. SEMANTIC ALPHAS - Dark overlays for light theme
+     ========================================================================== */
+  --alpha-white-low: rgba(255, 255, 255, 0.5);
+  --alpha-white-medium: rgba(255, 255, 255, 0.7);
+  --alpha-white-high: rgba(255, 255, 255, 0.9);
+  --alpha-black-low: rgba(15, 23, 42, 0.04);
+  --alpha-black-medium: rgba(15, 23, 42, 0.08);
+  --alpha-black-high: rgba(15, 23, 42, 0.15);
+
+  /* ==========================================================================
+     8. STATUS COLORS - Slightly muted for light
+     ========================================================================== */
+  --status-ready: rgba(34, 197, 94, 0.12);
+  --status-in-progress: rgba(245, 158, 11, 0.12);
+  --status-blocked: rgba(239, 68, 68, 0.12);
+  --status-closed: rgba(148, 163, 184, 0.1);
+  --status-deferred: rgba(148, 163, 184, 0.06);
+
+  /* ==========================================================================
+     9. SHADOWS - Softer on light
+     ========================================================================== */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 4px 6px rgba(15, 23, 42, 0.1);
+  --shadow-lg: 0 10px 15px rgba(15, 23, 42, 0.12);
+
+  /* ==========================================================================
+     10. AGENT ROLE COLORS
+     ========================================================================== */
+  --agent-role-ui: #3b82f6;
+  --agent-role-graph: #22c55e;
+  --agent-role-orchestrator: #a855f7;
+  --agent-role-researcher: #f97316;
+
+  /* ==========================================================================
+     11. SCROLLBARS
+     ========================================================================== */
+  --scrollbar-track: rgba(15, 23, 42, 0.03);
+  --scrollbar-thumb: rgba(100, 116, 139, 0.25);
+  --scrollbar-thumb-hover: rgba(71, 85, 105, 0.4);
+
+  /* ==========================================================================
+     12. CODE/SYNTAX
+     ========================================================================== */
+  --code-background: #f1f5f9;
+  --code-text: #334155;
+}

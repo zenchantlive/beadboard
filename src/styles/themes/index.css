@@ -21,6 +21,7 @@
 @import './forest.css';
 @import './dusk.css';
 @import './contrast.css';
+@import './light.css';
 
 /* Default theme fallback */
 html:not([data-theme]) {

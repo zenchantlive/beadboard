@@ -1,47 +1,47 @@
 /**
- * Midnight Theme - Deep Blue-Purple
+ * Midnight Theme - Deep Ocean
  * 
- * Cool, mysterious deep blue with purple and violet accents.
- * For those who prefer cool tones over warm charcoal.
+ * Deep navy blues with violet and cyan accents
+ * Like looking into deep ocean water at night
  */
 
 [data-theme="midnight"] {
   /* ==========================================================================
-     1. SURFACE LAYERS - Deep Blue-Purple
+     1. SURFACE LAYERS - Deep ocean blues
      ========================================================================== */
-  --surface-backdrop: #0a0a12;
-  --surface-elevated: #050510;
-  --surface-primary: #12121f;
-  --surface-secondary: #18182b;
-  --surface-tertiary: #202038;
-  --surface-quaternary: #2a2a45;
-  --surface-overlay: #03030a;
-  --surface-input: #151525;
-  --surface-hover: rgba(199, 195, 255, 0.06);
-  --surface-active: rgba(139, 92, 246, 0.15);
-  --surface-tooltip: #12121f;
+  --surface-backdrop: #020617;
+  --surface-elevated: #0f172a;
+  --surface-primary: #1e1b4b;
+  --surface-secondary: #1e293b;
+  --surface-tertiary: #312e81;
+  --surface-quaternary: #3730a3;
+  --surface-overlay: #020617;
+  --surface-input: #1e1b4b;
+  --surface-hover: rgba(139, 92, 246, 0.08);
+  --surface-active: rgba(6, 182, 212, 0.12);
+  --surface-tooltip: #1e1b4b;
 
   /* ==========================================================================
-     2. BORDERS - Cool Grey-Blue
+     2. BORDERS - Ocean blue tint
      ========================================================================== */
-  --border-subtle: rgba(150, 155, 180, 0.15);
-  --border-default: rgba(150, 155, 180, 0.28);
-  --border-strong: rgba(150, 155, 180, 0.45);
-  --border-accent: rgba(139, 92, 246, 0.55);
+  --border-subtle: rgba(99, 102, 241, 0.2);
+  --border-default: rgba(99, 102, 241, 0.35);
+  --border-strong: rgba(99, 102, 241, 0.55);
+  --border-accent: rgba(139, 92, 246, 0.65);
 
   /* ==========================================================================
-     3. TEXT - Cool White
+     3. TEXT - Cool white with blue tint
      ========================================================================== */
-  --text-primary: #f0f0f8;
-  --text-secondary: #c5c5d8;
-  --text-tertiary: #9090a8;
-  --text-disabled: #5a5a70;
-  --text-inverse: #050510;
+  --text-primary: #f0f9ff;
+  --text-secondary: #bfdbfe;
+  --text-tertiary: #7dd3fc;
+  --text-disabled: #52525b;
+  --text-inverse: #020617;
 
   /* ==========================================================================
-     4. ACCENTS - Violet/Purple/Cyan
+     4. ACCENTS - Ocean bioluminescence
      ========================================================================== */
-  --accent-info: #a78bfa;
+  --accent-info: #22d3ee;
   --accent-success: #34d399;
   --accent-warning: #fbbf24;
   --accent-danger: #f87171;
@@ -49,27 +49,27 @@
   /* ==========================================================================
      5. ACCENT GLOWS
      ========================================================================== */
-  --glow-info: 0 0 20px rgba(167, 139, 250, 0.35);
-  --glow-success: 0 0 20px rgba(52, 211, 153, 0.3);
-  --glow-warning: 0 0 20px rgba(251, 191, 36, 0.3);
-  --glow-danger: 0 0 20px rgba(248, 113, 113, 0.3);
+  --glow-info: 0 0 24px rgba(34, 211, 238, 0.4);
+  --glow-success: 0 0 24px rgba(52, 211, 153, 0.35);
+  --glow-warning: 0 0 24px rgba(251, 191, 36, 0.35);
+  --glow-danger: 0 0 24px rgba(248, 113, 113, 0.35);
 
   /* ==========================================================================
      6. GRAPH COLORS
      ========================================================================== */
-  --graph-node-default: rgba(42, 42, 69, 0.95);
-  --graph-node-epic: rgba(167, 139, 250, 0.18);
-  --graph-edge-default: rgba(150, 155, 180, 0.3);
-  --graph-edge-selected: #a78bfa;
+  --graph-node-default: rgba(55, 48, 163, 0.9);
+  --graph-node-epic: rgba(139, 92, 246, 0.25);
+  --graph-edge-default: rgba(99, 102, 241, 0.3);
+  --graph-edge-selected: #22d3ee;
   --graph-edge-cycle: #fbbf24;
 
   /* ==========================================================================
      7. SEMANTIC ALPHAS
      ========================================================================== */
-  --alpha-white-low: rgba(240, 240, 248, 0.05);
-  --alpha-white-medium: rgba(240, 240, 248, 0.11);
-  --alpha-white-high: rgba(240, 240, 248, 0.22);
-  --alpha-black-low: rgba(0, 0, 0, 0.25);
+  --alpha-white-low: rgba(240, 249, 255, 0.05);
+  --alpha-white-medium: rgba(240, 249, 255, 0.1);
+  --alpha-white-high: rgba(240, 249, 255, 0.2);
+  --alpha-black-low: rgba(0, 0, 0, 0.3);
   --alpha-black-medium: rgba(0, 0, 0, 0.5);
   --alpha-black-high: rgba(0, 0, 0, 0.8);
 
@@ -79,34 +79,34 @@
   --status-ready: rgba(52, 211, 153, 0.18);
   --status-in-progress: rgba(251, 191, 36, 0.18);
   --status-blocked: rgba(248, 113, 113, 0.18);
-  --status-closed: rgba(144, 144, 168, 0.12);
-  --status-deferred: rgba(144, 144, 168, 0.08);
+  --status-closed: rgba(125, 211, 252, 0.12);
+  --status-deferred: rgba(125, 211, 252, 0.08);
 
   /* ==========================================================================
      9. SHADOWS
      ========================================================================== */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
 
   /* ==========================================================================
      10. AGENT ROLE COLORS
      ========================================================================== */
-  --agent-role-ui: #93c5fd;
-  --agent-role-graph: #86efac;
-  --agent-role-orchestrator: #d8b4fe;
-  --agent-role-researcher: #fdba74;
+  --agent-role-ui: #60a5fa;
+  --agent-role-graph: #4ade80;
+  --agent-role-orchestrator: #c084fc;
+  --agent-role-researcher: #fb923c;
 
   /* ==========================================================================
      11. SCROLLBARS
      ========================================================================== */
-  --scrollbar-track: rgba(240, 240, 248, 0.03);
-  --scrollbar-thumb: rgba(150, 155, 180, 0.22);
-  --scrollbar-thumb-hover: rgba(150, 155, 180, 0.38);
+  --scrollbar-track: rgba(240, 249, 255, 0.03);
+  --scrollbar-thumb: rgba(99, 102, 241, 0.25);
+  --scrollbar-thumb-hover: rgba(99, 102, 241, 0.4);
 
   /* ==========================================================================
      12. CODE/SYNTAX
      ========================================================================== */
-  --code-background: #151525;
-  --code-text: #c5c5d8;
+  --code-background: #1e1b4b;
+  --code-text: #bfdbfe;
 }

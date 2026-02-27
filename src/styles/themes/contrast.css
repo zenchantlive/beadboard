@@ -1,74 +1,74 @@
 /**
- * High Contrast Theme - Maximum Visibility
+ * Contrast Theme - Maximum Accessibility
  * 
- * Pure black background with bright white text and vivid accent colors.
- * Designed for maximum readability and accessibility.
+ * Pure black background with high-contrast white text
+ * and neon accents for maximum visibility
  */
 
 [data-theme="contrast"] {
   /* ==========================================================================
-     1. SURFACE LAYERS - Pure Black & Dark Greys
+     1. SURFACE LAYERS - Pure black scale
      ========================================================================== */
   --surface-backdrop: #000000;
   --surface-elevated: #0a0a0a;
   --surface-primary: #141414;
   --surface-secondary: #1a1a1a;
   --surface-tertiary: #242424;
-  --surface-quaternary: #2e2e2e;
-  --surface-overlay: #050505;
-  --surface-input: #111111;
-  --surface-hover: rgba(255, 255, 255, 0.1);
-  --surface-active: rgba(255, 255, 255, 0.15);
+  --surface-quaternary: #333333;
+  --surface-overlay: #000000;
+  --surface-input: #0f0f0f;
+  --surface-hover: rgba(255, 255, 255, 0.12);
+  --surface-active: rgba(255, 255, 255, 0.18);
   --surface-tooltip: #1a1a1a;
 
   /* ==========================================================================
-     2. BORDERS - White (High Contrast)
+     2. BORDERS - High visibility white
      ========================================================================== */
-  --border-subtle: rgba(255, 255, 255, 0.2);
-  --border-default: rgba(255, 255, 255, 0.35);
-  --border-strong: rgba(255, 255, 255, 0.55);
-  --border-accent: rgba(255, 255, 255, 0.7);
+  --border-subtle: rgba(255, 255, 255, 0.25);
+  --border-default: rgba(255, 255, 255, 0.45);
+  --border-strong: rgba(255, 255, 255, 0.7);
+  --border-accent: rgba(255, 255, 255, 0.85);
 
   /* ==========================================================================
-     3. TEXT - Pure White
+     3. TEXT - Pure white
      ========================================================================== */
   --text-primary: #ffffff;
-  --text-secondary: #e0e0e0;
-  --text-tertiary: #a0a0a0;
-  --text-disabled: #606060;
+  --text-secondary: #e6e6e6;
+  --text-tertiary: #b3b3b3;
+  --text-disabled: #666666;
   --text-inverse: #000000;
 
   /* ==========================================================================
-     4. ACCENTS - Bright & Vivid
+     4. ACCENTS - Neon bright
      ========================================================================== */
   --accent-info: #00ffff;
   --accent-success: #00ff66;
-  --accent-warning: #ffcc00;
+  --accent-warning: #ffff00;
   --accent-danger: #ff3366;
 
   /* ==========================================================================
-     5. ACCENT GLOWS
+     5. ACCENT GLOWS - Intense neon
      ========================================================================== */
-  --glow-info: 0 0 24px rgba(0, 255, 255, 0.5);
-  --glow-success: 0 0 24px rgba(0, 255, 102, 0.5);
-  --glow-warning: 0 0 24px rgba(255, 204, 0, 0.5);
-  --glow-danger: 0 0 24px rgba(255, 51, 102, 0.5);
+  --glow-info: 0 0 30px rgba(0, 255, 255, 0.6);
+  --glow-success: 0 0 30px rgba(0, 255, 102, 0.55);
+  --glow-warning: 0 0 30px rgba(255, 255, 0, 0.55);
+  --glow-danger: 0 0 30px rgba(255, 51, 102, 0.55);
 
   /* ==========================================================================
      6. GRAPH COLORS
      ========================================================================== */
-  --graph-node-default: rgba(46, 46, 46, 0.98);
-  --graph-node-epic: rgba(0, 255, 255, 0.2);
-  --graph-edge-default: rgba(255, 255, 255, 0.35);
+  --graph-node-default: rgba(51, 51, 51, 0.98);
+  --graph-node-epic: rgba(0, 255, 255, 0.25);
+  --graph-edge-default: rgba(255, 255, 255, 0.4);
   --graph-edge-selected: #00ffff;
-  --graph-edge-cycle: #ffcc00;
+  --graph-edge-cycle: #ffff00;
 
   /* ==========================================================================
      7. SEMANTIC ALPHAS
      ========================================================================== */
-  --alpha-white-low: rgba(255, 255, 255, 0.08);
-  --alpha-white-medium: rgba(255, 255, 255, 0.16);
-  --alpha-white-high: rgba(255, 255, 255, 0.3);
+  --alpha-white-low: rgba(255, 255, 255, 0.1);
+  --alpha-white-medium: rgba(255, 255, 255, 0.2);
+  --alpha-white-high: rgba(255, 255, 255, 0.35);
   --alpha-black-low: rgba(0, 0, 0, 0.3);
   --alpha-black-medium: rgba(0, 0, 0, 0.5);
   --alpha-black-high: rgba(0, 0, 0, 0.8);
@@ -76,11 +76,11 @@
   /* ==========================================================================
      8. STATUS COLORS
      ========================================================================== */
-  --status-ready: rgba(0, 255, 102, 0.22);
-  --status-in-progress: rgba(255, 204, 0, 0.22);
-  --status-blocked: rgba(255, 51, 102, 0.22);
-  --status-closed: rgba(160, 160, 160, 0.15);
-  --status-deferred: rgba(160, 160, 160, 0.1);
+  --status-ready: rgba(0, 255, 102, 0.25);
+  --status-in-progress: rgba(255, 255, 0, 0.25);
+  --status-blocked: rgba(255, 51, 102, 0.25);
+  --status-closed: rgba(179, 179, 179, 0.15);
+  --status-deferred: rgba(179, 179, 179, 0.1);
 
   /* ==========================================================================
      9. SHADOWS
@@ -101,12 +101,12 @@
      11. SCROLLBARS
      ========================================================================== */
   --scrollbar-track: rgba(255, 255, 255, 0.05);
-  --scrollbar-thumb: rgba(255, 255, 255, 0.25);
-  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.3);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.5);
 
   /* ==========================================================================
      12. CODE/SYNTAX
      ========================================================================== */
-  --code-background: #111111;
-  --code-text: #e0e0e0;
+  --code-background: #0f0f0f;
+  --code-text: #e6e6e6;
 }

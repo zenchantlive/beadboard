@@ -5,11 +5,12 @@ import { Palette, Check } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 const themes = [
-  { id: 'aurora', name: 'Aurora', desc: 'Warm charcoal + cyan' },
-  { id: 'midnight', name: 'Midnight', desc: 'Cool blue-purple' },
-  { id: 'forest', name: 'Forest', desc: 'Earthy green-brown' },
-  { id: 'dusk', name: 'Dusk', desc: 'Sunset orange-pink' },
-  { id: 'contrast', name: 'Contrast', desc: 'High contrast' },
+  { id: 'aurora', name: 'Aurora', desc: 'Northern lights (teal & violet)' },
+  { id: 'midnight', name: 'Midnight', desc: 'Deep blue-purple' },
+  { id: 'forest', name: 'Forest', desc: 'Mossy green & amber' },
+  { id: 'dusk', name: 'Dusk', desc: 'Sunset orange & coral' },
+  { id: 'contrast', name: 'Contrast', desc: 'Pure black/white' },
+  { id: 'light', name: 'Light', desc: 'Clean & professional' },
 ] as const;
 
 export function ThemeToggle() {

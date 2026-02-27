@@ -1,45 +1,45 @@
 /**
- * Dusk Theme - Sunset Orange & Pink
+ * Dusk Theme - Golden Hour
  * 
- * Warm oranges, coral pinks, and soft purples.
- * Inspired by sunset skies and twilight hues.
+ * Warm sunset oranges, corals, and soft pinks
+ * Like the sky during a beautiful sunset
  */
 
 [data-theme="dusk"] {
   /* ==========================================================================
-     1. SURFACE LAYERS - Warm Purple-Brown
+     1. SURFACE LAYERS - Sunset gradient base
      ========================================================================== */
-  --surface-backdrop: #1a1518;
-  --surface-elevated: #110d0f;
-  --surface-primary: #241e21;
-  --surface-secondary: #2d262a;
-  --surface-tertiary: #362e33;
-  --surface-quaternary: #40363c;
-  --surface-overlay: #0c090b;
-  --surface-input: #201a1d;
-  --surface-hover: rgba(255, 230, 240, 0.06);
+  --surface-backdrop: #1c1917;
+  --surface-elevated: #292524;
+  --surface-primary: #451a03;
+  --surface-secondary: #312e2c;
+  --surface-tertiary: #573026;
+  --surface-quaternary: #78350f;
+  --surface-overlay: #0c0a09;
+  --surface-input: #451a03;
+  --surface-hover: rgba(251, 191, 36, 0.06);
   --surface-active: rgba(251, 146, 60, 0.12);
-  --surface-tooltip: #241e21;
+  --surface-tooltip: #451a03;
 
   /* ==========================================================================
-     2. BORDERS - Warm Dusty Rose
+     2. BORDERS - Warm amber glow
      ========================================================================== */
-  --border-subtle: rgba(180, 160, 165, 0.15);
-  --border-default: rgba(180, 160, 165, 0.28);
-  --border-strong: rgba(180, 160, 165, 0.45);
-  --border-accent: rgba(251, 146, 60, 0.55);
+  --border-subtle: rgba(251, 191, 36, 0.18);
+  --border-default: rgba(251, 191, 36, 0.32);
+  --border-strong: rgba(251, 191, 36, 0.5);
+  --border-accent: rgba(251, 146, 60, 0.6);
 
   /* ==========================================================================
-     3. TEXT - Warm Off-White
+     3. TEXT - Sunset glow
      ========================================================================== */
-  --text-primary: #faf0f2;
-  --text-secondary: #e2d0d5;
-  --text-tertiary: #b8a0a8;
-  --text-disabled: #786068;
-  --text-inverse: #110d0f;
+  --text-primary: #fff7ed;
+  --text-secondary: #fdba74;
+  --text-tertiary: #fb923c;
+  --text-disabled: #78350f;
+  --text-inverse: #1c1917;
 
   /* ==========================================================================
-     4. ACCENTS - Sunset Oranges & Pinks
+     4. ACCENTS - Sunset colors
      ========================================================================== */
   --accent-info: #fb923c;
   --accent-success: #4ade80;
@@ -49,29 +49,29 @@
   /* ==========================================================================
      5. ACCENT GLOWS
      ========================================================================== */
-  --glow-info: 0 0 20px rgba(251, 146, 60, 0.35);
-  --glow-success: 0 0 20px rgba(74, 222, 128, 0.3);
-  --glow-warning: 0 0 20px rgba(250, 204, 21, 0.3);
-  --glow-danger: 0 0 20px rgba(248, 113, 113, 0.3);
+  --glow-info: 0 0 24px rgba(251, 146, 60, 0.4);
+  --glow-success: 0 0 24px rgba(74, 222, 128, 0.35);
+  --glow-warning: 0 0 24px rgba(250, 204, 21, 0.4);
+  --glow-danger: 0 0 24px rgba(248, 113, 113, 0.35);
 
   /* ==========================================================================
      6. GRAPH COLORS
      ========================================================================== */
-  --graph-node-default: rgba(64, 54, 60, 0.95);
-  --graph-node-epic: rgba(251, 146, 60, 0.18);
-  --graph-edge-default: rgba(180, 160, 165, 0.3);
+  --graph-node-default: rgba(120, 53, 15, 0.95);
+  --graph-node-epic: rgba(251, 146, 60, 0.2);
+  --graph-edge-default: rgba(251, 191, 36, 0.3);
   --graph-edge-selected: #fb923c;
   --graph-edge-cycle: #facc15;
 
   /* ==========================================================================
      7. SEMANTIC ALPHAS
      ========================================================================== */
-  --alpha-white-low: rgba(250, 240, 242, 0.05);
-  --alpha-white-medium: rgba(250, 240, 242, 0.11);
-  --alpha-white-high: rgba(250, 240, 242, 0.22);
+  --alpha-white-low: rgba(255, 247, 237, 0.05);
+  --alpha-white-medium: rgba(255, 247, 237, 0.1);
+  --alpha-white-high: rgba(255, 247, 237, 0.2);
   --alpha-black-low: rgba(0, 0, 0, 0.2);
-  --alpha-black-medium: rgba(0, 0, 0, 0.45);
-  --alpha-black-high: rgba(0, 0, 0, 0.75);
+  --alpha-black-medium: rgba(0, 0, 0, 0.4);
+  --alpha-black-high: rgba(0, 0, 0, 0.6);
 
   /* ==========================================================================
      8. STATUS COLORS
@@ -79,8 +79,8 @@
   --status-ready: rgba(74, 222, 128, 0.18);
   --status-in-progress: rgba(250, 204, 21, 0.18);
   --status-blocked: rgba(248, 113, 113, 0.18);
-  --status-closed: rgba(184, 160, 168, 0.12);
-  --status-deferred: rgba(184, 160, 168, 0.08);
+  --status-closed: rgba(253, 186, 116, 0.12);
+  --status-deferred: rgba(253, 186, 116, 0.08);
 
   /* ==========================================================================
      9. SHADOWS
@@ -100,13 +100,13 @@
   /* ==========================================================================
      11. SCROLLBARS
      ========================================================================== */
-  --scrollbar-track: rgba(250, 240, 242, 0.03);
-  --scrollbar-thumb: rgba(180, 160, 165, 0.22);
-  --scrollbar-thumb-hover: rgba(180, 160, 165, 0.38);
+  --scrollbar-track: rgba(255, 247, 237, 0.03);
+  --scrollbar-thumb: rgba(251, 191, 36, 0.25);
+  --scrollbar-thumb-hover: rgba(251, 191, 36, 0.4);
 
   /* ==========================================================================
      12. CODE/SYNTAX
      ========================================================================== */
-  --code-background: #201a1d;
-  --code-text: #e2d0d5;
+  --code-background: #451a03;
+  --code-text: #fdba74;
 }

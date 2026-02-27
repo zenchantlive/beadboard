@@ -1,86 +1,85 @@
 /**
- * Forest Theme - Mossy Green-Brown
+ * Forest Theme - Deep Woods
  * 
- * Organic, earthy greens with amber gold accents.
- * Inspired by forest floors and mossy rocks.
+ * Rich forest greens with earthy browns and golden sunlight
  */
 
 [data-theme="forest"] {
   /* ==========================================================================
-     1. SURFACE LAYERS - Earthy Moss-Green
+     1. SURFACE LAYERS - Forest floor to canopy
      ========================================================================== */
-  --surface-backdrop: #121510;
-  --surface-elevated: #0a0d08;
-  --surface-primary: #1a1f15;
-  --surface-secondary: #22281a;
-  --surface-tertiary: #2b3320;
-  --surface-quaternary: #353d28;
-  --surface-overlay: #060804;
-  --surface-input: #181c13;
-  --surface-hover: rgba(220, 235, 200, 0.06);
-  --surface-active: rgba(132, 204, 22, 0.12);
-  --surface-tooltip: #1a1f15;
+  --surface-backdrop: #052e16;
+  --surface-elevated: #064e3b;
+  --surface-primary: #065f46;
+  --surface-secondary: #0f3d2e;
+  --surface-tertiary: #14532d;
+  --surface-quaternary: #166534;
+  --surface-overlay: #022c22;
+  --surface-input: #064e3b;
+  --surface-hover: rgba(250, 204, 21, 0.06);
+  --surface-active: rgba(74, 222, 128, 0.12);
+  --surface-tooltip: #064e3b;
 
   /* ==========================================================================
-     2. BORDERS - Mossy Grey-Green
+     2. BORDERS - Earthy with moss tint
      ========================================================================== */
-  --border-subtle: rgba(150, 165, 130, 0.15);
-  --border-default: rgba(150, 165, 130, 0.28);
-  --border-strong: rgba(150, 165, 130, 0.45);
-  --border-accent: rgba(132, 204, 22, 0.55);
+  --border-subtle: rgba(101, 163, 13, 0.2);
+  --border-default: rgba(101, 163, 13, 0.35);
+  --border-strong: rgba(101, 163, 13, 0.55);
+  --border-accent: rgba(250, 204, 21, 0.6);
 
   /* ==========================================================================
-     3. TEXT - Warm Moss
+     3. TEXT - Sunlight through leaves
      ========================================================================== */
-  --text-primary: #f2f5ed;
-  --text-secondary: #c8d4b5;
-  --text-tertiary: #96a582;
-  --text-disabled: #5e6b50;
-  --text-inverse: #0a0d08;
+  --text-primary: #ecfccb;
+  --text-secondary: #bef264;
+  --text-tertiary: #84cc16;
+  --text-disabled: #3f6212;
+  --text-inverse: #052e16;
 
   /* ==========================================================================
-     4. ACCENTS - Forest Greens & Amber Gold
+     4. ACCENTS - Forest life
      ========================================================================== */
   --accent-info: #a3e635;
   --accent-success: #4ade80;
-  --accent-warning: #fbbf24;
+  --accent-warning: #facc15;
   --accent-danger: #f87171;
 
   /* ==========================================================================
      5. ACCENT GLOWS
      ========================================================================== */
-  --glow-info: 0 0 20px rgba(163, 230, 53, 0.35);
-  --glow-success: 0 0 20px rgba(74, 222, 128, 0.3);
-  --glow-warning: 0 0 20px rgba(251, 191, 36, 0.3);
-  --glow-danger: 0 0 20px rgba(248, 113, 113, 0.3);
+  --glow-info: 0 0 24px rgba(163, 230, 53, 0.4);
+  --glow-success: 0 0 24px rgba(74, 222, 128, 0.35);
+  --glow-warning: 0 0 24px rgba(250, 204, 21, 0.4);
+  --glow-danger: 0 0 24px rgba(248, 113, 113, 0.35);
 
   /* ==========================================================================
      6. GRAPH COLORS
      ========================================================================== */
-  --graph-node-default: rgba(53, 61, 40, 0.95);
-  --graph-node-epic: rgba(163, 230, 53, 0.15);
-  --graph-edge-default: rgba(150, 165, 130, 0.3);
+  --graph-node-default: rgba(22, 101, 52, 0.95);
+  --graph-node-epic: rgba(163, 230, 53, 0.2);
+  --graph-edge-default: rgba(132, 204, 22, 0.3);
   --graph-edge-selected: #a3e635;
-  --graph-edge-cycle: #fbbf24;
+  --graph-edge-cycle: #facc15;
 
   /* ==========================================================================
      7. SEMANTIC ALPHAS
      ========================================================================== */
-  --alpha-white-low: rgba(242, 245, 237, 0.05);
-  --alpha-white-medium: rgba(242, 245, 237, 0.11);
-  --alpha-white-high: rgba(242, 245, 237, 0.22);
+  --alpha-white-low: rgba(236, 252, 203, 0.05);
+  --alpha-white-medium: rgba(236, 252, 203, 0.1);
+  --alpha-white-high: rgba(236, 252, 203, 0.2);
   --alpha-black-low: rgba(0, 0, 0, 0.2);
-  --alpha-black-medium: rgba(0, 0, 0, 0.45);
-  --alpha-black-high: rgba(0, 0, 0, 0.75);
+  --alpha-black-medium: rgba(0, 0, 0, 0.4);
+  --alpha-black-high: rgba(0, 0, 0, 0.6);
 
   /* ==========================================================================
      8. STATUS COLORS
      ========================================================================== */
   --status-ready: rgba(74, 222, 128, 0.18);
-  --status-in-progress: rgba(251, 191, 36, 0.18);
+  --status-in-progress: rgba(250, 204, 21, 0.18);
   --status-blocked: rgba(248, 113, 113, 0.18);
-  --status-closed: rgba(150, 165, 130, 0.12);
-  --status-deferred: rgba(150, 165, 130, 0.08);
+  --status-closed: rgba(132, 204, 22, 0.12);
+  --status-deferred: rgba(132, 204, 22, 0.08);
 
   /* ==========================================================================
      9. SHADOWS
@@ -92,21 +91,21 @@
   /* ==========================================================================
      10. AGENT ROLE COLORS
      ========================================================================== */
-  --agent-role-ui: #93c5fd;
-  --agent-role-graph: #86efac;
+  --agent-role-ui: #86efac;
+  --agent-role-graph: #4ade80;
   --agent-role-orchestrator: #d8b4fe;
   --agent-role-researcher: #fdba74;
 
   /* ==========================================================================
      11. SCROLLBARS
      ========================================================================== */
-  --scrollbar-track: rgba(242, 245, 237, 0.03);
-  --scrollbar-thumb: rgba(150, 165, 130, 0.22);
-  --scrollbar-thumb-hover: rgba(150, 165, 130, 0.38);
+  --scrollbar-track: rgba(236, 252, 203, 0.03);
+  --scrollbar-thumb: rgba(132, 204, 22, 0.25);
+  --scrollbar-thumb-hover: rgba(132, 204, 22, 0.4);
 
   /* ==========================================================================
      12. CODE/SYNTAX
      ========================================================================== */
-  --code-background: #181c13;
-  --code-text: #c8d4b5;
+  --code-background: #064e3b;
+  --code-text: #bef264;
 }
