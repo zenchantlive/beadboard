@@ -22,8 +22,8 @@ export function GraphView({
   hideClosed = false,
 }: GraphViewProps) {
   return (
-    <div className="flex h-full flex-col bg-[var(--ui-bg-app)]">
-      <div className="flex items-center justify-between border-b border-[var(--ui-border-soft)] bg-[var(--ui-bg-shell)] px-4 py-2.5">
+    <div className="flex h-full flex-col bg-[var(--surface-secondary)]">
+      <div className="flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-tertiary)] px-4 py-2.5">
         <div className="flex items-center gap-3">
           <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">
             Graph View
@@ -32,7 +32,7 @@ export function GraphView({
           <button
             type="button"
             onClick={() => onGraphTabChange('flow')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ui-bg-shell)] ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-tertiary)] ${
               graphTab === 'flow'
                 ? 'bg-sky-400/10 text-sky-200 shadow-[0_2px_8px_rgba(56,189,248,0.1)]'
                 : 'text-text-muted/60 hover:text-text-body hover:bg-white/[0.04]'
@@ -43,7 +43,7 @@ export function GraphView({
           <button
             type="button"
             onClick={() => onGraphTabChange('overview')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-accent-info)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ui-bg-shell)] ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-tertiary)] ${
               graphTab === 'overview'
                 ? 'bg-sky-400/10 text-sky-200 shadow-[0_2px_8px_rgba(56,189,248,0.1)]'
                 : 'text-text-muted/60 hover:text-text-body hover:bg-white/[0.04]'

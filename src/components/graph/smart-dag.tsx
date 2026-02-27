@@ -153,16 +153,16 @@ export function SmartDag({
   );
 
   return (
-    <div className="w-full h-full flex flex-col animate-in fade-in duration-500 relative bg-[radial-gradient(ellipse_at_top,#142336_0%,#090d14_100%)]">
-      <div className="flex items-center justify-between gap-4 border-b border-white/5 px-4 py-3 bg-white/[0.02]">
+    <div className="w-full h-full flex flex-col animate-in fade-in duration-500 relative bg-[var(--surface-secondary)]">
+      <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] px-4 py-3 bg-[var(--surface-tertiary)]">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setShowFilters(current => !current)}
             className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all ${
               showFilters
-                ? 'border-sky-400/30 bg-sky-400/10 text-sky-300'
-                : 'border-white/10 bg-white/5 text-text-muted hover:bg-white/10'
+                ? 'border-[var(--accent-info)]/30 bg-[var(--accent-info)]/10 text-[var(--accent-info)]'
+                : 'border-[var(--border-subtle)] bg-[var(--surface-quaternary)] text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)]'
             }`}
           >
             <Filter className="w-3.5 h-3.5" />
