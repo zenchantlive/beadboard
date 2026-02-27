@@ -244,10 +244,10 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
     };
 
     const renderTaskItem = (issue: BeadIssue, showAssignButton: boolean = false, archetypeBadges: AgentArchetype[] = []) => (
-        <div key={issue.id} className="flex items-center gap-2 p-2 bg-[#0a111a] rounded-md border border-[var(--ui-border-soft)]">
+        <div key={issue.id} className="flex items-center gap-2 p-2 bg-[var(--surface-input)] rounded-md border border-[var(--border-subtle)]">
             <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-mono text-[var(--ui-text-muted)]">{issue.id}</div>
-                <div className="text-xs text-[var(--ui-text-primary)] truncate">{truncateTitle(issue.title)}</div>
+                <div className="text-[10px] font-mono text-[var(--text-tertiary)]">{issue.id}</div>
+                <div className="text-xs text-[var(--text-primary)] truncate">{truncateTitle(issue.title)}</div>
             </div>
             {archetypeBadges.length > 0 && (
                 <div className="flex gap-1">
@@ -269,17 +269,17 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                 <div className="relative">
                     <button
                         onClick={() => setQuickAssignDropdown(quickAssignDropdown === issue.id ? null : issue.id)}
-                        className="h-6 w-6 flex items-center justify-center rounded bg-[var(--ui-accent-info)]/20 hover:bg-[var(--ui-accent-info)]/30 text-[var(--ui-accent-info)] transition-colors"
+                        className="h-6 w-6 flex items-center justify-center rounded bg-[var(--accent-info)]/20 hover:bg-[var(--accent-info)]/30 text-[var(--accent-info)] transition-colors"
                     >
                         <UserPlus className="w-3 h-3" />
                     </button>
                     {quickAssignDropdown === issue.id && (
-                        <div className="absolute right-0 top-full mt-1 z-10 bg-[#111f2b] border border-[var(--ui-border-soft)] rounded-md shadow-lg py-1 min-w-[120px]">
+                        <div className="absolute right-0 top-full mt-1 z-10 bg-[var(--surface-tertiary)] border border-[var(--border-subtle)] rounded-md shadow-lg py-1 min-w-[120px]">
                             {archetypes.map((a: AgentArchetype) => (
                                 <button
                                     key={a.id}
                                     onClick={() => handleQuickAssign(issue.id, a.id)}
-                                    className="w-full px-3 py-1.5 text-left text-xs text-[var(--ui-text-primary)] hover:bg-[#1a2d3d] transition-colors"
+                                    className="w-full px-3 py-1.5 text-left text-xs text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
                                 >
                                     {a.name}
                                 </button>
@@ -296,14 +296,14 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
             <div className="flex gap-2">
                 <button
                     onClick={() => setShowArchetypeList(!showArchetypeList)}
-                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium text-[var(--ui-text-primary)] transition-colors ${showArchetypeList ? 'bg-[#1a2d3d] border-[var(--ui-accent-info)]' : 'bg-[#111f2b] hover:bg-[#1a2d3d] border-[var(--ui-border-soft)]'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium text-[var(--text-primary)] transition-colors ${showArchetypeList ? 'bg-[var(--surface-active)] border-[var(--accent-info)]' : 'bg-[var(--surface-tertiary)] hover:bg-[var(--surface-hover)] border-[var(--border-subtle)]'}`}
                 >
-                    <Blocks className="w-4 h-4 text-[var(--ui-accent-info)]" />
+                    <Blocks className="w-4 h-4 text-[var(--accent-info)]" />
                     Archetypes
                 </button>
                 <button
                     onClick={() => setShowTemplateList(!showTemplateList)}
-                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium text-[var(--ui-text-primary)] transition-colors ${showTemplateList ? 'bg-[#1a2d3d] border-amber-500' : 'bg-[#111f2b] hover:bg-[#1a2d3d] border-[var(--ui-border-soft)]'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium text-[var(--text-primary)] transition-colors ${showTemplateList ? 'bg-[var(--surface-active)] border-[var(--accent-warning)]' : 'bg-[var(--surface-tertiary)] hover:bg-[var(--surface-hover)] border-[var(--border-subtle)]'}`}
                 >
                     <FileCode2 className="w-4 h-4 text-amber-500" />
                     Templates
@@ -349,20 +349,20 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
             />
 
             {selectedEpic && (
-                <div className="bg-[#111f2b] rounded-xl border border-purple-500/30 flex flex-col overflow-hidden">
-                    <div className="px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2">
+                <div className="bg-[var(--surface-tertiary)] rounded-xl border border-purple-500/30 flex flex-col overflow-hidden">
+                    <div className="px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--surface-tertiary)] flex items-center gap-2">
                         <Layers className="w-4 h-4 text-purple-400" />
-                        <h3 className="font-semibold text-sm text-[var(--ui-text-primary)]">Epic Template</h3>
+                        <h3 className="font-semibold text-sm text-[var(--text-primary)]">Epic Template</h3>
                     </div>
                     <div className="p-4 space-y-3">
                         <div>
-                            <div className="text-[10px] font-mono text-[var(--ui-text-muted)] uppercase tracking-wider mb-1">{selectedEpic.id}</div>
-                            <div className="text-sm font-semibold text-[var(--ui-text-primary)] leading-snug">{selectedEpic.title}</div>
+                            <div className="text-[10px] font-mono text-[var(--text-tertiary)] uppercase tracking-wider mb-1">{selectedEpic.id}</div>
+                            <div className="text-sm font-semibold text-[var(--text-primary)] leading-snug">{selectedEpic.title}</div>
                         </div>
 
                         {epicTemplate ? (
                             <div className="space-y-3">
-                                <div className="bg-[#0a111a] rounded-md p-3 border border-[var(--ui-border-soft)]">
+                                <div className="bg-[var(--surface-input)] rounded-md p-3 border border-[var(--border-subtle)]">
                                     <div className="flex items-center gap-2 mb-2">
                                         <div
                                             className="h-6 w-6 rounded flex items-center justify-center text-xs font-bold"
@@ -373,13 +373,13 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                                         >
                                             {epicTemplate.icon || 'T'}
                                         </div>
-                                        <div className="font-semibold text-sm text-[var(--ui-text-primary)]">{epicTemplate.name}</div>
+                                        <div className="font-semibold text-sm text-[var(--text-primary)]">{epicTemplate.name}</div>
                                     </div>
                                     {epicTemplate.description && (
-                                        <div className="text-xs text-[var(--ui-text-muted)] mb-3">{epicTemplate.description}</div>
+                                        <div className="text-xs text-[var(--text-tertiary)] mb-3">{epicTemplate.description}</div>
                                     )}
                                     <div>
-                                        <div className="text-[10px] font-mono text-[var(--ui-text-muted)] uppercase tracking-wider mb-2">Team Roster</div>
+                                        <div className="text-[10px] font-mono text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Team Roster</div>
                                         <div className="space-y-1">
                                             {Array.from(new Set(epicTemplate.team.map(m => m.archetypeId))).map(archetypeId => {
                                                 const archetype = archetypes.find((a: AgentArchetype) => a.id === archetypeId);
@@ -396,8 +396,8 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                                                         >
                                                             {getArchetypeDisplayChar(archetype)}
                                                         </div>
-                                                        <span className="text-[var(--ui-text-primary)]">{archetype.name}</span>
-                                                        <span className="text-[var(--ui-text-muted)] ml-auto">x{count}</span>
+                                                        <span className="text-[var(--text-primary)]">{archetype.name}</span>
+                                                        <span className="text-[var(--text-tertiary)] ml-auto">x{count}</span>
                                                     </div>
                                                 );
                                             })}
@@ -407,7 +407,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setShowTemplateList(true)}
-                                        className="flex-1 py-1.5 text-xs font-medium text-[var(--ui-text-muted)] bg-[#0a111a] border border-[var(--ui-border-soft)] rounded-md hover:bg-[#14202e] transition-colors"
+                                        className="flex-1 py-1.5 text-xs font-medium text-[var(--text-tertiary)] bg-[var(--surface-input)] border border-[var(--border-subtle)] rounded-md hover:bg-[var(--surface-hover)] transition-colors"
                                     >
                                         Change Template
                                     </button>
@@ -425,7 +425,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                             </div>
                         ) : (
                             <div className="space-y-3">
-                                <div className="text-xs text-[var(--ui-text-muted)] text-center py-3">
+                                <div className="text-xs text-[var(--text-tertiary)] text-center py-3">
                                     No template assigned
                                 </div>
                                 <button
@@ -441,26 +441,26 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
             )}
 
             {selectedIssue && selectedIssue.issue_type !== 'epic' && (
-                <div className="bg-[#111f2b] rounded-xl border border-[var(--ui-accent-info)]/30 flex flex-col overflow-hidden">
-                    <div className="px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-[var(--ui-accent-info)]" />
-                        <h3 className="font-semibold text-sm text-[var(--ui-text-primary)]">Task Assignment</h3>
+                <div className="bg-[var(--surface-tertiary)] rounded-xl border border-[var(--accent-info)]/30 flex flex-col overflow-hidden">
+                    <div className="px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--surface-tertiary)] flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-[var(--accent-info)]" />
+                        <h3 className="font-semibold text-sm text-[var(--text-primary)]">Task Assignment</h3>
                     </div>
                     <div className="p-4 space-y-4">
                         <div>
-                            <div className="text-[10px] font-mono text-[var(--ui-text-muted)] uppercase tracking-wider mb-1">{selectedIssue.id}</div>
-                            <div className="text-sm font-semibold text-[var(--ui-text-primary)] leading-snug">{selectedIssue.title}</div>
-                            <div className="text-xs text-[var(--ui-text-muted)] mt-1">Status: <span className="font-semibold uppercase">{selectedIssue.status}</span></div>
+                            <div className="text-[10px] font-mono text-[var(--text-tertiary)] uppercase tracking-wider mb-1">{selectedIssue.id}</div>
+                            <div className="text-sm font-semibold text-[var(--text-primary)] leading-snug">{selectedIssue.title}</div>
+                            <div className="text-xs text-[var(--text-tertiary)] mt-1">Status: <span className="font-semibold uppercase">{selectedIssue.status}</span></div>
                         </div>
 
                         {(selectedIssue.status === 'open' || selectedIssue.status === 'blocked') ? (
                             <div className="space-y-3">
                                 <div>
-                                    <label className="text-xs font-medium text-[var(--ui-text-muted)] mb-1.5 block">Assign Agent Archetype</label>
+                                    <label className="text-xs font-medium text-[var(--text-tertiary)] mb-1.5 block">Assign Agent Archetype</label>
                                     <select
                                         value={selectedArchetypeForPrep}
                                         onChange={(e) => setSelectedArchetypeForPrep(e.target.value)}
-                                        className="w-full bg-[#0a111a] border border-[var(--ui-border-soft)] rounded-md px-3 py-2 text-sm text-[var(--ui-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--ui-accent-info)]"
+                                        className="w-full bg-[var(--surface-input)] border border-[var(--border-subtle)] rounded-md px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-info)]"
                                     >
                                         <option value="" disabled>Select archetype...</option>
                                         {archetypes.map((a: AgentArchetype) => (
@@ -471,7 +471,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                                 <button
                                     onClick={handlePrepTask}
                                     disabled={!selectedArchetypeForPrep || isPrepping || prepSuccess}
-                                    className={`w-full py-2 text-white text-sm font-bold rounded-md disabled:opacity-50 transition-colors flex items-center justify-center ${prepSuccess ? 'bg-emerald-500' : 'bg-[var(--ui-accent-info)] hover:bg-[var(--ui-accent-info)]/90'}`}
+                                    className={`w-full py-2 text-[var(--text-inverse)] text-sm font-bold rounded-md disabled:opacity-50 transition-colors flex items-center justify-center ${prepSuccess ? 'bg-[var(--accent-success)]' : 'bg-[var(--accent-info)] hover:bg-[var(--accent-info)]/90'}`}
                                 >
                                     {isPrepping ? <Loader2 className="w-4 h-4 animate-spin" /> : prepSuccess ? 'Prep Successful!' : 'Prep Task for Swarm'}
                                 </button>
@@ -485,20 +485,20 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                 </div>
             )}
 
-            <div className="bg-[#111f2b] rounded-xl border border-[var(--ui-border-soft)] flex flex-col overflow-hidden">
+            <div className="bg-[var(--surface-tertiary)] rounded-xl border border-[var(--border-subtle)] flex flex-col overflow-hidden">
                 <button
                     onClick={() => setNeedsAgentCollapsed(!needsAgentCollapsed)}
-                    className="w-full px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2 hover:bg-[#1a2d3d] transition-colors"
+                    className="w-full px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--surface-tertiary)] flex items-center gap-2 hover:bg-[var(--surface-hover)] transition-colors"
                 >
-                    {needsAgentCollapsed ? <ChevronRight className="w-4 h-4 text-[var(--ui-text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--ui-text-muted)]" />}
+                    {needsAgentCollapsed ? <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)]" /> : <ChevronDown className="w-4 h-4 text-[var(--text-tertiary)]" />}
                     <AlertCircle className="w-4 h-4 text-orange-400" />
-                    <h3 className="font-semibold text-sm text-[var(--ui-text-primary)]">Needs Agent</h3>
-                    <span className="ml-auto text-xs text-[var(--ui-text-muted)]">{needsAgentTasks.length}</span>
+                    <h3 className="font-semibold text-sm text-[var(--text-primary)]">Needs Agent</h3>
+                    <span className="ml-auto text-xs text-[var(--text-tertiary)]">{needsAgentTasks.length}</span>
                 </button>
                 {!needsAgentCollapsed && (
                     <div className="max-h-40 overflow-y-auto p-3 space-y-2 custom-scrollbar">
                         {needsAgentTasks.length === 0 ? (
-                            <div className="text-center text-[var(--ui-text-muted)] text-xs py-2">
+                            <div className="text-center text-[var(--text-tertiary)] text-xs py-2">
                                 All actionable tasks have agents assigned
                             </div>
                         ) : (
@@ -511,17 +511,17 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
             <div className="bg-[#111f2b] rounded-xl border border-[var(--ui-border-soft)] flex flex-col overflow-hidden">
                 <button
                     onClick={() => setPreAssignedCollapsed(!preAssignedCollapsed)}
-                    className="w-full px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2 hover:bg-[#1a2d3d] transition-colors"
+                    className="w-full px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--surface-tertiary)] flex items-center gap-2 hover:bg-[var(--surface-hover)] transition-colors"
                 >
                     {preAssignedCollapsed ? <ChevronRight className="w-4 h-4 text-[var(--ui-text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--ui-text-muted)]" />}
                     <Clock className="w-4 h-4 text-amber-400" />
-                    <h3 className="font-semibold text-sm text-[var(--ui-text-primary)]">Pre-assigned</h3>
+                    <h3 className="font-semibold text-sm text-[var(--text-primary)]">Pre-assigned</h3>
                     <span className="ml-auto text-xs text-[var(--ui-text-muted)]">{preAssignedTasks.length}</span>
                 </button>
                 {!preAssignedCollapsed && (
                     <div className="max-h-40 overflow-y-auto p-3 space-y-2 custom-scrollbar">
                         {preAssignedTasks.length === 0 ? (
-                            <div className="text-center text-[var(--ui-text-muted)] text-xs py-2">
+                            <div className="text-center text-[var(--text-tertiary)] text-xs py-2">
                                 No pre-assigned tasks waiting
                             </div>
                         ) : (
@@ -537,25 +537,25 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                 )}
             </div>
 
-            <div className="flex-1 bg-[#111f2b] rounded-xl border border-[var(--ui-border-soft)] flex flex-col overflow-hidden min-h-0">
+            <div className="flex-1 bg-[var(--surface-tertiary)] rounded-xl border border-[var(--border-subtle)] flex flex-col overflow-hidden min-h-0">
                 <button
                     onClick={() => setSquadRosterCollapsed(!squadRosterCollapsed)}
-                    className="w-full px-4 py-3 border-b border-[var(--ui-border-soft)] bg-[#14202e] flex items-center gap-2 hover:bg-[#1a2d3d] transition-colors"
+                    className="w-full px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--surface-tertiary)] flex items-center gap-2 hover:bg-[var(--surface-hover)] transition-colors"
                 >
                     {squadRosterCollapsed ? <ChevronRight className="w-4 h-4 text-[var(--ui-text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--ui-text-muted)]" />}
                     <Users className="w-4 h-4 text-emerald-500" />
-                    <h3 className="font-semibold text-sm text-[var(--ui-text-primary)]">Squad Roster</h3>
-                    <span className="ml-auto text-xs text-[var(--ui-text-muted)]">{activeRoster.length} active</span>
+                    <h3 className="font-semibold text-sm text-[var(--text-primary)]">Squad Roster</h3>
+                    <span className="ml-auto text-xs text-[var(--text-tertiary)]">{activeRoster.length} active</span>
                 </button>
                 {!squadRosterCollapsed && (
                     <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
                         {activeRoster.length === 0 ? (
-                            <div className="text-center text-[var(--ui-text-muted)] text-xs py-4">
+                            <div className="text-center text-[var(--text-tertiary)] text-xs py-4">
                                 No active agents
                             </div>
                         ) : (
                             activeRoster.map(({ issue, archetype }) => (
-                                <div key={issue.id} className="flex items-center gap-2 p-2 bg-[#0a111a] rounded-md border border-[var(--ui-border-soft)]">
+                                <div key={issue.id} className="flex items-center gap-2 p-2 bg-[var(--surface-input)] rounded-md border border-[var(--border-subtle)]">
                                     <div
                                         className="h-6 w-6 rounded flex items-center justify-center text-xs font-bold"
                                         style={{
@@ -566,8 +566,8 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                                         {archetype ? getArchetypeDisplayChar(archetype) : '?'}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-xs font-medium text-[var(--ui-text-primary)] truncate">{issue.assignee}</div>
-                                        <div className="text-[10px] text-[var(--ui-text-muted)] truncate">{issue.id}</div>
+                                        <div className="text-xs font-medium text-[var(--text-primary)] truncate">{issue.assignee}</div>
+                                        <div className="text-[10px] text-[var(--text-tertiary)] truncate">{issue.id}</div>
                                     </div>
                                 </div>
                             ))

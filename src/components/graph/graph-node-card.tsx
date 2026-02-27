@@ -71,8 +71,8 @@ function statusDot(status: BeadIssue['status']): string {
  */
 function nodeStyle(kind: GraphNodeData['kind']): string {
     return kind === 'epic'
-        ? 'bg-sky-500/10 border-sky-400/30'
-        : 'bg-slate-800/60 border-white/10';
+        ? 'bg-[var(--graph-node-epic)] border-[var(--accent-info)]/30'
+        : 'bg-[var(--graph-node-default)] border-[var(--border-subtle)]';
 }
 
 /**
@@ -224,23 +224,23 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
                     data.isCycleNode ? 'ring-2 ring-rose-400/55' : ''
                     } ${
                     data.isActionable && !selected
-                        ? 'ring-1 ring-emerald-400/30 shadow-[0_0_20px_rgba(16,185,129,0.12)]'
+                        ? 'ring-1 ring-[var(--accent-success)]/30 shadow-[var(--glow-success)]'
                         : ''
                     } ${
                     selected
-                        ? 'border-sky-400/50 shadow-[0_20px_48px_-8px_rgba(0,0,0,0.5)] ring-1 ring-sky-400/20 node-select-pulse'
-                        : 'hover:border-white/20 hover:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.3)]'
+                        ? 'border-[var(--accent-info)]/50 shadow-[var(--shadow-lg)] ring-1 ring-[var(--accent-info)]/20 node-select-pulse'
+                        : 'hover:border-[var(--border-default)] hover:shadow-[var(--shadow-md)]'
                     } ${
                     data.isDimmed ? 'opacity-30' : 'opacity-100'
                     }`}
             >
-                <div className="flex items-center justify-between gap-2 border-b border-white/5 pb-1.5 mb-1.5">
-                    <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-text-muted/60">{id}</span>
+                <div className="flex items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-1.5 mb-1.5">
+                    <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-[var(--text-tertiary)]/60">{id}</span>
                     <div className="flex items-center gap-1.5 flex-wrap">
                         {assignedArchetypes.map((archetype) => (
                             <span
                                 key={archetype.id}
-                                className="rounded-md px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-white ring-1"
+                                className="rounded-md px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-[var(--text-inverse)] ring-1"
                                 style={{
                                     backgroundColor: `${archetype.color}20`,
                                     borderColor: `${archetype.color}40`,
@@ -251,42 +251,42 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
                             </span>
                         ))}
                         {data.isActionable ? (
-                            <span className="rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-emerald-400 ring-1 ring-emerald-500/20">
+                            <span className="rounded-md bg-[var(--status-ready)] px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-[var(--accent-success)] ring-1 ring-[var(--accent-success)]/20">
                                 Ready
                             </span>
                         ) : null}
                         {data.status === 'in_progress' ? (
-                            <span className="rounded-md bg-amber-400/10 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-amber-400">
+                            <span className="rounded-md bg-[var(--status-in-progress)] px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-[var(--accent-warning)]">
                                 In Progress
                             </span>
                         ) : data.status === 'blocked' ? (
-                            <span className="rounded-md bg-rose-400/10 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-rose-400">
+                            <span className="rounded-md bg-[var(--status-blocked)] px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-[var(--accent-danger)]">
                                 Blocked
                             </span>
                         ) : data.status === 'closed' ? (
-                            <span className="rounded-md bg-emerald-400/10 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-emerald-400">
+                            <span className="rounded-md bg-[var(--status-closed)] px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-[var(--accent-success)]">
                                 Done
                             </span>
                         ) : null}
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-text-muted/40">p{data.priority}</span>
-                        <span className={`h-2 w-2 rounded-full ring-2 ring-black/40 ${statusDot(data.status)}`} />
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-[var(--text-tertiary)]/40">p{data.priority}</span>
+                        <span className={`h-2 w-2 rounded-full ring-2 ring-[var(--alpha-black-medium)] ${statusDot(data.status)}`} />
                     </div>
                 </div>
 
-                <p className={`text-[15px] font-bold leading-[1.2] tracking-tight text-text-strong group-hover:text-sky-100 transition-colors ${data.status === 'closed' ? 'line-through opacity-70' : ''}`}>
+                <p className={`text-[15px] font-bold leading-[1.2] tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent-info)] transition-colors ${data.status === 'closed' ? 'line-through opacity-70' : ''}`}>
                     {data.title}
                 </p>
 
                 {data.blockerTooltipLines.length > 0 ? (
-                    <div className="mt-2 border-t border-white/5 pt-1.5">
-                        <p className="text-[8px] font-bold uppercase tracking-widest text-rose-400/70 mb-0.5">Waiting on</p>
+                    <div className="mt-2 border-t border-[var(--border-subtle)] pt-1.5">
+                        <p className="text-[8px] font-bold uppercase tracking-widest text-[var(--accent-danger)]/70 mb-0.5">Waiting on</p>
                         {data.blockerTooltipLines.slice(0, 2).map((line) => (
-                            <p key={line} className="text-[9px] text-text-muted/70 truncate leading-tight">
+                            <p key={line} className="text-[9px] text-[var(--text-tertiary)]/70 truncate leading-tight">
                                 {line}
                             </p>
                         ))}
                         {data.blockerTooltipLines.length > 2 ? (
-                            <p className="text-[8px] text-text-muted/50">
+                            <p className="text-[8px] text-[var(--text-tertiary)]/50">
                                 +{data.blockerTooltipLines.length - 2} more
                             </p>
                         ) : null}
@@ -294,14 +294,14 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
                 ) : null}
 
                 {!isClosed && archetypes.length > 0 ? (
-                    <div className="mt-2 border-t border-white/5 pt-2">
+                    <div className="mt-2 border-t border-[var(--border-subtle)] pt-2">
                         {assignSuccess ? (
-                            <div className="text-[9px] text-emerald-400 font-medium mb-1.5">
+                            <div className="text-[9px] text-[var(--accent-success)] font-medium mb-1.5">
                                 {assignSuccess}
                             </div>
                         ) : null}
                         {assignError ? (
-                            <div className="text-[9px] text-rose-400 font-medium mb-1.5">
+                            <div className="text-[9px] text-[var(--accent-danger)] font-medium mb-1.5">
                                 {assignError}
                             </div>
                         ) : null}
@@ -338,7 +338,7 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
                                 <button
                                     type="button"
                                     disabled={isAssigning}
-                                    className="flex items-center gap-1.5 w-full rounded-md bg-white/5 hover:bg-white/10 px-2 py-1.5 text-[9px] font-medium text-text-muted/80 transition-colors disabled:opacity-50"
+                                    className="flex items-center gap-1.5 w-full rounded-md bg-[var(--alpha-white-low)] hover:bg-[var(--alpha-white-medium)] px-2 py-1.5 text-[9px] font-medium text-[var(--text-tertiary)]/80 transition-colors disabled:opacity-50"
                                 >
                                     {isAssigning ? (
                                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -351,7 +351,7 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
                             </DropdownMenu.Trigger>
                             <DropdownMenu.Portal>
                                 <DropdownMenu.Content
-                                    className="min-w-[180px] rounded-lg border border-white/10 bg-[#0d0f14]/95 p-1 shadow-[0_12px_32px_rgba(0,0,0,0.6)] backdrop-blur-lg z-50"
+                                    className="min-w-[180px] rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-overlay)] p-1 shadow-[var(--shadow-lg)] backdrop-blur-lg z-50"
                                     sideOffset={4}
                                 >
                                     {archetypes.map((archetype) => {
@@ -364,7 +364,7 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
                                                 className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-[11px] font-medium outline-none cursor-pointer transition-colors ${
                                                     isAssigned
                                                         ? 'opacity-50 cursor-not-allowed'
-                                                        : 'text-text-strong hover:bg-white/10 focus:bg-white/10'
+                                                        : 'text-[var(--text-primary)] hover:bg-[var(--alpha-white-low)] focus:bg-[var(--alpha-white-low)]'
                                                 }`}
                                             >
                                                 <span
@@ -373,7 +373,7 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
                                                 />
                                                 <span>{archetype.name}</span>
                                                 {isAssigned && (
-                                                    <span className="ml-auto text-[9px] text-text-muted/60">Assigned</span>
+                                                    <span className="ml-auto text-[9px] text-[var(--text-tertiary)]/60">Assigned</span>
                                                 )}
                                             </DropdownMenu.Item>
                                         );
@@ -387,23 +387,23 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
 
             {hovered ? (
                 <div className="absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 animate-fade-in">
-                    <div className="max-w-xs rounded-lg border border-white/10 bg-[#0d0f14]/95 px-3 py-2 shadow-[0_12px_32px_rgba(0,0,0,0.6)] backdrop-blur-lg">
+                    <div className="max-w-xs rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-overlay)] px-3 py-2 shadow-[var(--shadow-lg)] backdrop-blur-lg">
                         {data.isActionable ? (
                             <>
-                                <p className="text-[10px] font-bold text-emerald-400">Ready to work</p>
-                                <p className="mt-0.5 text-[10px] text-text-muted/80">
+                                <p className="text-[10px] font-bold text-[var(--accent-success)]">Ready to work</p>
+                                <p className="mt-0.5 text-[10px] text-[var(--text-tertiary)]/80">
                                     No open blockers. {data.blocks} task{data.blocks === 1 ? '' : 's'} depend{data.blocks === 1 ? 's' : ''} on this.
                                 </p>
                             </>
                         ) : (
                             <>
-                                <p className="text-[10px] font-bold text-rose-400">
+                                <p className="text-[10px] font-bold text-[var(--accent-danger)]">
                                     Blocked by {data.blockedBy} task{data.blockedBy === 1 ? '' : 's'}
                                 </p>
                                 {data.blockerTooltipLines.length > 0 ? (
                                     <ul className="mt-1 space-y-0.5">
                                         {data.blockerTooltipLines.map((line) => (
-                                            <li key={line} className="text-[9px] text-text-muted/80">
+                                            <li key={line} className="text-[9px] text-[var(--text-tertiary)]/80">
                                                 &bull; {line}
                                             </li>
                                         ))}
