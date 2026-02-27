@@ -1,10 +1,12 @@
-                                                         ⚡WORK IN PROGRESS⚡
+⚡WORK IN PROGRESS⚡
 # BeadBoard
 
 **The Windows-native Control Center for [Beads](https://github.com/steveyegge/beads).**
 
 BeadBoard is a high-performance local dashboard for managing your software development tasks. Built on the Beads protocol, it provides a unified, visualization-rich interface over your distributed project landscape.
-![alt text](image.png)
+<img width="1707" height="1257" alt="image" src="https://github.com/user-attachments/assets/d8ac9fa8-247a-4dec-8168-37c3615a491f" />
+
+
 ## 🚀 Why BeadBoard?
 Most task managers are siloes. BeadBoard is a lens over your source code.
 - **Source of Truth**: Reads directly from `.beads/issues.jsonl` in your repo. No database sync skew.
@@ -19,16 +21,19 @@ Stop context switching between repos.
 - **Auto-Discovery**: Built-in filesystem scanner finds Bead-enabled projects across your drives.
 - **Aggregate Mode**: View tasks from *all* registered projects in a single unified board.
 
-### 2. Interactive Kanban Dashboard (`/`)
+### 2. Interactive Dashboard 
 Manage your flow state.
-![Kanban Dashboard](assets/kanban-hero.png)
+<img width="1706" height="1258" alt="image" src="https://github.com/user-attachments/assets/4c2eaf6d-619b-4169-bc52-8715fea81ff3" />
+
+
 - **Live Updates**: Boards refresh automatically when the underlying JSONL files change (e.g., via CLI).
 - **Progressive Disclosure**: Task details, metadata, and relations are tucked away until you need them.
 - **Smart Filtering**: Filter by priority, assignee, status, or full-text search across thousands of beads.
 
-### 3. Dependency Graph Explorer (`/graph`)
+### 3. Dependency Graph Explorer
 Understand the "Why" and "What's Next".
-![alt text](image-1.png)
+<img width="1709" height="1260" alt="image" src="https://github.com/user-attachments/assets/ceef9967-eceb-4080-8483-0a390ba9e7d1" />
+
 - **Epic-Centric Layout**: Automatically groups tasks by Epic for logical clustering.
 - **True DAG Visualization**: Uses Dagre layout engine to enforce a strict Left-to-Right dependency flow.
   - *Left*: Incoming Blockers
