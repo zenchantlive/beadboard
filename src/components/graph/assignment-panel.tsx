@@ -508,15 +508,15 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                 )}
             </div>
 
-            <div className="bg-[#111f2b] rounded-xl border border-[var(--ui-border-soft)] flex flex-col overflow-hidden">
+            <div className="bg-[var(--surface-tertiary)] rounded-xl border border-[var(--border-subtle)] flex flex-col overflow-hidden">
                 <button
                     onClick={() => setPreAssignedCollapsed(!preAssignedCollapsed)}
                     className="w-full px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--surface-tertiary)] flex items-center gap-2 hover:bg-[var(--surface-hover)] transition-colors"
                 >
-                    {preAssignedCollapsed ? <ChevronRight className="w-4 h-4 text-[var(--ui-text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--ui-text-muted)]" />}
+                    {preAssignedCollapsed ? <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)]" /> : <ChevronDown className="w-4 h-4 text-[var(--text-tertiary)]" />}
                     <Clock className="w-4 h-4 text-amber-400" />
                     <h3 className="font-semibold text-sm text-[var(--text-primary)]">Pre-assigned</h3>
-                    <span className="ml-auto text-xs text-[var(--ui-text-muted)]">{preAssignedTasks.length}</span>
+                    <span className="ml-auto text-xs text-[var(--text-tertiary)]">{preAssignedTasks.length}</span>
                 </button>
                 {!preAssignedCollapsed && (
                     <div className="max-h-40 overflow-y-auto p-3 space-y-2 custom-scrollbar">
@@ -542,7 +542,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                     onClick={() => setSquadRosterCollapsed(!squadRosterCollapsed)}
                     className="w-full px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--surface-tertiary)] flex items-center gap-2 hover:bg-[var(--surface-hover)] transition-colors"
                 >
-                    {squadRosterCollapsed ? <ChevronRight className="w-4 h-4 text-[var(--ui-text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--ui-text-muted)]" />}
+                    {squadRosterCollapsed ? <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)]" /> : <ChevronDown className="w-4 h-4 text-[var(--text-tertiary)]" />}
                     <Users className="w-4 h-4 text-emerald-500" />
                     <h3 className="font-semibold text-sm text-[var(--text-primary)]">Squad Roster</h3>
                     <span className="ml-auto text-xs text-[var(--text-tertiary)]">{activeRoster.length} active</span>

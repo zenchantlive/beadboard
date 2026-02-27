@@ -8,26 +8,26 @@
 
 [data-theme="aurora"] {
   /* ==========================================================================
-     1. SURFACE LAYERS - Warm Charcoal Scale (DISTINCT)
+     1. SURFACE LAYERS - Warm Charcoal Scale (MORE DISTINCT)
      ========================================================================== */
-  --surface-backdrop: #161514;      /* Darkest - page background */
-  --surface-elevated: #0f0e0d;      /* Header - darker for contrast */
-  --surface-primary: #1e1d1b;       /* Sidebar */
-  --surface-secondary: #252422;     /* Main content - lighter than sidebar */
-  --surface-tertiary: #2d2b29;      /* Panels */
-  --surface-quaternary: #353331;    /* Cards - lightest surface */
-  --surface-overlay: #0a0909;       /* Modals */
-  --surface-input: #1a1917;         /* Form fields */
+  --surface-backdrop: #0f0e0d;      /* Page background - very dark */
+  --surface-elevated: #1a1816;      /* Header - lighter than backdrop */
+  --surface-primary: #252320;       /* Sidebar - lighter still */
+  --surface-secondary: #302e2a;     /* Main content - distinct from sidebar */
+  --surface-tertiary: #3c3934;      /* Panels - clearly lighter */
+  --surface-quaternary: #48453f;    /* Cards - lightest surface */
+  --surface-overlay: #0a0908;       /* Modals - darkest */
+  --surface-input: #1f1d1a;         /* Form fields */
   --surface-hover: rgba(240, 238, 234, 0.06);
   --surface-active: rgba(53, 201, 255, 0.12);
   --surface-tooltip: #1e1d1b;
 
   /* ==========================================================================
-     2. BORDERS - Warm Grey (more visible)
+     2. BORDERS - More Visible
      ========================================================================== */
-  --border-subtle: rgba(180, 175, 165, 0.15);
-  --border-default: rgba(180, 175, 165, 0.28);
-  --border-strong: rgba(180, 175, 165, 0.45);
+  --border-subtle: rgba(200, 195, 185, 0.18);
+  --border-default: rgba(200, 195, 185, 0.35);
+  --border-strong: rgba(200, 195, 185, 0.55);
   --border-accent: rgba(53, 201, 255, 0.55);
 
   /* ==========================================================================

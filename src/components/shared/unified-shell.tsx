@@ -201,8 +201,8 @@ export function UnifiedShell({
 
       {/* THREAD DRAWER: Popup overlay when a task is selected */}
       {isChatOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="h-[85vh] w-full max-w-lg overflow-hidden rounded-xl border border-[var(--ui-border-soft)] bg-[var(--ui-bg-card)] shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--alpha-black-medium)] p-4">
+          <div className="h-[85vh] w-full max-w-lg overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-quaternary)] shadow-2xl">
             <ThreadDrawer
               isOpen={true}
               onClose={handleCloseDrawer}
