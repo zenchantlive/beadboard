@@ -19,6 +19,7 @@ import { ContextualRightPanel } from '../activity/contextual-right-panel';
 import { AssignmentPanel } from '../graph/assignment-panel';
 import { useSwarmList } from '../../hooks/use-swarm-list';
 import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
+import { useBdHealth } from '../../hooks/use-bd-health';
 
 export interface UnifiedShellProps {
   issues: BeadIssue[];
@@ -34,7 +35,7 @@ export function UnifiedShell({
   projectScopeOptions,
 }: UnifiedShellProps) {
   const router = useRouter();
-  const { view, taskId, setTaskId, swarmId, graphTab, panel, drawer, setDrawer, epicId, setEpicId } = useUrlState();
+  const { view, taskId, setTaskId, swarmId, graphTab, panel, drawer, setDrawer, epicId, setEpicId, blockedOnly } = useUrlState();
 
   // Subscribe to SSE for real-time updates on ALL views
   const { issues } = useBeadsSubscription(initialIssues, projectRoot);
@@ -55,6 +56,7 @@ export function UnifiedShell({
 
   const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
   const { swarms: swarmCards } = useSwarmList(projectRoot);
+  const bdHealth = useBdHealth(projectRoot);
 
   const selectedSocialCard = taskId ? socialCards.find(c => c.id === taskId) : null;
   const selectedSwarmCard = swarmId ? swarmCards.find(c => c.swarmId === swarmId) : null;
@@ -89,9 +91,11 @@ export function UnifiedShell({
   }, []);
 
   // Chat Mode Logic: If a card is selected (drawer='open'), we show Chat popup
-  const isChatOpen = drawer === 'open' && (!!taskId || !!swarmId);
-  const drawerTitle = selectedSocialCard?.title || selectedSwarmCard?.title || '';
-  const drawerId = taskId || swarmId || '';
+  const isChatOpen = drawer === 'open' && (!!taskId || !!swarmId || !!epicId);
+  const selectedEpic = epicId ? issues.find((issue) => issue.id === epicId && issue.issue_type === 'epic') ?? null : null;
+  const drawerTitle = selectedSocialCard?.title || selectedSwarmCard?.title || selectedEpic?.title || '';
+  const drawerId = taskId || swarmId || epicId || '';
+  const selectedItem = selectedEpic ?? selectedIssue;
 
   // Panel resize hook
   const { leftWidth, rightWidth, handleLeftResize, handleRightResize } = usePanelResize();
@@ -128,6 +132,7 @@ export function UnifiedShell({
           selectedId={taskId ?? undefined}
           onSelect={handleCardSelect}
           projectScopeOptions={projectScopeOptions}
+          blockedOnly={blockedOnly}
         />
       );
     }
@@ -149,18 +154,29 @@ export function UnifiedShell({
           projectRoot={projectRoot}
           issues={issues}
           epicId={epicId ?? undefined}
+          onIssueUpdated={async () => { router.refresh(); }}
         />
       );
     }
 
     // Default: ContextualRightPanel
-    return <ContextualRightPanel epicId={epicId} issues={issues} projectRoot={projectRoot} />;
+    return <ContextualRightPanel epicId={epicId} taskId={taskId} swarmId={swarmId} issues={issues} projectRoot={projectRoot} />;
   };
 
   return (
     <div className="flex flex-col h-screen bg-[var(--surface-backdrop)]" data-testid="unified-shell">
       {/* TOP BAR: 3rem fixed */}
-      <TopBar />
+      <TopBar
+        totalTasks={issues.filter(i => i.issue_type !== 'epic').length}
+        criticalAlerts={issues.filter(i => i.status === 'blocked').length}
+        busyCount={issues.filter(i => i.status === 'in_progress').length}
+        idleCount={0}
+      />
+      {!bdHealth.loading && !bdHealth.healthy ? (
+        <div className="border-b border-amber-500/35 bg-amber-500/12 px-4 py-2 text-xs text-amber-100">
+          <span className="font-semibold">BD setup issue:</span> {bdHealth.message}
+        </div>
+      ) : null}
 
       {/* MAIN AREA: Flex layout for resizable panels */}
       <div
@@ -173,6 +189,7 @@ export function UnifiedShell({
             issues={issues}
             selectedEpicId={epicId}
             onEpicSelect={setEpicId}
+            onEpicEdit={(id) => { setEpicId(id); setDrawer('open'); }}
             filters={filters}
             onFiltersChange={setFilters}
           />
@@ -209,7 +226,7 @@ export function UnifiedShell({
               title={drawerTitle}
               id={drawerId}
               embedded={true}
-              issue={selectedIssue}
+              issue={selectedItem}
               projectRoot={projectRoot}
               onIssueUpdated={async () => {
                 router.refresh();

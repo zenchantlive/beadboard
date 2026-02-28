@@ -219,7 +219,6 @@ export function SocialPage({
                         }
                         onJumpToActivity={(id) =>
                           navigateWithParams({
-                            view: 'activity',
                             task: id,
                             right: 'open',
                             panel: 'open',

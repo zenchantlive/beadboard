@@ -198,23 +198,24 @@ export function ThreadDrawer({
   };
 
   const handleCommentSubmit = async () => {
-    if (!projectRoot || !id || !comment.trim()) {
+    const targetIssueId = issue?.id ?? '';
+    if (!projectRoot || !targetIssueId || !comment.trim()) {
       return;
     }
 
     setCommentState('sending');
 
     try {
-      await postComment(projectRoot, id, comment.trim());
+      await postComment(projectRoot, targetIssueId, comment.trim());
       setComment('');
       setCommentState('sent');
       // Refresh comments
-      const response = await fetch(`/api/beads/${id}/comments?projectRoot=${encodeURIComponent(projectRoot)}`);
+      const response = await fetch(`/api/beads/${targetIssueId}/comments?projectRoot=${encodeURIComponent(projectRoot)}`);
       const payload = (await response.json()) as { ok: boolean; comments?: CommentFromApi[] };
       if (payload.ok && payload.comments) {
         setComments(payload.comments);
       }
-      await onIssueUpdated?.(id);
+      await onIssueUpdated?.(targetIssueId);
       setTimeout(() => setCommentState('ready'), 900);
     } catch (error) {
       console.error('Comment failed:', error);
@@ -414,7 +415,7 @@ export function ThreadDrawer({
               <div className="mb-1 flex items-center gap-2">
                 <p className="font-mono text-xs font-semibold text-[var(--ui-accent-info)]">#{id}</p>
                 <span className="rounded-full border border-[var(--ui-accent-ready)]/45 bg-[var(--ui-accent-ready)]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#d8ffe8]">
-                  In Progress
+                  {issue?.status?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) ?? 'Unknown'}
                 </span>
               </div>
               <h2 className="truncate text-[40px] font-semibold leading-[1.12] tracking-[-0.02em] text-[var(--ui-text-primary)]" title={title}>{title}</h2>
@@ -473,13 +474,13 @@ export function ThreadDrawer({
               placeholder="Type a message to neighbors..."
               className="border-0 bg-transparent text-[var(--ui-text-primary)] placeholder:text-[var(--ui-text-muted)]"
               autoComplete="off"
-              disabled={commentState === 'sending'}
+              disabled={commentState === 'sending' || !issue || !projectRoot}
             />
             <Button
               type="button"
               className="h-8 rounded-full bg-[var(--ui-accent-action-green)] px-3 text-[#082012] hover:bg-[color-mix(in_srgb,var(--ui-accent-action-green)_86%,white)] disabled:opacity-50"
               onClick={() => void handleCommentSubmit()}
-              disabled={!comment.trim() || commentState === 'sending'}
+              disabled={!comment.trim() || commentState === 'sending' || !issue || !projectRoot}
             >
               <Send className="h-3.5 w-3.5" />
             </Button>
