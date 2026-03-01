@@ -9,6 +9,6 @@
 {"key":"compact_tier2_dep_levels","value":"5"}
 {"key":"compaction_enabled","value":"false"}
 {"key":"issue_prefix","value":"beadboard"}
-{"key":"schema_version","value":"4"}
+{"key":"schema_version","value":"6"}
 {"key":"sync.mode","value":"dolt-native"}
 {"key":"types.custom","value":"molecule"}
