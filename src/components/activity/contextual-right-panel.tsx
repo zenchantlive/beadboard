@@ -7,6 +7,7 @@ import { SwarmCommandFeed } from './swarm-command-feed';
 import { ThreadDrawer } from '../shared/thread-drawer';
 import { MissionInspector } from '../mission/mission-inspector';
 import { useSwarmList } from '../../hooks/use-swarm-list';
+import { useUrlState } from '../../hooks/use-url-state';
 
 export interface ContextualRightPanelProps {
     epicId?: string | null;
@@ -17,28 +18,31 @@ export interface ContextualRightPanelProps {
 }
 
 export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectRoot }: ContextualRightPanelProps) {
-    if (epicId) {
-        return (
-            <SwarmCommandFeed
-                epicId={epicId}
-                issues={issues}
-                projectRoot={projectRoot}
-            />
-        );
-    }
+    const { setTaskId } = useUrlState();
 
+    // Task conversation takes priority — user explicitly clicked the conversation icon
     if (taskId) {
         const selectedIssue = issues.find(i => i.id === taskId) ?? null;
         return (
             <ThreadDrawer
                 isOpen={true}
                 embedded={true}
-                onClose={() => {}}
+                onClose={() => setTaskId(null)}
                 title={selectedIssue?.title ?? taskId}
                 id={taskId}
                 issue={selectedIssue}
                 projectRoot={projectRoot}
                 onIssueUpdated={async () => {}}
+            />
+        );
+    }
+
+    if (epicId) {
+        return (
+            <SwarmCommandFeed
+                epicId={epicId}
+                issues={issues}
+                projectRoot={projectRoot}
             />
         );
     }
@@ -63,6 +67,7 @@ export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectR
 
 // Inner component so hooks can be called conditionally via component boundary
 function SwarmIdBranch({ swarmId, projectRoot }: { swarmId: string; projectRoot: string }) {
+    const { setSwarmId } = useUrlState();
     const { swarms } = useSwarmList(projectRoot);
     const swarm = swarms.find(s => s.swarmId === swarmId);
     // Fall back to swarmId as title while swarm list loads
@@ -76,7 +81,7 @@ function SwarmIdBranch({ swarmId, projectRoot }: { swarmId: string; projectRoot:
             missionTitle={missionTitle}
             projectRoot={projectRoot}
             assignedAgents={assignedAgents}
-            onClose={() => {}}
+            onClose={() => setSwarmId(null)}
             onAssign={async () => {}}
         />
     );

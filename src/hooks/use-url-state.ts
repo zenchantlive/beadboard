@@ -227,7 +227,8 @@ export function useUrlState(): UrlState {
   }, [updateUrl]);
 
   const setEpicId = useCallback((id: string | null) => {
-    updateUrl({ epic: id });
+    // Selecting an epic clears any active task conversation so SwarmCommandFeed shows
+    updateUrl({ epic: id, task: null });
   }, [updateUrl]);
 
   const togglePanel = toggleRightPanel;

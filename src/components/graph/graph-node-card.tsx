@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Loader2, ChevronDown, UserPlus, X } from 'lucide-react';
+import { Loader2, ChevronDown, UserPlus, X, MessageSquare } from 'lucide-react';
 import type { BeadIssue } from '../../lib/types';
 import type { AgentArchetype } from '../../lib/types-swarm';
 
@@ -35,6 +35,10 @@ export interface GraphNodeData {
     labels: string[];
     /** Available agent archetypes for assignment. */
     archetypes?: AgentArchetype[];
+    /** ID of the currently selected task (for conversation icon highlight). */
+    selectedTaskId?: string;
+    /** Opens the conversation panel for this node. Passed from UnifiedShell via WorkflowGraph. */
+    onConversationOpen?: (id: string) => void;
 }
 
 function getAssignedArchetypes(labels: string[], archetypes: AgentArchetype[]): AgentArchetype[] {
@@ -84,6 +88,8 @@ function nodeStyle(kind: GraphNodeData['kind']): string {
  * - Agent archetype assignment badges and dropdown
  */
 export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeData>>) {
+    const onConversationOpen = data.onConversationOpen as ((id: string) => void) | undefined;
+    const isConvOpen = (data.selectedTaskId as string | undefined) === id;
     const [hovered, setHovered] = useState(false);
     const [isAssigning, setIsAssigning] = useState(false);
     const [assignError, setAssignError] = useState<string | null>(null);
@@ -235,7 +241,21 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
                     }`}
             >
                 <div className="flex items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-1.5 mb-1.5">
-                    <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-[var(--text-tertiary)]/60">{id}</span>
+                    <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-[var(--text-tertiary)]/60">{id}</span>
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); onConversationOpen?.(id); }}
+                            className={`rounded p-0.5 transition-colors ${
+                                isConvOpen
+                                    ? 'text-[var(--accent-info)] bg-[var(--accent-info)]/15 ring-1 ring-[var(--accent-info)]/30'
+                                    : 'text-sky-400/50 hover:text-[var(--accent-info)] hover:bg-[var(--alpha-white-low)]'
+                            }`}
+                            title={isConvOpen ? 'Close conversation' : 'Open conversation'}
+                        >
+                            <MessageSquare className="h-3 w-3" />
+                        </button>
+                    </div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                         {assignedArchetypes.map((archetype) => (
                             <span

@@ -173,7 +173,7 @@ function TaskCard({ issue, selected, blockers, blocking, isActionable, onSelect 
                     onSelect(issue.id, false);
                 }
             }}
-            className={`group relative flex w-full flex-col rounded-xl border ${statusBorder(effectiveStatus)} ${statusGradient(effectiveStatus)} px-4 py-4 text-left transition duration-200 shadow-[0_4px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)] ${selected
+            className={`group relative flex w-72 flex-shrink-0 flex-col rounded-xl border ${statusBorder(effectiveStatus)} ${statusGradient(effectiveStatus)} px-4 py-4 text-left transition duration-200 shadow-[0_4px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.06)] ${selected
                 ? 'ring-1 ring-amber-200/30 shadow-[0_0_20px_rgba(251,191,36,0.15)]'
                 : 'hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)]'
                 }`}
@@ -365,7 +365,7 @@ export function TaskCardGrid({ tasks, selectedId, blockerDetailsMap, blocksDetai
     }
 
     return (
-        <div className="grid gap-3 overflow-y-auto overscroll-contain pr-1 custom-scrollbar grid-cols-[repeat(auto-fill,minmax(18rem,1fr))]">
+        <div className="flex gap-3 overflow-x-auto overscroll-contain pb-2 custom-scrollbar" style={{ flexWrap: 'nowrap' }}>
             {tasks.map((task) => (
                 <TaskCard
                     key={task.id}

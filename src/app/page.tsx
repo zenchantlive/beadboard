@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { UnifiedShell } from '../components/shared/unified-shell';
 import { readIssuesForScope } from '../lib/aggregate-read';
 import { resolveProjectScope } from '../lib/project-scope';
@@ -28,12 +29,14 @@ export default async function Page({ searchParams }: PageProps) {
   });
   
   return (
-    <UnifiedShell
-      issues={issues}
-      projectRoot={scope.selected.root}
-      projectScopeKey={scope.selected.key}
-      projectScopeOptions={scope.options}
-      projectScopeMode={scope.mode}
-    />
+    <Suspense>
+      <UnifiedShell
+        issues={issues}
+        projectRoot={scope.selected.root}
+        projectScopeKey={scope.selected.key}
+        projectScopeOptions={scope.options}
+        projectScopeMode={scope.mode}
+      />
+    </Suspense>
   );
 }

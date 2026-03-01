@@ -63,9 +63,14 @@ export function UnifiedShell({
   const selectedIssue = taskId ? issues.find((issue) => issue.id === taskId) ?? null : null;
 
   const handleGraphSelect = useMemo(() => (id: string) => {
-    setTaskId(id);
-    setCustomRightPanel(null); // Reset when switching context
-  }, [setTaskId]);
+    // Toggle: clicking the same node again closes the conversation panel
+    if (taskId === id) {
+      setTaskId(null);
+    } else {
+      setTaskId(id);
+    }
+    setCustomRightPanel(null);
+  }, [taskId, setTaskId]);
 
   const handleCardSelect = useMemo(() => (id: string) => {
     if (view === 'social') {
@@ -203,17 +208,15 @@ export function UnifiedShell({
           {renderMiddleContent()}
         </div>
 
-        {/* RESIZE HANDLE: Right (only when panel open) */}
-        {panel === 'open' && <ResizeHandle direction="right" onResize={handleRightResize} />}
+        {/* RESIZE HANDLE: Right */}
+        <ResizeHandle direction="right" onResize={handleRightResize} />
 
-        {/* RIGHT PANEL */}
-        {panel === 'open' && (
-          <div style={{ width: rightWidth }} className="flex-shrink-0 overflow-hidden">
-            <RightPanel isOpen={true}>
-              {renderRightPanelContent()}
-            </RightPanel>
-          </div>
-        )}
+        {/* RIGHT PANEL: always visible, content adapts to selection */}
+        <div style={{ width: rightWidth }} className="flex-shrink-0 overflow-hidden">
+          <RightPanel isOpen={true}>
+            {renderRightPanelContent()}
+          </RightPanel>
+        </div>
       </div>
 
       {/* THREAD DRAWER: Popup overlay when a task is selected */}

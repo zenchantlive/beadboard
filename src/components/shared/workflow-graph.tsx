@@ -116,6 +116,8 @@ function WorkflowGraphInner({
           isAssignMode: assignMode,
           labels: issue.labels,
           archetypes: archetypes,
+          selectedTaskId: selectedId,
+          onConversationOpen: onSelect,
         },
         position: { x: 0, y: 0 },
         sourcePosition: Position.Right,
@@ -178,7 +180,7 @@ function WorkflowGraphInner({
       nodes: layoutDagre(baseNodes, graphEdges),
       edges: graphEdges,
     };
-  }, [beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap, archetypes, assignMode]);
+  }, [beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap, archetypes, assignMode, onSelect]);
 
   const nodeTypes: NodeTypes = useMemo(
     () => ({

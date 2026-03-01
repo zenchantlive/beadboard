@@ -40,7 +40,7 @@ export function SmartDag({
   const [activeTab, setActiveTab] = useState<WorkflowTab>('tasks');
   const [assignMode, setAssignMode] = useState(false);
 
-  const [hideClosed, setHideClosed] = useState(hideClosedProp);
+  const [hideClosed, setHideClosed] = useState(true);
   const [depth, setDepth] = useState<GraphHopDepth>('full');
   const [blockingOnly, setBlockingOnly] = useState(false);
   const [sortReadyFirst, setSortReadyFirst] = useState(true);
@@ -243,7 +243,7 @@ export function SmartDag({
 
       <div className="flex-1 overflow-hidden">
         {activeTab === 'tasks' ? (
-          <div className="h-full overflow-y-auto p-4">
+          <div className="h-full overflow-x-auto p-4">
             <TaskCardGrid
               tasks={sortedTasks}
               selectedId={selectedTaskId ?? null}
