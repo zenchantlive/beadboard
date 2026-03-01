@@ -260,22 +260,15 @@ wsl --shutdown
 
 This is a one-time setup for mixed environments only. It is **not required** for single-platform contributors.
 
-### Keeping issues.jsonl in sync (temporary)
+### How the read path works
 
-Until `beadboard-550` (direct mysql2 connection) is implemented, `issues.jsonl` must be exported manually after `bd` writes in mixed environments:
+BeadBoard (`src/lib/read-issues.ts`) queries Dolt SQL directly via `mysql2` (`src/lib/dolt-client.ts`). On every page load or SSE-triggered refresh:
 
-```bash
-# In WSL2 — re-export Dolt state to issues.jsonl so Windows frontend sees it
-bd list --all --limit 0 --json | python3 -c "
-import sys, json
-issues = json.load(sys.stdin)
-with open('.beads/issues.jsonl', 'w') as f:
-    for issue in issues:
-        f.write(json.dumps(issue) + '\n')
-print(f'Exported {len(issues)} issues to issues.jsonl')
-"
-```
+1. `readIssuesFromDisk()` → tries `readIssuesViaDolt(projectRoot)` first
+2. If Dolt unreachable → logs a warning and falls back to reading `issues.jsonl`
 
-Once `beadboard-550` ships, `issues.jsonl` becomes a deprecated fallback and this step is no longer needed.
+`issues.jsonl` is a **deprecated fallback** — no manual export step is required. The file is kept on disk by `bd` for git history, but BeadBoard does not rely on it when the Dolt server is running.
+
+**SSE real-time updates**: `bd` touches `.beads/last-touched` on every write. Chokidar detects this change, triggers a snapshot diff, and fires an SSE event if anything changed — fetching fresh data from Dolt automatically.
 
 <!-- END BEADS INTEGRATION -->
