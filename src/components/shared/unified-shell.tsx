@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
@@ -47,6 +47,19 @@ export function UnifiedShell({
     preset: 'all',
     hideClosed: true,
   });
+
+  const [actor, setActor] = useState<string>('');
+
+  // Read from localStorage after hydration to avoid SSR/client mismatch
+  useEffect(() => {
+    const stored = window.localStorage.getItem('bb.humanActor');
+    if (stored) setActor(stored);
+  }, []);
+
+  const handleActorChange = useCallback((name: string) => {
+    setActor(name);
+    window.localStorage.setItem('bb.humanActor', name);
+  }, []);
 
   const [customRightPanel, setCustomRightPanel] = useState<React.ReactNode | null>(null);
 
@@ -138,6 +151,7 @@ export function UnifiedShell({
           onSelect={handleCardSelect}
           projectScopeOptions={projectScopeOptions}
           blockedOnly={blockedOnly}
+          projectRoot={projectRoot}
         />
       );
     }
@@ -165,7 +179,7 @@ export function UnifiedShell({
     }
 
     // Default: ContextualRightPanel
-    return <ContextualRightPanel epicId={epicId} taskId={taskId} swarmId={swarmId} issues={issues} projectRoot={projectRoot} />;
+    return <ContextualRightPanel epicId={epicId} taskId={taskId} swarmId={swarmId} issues={issues} projectRoot={projectRoot} actor={actor} />;
   };
 
   return (
@@ -176,6 +190,8 @@ export function UnifiedShell({
         criticalAlerts={issues.filter(i => i.status === 'blocked').length}
         busyCount={issues.filter(i => i.status === 'in_progress').length}
         idleCount={0}
+        actor={actor}
+        onActorChange={handleActorChange}
       />
       {!bdHealth.loading && !bdHealth.healthy ? (
         <div className="border-b border-amber-500/35 bg-amber-500/12 px-4 py-2 text-xs text-amber-100">
@@ -231,6 +247,7 @@ export function UnifiedShell({
               embedded={true}
               issue={selectedItem}
               projectRoot={projectRoot}
+              actor={actor}
               onIssueUpdated={async () => {
                 router.refresh();
               }}

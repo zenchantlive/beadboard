@@ -7,6 +7,7 @@ import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
 import { buildSocialCards } from '../../lib/social-cards';
 import { SocialCard } from './social-card';
+import { useArchetypes } from '../../hooks/use-archetypes';
 
 interface SocialPageProps {
   issues: BeadIssue[];
@@ -14,6 +15,7 @@ interface SocialPageProps {
   onSelect: (id: string) => void;
   projectScopeOptions?: ProjectScopeOption[];
   blockedOnly?: boolean;
+  projectRoot: string;
 }
 
 type SectionKey = 'ready' | 'in_progress' | 'blocked' | 'deferred' | 'done';
@@ -63,10 +65,12 @@ export function SocialPage({
   onSelect,
   projectScopeOptions = [],
   blockedOnly = false,
+  projectRoot,
 }: SocialPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const cards = useMemo(() => buildSocialCards(issues), [issues]);
+  const { archetypes } = useArchetypes(projectRoot);
 
   const navigateWithParams = (updates: Record<string, string | null>) => {
     const next = new URLSearchParams(searchParams.toString());
@@ -233,6 +237,7 @@ export function SocialPage({
                         unreadCount={unreadCount}
                         blockedByDetails={toDependencyDetails(card.unblocks)}
                         unblocksDetails={toDependencyDetails(card.blocks)}
+                        archetypes={archetypes}
                       />
                     );
                   })}

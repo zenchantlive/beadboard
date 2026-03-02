@@ -1,11 +1,13 @@
 import type { KeyboardEvent, MouseEventHandler } from 'react';
-import { Activity, Clock3, GitBranch, Link2, MessageCircle, Orbit } from 'lucide-react';
+import { Activity, Clock3, GitBranch, Link2, MessageCircle, Orbit, UserPlus } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 import type { SocialCard as SocialCardData, AgentStatus } from '../../lib/social-cards';
 import { AgentAvatar } from '../shared/agent-avatar';
+import { useArchetypePicker } from '../../hooks/use-archetype-picker';
+import type { AgentArchetype } from '../../lib/types-swarm';
 
 interface SocialCardProps {
   data: SocialCardData;
@@ -22,6 +24,7 @@ interface SocialCardProps {
   unreadCount?: number;
   blockedByDetails?: Array<{ id: string; title: string; epic?: string }>;
   unblocksDetails?: Array<{ id: string; title: string; epic?: string }>;
+  archetypes?: AgentArchetype[];
 }
 
 function handleCardKeyDown(event: KeyboardEvent<HTMLDivElement>, onClick?: MouseEventHandler<HTMLDivElement>) {
@@ -116,8 +119,11 @@ export function SocialCard({
   unreadCount = 0,
   blockedByDetails = [],
   unblocksDetails = [],
+  archetypes = [],
 }: SocialCardProps) {
   const status = statusVisual(data.status);
+  const { selectedArchetype, setSelectedArchetype, isAssigning, assignSuccess, handleAssign } = useArchetypePicker();
+  const showAssign = (data.status === 'blocked' || data.agents.length === 0) && archetypes.length > 0;
 
   return (
     <div
@@ -175,6 +181,32 @@ export function SocialCard({
         ))}
         {data.agents.length === 0 ? <span className="text-xs text-[var(--text-tertiary)]">No crew</span> : null}
       </div>
+
+      {showAssign && (
+        <div className="mt-2 flex gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+          <select
+            value={selectedArchetype ?? ''}
+            onChange={(e) => setSelectedArchetype(e.target.value || null)}
+            className="flex-1 text-xs border border-[var(--border-subtle)] rounded-md px-2 py-1.5 bg-[var(--surface-input)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-info)]"
+          >
+            <option value="" disabled>Select agent role...</option>
+            {archetypes.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
+          </select>
+          <button
+            onClick={async (e) => {
+              e.stopPropagation();
+              await handleAssign(data.id);
+            }}
+            disabled={!selectedArchetype || isAssigning || assignSuccess}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors disabled:opacity-50 flex items-center gap-1 ${assignSuccess ? 'bg-[var(--accent-success)] text-white' : 'bg-[var(--accent-info)] text-white hover:bg-[var(--accent-info)]/90'}`}
+          >
+            <UserPlus className="w-3 h-3" />
+            {isAssigning ? 'Assigning...' : assignSuccess ? 'Assigned!' : 'Assign'}
+          </button>
+        </div>
+      )}
 
       <div className="mt-auto border-t border-[var(--border-subtle)] pt-1.5">
         <div className="mb-1.5 flex items-center justify-between text-xs text-[var(--text-tertiary)]">
