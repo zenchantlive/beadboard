@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Background,
   MarkerType,
@@ -14,6 +14,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
+import { Maximize2 } from 'lucide-react';
 
 import type { BeadIssue } from '../../lib/types';
 import type { AgentArchetype } from '../../lib/types-swarm';
@@ -37,10 +38,22 @@ export interface WorkflowGraphProps {
 const NODE_WIDTH = 320;
 const NODE_HEIGHT = 150;
 
-function layoutDagre(nodes: Node<GraphNodeData>[], edges: Edge[]): Node<GraphNodeData>[] {
+type LayoutDirection = 'LR' | 'TB';
+type LayoutDensity = 'normal' | 'compact';
+
+function layoutDagre(
+  nodes: Node<GraphNodeData>[],
+  edges: Edge[],
+  direction: LayoutDirection,
+  density: LayoutDensity,
+): Node<GraphNodeData>[] {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: 'LR' });
+  dagreGraph.setGraph({
+    rankdir: direction,
+    ranksep: density === 'compact' ? 70 : 120,
+    nodesep: density === 'compact' ? 35 : 70,
+  });
 
   for (const node of nodes) {
     dagreGraph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
@@ -77,6 +90,8 @@ function WorkflowGraphInner({
   assignMode = false,
 }: WorkflowGraphProps) {
   const { fitView } = useReactFlow();
+  const [layoutDirection, setLayoutDirection] = useState<LayoutDirection>('LR');
+  const [layoutDensity, setLayoutDensity] = useState<LayoutDensity>('normal');
 
   // Use the extracted hook for all graph analysis
   const {
@@ -94,6 +109,9 @@ function WorkflowGraphInner({
     if (visibleBeads.length === 0) {
       return { nodes: [] as Node<GraphNodeData>[], edges: [] as Edge[] };
     }
+
+    const sourcePosition = layoutDirection === 'TB' ? Position.Bottom : Position.Right;
+    const targetPosition = layoutDirection === 'TB' ? Position.Top : Position.Left;
 
     const baseNodes: Node<GraphNodeData>[] = visibleBeads.map((issue) => {
       let matchedArchetype: AgentArchetype | undefined;
@@ -130,8 +148,8 @@ function WorkflowGraphInner({
           onViewTelemetry: onViewTelemetry,
         },
         position: { x: 0, y: 0 },
-        sourcePosition: Position.Right,
-        targetPosition: Position.Left,
+        sourcePosition,
+        targetPosition,
         type: 'flowNode',
       };
     });
@@ -187,10 +205,10 @@ function WorkflowGraphInner({
     }
 
     return {
-      nodes: layoutDagre(baseNodes, graphEdges),
+      nodes: layoutDagre(baseNodes, graphEdges, layoutDirection, layoutDensity),
       edges: graphEdges,
     };
-  }, [beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap, archetypes, assignMode, onSelect, onViewInSocial, onAssignMode, onViewTelemetry]);
+  }, [beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap, archetypes, assignMode, onSelect, onViewInSocial, onAssignMode, onViewTelemetry, layoutDirection, layoutDensity]);
 
   const nodeTypes: NodeTypes = useMemo(
     () => ({
@@ -220,7 +238,11 @@ function WorkflowGraphInner({
       fitView({ padding: 0.3, duration: 200 });
     }, 50);
     return () => clearTimeout(timeout);
-  }, [fitView, flowModel.nodes.length]);
+  }, [fitView, flowModel.nodes.length, layoutDirection, layoutDensity]);
+
+  const handleFitToScreen = useCallback(() => {
+    fitView({ padding: 0.24, duration: 240 });
+  }, [fitView]);
 
   return (
     <div className={`relative h-full min-h-[24rem] overflow-hidden rounded-2xl border border-white/5 bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0.4),rgba(5,8,15,0.8))] shadow-inner ${className}`}>
@@ -244,6 +266,66 @@ function WorkflowGraphInner({
             Open blockers: {blockerAnalysis.openBlockerCount}
           </p>
         ) : null}
+      </div>
+      <div className="absolute right-3 top-3 z-10 flex flex-wrap items-center gap-2">
+        <div className="inline-flex items-center gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-tertiary)] p-1">
+          <button
+            type="button"
+            onClick={() => setLayoutDirection('LR')}
+            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
+              layoutDirection === 'LR'
+                ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            Horizontal
+          </button>
+          <button
+            type="button"
+            onClick={() => setLayoutDirection('TB')}
+            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
+              layoutDirection === 'TB'
+                ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            Vertical
+          </button>
+        </div>
+        <div className="inline-flex items-center gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-tertiary)] p-1">
+          <button
+            type="button"
+            onClick={() => setLayoutDensity('compact')}
+            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
+              layoutDensity === 'compact'
+                ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            Compact
+          </button>
+          <button
+            type="button"
+            onClick={() => setLayoutDensity('normal')}
+            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
+              layoutDensity === 'normal'
+                ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            Normal
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={handleFitToScreen}
+          className="inline-flex items-center gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-tertiary)] px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+          aria-label="Fit graph to screen"
+          title="Fit graph to screen"
+        >
+          <Maximize2 className="h-3.5 w-3.5" />
+          Fit
+        </button>
       </div>
       <ReactFlow
         className="workflow-graph-flow"

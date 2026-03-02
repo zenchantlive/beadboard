@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   handleDeleteCommentRequest,
   handlePatchCommentRequest,
-} from '../../src/app/api/beads/[id]/comments/[commentId]/route';
+} from '../../src/app/api/beads/[id]/comments/[commentId]/comment-mutation';
 
 async function readJson(response: Response): Promise<any> {
   const text = await response.text();
