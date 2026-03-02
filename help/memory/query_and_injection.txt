@@ -11,6 +11,12 @@ Step 2: Query canonical memory for that domain
 bd query "label=memory AND label=mem-canonical AND label=<domain> AND status=closed" --sort updated --reverse
 ```
 
+Step 2b: Inspect provenance on candidate memories (required for fresh agents)
+```bash
+bd show <memory-id>
+bd dep list <memory-id>
+```
+
 Step 3: Query hard constraints subset
 ```bash
 bd query "label=memory AND label=mem-canonical AND label=mem-hard AND label=<domain> AND status=closed" --sort updated --reverse
@@ -31,6 +37,11 @@ bd dep add <active-task-id> <contract-id>
 Step 6: Record acknowledgement
 ```bash
 bd update <active-task-id> --notes "Memory injection: related <memory-id list>; hard contracts <contract-id list>."
+```
+
+Step 7: Preserve provenance in active work notes
+```bash
+bd update <active-task-id> --append-notes "Memory provenance checked via bd show/dep list for <memory-id list>."
 ```
 
 Expected response patterns:

@@ -29,6 +29,11 @@ Required lifecycle:
 3) Index memory node
 - Relate canonical node to exactly one primary domain anchor
   bd dep relate <anchor-id> <memory-id>
+- Relate canonical node to 2-5 source beads that justify the memory
+  bd dep relate <memory-id> <source-bead-id>
+- Record provenance metadata:
+  - evidence_ids: comma-separated source bead IDs
+  - plan_refs: comma-separated plan file paths
 
 4) Inject memory into execution
 - At task start, query by domain and attach relevant nodes via relates_to
@@ -44,3 +49,4 @@ Non-negotiables:
 - No markdown-only memory source of truth
 - No blanket blocker links for all memories
 - Evidence before completion claims
+- Every canonical memory must have source-bead provenance links

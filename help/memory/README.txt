@@ -12,3 +12,4 @@ Fast path for agents:
 1) Read memory_fabric_workflow.txt
 2) Run query_and_injection.txt command sequence at task start
 3) Follow schema_and_noise_budget.txt before creating new memory nodes
+4) Verify provenance links on selected memory nodes (`bd show` + `bd dep list`)
