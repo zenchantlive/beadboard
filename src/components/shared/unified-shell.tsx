@@ -192,6 +192,7 @@ export function UnifiedShell({
         idleCount={0}
         actor={actor}
         onActorChange={handleActorChange}
+        projectRoot={projectRoot}
       />
       {!bdHealth.loading && !bdHealth.healthy ? (
         <div className="border-b border-amber-500/35 bg-amber-500/12 px-4 py-2 text-xs text-amber-100">

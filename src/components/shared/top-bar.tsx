@@ -1,10 +1,11 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { LayoutGrid, Lock, Plus, Sidebar, SidebarClose } from 'lucide-react';
+import { ReactNode, useState } from 'react';
+import { LayoutGrid, Lock, Plus, Sidebar, SidebarClose, Rocket } from 'lucide-react';
 import { useUrlState } from '../../hooks/use-url-state';
 import { useResponsive } from '../../hooks/use-responsive';
 import { ThemeToggle } from './theme-toggle';
+import { LaunchSwarmDialog } from '../swarm/launch-dialog';
 
 export interface TopBarProps {
   onCreateTask?: () => Promise<void> | void;
@@ -15,6 +16,9 @@ export interface TopBarProps {
   criticalAlerts?: number;
   idleCount?: number;
   busyCount?: number;
+  actor?: string;
+  onActorChange?: (name: string) => void;
+  projectRoot?: string;
 }
 
 interface MetricTileProps {
@@ -42,6 +46,36 @@ function MetricTile({ label, value, accent = 'info' }: MetricTileProps) {
   );
 }
 
+function IdentityChip({ actor, onActorChange }: { actor: string; onActorChange: (name: string) => void }) {
+  const [editing, setEditing] = useState(false);
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        type="text"
+        value={actor}
+        onChange={e => onActorChange(e.target.value)}
+        onBlur={() => setEditing(false)}
+        onKeyDown={e => { if (e.key === 'Enter') setEditing(false); }}
+        placeholder="your name"
+        className="h-7 w-28 rounded-full border border-[var(--accent-info)] bg-[var(--surface-tertiary)] px-3 text-xs text-[var(--text-primary)] outline-none"
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      title="Set your operator name"
+      className="inline-flex h-7 items-center rounded-full border border-[var(--border-subtle)] bg-[var(--surface-tertiary)] px-3 text-xs text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-info)] hover:text-[var(--text-primary)]"
+    >
+      {actor || <span className="text-[var(--text-tertiary)]">your name</span>}
+    </button>
+  );
+}
+
 export function TopBar({
   onCreateTask,
   isCreatingTask = false,
@@ -51,9 +85,13 @@ export function TopBar({
   criticalAlerts = 0,
   idleCount = 0,
   busyCount = 0,
+  actor = '',
+  onActorChange,
+  projectRoot,
 }: TopBarProps) {
   const { leftPanel, toggleLeftPanel, rightPanel, toggleRightPanel, blockedOnly, toggleBlockedOnly } = useUrlState();
   const { isDesktop } = useResponsive();
+  const [showLaunchSwarm, setShowLaunchSwarm] = useState(false);
 
   return (
     <header className="flex h-[var(--topbar-height)] items-center justify-between border-b border-[var(--border-strong)] bg-[var(--surface-elevated)]" data-testid="top-bar">
@@ -113,6 +151,17 @@ export function TopBar({
               </span>
             </button>
 
+            {projectRoot && (
+              <button
+                type="button"
+                onClick={() => setShowLaunchSwarm(true)}
+                className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.11em] text-emerald-400 transition-colors hover:bg-emerald-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
+              >
+                <Rocket className="h-3.5 w-3.5" aria-hidden="true" />
+                Launch Swarm
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => {
@@ -127,6 +176,8 @@ export function TopBar({
             </button>
           </>
         )}
+
+        {onActorChange ? <IdentityChip actor={actor} onActorChange={onActorChange} /> : null}
 
         <ThemeToggle />
 
@@ -147,6 +198,13 @@ export function TopBar({
           {taskActionMessage ?? ''}
         </span>
       </div>
+
+      {showLaunchSwarm && projectRoot && (
+        <LaunchSwarmDialog
+          projectRoot={projectRoot}
+          onSuccess={() => setShowLaunchSwarm(false)}
+        />
+      )}
     </header>
   );
 }
