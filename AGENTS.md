@@ -38,6 +38,18 @@ Use `help/memory/` for all memory operations.
 5. Only hard constraints may become blockers, via a memory-contract bead linked with `bd dep add`.
 6. Memory evolution must use `bd supersede <old> --with <new>`; do not rewrite canonical history.
 7. Apply noise budget limits from `help/memory/schema_and_noise_budget.txt` before adding new nodes.
+8. After closing meaningful work, run a memory review:
+   - If a reusable lesson exists, create or supersede a canonical memory node in the correct domain.
+   - If no reusable lesson exists, add a note to the closed bead: `Memory review: no new reusable memory.`
+9. Every canonical memory must be linked to provenance:
+   - Relate to one domain anchor: `bd dep relate <anchor-id> <memory-id>`
+   - Relate to 2-5 source beads: `bd dep relate <memory-id> <source-bead-id>`
+10. Every canonical memory must include metadata keys:
+   - `evidence_ids` (comma-separated source bead IDs)
+   - `plan_refs` (comma-separated plan file paths)
+11. Fresh agents must validate provenance before use:
+   - `bd show <memory-id>`
+   - `bd dep list <memory-id>`
 
 ## Bead Prompting Standard
 
@@ -139,7 +151,9 @@ When ending a coding session:
 1. Create beads for remaining follow-ups.
 2. Run quality gates if code changed.
 3. Update/close beads with notes and evidence.
-4. Sync and push:
+4. Run memory review on newly closed beads and create/supersede memory nodes when reusable lessons were found.
+5. If no memory was added, record `Memory review: no new reusable memory.` in handoff notes.
+6. Sync and push:
    ```bash
    git pull --rebase
    bd dolt pull
@@ -147,7 +161,7 @@ When ending a coding session:
    git push
    bd dolt push
    ```
-5. Hand off with:
+7. Hand off with:
    - what changed,
    - what is verified,
    - open risks/gaps,
