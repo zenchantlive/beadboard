@@ -23,6 +23,7 @@ import { useSwarmList } from '../../hooks/use-swarm-list';
 import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
 import { useBdHealth } from '../../hooks/use-bd-health';
 import { BlockedTriageModal } from './blocked-triage-modal';
+import { deriveBlockedIds } from '../../lib/kanban';
 
 export interface UnifiedShellProps {
   issues: BeadIssue[];
@@ -80,6 +81,10 @@ export function UnifiedShell({
   const handleCloseBlockedTriage = useCallback(() => setBlockedTriageOpen(false), []);
 
   const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
+  const blockedIds = useMemo(() => deriveBlockedIds(issues), [issues]);
+  const blockedCount = useMemo(() => {
+    return issues.filter(i => i.status === 'blocked' || blockedIds.has(i.id)).length;
+  }, [issues, blockedIds]);
   const { swarms: swarmCards } = useSwarmList(projectRoot);
   const bdHealth = useBdHealth(projectRoot);
 
@@ -246,7 +251,7 @@ export function UnifiedShell({
       {/* TOP BAR: 3rem fixed */}
 <TopBar
         totalTasks={issues.filter(i => i.issue_type !== 'epic').length}
-        criticalAlerts={issues.filter(i => i.status === 'blocked').length}
+        criticalAlerts={blockedCount}
         busyCount={issues.filter(i => i.status === 'in_progress').length}
         idleCount={0}
         actor={actor}
