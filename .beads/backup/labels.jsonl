@@ -641,6 +641,8 @@
 {"issue_id":"beadboard-fld","label":"memory-ux"}
 {"issue_id":"beadboard-i4c","label":"memory"}
 {"issue_id":"beadboard-i4c","label":"memory-provenance"}
+{"issue_id":"beadboard-ij8","label":"docs"}
+{"issue_id":"beadboard-ij8","label":"memory"}
 {"issue_id":"beadboard-jgy","label":"docs"}
 {"issue_id":"beadboard-jgy","label":"memory"}
 {"issue_id":"beadboard-nq9","label":"memory"}
