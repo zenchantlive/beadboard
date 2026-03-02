@@ -637,6 +637,7 @@
 {"issue_id":"beadboard-c08","label":"agent:architect"}
 {"issue_id":"beadboard-c08","label":"agent:system-architect"}
 {"issue_id":"beadboard-c08","label":"status:documenting"}
+{"issue_id":"beadboard-d2x","label":"--json"}
 {"issue_id":"beadboard-duo","label":"mem-canonical"}
 {"issue_id":"beadboard-duo","label":"mem-soft"}
 {"issue_id":"beadboard-duo","label":"memory"}
