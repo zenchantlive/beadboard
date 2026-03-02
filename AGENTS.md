@@ -3,26 +3,41 @@
 This repo is execution-first, evidence-first, and beads-driven.
 
 ## Core Rules
-
-1. Use `bd` as the source of truth for work state.
-2. When user says "what's up" or "yo" or any introductory phrase, that means figure out what beads were recently closed and what beads are now unblocked and suggest the next bead to work on.
-3. No direct writes to `.beads/issues.jsonl`; mutate via `bd` commands only.
-4. Evidence before assertions: do not claim fixed/passing/done without fresh command output.
-5. Keep language simple in user-facing labels and UI copy.
-6. Reuse shared code paths/components; avoid one-off logic drift across pages.
-7. Treat BeadBoard as a multi-agent coordination + communication system first; optimize feature decisions for swarm execution clarity before cosmetic/layout preferences.
-8. Runtime UI route surface is query-driven from `/` (`view=social|graph|activity`); do not reintroduce direct App Router page sprawl without explicit approval.
+0. We both hate markdown files for memory; we use beads instead. View `beadboard/help/` for more info on how to use beads. Use the `--help` flags when you need help, or reference this folder.
+1. Our working directory for this project is `codex/beadboard`.
+2. Use `bd` as the source of truth for work state.
+3. When user says "what's up" or "yo" or any introductory phrase, that means figure out what beads were recently closed and what beads are now unblocked or related to the recently closed beads and suggest the next bead to work on using `bd query "status=closed" --sort closed --reverse --limit 10` and `bd ready`.
+4. No direct writes to `.beads/issues.jsonl`; mutate via `bd` commands only.
+5. Evidence before assertions: do not claim fixed/passing/done without fresh command output.
+6. Keep language simple in user-facing labels and UI copy.
+7. Reuse shared code paths/components; avoid one-off logic drift across pages.
+8. Treat BeadBoard as a multi-agent coordination + communication system first; optimize feature decisions for swarm execution clarity before cosmetic/layout preferences.
+9. Runtime UI route surface is query-driven from `/` (`view=social|graph|activity`); do not reintroduce direct App Router page sprawl without explicit approval.
 
 ## Quick Beads Workflow
 
 ```bash
 bd ready
 bd show <id>
-bd update <id> --status in_progress --notes "<plan>"
+bd update <id> --status in_progress
 bd update <id> --notes "<progress/evidence>"
 bd close <id> --reason "<what was completed>"
-bd sync
+bd dolt pull   # pull latest from remote before starting work
+bd dolt push   # push to remote after closing beads
 ```
+
+## Native Memory Workflow (Required)
+
+Use `help/memory/` for all memory operations.
+
+1. Memory source-of-truth is `bd` + Dolt history, not markdown files.
+2. At task start, run the query/injection playbook in `help/memory/query_and_injection.txt`.
+3. Canonical memory must be `decision` beads with labels:
+   - `memory,mem-canonical,mem-hard|mem-soft,<domain>`
+4. Memory indexing uses `bd dep relate` to domain anchors; do not use blocker edges for indexing.
+5. Only hard constraints may become blockers, via a memory-contract bead linked with `bd dep add`.
+6. Memory evolution must use `bd supersede <old> --with <new>`; do not rewrite canonical history.
+7. Apply noise budget limits from `help/memory/schema_and_noise_budget.txt` before adding new nodes.
 
 ## Bead Prompting Standard
 
@@ -44,7 +59,7 @@ bd sync
 1. Dependencies model execution order, not visual order.
 2. Validate that "ready/blocked/done" logic matches dependency semantics in all views.
 3. If a bead should be parallelizable, do not chain it unnecessarily.
-4. After closing a bead, confirm newly unblocked beads with `bd close <id> --suggest-next`.
+4. After closing a bead, confirm newly unblocked beads with `bd ready`.
 
 ## Test-First Implementation
 
@@ -127,9 +142,10 @@ When ending a coding session:
 4. Sync and push:
    ```bash
    git pull --rebase
-   bd sync
+   bd dolt pull
+   git add -p && git commit -m "..."
    git push
-   git status
+   bd dolt push
    ```
 5. Hand off with:
    - what changed,
@@ -164,27 +180,27 @@ unless you have run the proving command(s) in the current session and can cite r
 **Check for ready work:**
 
 ```bash
-bd ready --json
+bd ready
 ```
 
 **Create new issues:**
 
 ```bash
-bd create "Issue title" --description="Detailed context" -t bug|feature|task -p 0-4 --json
-bd create "Issue title" --description="What this issue is about" -p 1 --deps discovered-from:bd-123 --json
+bd create --title="Issue title" --description="Detailed context" --type=bug|feature|task --priority=0-4
 ```
 
 **Claim and update:**
 
 ```bash
-bd update bd-42 --status in_progress --json
-bd update bd-42 --priority 1 --json
+bd update <id> --status in_progress
+bd update <id> --notes "<evidence/progress>"
+bd update <id> --priority 1
 ```
 
 **Complete work:**
 
 ```bash
-bd close bd-42 --reason "Completed" --json
+bd close <id> --reason "Completed"
 ```
 
 ### Issue Types
@@ -209,28 +225,29 @@ bd close bd-42 --reason "Completed" --json
 2. **Claim your task**: `bd update <id> --status in_progress`
 3. **Work on it**: Implement, test, document
 4. **Discover new work?** Create linked issue:
-   - `bd create "Found bug" --description="Details about what was found" -p 1 --deps discovered-from:<parent-id>`
+   - `bd create --title="Found bug" --description="Details" --priority=1`
+   - `bd dep add <new-id> <parent-id>`
 5. **Complete**: `bd close <id> --reason "Done"`
 
-### Auto-Sync
+### Sync
 
-bd automatically syncs with git:
+Issues live in Dolt SQL (not JSONL). Sync with remote via:
 
-- Exports to `.beads/issues.jsonl` after changes (5s debounce)
-- Imports from JSONL when newer (e.g., after `git pull`)
-- No manual export/import needed!
+```bash
+bd dolt pull   # pull latest from remote before starting work
+bd dolt push   # push after closing beads
+```
+
+`.beads/issues.jsonl` is a **git-history artifact and fallback only** — do not treat it as the source of truth.
 
 ### Important Rules
 
 - ✅ Use bd for ALL task tracking
-- ✅ Always use `--json` flag for programmatic use
-- ✅ Link discovered work with `discovered-from` dependencies
 - ✅ Check `bd ready` before asking "what should I work on?"
+- ✅ Link related work with `bd dep add`
 - ❌ Do NOT create markdown TODO lists
-- ❌ Do NOT use external issue trackers
+- ❌ Do NOT write directly to `.beads/issues.jsonl`
 - ❌ Do NOT duplicate tracking systems
-
-For more details, see README.md and docs/QUICKSTART.md.
 
 ## Data Backend & Platform Notes
 

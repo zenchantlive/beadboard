@@ -1,0 +1,55 @@
+# Memory Schema and Noise Budget
+
+One memory bead = one atomic reusable rule.
+If it is not reusable across future tasks, keep it in task notes instead.
+
+Canonical memory schema:
+- type: decision
+- status: closed (after ratification)
+- labels: memory,mem-canonical,mem-hard|mem-soft,<domain>
+- title format: [MEMORY][<DOMAIN>][HARD|SOFT] <rule sentence>
+
+Required description sections:
+- Scope:
+- Out of Scope:
+- Rule:
+- Rationale:
+- Failure Mode:
+
+Required acceptance style:
+- Given / When / Then invariant
+- Verification commands
+
+Required metadata JSON keys:
+- memory_version
+- memory_strength
+- domain
+- effective_date
+- owner
+- supersedes
+- superseded_by
+
+Edge rules:
+1) Anchor <-> Canonical memory
+- Use: bd dep relate
+- Never use blocker edge for anchor indexing
+
+2) Active task <-> Memory
+- Default: bd dep relate
+
+3) Active task <- Contract (hard rules only)
+- Use: bd dep add <active-task> <contract>
+
+4) Memory versioning
+- Use: bd supersede <old> --with <new>
+
+Noise budget limits:
+- Per active task: 3-7 related memory nodes
+- Per active task: 0-2 blocker contracts
+- Per canonical memory: 1 primary anchor domain
+- Promote incident/workaround memory only after repetition evidence
+
+Promotion policy:
+1) Incident repeats 2+ times -> candidate soft canonical memory
+2) Workaround survives release window -> candidate hard/soft canonical memory
+3) Obsolete canonical memory -> supersede, do not rewrite history

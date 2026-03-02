@@ -1,0 +1,40 @@
+# Query and Injection Playbook
+
+Run this sequence at task start.
+
+Step 1: Determine task domain
+- Choose one primary domain label:
+  memory-arch | memory-workflow | memory-ux | memory-agent | memory-reliability
+
+Step 2: Query canonical memory for that domain
+```bash
+bd query "label=memory AND label=mem-canonical AND label=<domain> AND status=closed" --sort updated --reverse
+```
+
+Step 3: Query hard constraints subset
+```bash
+bd query "label=memory AND label=mem-canonical AND label=mem-hard AND label=<domain> AND status=closed" --sort updated --reverse
+```
+
+Step 4: Attach context to active work (soft + hard)
+```bash
+bd dep relate <active-task-id> <memory-id>
+```
+
+Step 5: Enforce hard constraints only (optional contract bead)
+```bash
+bd create --title "[MEMORY-CONTRACT] <short hard rule title>" --type task --labels memory-contract,mem-hard,<domain> --description "Contract for active task <active-task-id>" --acceptance "Hard rule is acknowledged and verified in task evidence." --silent
+bd dep relate <contract-id> <canonical-memory-id>
+bd dep add <active-task-id> <contract-id>
+```
+
+Step 6: Record acknowledgement
+```bash
+bd update <active-task-id> --notes "Memory injection: related <memory-id list>; hard contracts <contract-id list>."
+```
+
+Expected response patterns:
+- bd query: list of IDs + labels + titles
+- bd dep relate: relation confirmation
+- bd dep add: blocker edge confirmation
+- bd show/dep list: attached memory visible on task graph
