@@ -600,6 +600,8 @@
 {"issue_id":"beadboard-116","label":"mem-hard"}
 {"issue_id":"beadboard-116","label":"memory"}
 {"issue_id":"beadboard-116","label":"memory-workflow"}
+{"issue_id":"beadboard-2qy","label":"gt:agent"}
+{"issue_id":"beadboard-2qy","label":"role:ui"}
 {"issue_id":"beadboard-4vr","label":"brainstorm"}
 {"issue_id":"beadboard-4vr","label":"dolt"}
 {"issue_id":"beadboard-4vr","label":"memory"}
@@ -620,6 +622,10 @@
 {"issue_id":"beadboard-6fv","label":"mem-hard"}
 {"issue_id":"beadboard-6fv","label":"memory"}
 {"issue_id":"beadboard-6fv","label":"memory-reliability"}
+{"issue_id":"beadboard-6iq","label":"mem-canonical"}
+{"issue_id":"beadboard-6iq","label":"mem-hard"}
+{"issue_id":"beadboard-6iq","label":"memory"}
+{"issue_id":"beadboard-6iq","label":"memory-ui"}
 {"issue_id":"beadboard-76p","label":"memory"}
 {"issue_id":"beadboard-76p","label":"memory-anchor"}
 {"issue_id":"beadboard-76p","label":"memory-arch"}
