@@ -640,6 +640,13 @@
 {"issue_id":"beadboard-bgh","label":"history"}
 {"issue_id":"beadboard-bgh","label":"innovation"}
 {"issue_id":"beadboard-brq","label":"agent:coder"}
+{"issue_id":"beadboard-btn","label":"agents"}
+{"issue_id":"beadboard-btn","label":"documentation"}
+{"issue_id":"beadboard-btn","label":"skills"}
+{"issue_id":"beadboard-btn.1","label":"agents"}
+{"issue_id":"beadboard-btn.1","label":"documentation"}
+{"issue_id":"beadboard-btn.1","label":"memory"}
+{"issue_id":"beadboard-btn.1","label":"skills"}
 {"issue_id":"beadboard-c08","label":"agent:architect"}
 {"issue_id":"beadboard-c08","label":"agent:system-architect"}
 {"issue_id":"beadboard-c08","label":"status:documenting"}
