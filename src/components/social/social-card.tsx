@@ -187,11 +187,11 @@ export function SocialCard({
       </div>
 
       {showAssign && (
-        <div className="mt-2 flex gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+        <div className="mt-2 flex gap-2 items-center overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <select
             value={selectedArchetype ?? ''}
             onChange={(e) => setSelectedArchetype(e.target.value || null)}
-            className="flex-1 text-xs border border-[var(--border-subtle)] rounded-md px-2 py-1.5 bg-[var(--surface-input)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-info)]"
+            className="min-w-0 flex-1 text-xs border border-[var(--border-subtle)] rounded-md px-2 py-1.5 bg-[var(--surface-input)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-info)]"
           >
             <option value="" disabled>Select agent role...</option>
             {archetypes.map((a) => (
@@ -204,10 +204,10 @@ export function SocialCard({
               await handleAssign(data.id);
             }}
             disabled={!selectedArchetype || isAssigning || assignSuccess}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors disabled:opacity-50 flex items-center gap-1 ${assignSuccess ? 'bg-[var(--accent-success)] text-white' : 'bg-[var(--accent-info)] text-white hover:bg-[var(--accent-info)]/90'}`}
+            className={`flex-shrink-0 px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors disabled:opacity-50 flex items-center gap-1 ${assignSuccess ? 'bg-[var(--accent-success)] text-white' : 'bg-[var(--accent-info)] text-white hover:bg-[var(--accent-info)]/90'}`}
           >
             <UserPlus className="w-3 h-3" />
-            {isAssigning ? 'Assigning...' : assignSuccess ? 'Assigned!' : 'Assign'}
+            {isAssigning ? '...' : assignSuccess ? '✓' : 'Assign'}
           </button>
         </div>
       )}

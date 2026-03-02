@@ -47,7 +47,7 @@ export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogP
       const res = await fetch(`/api/swarm/formulas?projectRoot=${encodeURIComponent(projectRoot)}`);
       const json = await res.json();
       if (json.ok) {
-        setFormulas(json.data);
+        setFormulas(json.data ?? []);
       } else {
         setError(json.error);
       }

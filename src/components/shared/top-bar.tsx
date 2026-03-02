@@ -91,7 +91,6 @@ export function TopBar({
 }: TopBarProps) {
   const { leftPanel, toggleLeftPanel, rightPanel, toggleRightPanel, blockedOnly, toggleBlockedOnly } = useUrlState();
   const { isDesktop } = useResponsive();
-  const [showLaunchSwarm, setShowLaunchSwarm] = useState(false);
 
   return (
     <header className="flex h-[var(--topbar-height)] items-center justify-between border-b border-[var(--border-strong)] bg-[var(--surface-elevated)]" data-testid="top-bar">
@@ -152,14 +151,7 @@ export function TopBar({
             </button>
 
             {projectRoot && (
-              <button
-                type="button"
-                onClick={() => setShowLaunchSwarm(true)}
-                className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.11em] text-emerald-400 transition-colors hover:bg-emerald-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
-              >
-                <Rocket className="h-3.5 w-3.5" aria-hidden="true" />
-                Launch Swarm
-              </button>
+              <LaunchSwarmDialog projectRoot={projectRoot} />
             )}
 
             <button
@@ -199,12 +191,6 @@ export function TopBar({
         </span>
       </div>
 
-      {showLaunchSwarm && projectRoot && (
-        <LaunchSwarmDialog
-          projectRoot={projectRoot}
-          onSuccess={() => setShowLaunchSwarm(false)}
-        />
-      )}
     </header>
   );
 }
