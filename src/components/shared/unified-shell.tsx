@@ -213,6 +213,7 @@ export function UnifiedShell({
             onEpicEdit={(id) => { setEpicId(id); setDrawer('open'); }}
             filters={filters}
             onFiltersChange={setFilters}
+            projectRoot={projectRoot}
           />
         </div>
 

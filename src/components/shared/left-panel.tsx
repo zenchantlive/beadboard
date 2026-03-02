@@ -1,11 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, Folder, FolderOpen, Star } from 'lucide-react';
+import { ChevronDown, ChevronRight, Folder, FolderOpen, Pencil, Star, Rocket } from 'lucide-react';
 
 import type { BeadIssue } from '../../lib/types';
 import { cn } from '../../lib/utils';
 import { useUrlState, type ViewType } from '../../hooks/use-url-state';
+import { LaunchSwarmDialog } from '../swarm/launch-dialog';
 
 export type LeftPanelStatusFilter = 'all' | 'ready' | 'in_progress' | 'blocked' | 'deferred' | 'done';
 export type LeftPanelPriorityFilter = 'all' | 'P0' | 'P1' | 'P2' | 'P3' | 'P4';
@@ -23,8 +24,10 @@ export interface LeftPanelProps {
   issues: BeadIssue[];
   selectedEpicId?: string | null;
   onEpicSelect?: (epicId: string | null) => void;
+  onEpicEdit?: (epicId: string) => void;
   filters: LeftPanelFilters;
   onFiltersChange: (filters: LeftPanelFilters) => void;
+  projectRoot: string;
 }
 
 interface EpicEntry {
@@ -172,10 +175,11 @@ function isTaskMatch(task: BeadIssue, filters: LeftPanelFilters): boolean {
   return true;
 }
 
-export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFiltersChange }: LeftPanelProps) {
+export function LeftPanel({ issues, selectedEpicId, onEpicSelect, onEpicEdit, filters, onFiltersChange, projectRoot }: LeftPanelProps) {
   const { view, setView } = useUrlState();
   const entries = useMemo(() => buildEntries(issues), [issues]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [launchSwarmEpicId, setLaunchSwarmEpicId] = useState<string | null>(null);
 
   const hasActiveFilters =
     filters.query.trim().length > 0 ||
@@ -369,6 +373,28 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
                   >
                     <Star className="h-3 w-3" aria-hidden="true" />
                   </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLaunchSwarmEpicId(epic.id);
+                    }}
+                    className="inline-flex h-5 w-5 items-center justify-center rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 transition-colors hover:bg-emerald-500/20"
+                    aria-label={`Launch Swarm for ${epic.title}`}
+                    title="Launch Swarm"
+                  >
+                    <Rocket className="h-3 w-3" aria-hidden="true" />
+                  </button>
+                  {onEpicEdit && (
+                    <button
+                      type="button"
+                      onClick={() => onEpicEdit(epic.id)}
+                      className="inline-flex h-5 w-5 items-center justify-center rounded text-[var(--text-tertiary)] transition-colors hover:text-[var(--text-primary)]"
+                      aria-label={`Edit ${epic.title}`}
+                    >
+                      <Pencil className="h-3 w-3" aria-hidden="true" />
+                    </button>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-3 text-[11px]">
@@ -437,6 +463,15 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, filters, onFil
           </div>
         </div>
       </footer>
+
+      {launchSwarmEpicId && (
+        <LaunchSwarmDialog
+          projectRoot={projectRoot}
+          onSuccess={() => {
+            setLaunchSwarmEpicId(null);
+          }}
+        />
+      )}
     </aside>
   );
 }
