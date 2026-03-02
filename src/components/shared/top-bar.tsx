@@ -18,6 +18,7 @@ export interface TopBarProps {
   actor?: string;
   onActorChange?: (name: string) => void;
   onLaunchSwarm?: () => void;
+  onOpenBlockedTriage?: () => void;
 }
 
 interface MetricTileProps {
@@ -87,6 +88,7 @@ export function TopBar({
   actor = '',
   onActorChange,
   onLaunchSwarm,
+  onOpenBlockedTriage,
 }: TopBarProps) {
   const { leftPanel, toggleLeftPanel, rightPanel, toggleRightPanel, blockedOnly, toggleBlockedOnly } = useUrlState();
   const { isDesktop } = useResponsive();
@@ -126,9 +128,9 @@ export function TopBar({
       <div className="mr-3 flex items-center gap-2">
         {children ?? (
           <>
-            <button
+<button
               type="button"
-              onClick={toggleBlockedOnly}
+              onClick={onOpenBlockedTriage}
               aria-pressed={blockedOnly}
               className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold uppercase tracking-[0.11em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
               style={{

@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
+import { buildProjectContext } from '../../lib/project-context';
 import { TopBar } from './top-bar';
 import { LeftPanel, type LeftPanelFilters } from './left-panel';
 import { RightPanel } from './right-panel';
@@ -22,6 +23,7 @@ import { TelemetryStrip } from './telemetry-strip';
 import { useSwarmList } from '../../hooks/use-swarm-list';
 import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
 import { useBdHealth } from '../../hooks/use-bd-health';
+import { BlockedTriageModal } from './blocked-triage-modal';
 
 export interface UnifiedShellProps {
   issues: BeadIssue[];
@@ -69,13 +71,19 @@ export function UnifiedShell({
   const [assignMode, setAssignMode] = useState(false);
   const [selectedAssignIssue, setSelectedAssignIssue] = useState<BeadIssue | null>(null);
   
-  // Remember last non-telemetry state for minimize button
+// Remember last non-telemetry state for minimize button
   const [lastTaskId, setLastTaskId] = useState<string | null>(null);
   const [lastAssignMode, setLastAssignMode] = useState(false);
 
-  const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
+  // Blocked triage modal state
+  const [blockedTriageOpen, setBlockedTriageOpen] = useState(false);
+  const handleOpenBlockedTriage = useCallback(() => setBlockedTriageOpen(true), []);
+  const handleCloseBlockedTriage = useCallback(() => setBlockedTriageOpen(false), []);
+
+const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
   const { swarms: swarmCards } = useSwarmList(projectRoot);
   const bdHealth = useBdHealth(projectRoot);
+  const projectContext = useMemo(() => buildProjectContext(projectRoot), [projectRoot]);
 
   const selectedSocialCard = taskId ? socialCards.find(c => c.id === taskId) : null;
   const selectedSwarmCard = swarmId ? swarmCards.find(c => c.swarmId === swarmId) : null;
@@ -238,7 +246,7 @@ export function UnifiedShell({
   return (
     <div className="flex flex-col h-screen bg-[var(--surface-backdrop)]" data-testid="unified-shell">
       {/* TOP BAR: 3rem fixed */}
-      <TopBar
+<TopBar
         totalTasks={issues.filter(i => i.issue_type !== 'epic').length}
         criticalAlerts={issues.filter(i => i.status === 'blocked').length}
         busyCount={issues.filter(i => i.status === 'in_progress').length}
@@ -246,6 +254,7 @@ export function UnifiedShell({
         actor={actor}
         onActorChange={handleActorChange}
         onLaunchSwarm={() => { setTaskId(null); setAssignMode(true); }}
+        onOpenBlockedTriage={handleOpenBlockedTriage}
       />
       {!bdHealth.loading && !bdHealth.healthy ? (
         <div className="border-b border-amber-500/35 bg-amber-500/12 px-4 py-2 text-xs text-amber-100">
@@ -319,8 +328,16 @@ export function UnifiedShell({
         </div>
       ) : null}
 
-      {/* MOBILE NAV: Bottom tab bar */}
+{/* MOBILE NAV: Bottom tab bar */}
       <MobileNav />
+
+      {/* BLOCKED TRIAGE MODAL */}
+      <BlockedTriageModal
+        isOpen={blockedTriageOpen}
+        onClose={handleCloseBlockedTriage}
+        issues={issues}
+        projectRoot={projectContext}
+      />
     </div>
   );
 }
