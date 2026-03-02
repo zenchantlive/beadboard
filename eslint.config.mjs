@@ -14,6 +14,7 @@ const eslintConfig = [
       '.next/**',
       '.agents/**',
       'skills/**',
+      'reference/**',
       'next-env.d.ts',
     ],
   },

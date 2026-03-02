@@ -1,0 +1,49 @@
+# Viewing Recently Closed Beads
+
+When you need to find beads (tasks, issues) that were recently closed, use `bd query` or `bd list` with date filters. 
+The user rule indicates a need to "correctly view the last closed beads (there is some sort of filter for recency)".
+
+## Method 1: Using `bd query`
+
+`bd query` supports a simple query language with relative and absolute dates.
+
+1. **View closed beads in the last X days**
+   ```bash
+   bd query "status=closed AND updated>2d" --sort updated
+   ```
+   *This finds beads closed and updated within the last 2 days, sorted chronologically with newest at the bottom.*
+
+2. **View closed beads in the last 24 hours**
+   ```bash
+   bd query "status=closed AND updated>24h" --sort updated
+   ```
+
+3. **View everything closed**
+   ```bash
+   bd query "status=closed" --sort closed --limit 10 --reverse
+   ```
+   *This shows the 10 most recently closed beads (requires --reverse so limit grabs the newest).*
+
+## Method 2: Using `bd list`
+
+`bd list` has specific flags for filtering by closure date.
+
+1. **View closed beads using --closed-after**
+   ```bash
+   bd list --status closed --closed-after "7d" --sort closed --reverse
+   ```
+   Wait, the `--closed-after` flag expects YYYY-MM-DD or RFC3339. The better approach for relative dates is `bd query`.
+
+However, if using absolute dates:
+```bash
+bd list --status closed --closed-after 2025-01-01 --sort closed --reverse 
+```
+
+## Summary for Agents:
+**Always use `bd query` with relative time for the best results** when checking recency. 
+
+To view recently closed beads (within the last 3 days) in standard terminal chronological order (oldest at top, newest at bottom):
+**`bd query "status=closed AND closed>3d" --sort closed`** 
+
+To get just the last 5 closed beads (note: you must use --reverse to get the most recent ones when using --limit):
+**`bd query "status=closed" --sort closed --reverse --limit 5`**

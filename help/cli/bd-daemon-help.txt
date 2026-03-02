@@ -1,0 +1,75 @@
+Manage the background daemon that automatically syncs issues with git remote.
+
+The daemon will:
+- Poll for changes at configurable intervals (default: 5 seconds)
+- Export pending database changes to JSONL
+- Auto-commit changes if --auto-commit flag set
+- Auto-push commits if --auto-push flag set
+- Pull remote changes periodically
+- Auto-import when remote changes detected
+
+Common operations:
+  bd daemon start                Start the daemon (background)
+  bd daemon start --foreground   Start in foreground (for systemd/supervisord)
+  bd daemon stop                 Stop current workspace daemon
+  bd daemon status               Show daemon status
+  bd daemon status --all         Show all daemons with health check
+  bd daemon logs                 View daemon logs
+  bd daemon restart              Restart daemon
+  bd daemon killall              Stop all running daemons
+
+Run 'bd daemon --help' to see all subcommands.
+
+Usage:
+  bd daemon [flags]
+  bd daemon [command]
+
+Available Commands:
+  health      Check health of all bd daemons
+  killall     Stop all running bd daemons
+  list        List all running bd daemons
+  logs        View logs for a specific bd daemon
+  restart     Restart a specific bd daemon
+  start       Start the background daemon
+  status      Show daemon status
+  stop        Stop a specific bd daemon
+
+Flags:
+      --auto-commit           Automatically commit changes
+      --auto-pull             Automatically pull from remote (default: true when sync.branch configured)
+      --auto-push             Automatically push commits
+      --federation            Enable federation mode (runs dolt sql-server with remotesapi)
+      --federation-port int   MySQL port for federation mode dolt sql-server (default 3307)
+      --foreground            Run in foreground (don't daemonize)
+      --health                Check daemon health (deprecated: use 'bd daemon status --all')
+  -h, --help                  help for daemon
+      --interval duration     Sync check interval (default 5s)
+      --json                  Output JSON format
+      --local                 Run in local-only mode (no git required, no sync)
+      --log string            Log file path (default: .beads/daemon.log)
+      --log-json              Output logs in JSON format (structured logging)
+      --log-level string      Log level (debug, info, warn, error) (default "info")
+      --metrics               Show detailed daemon metrics
+      --remotesapi-port int   remotesapi port for peer-to-peer sync in federation mode (default 8080)
+      --start                 Start the daemon (deprecated: use 'bd daemon start')
+      --status                Show daemon status (deprecated: use 'bd daemon status')
+      --stop                  Stop running daemon (deprecated: use 'bd daemon stop')
+      --stop-all              Stop all running bd daemons (deprecated: use 'bd daemon killall')
+
+Global Flags:
+      --actor string              Actor name for audit trail (default: $BD_ACTOR, git user.name, $USER)
+      --allow-stale               Allow operations on potentially stale data (skip staleness check)
+      --db string                 Database path (default: auto-discover .beads/*.db)
+      --dolt-auto-commit string   Dolt backend: auto-commit after write commands (off|on). Default from config key dolt.auto-commit
+      --lock-timeout duration     SQLite busy timeout (0 = fail immediately if locked) (default 30s)
+      --no-auto-flush             Disable automatic JSONL sync after CRUD operations
+      --no-auto-import            Disable automatic JSONL import when newer than DB
+      --no-daemon                 Force direct storage mode, bypass daemon if running
+      --no-db                     Use no-db mode: load from JSONL, no SQLite
+      --profile                   Generate CPU profile for performance analysis
+  -q, --quiet                     Suppress non-essential output (errors only)
+      --readonly                  Read-only mode: block write operations (for worker sandboxes)
+      --sandbox                   Sandbox mode: disables daemon and auto-sync
+  -v, --verbose                   Enable verbose/debug output
+
+Use "bd daemon [command] --help" for more information about a command.

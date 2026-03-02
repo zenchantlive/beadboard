@@ -1,0 +1,75 @@
+Configure and manage Dolt database settings and server lifecycle.
+
+Beads uses a dolt sql-server for all database operations. The server is
+auto-started transparently when needed. Use these commands for explicit
+control or diagnostics.
+
+Server lifecycle:
+  bd dolt start        Start the Dolt server for this project
+  bd dolt stop         Stop the Dolt server for this project
+  bd dolt status       Show Dolt server status
+
+Configuration:
+  bd dolt show         Show current Dolt configuration with connection test
+  bd dolt set <k> <v>  Set a configuration value
+  bd dolt test         Test server connection
+
+Version control:
+  bd dolt commit       Commit pending changes
+  bd dolt push         Push commits to Dolt remote
+  bd dolt pull         Pull commits from Dolt remote
+
+Remote management:
+  bd dolt remote add <name> <url>   Add a Dolt remote
+  bd dolt remote list                List configured remotes
+  bd dolt remote remove <name>       Remove a Dolt remote
+
+Configuration keys for 'bd dolt set':
+  database  Database name (default: issue prefix or "beads")
+  host      Server host (default: 127.0.0.1)
+  port      Server port (auto-detected; override with bd dolt set port <N>)
+  user      MySQL user (default: root)
+  data-dir  Custom dolt data directory (absolute path; default: .beads/dolt)
+
+Flags for 'bd dolt set':
+  --update-config  Also write to config.yaml for team-wide defaults
+
+Examples:
+  bd dolt set database myproject
+  bd dolt set host 192.168.1.100 --update-config
+  bd dolt set data-dir /home/user/.beads-dolt/myproject
+  bd dolt test
+
+Usage:
+  bd dolt [command]
+
+Available Commands:
+  clean-databases Drop stale test/polecat databases from the Dolt server
+  commit          Create a Dolt commit from pending changes
+  killall         Kill all orphan Dolt server processes
+  pull            Pull commits from Dolt remote
+  push            Push commits to Dolt remote
+  remote          Manage Dolt remotes
+  set             Set a Dolt configuration value
+  show            Show current Dolt configuration with connection status
+  start           Start the Dolt SQL server for this project
+  status          Show Dolt server status
+  stop            Stop the Dolt SQL server for this project
+  test            Test connection to Dolt server
+
+Flags:
+  -h, --help   help for dolt
+
+Global Flags:
+      --actor string              Actor name for audit trail (default: $BD_ACTOR, git user.name, $USER)
+      --allow-stale               Allow operations on potentially stale data (skip staleness check)
+      --db string                 Database path (default: auto-discover .beads/*.db)
+      --dolt-auto-commit string   Dolt auto-commit policy (off|on|batch). 'on': commit after each write. 'batch': defer commits to bd sync / bd dolt commit; uncommitted changes persist in the working set until then. SIGTERM/SIGHUP flush pending batch commits. Default: off. Override via config key dolt.auto-commit
+      --json                      Output in JSON format
+      --profile                   Generate CPU profile for performance analysis
+  -q, --quiet                     Suppress non-essential output (errors only)
+      --readonly                  Read-only mode: block write operations (for worker sandboxes)
+      --sandbox                   Sandbox mode: disables auto-sync
+  -v, --verbose                   Enable verbose/debug output
+
+Use "bd dolt [command] --help" for more information about a command.

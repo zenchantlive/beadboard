@@ -22,7 +22,7 @@ export async function GET(
     const activity = history.filter((e: ActivityEvent) => e.beadId === beadId);
 
     // 2. Get communication for this bead
-    const summary = await getCommunicationSummary();
+    const summary = await getCommunicationSummary(projectRoot);
     const messages = summary.messages.filter((m: AgentMessage) => m.bead_id === beadId);
 
     // 3. Get local bd interactions via CLI

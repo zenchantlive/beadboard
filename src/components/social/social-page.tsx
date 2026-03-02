@@ -17,6 +17,7 @@ interface SocialPageProps {
   blockedOnly?: boolean;
   projectRoot: string;
   swarmId?: string;
+  onRocketClick?: () => void;
 }
 
 type SectionKey = 'ready' | 'in_progress' | 'blocked' | 'deferred' | 'done';
@@ -68,6 +69,7 @@ export function SocialPage({
   blockedOnly = false,
   projectRoot,
   swarmId,
+  onRocketClick,
 }: SocialPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -216,6 +218,7 @@ export function SocialPage({
                         onJumpToGraph={(id) =>
                           navigateWithParams({
                             view: 'graph',
+                            graphTab: 'flow',
                             task: id,
                             swarm: null,
                             right: 'open',
@@ -241,6 +244,7 @@ export function SocialPage({
                         unblocksDetails={toDependencyDetails(card.blocks)}
                         archetypes={archetypes}
                         swarmId={swarmId}
+                        onLaunchSwarm={onRocketClick}
                       />
                     );
                   })}

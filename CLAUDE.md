@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What Is BeadBoard
 
-BeadBoard is a Windows-native local dashboard for the [Beads](https://github.com/steveyegge/beads) issue tracker. It reads `.beads/issues.jsonl` files directly from repos and renders them as interactive Kanban boards and dependency graphs. It supports multi-project aggregation, real-time file watching with SSE, and agent/swarm coordination.
+BeadBoard is a Windows-native local dashboard for the [Beads](https://github.com/steveyegge/beads) issue tracker. It reads `.beads/issues.jsonl` files directly from repos and renders them as an **agent-first operations console**: a unified shell with Social, Graph, and Activity lenses for monitoring multi-agent work, managing swarms, and intervening on blockers. It supports multi-project aggregation, real-time file watching with SSE, and swarm/archetype coordination.
+
+**Active UX implementation spec**: `docs/plans/2026-02-28-ux-redesign-synthesis-prd.md`
 
 ## Commands
 
@@ -45,17 +47,21 @@ npm run typecheck && npm run lint && npm run test
 ### Key directories
 
 - `src/app/` — Next.js App Router pages and API routes
-  - `/` — Kanban dashboard (main page)
-  - `/graph` — Dependency graph explorer using @xyflow/react + Dagre
-  - `/sessions` — Agent session management
-  - `/timeline` — Timeline view
+  - `/` — **Primary entry point.** `UnifiedShell` with query-param-driven views: `?view=social|graph|activity`
+  - `/graph`, `/sessions`, `/timeline` — Legacy routes. Still exist but are not linked from the unified shell. Do not add new features here; migrate functionality into the unified shell instead.
   - `/api/beads/` — CRUD endpoints for beads (create, read, update, close, reopen, comment)
   - `/api/events/` — SSE endpoint for real-time updates
   - `/api/swarm/` — Swarm coordination endpoints (create, launch, join, leave, status, templates)
   - `/api/mission/` — Mission/epic management endpoints
   - `/api/agents/` — Agent registry endpoints
-- `src/components/` — UI components organized by feature (kanban, graph, sessions, swarm, shared, etc.)
-  - `shared/unified-shell.tsx` — Main layout shell wrapping all pages (top bar, left panel, right panel)
+- `src/components/` — UI components organized by feature (kanban, graph, sessions, swarm, shared, activity, etc.)
+  - `shared/unified-shell.tsx` — **Root layout.** Top bar, left panel, middle content (view-switched), right panel, thread drawer
+  - `shared/left-panel.tsx` — Navigation spine: view switcher (Social/Graph/Activity), epic tree, filters
+  - `shared/top-bar.tsx` — Global header: identity, health, blocked triage, metric tiles
+  - `activity/contextual-right-panel.tsx` — Right panel content router (branches on URL context)
+  - `activity/activity-panel.tsx` — Activity/telemetry feed (also used as the `activity` view content)
+  - `graph/smart-dag.tsx` — DAG renderer using @xyflow/react + Dagre
+  - `social/social-page.tsx` — Social lens: grouped task cards with dependency/thread context
 - `src/lib/` — Core logic (parser, types, pathing, watcher, realtime, registry, scanner, mutations, graph layout)
   - `types.ts` — Central type definitions (`BeadIssue`, `BeadStatus`, `ProjectContext`, etc.)
   - `pathing.ts` — Windows path canonicalization (drive letter normalization, path keys)

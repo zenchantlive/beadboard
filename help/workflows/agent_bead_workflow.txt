@@ -1,0 +1,53 @@
+# Agent Workflow for Beadboard
+
+As an agent working in this repository, you must follow these rules when managing tasks using `bd`.
+
+---
+
+## 1. Finding Work
+Before starting any new work, check if there's already an open task for it.
+```bash
+bd ready
+```
+*If a task is ready, pick it up instead of creating a duplicate.*
+
+## 2. Starting Work / Tracking Plans
+When asked to perform non-trivial work without an existing task, **always create a task**.
+Do **not** keep your plan in free-form text. Create a task with `priority 0`.
+```bash
+bd create "Short descriptive title of the work" -p 0
+```
+Update the status to `in_progress` if you are working on it:
+```bash
+bd set-state <task-id> in_progress
+```
+
+## 3. Working within Tasks (task.md)
+Update the local `<appDataDir>/brain/<conversation-id>/task.md` using the checklist `[ ]`, `[/]`, `[x]` to maintain your internal progress while working. Also update the `bd` task if you have significant architectural notes.
+
+## 4. Dependencies
+If your task depends on another task being completed first, declare the block:
+```bash
+# Link: your task is blocked by another task
+# First run bd dep add, it will prompt you interactively.
+# Or use the appropriate arguments if you know them.
+# The user prefers bd handle these rather than prose "do X after Y"
+```
+
+## 5. Finishing Work
+When you have finished a task, completed your tests, and verified it works (run your lint/typecheck steps), you must close the task.
+
+1. **Verify completion**: `bun run typecheck && bun run lint`
+2. **Close the bead**: 
+   ```bash
+   # You can use bd update or bd close
+   bd status <task-id>  # To view it
+   bd close <task-id>   # To mark it closed
+   ```
+3. **Summarize**: Leave a summary of what changed. (You can do this by using bd edit or through a comment if bd supports it, otherwise summarize in your git commit).
+
+## 6. Verifying Past Work (Recently Closed Beads)
+If you need to know what was just finished (e.g. to see if a bead was successfully closed), view the recently closed beads:
+```bash
+bd query "status=closed" --sort closed --reverse --limit 5
+```

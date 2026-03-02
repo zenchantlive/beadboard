@@ -24,6 +24,9 @@ export interface WorkflowGraphProps {
   beads: BeadIssue[];
   selectedId?: string;
   onSelect?: (id: string) => void;
+  onViewInSocial?: (id: string) => void;
+  onAssignMode?: (id: string) => void;
+  onViewTelemetry?: (id: string) => void;
   className?: string;
   hideClosed?: boolean;
   archetypes?: AgentArchetype[];
@@ -65,6 +68,9 @@ function WorkflowGraphInner({
   beads,
   selectedId,
   onSelect,
+  onViewInSocial,
+  onAssignMode,
+  onViewTelemetry,
   className = '',
   hideClosed = false,
   archetypes = [],
@@ -119,6 +125,9 @@ function WorkflowGraphInner({
           archetypes: archetypes,
           selectedTaskId: selectedId,
           onConversationOpen: onSelect,
+          onViewInSocial: onViewInSocial,
+          onAssignMode: onAssignMode,
+          onViewTelemetry: onViewTelemetry,
         },
         position: { x: 0, y: 0 },
         sourcePosition: Position.Right,
@@ -181,7 +190,7 @@ function WorkflowGraphInner({
       nodes: layoutDagre(baseNodes, graphEdges),
       edges: graphEdges,
     };
-  }, [beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap, archetypes, assignMode, onSelect]);
+  }, [beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap, archetypes, assignMode, onSelect, onViewInSocial, onAssignMode, onViewTelemetry]);
 
   const nodeTypes: NodeTypes = useMemo(
     () => ({

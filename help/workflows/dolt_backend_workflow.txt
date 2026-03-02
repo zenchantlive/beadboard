@@ -1,0 +1,52 @@
+# Beadboard Dolt System Workflow
+
+Beadboard supports an optional **Dolt storage backend**. Dolt is a SQL database with git-like version control, enabling advanced features like branching, merging, and historic diffs for your issue data.
+
+If your environment has Dolt enabled (no CGO build errors when using `bd`), you have access to powerful new version control commands. They behave similarly to `git` but operate purely on Beadboard issues.
+
+## 1. Branching
+You can create branches of your issue database, to test speculative features or isolate a swarm of issues before merging them into main.
+
+- **List all branches**:
+  ```bash
+  bd branch
+  ```
+- **Create a new branch**:
+  ```bash
+  bd branch <branch-name>
+  ```
+
+## 2. Version Control (Commit & Merge)
+Use `bd vc` to manage commits on your branch.
+
+- **View status of current branch**:
+  ```bash
+  bd vc status
+  ```
+- **Create a commit**:
+  ```bash
+  bd vc commit
+  ```
+- **Merge a branch**:
+  ```bash
+  bd vc merge <branch-to-merge>
+  ```
+
+*Note: You can also rely on `--dolt-auto-commit=on` (which can be set in config) to automatically commit changes after write operations like `bd create` or `bd update`.*
+
+## 3. Viewing Diffs
+You can view the exact issue changes (created, deleted, modified) between two commits or branches.
+
+- **Compare current state against a branch**:
+  ```bash
+  bd diff main feature-branch
+  ```
+- **Compare history**:
+  ```bash
+  bd diff HEAD~5 HEAD  # Show changes in the last 5 commits
+  ```
+
+## Summary for Agents
+If you receive an error about `dolt backend requires CGO` when running `bd ready`, it means the Dolt features are not available on this specific build. You must fall back to standard `bd` commands which use SQLite by default and sync via JSONL files.
+
+However, when working in a Dolt-enabled environment, you should proactively create a branch when starting a large Epic (`bd branch feature-xyz`), commit your `bd` issue changes natively tracking the state (`bd vc commit`), and merge them back when the epic is verified (`bd vc merge`).

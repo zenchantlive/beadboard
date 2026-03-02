@@ -29,7 +29,7 @@ export async function handleMutationRequest(request: Request, operation: Mutatio
     const payload = validateMutationPayload(operation, body);
     const result = await executeMutation(operation, payload);
 
-    const status = result.ok ? 200 : result.error?.classification === 'not_found' ? 404 : 400;
+    const status = result.ok ? 200 : result.error?.classification === 'not_found' ? 503 : 400;
     return NextResponse.json(result, { status });
   } catch (error) {
     if (error instanceof MutationValidationError) {

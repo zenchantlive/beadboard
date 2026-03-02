@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Filter, UserPlus } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useUrlState, buildUrlParams } from '../../hooks/use-url-state';
 
 import type { BeadIssue } from '../../lib/types';
 import type { GraphHopDepth } from '../../lib/graph-view';
@@ -18,6 +20,7 @@ export interface SmartDagProps {
   onSelectTask?: (id: string) => void;
   projectRoot: string;
   hideClosed?: boolean;
+  initialTab?: WorkflowTab;
   onAssignModeChange?: (assignMode: boolean) => void;
   onSelectedIssueChange?: (issue: BeadIssue | null) => void;
   swarmId?: string;
@@ -32,14 +35,37 @@ export function SmartDag({
   onSelectTask,
   projectRoot,
   hideClosed: hideClosedProp = false,
+  initialTab,
   onAssignModeChange,
   onSelectedIssueChange,
   swarmId,
 }: SmartDagProps) {
   const { archetypes } = useArchetypes(projectRoot);
+  const { setTaskId } = useUrlState();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Single router.push so view AND task are set atomically — two separate calls
+  // would each rebuild from the same stale searchParams and the second would win.
+  const handleViewInSocial = useCallback((id: string) => {
+    const url = buildUrlParams(searchParams, { view: 'social', task: id, swarm: null, right: 'open', panel: 'open', drawer: null });
+    router.push(url, { scroll: false });
+  }, [searchParams, router]);
+
+  const handleNodeAssignMode = useCallback((_id: string) => {
+    setTaskId(null); // must clear task first so assignMode && !taskId renders AssignmentPanel
+    setAssignMode(true);
+    onAssignModeChange?.(true);
+  }, [onAssignModeChange, setTaskId]);
+
+  const handleNodeTelemetry = useCallback((_id: string) => {
+    setTaskId(null);
+    setAssignMode(false);
+    onAssignModeChange?.(false);
+  }, [onAssignModeChange, setTaskId]);
 
   const [showFilters, setShowFilters] = useState(false);
-  const [activeTab, setActiveTab] = useState<WorkflowTab>('tasks');
+  const [activeTab, setActiveTab] = useState<WorkflowTab>(initialTab ?? 'tasks');
   const [assignMode, setAssignMode] = useState(false);
 
   const [hideClosed, setHideClosed] = useState(true);
@@ -262,6 +288,9 @@ export function SmartDag({
               beads={sortedTasks}
               selectedId={selectedTaskId}
               onSelect={onSelectTask}
+              onViewInSocial={handleViewInSocial}
+              onAssignMode={handleNodeAssignMode}
+              onViewTelemetry={handleNodeTelemetry}
               hideClosed={hideClosed}
               archetypes={archetypes}
               assignMode={assignMode}

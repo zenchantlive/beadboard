@@ -1,16 +1,19 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { BeadStatus } from '@/lib/types';
+import type { BeadStatus } from '@/src/lib/types';
+import type { SocialCardStatus } from '@/src/lib/social-cards';
 
 type BadgeSize = 'sm' | 'md';
+type StatusType = BeadStatus | SocialCardStatus;
 
 interface StatusBadgeProps {
-  status: BeadStatus;
+  status: StatusType;
   size?: BadgeSize;
 }
 
-const STATUS_CLASSES: Partial<Record<BeadStatus, string>> = {
+const STATUS_CLASSES: Partial<Record<StatusType, string>> = {
   open: 'border-teal-500/30 bg-teal-500/15 text-teal-200',
+  ready: 'border-teal-500/30 bg-teal-500/15 text-teal-200',
   in_progress: 'border-green-500/30 bg-green-500/15 text-green-200',
   blocked: 'border-amber-500/30 bg-amber-500/15 text-amber-200',
   deferred: 'border-slate-500/30 bg-slate-500/15 text-slate-300',
@@ -24,8 +27,9 @@ const SIZE_CLASSES: Record<BadgeSize, string> = {
   md: 'text-xs px-2.5 py-0.5',
 };
 
-const STATUS_LABELS: Partial<Record<BeadStatus, string>> = {
+const STATUS_LABELS: Partial<Record<StatusType, string>> = {
   open: 'Open',
+  ready: 'Ready',
   in_progress: 'In Progress',
   blocked: 'Blocked',
   deferred: 'Deferred',

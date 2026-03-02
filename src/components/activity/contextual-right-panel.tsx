@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ChevronLeft } from 'lucide-react';
 import type { BeadIssue } from '../../lib/types';
 import { ActivityPanel } from './activity-panel';
 import { SwarmCommandFeed } from './swarm-command-feed';
@@ -15,9 +16,11 @@ export interface ContextualRightPanelProps {
     swarmId?: string | null;
     issues: BeadIssue[];
     projectRoot: string;
+    actor?: string;
+    onMinimize?: () => void;
 }
 
-export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectRoot }: ContextualRightPanelProps) {
+export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectRoot, actor, onMinimize }: ContextualRightPanelProps) {
     const { setTaskId } = useUrlState();
 
     // Task conversation takes priority — user explicitly clicked the conversation icon
@@ -32,6 +35,7 @@ export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectR
                 id={taskId}
                 issue={selectedIssue}
                 projectRoot={projectRoot}
+                actor={actor}
                 onIssueUpdated={async () => {}}
             />
         );
@@ -58,10 +62,28 @@ export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectR
 
     // Fallback to Global feed
     return (
-        <ActivityPanel
-            issues={issues}
-            projectRoot={projectRoot}
-        />
+        <div className="flex h-full flex-col overflow-hidden bg-[var(--surface-primary)]">
+            {onMinimize && (
+                <div className="flex shrink-0 items-center justify-between border-b border-[var(--border-subtle)] px-3 py-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--text-tertiary)]">Live Activity Feed</span>
+                    <button
+                        type="button"
+                        onClick={onMinimize}
+                        className="rounded p-1 text-[var(--text-tertiary)] transition-colors hover:bg-[var(--alpha-white-low)] hover:text-[var(--text-primary)]"
+                        aria-label="Minimize to telemetry"
+                        title="Minimize to telemetry"
+                    >
+                        <ChevronLeft className="h-3.5 w-3.5" />
+                    </button>
+                </div>
+            )}
+            <div className="min-h-0 flex-1 overflow-hidden">
+                <ActivityPanel
+                    issues={issues}
+                    projectRoot={projectRoot}
+                />
+            </div>
+        </div>
     );
 }
 

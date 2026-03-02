@@ -52,7 +52,24 @@ export function SwarmCommandFeed({ epicId, issues, projectRoot }: SwarmCommandFe
         return entries;
     }, [contextBeads, archetypes]);
 
-    // 3. Subscribe to real-time activity, filtering ONLY for this epic's children
+    // 3. Load historical activity filtered to this epic's children
+    useEffect(() => {
+        if (contextBeadIds.size === 0) return;
+        async function loadHistory() {
+            try {
+                const res = await fetch(`/api/activity?projectRoot=${encodeURIComponent(projectRoot)}`);
+                if (!res.ok) return;
+                const data = (await res.json()) as ActivityEvent[];
+                const filtered = data.filter(e => e?.beadId && contextBeadIds.has(e.beadId));
+                setActivities(filtered.slice(0, 100));
+            } catch {
+                // ignore
+            }
+        }
+        void loadHistory();
+    }, [projectRoot, contextBeadIds]);
+
+    // 4. Subscribe to real-time activity, filtering ONLY for this epic's children
     useEffect(() => {
         const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
 
@@ -76,9 +93,9 @@ export function SwarmCommandFeed({ epicId, issues, projectRoot }: SwarmCommandFe
     }, [projectRoot, contextBeadIds]);
 
     return (
-        <div className="flex flex-col h-full bg-[#050a10] border-l border-[var(--ui-border-soft)]">
+        <div className="flex flex-col h-full bg-[var(--surface-secondary)] border-l border-[var(--ui-border-soft)]">
             {/* SQUAD ROSTER SECTION */}
-            <div className="flex-shrink-0 p-4 bg-[#0a111a] shadow-[0_16px_24px_-24px_rgba(0,0,0,0.9)] z-10">
+            <div className="flex-shrink-0 p-4 bg-[var(--surface-primary)] shadow-[0_16px_24px_-24px_rgba(0,0,0,0.9)] z-10">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
@@ -96,7 +113,7 @@ export function SwarmCommandFeed({ epicId, issues, projectRoot }: SwarmCommandFe
                 ) : (
                     <div className="grid grid-cols-1 gap-2">
                         {rosterEntries.map((agent, i) => (
-                            <div key={i} className="flex gap-3 p-2.5 bg-[#0f1824] border border-[var(--ui-border-soft)] rounded-xl items-center shadow-lg transition-all hover:border-[var(--ui-accent-info)]/30">
+                            <div key={i} className="flex gap-3 p-2.5 bg-[var(--surface-elevated)] border border-[var(--ui-border-soft)] rounded-xl items-center shadow-lg transition-all hover:border-[var(--ui-accent-info)]/30">
                                 <div className="relative">
                                     <div className="absolute -inset-0.5 rounded-full blur-[2px] opacity-70 bg-emerald-500/20" />
                                     <Avatar className="h-9 w-9 relative z-10 ring-2 ring-emerald-500/40">

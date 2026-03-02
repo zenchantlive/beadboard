@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Loader2, ChevronDown, UserPlus, X, MessageSquare } from 'lucide-react';
+import { Columns2, Loader2, ChevronDown, Rocket, Signal, UserPlus, X, MessageSquare } from 'lucide-react';
 import type { BeadIssue } from '../../lib/types';
 import type { AgentArchetype } from '../../lib/types-swarm';
 
@@ -39,6 +39,12 @@ export interface GraphNodeData {
     selectedTaskId?: string;
     /** Opens the conversation panel for this node. Passed from UnifiedShell via WorkflowGraph. */
     onConversationOpen?: (id: string) => void;
+    /** Navigates to the Social view with this task selected. */
+    onViewInSocial?: (id: string) => void;
+    /** Opens the Swarm Assignment panel for this task. */
+    onAssignMode?: (id: string) => void;
+    /** Restores the live telemetry feed in the right panel. */
+    onViewTelemetry?: (id: string) => void;
 }
 
 function getAssignedArchetypes(labels: string[], archetypes: AgentArchetype[]): AgentArchetype[] {
@@ -89,6 +95,9 @@ function nodeStyle(kind: GraphNodeData['kind']): string {
  */
 export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeData>>) {
     const onConversationOpen = data.onConversationOpen as ((id: string) => void) | undefined;
+    const onViewInSocial = data.onViewInSocial as ((id: string) => void) | undefined;
+    const onAssignMode = data.onAssignMode as ((id: string) => void) | undefined;
+    const onViewTelemetry = data.onViewTelemetry as ((id: string) => void) | undefined;
     const isConvOpen = (data.selectedTaskId as string | undefined) === id;
     const [hovered, setHovered] = useState(false);
     const [isAssigning, setIsAssigning] = useState(false);
@@ -255,6 +264,46 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
                         >
                             <MessageSquare className="h-3 w-3" />
                         </button>
+                        {onViewInSocial ? (
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onViewInSocial(id); }}
+                                className="rounded p-0.5 text-[var(--text-tertiary)]/40 transition-colors hover:text-[var(--accent-success)] hover:bg-[var(--alpha-white-low)]"
+                                title="View in Social"
+                            >
+                                <Columns2 className="h-3 w-3" />
+                            </button>
+                        ) : null}
+                        {onAssignMode ? (
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onAssignMode(id); }}
+                                className="rounded p-0.5 text-emerald-400/50 transition-colors hover:text-emerald-400 hover:bg-[var(--alpha-white-low)]"
+                                title="Launch Swarm"
+                            >
+                                <Rocket className="h-3 w-3" />
+                            </button>
+                        ) : null}
+                        {onViewTelemetry ? (
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onViewTelemetry(id); }}
+                                className="rounded p-0.5 text-[var(--accent-info)]/50 transition-colors hover:text-[var(--accent-info)] hover:bg-[var(--alpha-white-low)]"
+                                title="Live feed"
+                            >
+                                <Signal className="h-3 w-3" />
+                            </button>
+                        ) : null}
+                        {onViewTelemetry ? (
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onViewTelemetry(id); }}
+                                className="rounded p-0.5 text-[var(--accent-info)]/50 transition-colors hover:text-[var(--accent-info)] hover:bg-[var(--alpha-white-low)]"
+                                title="Live feed"
+                            >
+                                <Signal className="h-3 w-3" />
+                            </button>
+                        ) : null}
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                         {assignedArchetypes.map((archetype) => (

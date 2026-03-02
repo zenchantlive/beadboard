@@ -6,27 +6,27 @@
 
 :root {
   /* ========== VISUAL-TRUTH UI TOKEN CONTRACT (bb-vt.1.1) ========== */
-  /* Warm charcoal aurora palette - DISTINCT LAYERS */
-  --ui-bg-app: #181716;        /* Darkest - page background */
-  --ui-bg-header: #131211;     /* Header - darker than sidebar */
-  --ui-bg-shell: #1f1e1d;      /* Sidebar - distinct from main */
-  --ui-bg-panel: #282725;      /* Panels/cards within sidebar */
-  --ui-bg-main: #242322;       /* Main content area - distinct */
-  --ui-bg-card: #302e2c;       /* Cards - lightest layer */
-  --ui-bg-elevated: #3a3836;   /* Elevated/selected elements */
+  /* Map legacy --ui-* tokens to theme tokens so all themes work consistently */
+  --ui-bg-app: var(--surface-backdrop);
+  --ui-bg-header: var(--surface-primary);
+  --ui-bg-shell: var(--surface-primary);
+  --ui-bg-panel: var(--surface-secondary);
+  --ui-bg-main: var(--surface-secondary);
+  --ui-bg-card: var(--surface-elevated);
+  --ui-bg-elevated: var(--surface-elevated);
 
-  --ui-border-soft: rgba(180, 175, 165, 0.2);
-  --ui-border-strong: rgba(180, 175, 165, 0.35);
+  --ui-border-soft: var(--border-subtle);
+  --ui-border-strong: var(--border-default);
 
-  --ui-text-primary: #f0eeea;
-  --ui-text-muted: #a8a49a;
+  --ui-text-primary: var(--text-primary);
+  --ui-text-muted: var(--text-tertiary);
 
-  --ui-accent-ready: #35d98f;
-  --ui-accent-blocked: #ff4c72;
-  --ui-accent-warning: #ffb24a;
-  --ui-accent-info: #35c9ff;
-  --ui-accent-action-green: #35d98f;
-  --ui-accent-action-red: #ff4c72;
+  --ui-accent-ready: var(--accent-success);
+  --ui-accent-blocked: var(--accent-danger);
+  --ui-accent-warning: var(--accent-warning);
+  --ui-accent-info: var(--accent-info);
+  --ui-accent-action-green: var(--accent-success);
+  --ui-accent-action-red: var(--accent-danger);
 
   --ui-font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --ui-font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
@@ -43,30 +43,25 @@
   --color-accent-teal: var(--ui-accent-info);
 
   --color-text-primary: var(--ui-text-primary);
-  --color-text-secondary: #c4cfdb;
+  --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--ui-text-muted);
-  --color-text-on-primary: #10161d;
+  --color-text-on-primary: var(--text-inverse);
 
   --color-border-default: var(--ui-border-strong);
   --color-border-subtle: var(--ui-border-soft);
 
   /* Status colors */
-  --status-open: var(--ui-accent-info);
-  --status-ready: var(--ui-accent-ready);
-  --status-in-progress: var(--ui-accent-warning);
-  --status-progress: var(--ui-accent-warning);
-  --status-blocked: var(--ui-accent-blocked);
-  --status-blocked-earthy: var(--ui-accent-blocked);
-  --status-closed: #7f8b98;
-  --status-closed-earthy: #7f8b98;
-  --status-deferred: #7f8b98;
+  --status-open: var(--accent-info);
+  --status-progress: var(--status-in-progress);
+  --status-blocked-earthy: var(--status-blocked);
+  --status-closed-earthy: var(--status-closed);
 
   /* Liveness colors */
   --liveness-active: var(--ui-accent-ready);
   --liveness-stale: var(--ui-accent-warning);
   --liveness-stuck: var(--ui-accent-action-red);
   --liveness-dead: var(--ui-accent-action-red);
-  --liveness-idle: #7f8b98;
+  --liveness-idle: var(--text-tertiary);
 
   /* Agent Role Colors */
   --agent-role-ui: #6B9BD2;
@@ -83,10 +78,10 @@
   --priority-p4: #64748b;
 
   /* Blocks/Unlocks Section Colors */
-  --color-blocks-bg: rgba(212, 165, 116, 0.1);
-  --color-unlocks-bg: rgba(229, 115, 115, 0.1);
-  --color-blocks-border: rgba(212, 165, 116, 0.2);
-  --color-unlocks-border: rgba(229, 115, 115, 0.2);
+  --color-blocks-bg: var(--status-in-progress);
+  --color-unlocks-bg: var(--status-blocked);
+  --color-blocks-border: color-mix(in srgb, var(--accent-warning) 35%, transparent);
+  --color-unlocks-border: color-mix(in srgb, var(--accent-danger) 35%, transparent);
 
   /* ========== RADI ========== */
   --radius-sm: 0.375rem;
@@ -98,10 +93,8 @@
   --radius-pill: 9999px;
 
   /* ========== SHADOWS ========== */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow-soft-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
-  --shadow-soft-xl: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+  --shadow-soft-lg: var(--shadow-md);
+  --shadow-soft-xl: var(--shadow-lg);
 
   /* ========== TYPOGRAPHY ========== */
   --font-ui-stack: var(--ui-font-sans);
@@ -139,13 +132,12 @@
   --sidebar-right-width: 17.5rem;
   --topbar-height: 3.75rem;
 
-  --glass-base: linear-gradient(180deg,
-      color-mix(in srgb, var(--ui-bg-card) 72%, black),
-      color-mix(in srgb, var(--ui-bg-panel) 78%, black));
-  --edge-top: color-mix(in srgb, var(--ui-border-strong) 80%, white 20%);
-  --edge-bottom: color-mix(in srgb, var(--ui-border-soft) 75%, black 25%);
-  --elevation-ambient: 0 20px 40px -16px rgba(0, 0, 0, 0.78);
-  --elevation-tight: 0 10px 24px -12px rgba(0, 0, 0, 0.7);
+  --glass-base: linear-gradient(180deg, var(--surface-elevated), var(--surface-secondary));
+  --edge-side: var(--ui-border-soft);
+  --edge-top: color-mix(in srgb, var(--ui-border-strong) 88%, white 12%);
+  --edge-bottom: color-mix(in srgb, var(--ui-border-soft) 88%, black 12%);
+  --elevation-ambient: var(--shadow-lg);
+  --elevation-tight: var(--shadow-md);
 
   /* ========== LEGACY COMPATIBILITY TOKENS ========== */
   /* For existing components that reference these */
@@ -181,7 +173,7 @@ body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.35) rgba(255, 255, 255, 0.02);
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 *::-webkit-scrollbar {
@@ -190,18 +182,18 @@ body {
 }
 
 *::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--scrollbar-track);
   border-radius: 9999px;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(156, 163, 175, 0.55), rgba(107, 114, 128, 0.45));
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--scrollbar-thumb);
+  border: 1px solid color-mix(in srgb, var(--scrollbar-thumb) 70%, transparent);
   border-radius: 9999px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(186, 194, 209, 0.72), rgba(124, 136, 156, 0.62));
+  background: var(--scrollbar-thumb-hover);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -210,12 +202,12 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.15);
+  background: var(--scrollbar-thumb);
   border-radius: 20px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.3);
+  background: var(--scrollbar-thumb-hover);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -229,14 +221,14 @@ body {
 
 
 .workflow-card {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top-color: rgba(255, 255, 255, 0.24);
-  border-bottom-color: rgba(0, 0, 0, 0.9);
-  background: linear-gradient(180deg, rgba(42, 44, 52, 0.6) 0%, rgba(22, 23, 28, 0.6) 100%);
+  border: 1px solid var(--border-default);
+  border-top-color: color-mix(in srgb, var(--border-strong) 88%, white 12%);
+  border-bottom-color: color-mix(in srgb, var(--border-subtle) 88%, black 12%);
+  background: linear-gradient(180deg, var(--surface-quaternary) 0%, var(--surface-secondary) 100%);
   box-shadow:
     var(--elevation-ambient),
     var(--elevation-tight),
-    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    inset 0 1px 1px color-mix(in srgb, var(--alpha-white-high) 40%, transparent);
   backdrop-filter: blur(24px) saturate(120%);
   -webkit-backdrop-filter: blur(24px) saturate(120%);
   transform: translateZ(0);
@@ -244,14 +236,14 @@ body {
 }
 
 .workflow-card-selected {
-  border-color: rgba(96, 165, 250, 0.42);
-  border-top-color: rgba(96, 165, 250, 0.58);
-  background: linear-gradient(180deg, rgba(60, 68, 88, 0.7) 0%, rgba(35, 40, 52, 0.7) 100%);
+  border-color: color-mix(in srgb, var(--accent-info) 42%, var(--border-default));
+  border-top-color: color-mix(in srgb, var(--accent-info) 58%, var(--border-strong));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-active) 55%, var(--surface-elevated)), var(--surface-secondary));
   box-shadow:
-    0 20px 48px -8px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(96, 165, 250, 0.25),
-    0 0 40px rgba(96, 165, 250, 0.15),
-    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    var(--shadow-lg),
+    0 0 0 1px color-mix(in srgb, var(--accent-info) 25%, transparent),
+    var(--glow-info),
+    inset 0 1px 1px color-mix(in srgb, var(--alpha-white-high) 50%, transparent);
 }
 
 .glass-panel {
@@ -265,19 +257,19 @@ body {
 }
 
 .bg-earthy-gradient {
-  background: linear-gradient(to bottom right, #2D2D2D, #363636);
+  background: linear-gradient(to bottom right, var(--surface-secondary), var(--surface-tertiary));
 }
 
-/* Shared dark form controls to avoid white-on-white browser defaults */
+/* Shared themed form controls */
 .ui-field {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-default);
   border-top-color: var(--edge-top);
   border-bottom-color: var(--edge-bottom);
-  background: linear-gradient(180deg, rgba(32, 34, 42, 0.72), rgba(17, 19, 26, 0.72));
+  background: linear-gradient(180deg, var(--surface-input), var(--surface-secondary));
   color: var(--color-text-strong);
   box-shadow:
-    0 8px 20px -12px rgba(0, 0, 0, 0.85),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    var(--shadow-sm),
+    inset 0 1px 0 color-mix(in srgb, var(--alpha-white-high) 22%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -288,10 +280,10 @@ body {
 
 .ui-field:focus-visible {
   outline: none;
-  border-color: rgba(96, 165, 250, 0.48);
+  border-color: color-mix(in srgb, var(--accent-info) 48%, var(--border-default));
   box-shadow:
-    0 0 0 2px rgba(96, 165, 250, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 0 0 2px color-mix(in srgb, var(--accent-info) 20%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--alpha-white-high) 22%, transparent);
 }
 
 .ui-select {
@@ -326,19 +318,19 @@ body {
 }
 
 .ui-shell-topbar {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-panel) 92%, black), var(--ui-bg-shell));
+  background: linear-gradient(180deg, var(--ui-bg-panel), var(--ui-bg-shell));
   border-bottom: 1px solid color-mix(in srgb, var(--ui-accent-info) 22%, var(--ui-border-soft));
-  box-shadow: 0 10px 24px -20px rgba(0, 0, 0, 0.9);
+  box-shadow: var(--shadow-sm);
 }
 
 .ui-shell-middle {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-app) 74%, black), color-mix(in srgb, var(--ui-bg-app) 90%, black));
+  background: linear-gradient(180deg, var(--ui-bg-app), var(--ui-bg-main));
   border-left: 1px solid color-mix(in srgb, var(--ui-accent-info) 20%, var(--ui-border-soft));
   border-right: 1px solid color-mix(in srgb, var(--ui-accent-info) 20%, var(--ui-border-soft));
 }
 
 .ui-shell-panel {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-shell) 86%, black), color-mix(in srgb, var(--ui-bg-panel) 84%, black));
+  background: linear-gradient(180deg, var(--ui-bg-shell), var(--ui-bg-panel));
   border-left: 1px solid color-mix(in srgb, var(--ui-accent-info) 30%, var(--ui-border-soft));
 }
 
@@ -349,8 +341,8 @@ body {
 
 .workflow-graph-legend {
   backdrop-filter: blur(12px);
-  background: rgba(20, 23, 31, 0.72);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: color-mix(in srgb, var(--surface-overlay) 78%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--alpha-white-high) 22%, transparent), var(--shadow-md);
 }
 
 .workflow-graph-flow .react-flow__viewport {

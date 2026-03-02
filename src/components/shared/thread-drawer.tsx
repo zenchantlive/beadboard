@@ -25,6 +25,7 @@ interface ThreadDrawerProps {
   issue?: BeadIssue | null;
   projectRoot?: string;
   onIssueUpdated?: (issueId: string) => Promise<void> | void;
+  actor?: string;
 }
 
 interface CommentFromApi {
@@ -52,11 +53,11 @@ async function postIssueUpdate(body: UpdateMutationPayload): Promise<void> {
   }
 }
 
-async function postComment(projectRoot: string, id: string, text: string): Promise<void> {
+async function postComment(projectRoot: string, id: string, text: string, actor?: string): Promise<void> {
   const response = await fetch('/api/beads/comment', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ projectRoot, id, text }),
+    body: JSON.stringify({ projectRoot, id, text, ...(actor?.trim() ? { actor: actor.trim() } : {}) }),
   });
 
   const payload = (await response.json()) as { ok: boolean; error?: { message?: string } };
@@ -83,6 +84,7 @@ export function ThreadDrawer({
   issue,
   projectRoot,
   onIssueUpdated,
+  actor,
 }: ThreadDrawerProps) {
   const { isMobile } = useResponsive();
   const [comment, setComment] = useState('');
@@ -206,7 +208,7 @@ export function ThreadDrawer({
     setCommentState('sending');
 
     try {
-      await postComment(projectRoot, targetIssueId, comment.trim());
+      await postComment(projectRoot, targetIssueId, comment.trim(), actor);
       setComment('');
       setCommentState('sent');
       // Refresh comments

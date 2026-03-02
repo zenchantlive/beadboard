@@ -40,6 +40,12 @@ test('UnifiedShell - imports AssignmentPanel', async () => {
   assert.ok(fileContent.includes('AssignmentPanel'), 'Should import AssignmentPanel');
 });
 
+test('UnifiedShell - checks bd health and renders setup warning', async () => {
+  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
+  assert.ok(fileContent.includes('useBdHealth'), 'Should use bd health hook');
+  assert.ok(fileContent.includes('BD setup issue:'), 'Should show bd setup warning text');
+});
+
 // Test that AssignmentPanel is rendered conditionally based on view and assignMode
 test('UnifiedShell - renders AssignmentPanel conditionally', async () => {
   const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');

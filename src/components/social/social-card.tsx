@@ -1,5 +1,5 @@
 import type { KeyboardEvent, MouseEventHandler } from 'react';
-import { Activity, Clock3, GitBranch, Link2, MessageCircle, Orbit, UserPlus } from 'lucide-react';
+import { Clock3, GitBranch, Link2, MessageCircle, MessageSquare, Rocket, UserPlus } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -26,6 +26,7 @@ interface SocialCardProps {
   unblocksDetails?: Array<{ id: string; title: string; epic?: string }>;
   archetypes?: AgentArchetype[];
   swarmId?: string;
+  onLaunchSwarm?: () => void;
 }
 
 function handleCardKeyDown(event: KeyboardEvent<HTMLDivElement>, onClick?: MouseEventHandler<HTMLDivElement>) {
@@ -122,6 +123,7 @@ export function SocialCard({
   unblocksDetails = [],
   archetypes = [],
   swarmId,
+  onLaunchSwarm,
 }: SocialCardProps) {
   const status = statusVisual(data.status);
   const { selectedArchetype, setSelectedArchetype, isAssigning, assignSuccess, handleAssign } = useArchetypePicker();
@@ -232,7 +234,8 @@ export function SocialCard({
                 onJumpToGraph?.(data.id);
               }}
               className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-tertiary)] text-[var(--accent-info)] transition-colors hover:bg-[var(--alpha-white-low)]"
-              aria-label="Open in graph"
+              aria-label="View dependency graph"
+              title="View dependency graph"
             >
               <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
@@ -242,22 +245,26 @@ export function SocialCard({
                 event.stopPropagation();
                 onJumpToActivity?.(data.id);
               }}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-tertiary)] text-[var(--accent-warning)] transition-colors hover:bg-[var(--alpha-white-low)]"
-              aria-label="Open in activity"
-            >
-              <Orbit className="h-3.5 w-3.5" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onOpenThread?.();
-              }}
               className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-tertiary)] text-[var(--accent-success)] transition-colors hover:bg-[var(--alpha-white-low)]"
-              aria-label="Open thread"
+              aria-label="View details"
+              title="View details"
             >
-              <Activity className="h-3.5 w-3.5" aria-hidden="true" />
+              <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
+            {onLaunchSwarm ? (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onLaunchSwarm();
+                }}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 transition-colors hover:bg-emerald-500/20"
+                aria-label="Launch Swarm"
+                title="Launch Swarm"
+              >
+                <Rocket className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

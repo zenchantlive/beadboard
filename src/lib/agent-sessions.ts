@@ -1,8 +1,13 @@
 import type { ActivityEvent } from './activity';
 import type { BeadIssue } from './types';
 import { listAgents, deriveLiveness } from './agent-registry';
-import { inboxAgentMessages, type AgentMessage } from './agent-mail';
-import { statusAgentReservations, classifyOverlap } from './agent-reservations';
+import type { AgentMessage } from './agent-mail';
+import {
+  calculateReservationIncursions,
+  projectInboxFromDisk,
+  projectReservations,
+  readCoordEventsFromDisk,
+} from './coord-projections';
 
 export type AgentSessionState = 'active' | 'reviewing' | 'deciding' | 'needs_input' | 'completed' | 'stale' | 'evicted' | 'idle' | 'stuck' | 'dead';
 
@@ -148,56 +153,21 @@ export interface Incursion {
 /**
  * Calculates global incursions by comparing all active reservations.
  */
-export async function calculateIncursions(): Promise<Incursion[]> {
-  const statusResult = await statusAgentReservations({});
-  if (!statusResult.ok || !statusResult.data) return [];
-
-  const reservations = statusResult.data.reservations;
-  const incursions: Incursion[] = [];
-  const processedPairs = new Set<string>();
-
-  for (let i = 0; i < reservations.length; i++) {
-    for (let j = i + 1; j < reservations.length; j++) {
-      const resA = reservations[i];
-      const resB = reservations[j];
-
-      // Don't compare an agent against themselves
-      if (resA.agent_id === resB.agent_id) continue;
-
-      const overlap = classifyOverlap(resA.scope, resB.scope);
-      if (overlap !== 'disjoint') {
-        const key = [resA.agent_id, resB.agent_id].sort().join(':') + ':' + [resA.scope, resB.scope].sort().join('|');
-        if (processedPairs.has(key)) continue;
-        processedPairs.add(key);
-
-        incursions.push({
-          scope: overlap === 'exact' ? resA.scope : `${resA.scope} ↔ ${resB.scope}`,
-          agents: [resA.agent_id, resB.agent_id],
-          severity: overlap
-        });
-      }
-    }
-  }
-
-  return incursions;
+export async function calculateIncursions(
+  projectRoot: string = process.cwd(),
+  agentLivenessMap: Record<string, string> = {},
+): Promise<Incursion[]> {
+  const events = await readCoordEventsFromDisk(projectRoot);
+  const reservations = projectReservations(events, agentLivenessMap);
+  return calculateReservationIncursions(reservations);
 }
 
 /**
  * Gathers all relevant communication for all agents to build a summary for aggregation.
  */
-export async function getCommunicationSummary(): Promise<CommunicationSummary> {
-  const agentsResult = await listAgents({});
-  const agents = agentsResult.data ?? [];
-  const allMessages: AgentMessage[] = [];
-
-  for (const agent of agents) {
-    const inbox = await inboxAgentMessages({ agent: agent.agent_id });
-    if (inbox.data) {
-      allMessages.push(...inbox.data);
-    }
-  }
-
-  return { messages: allMessages };
+export async function getCommunicationSummary(projectRoot: string = process.cwd()): Promise<CommunicationSummary> {
+  const coordMessages = await projectInboxFromDisk(projectRoot);
+  return { messages: coordMessages };
 }
 
 export interface AgentMetrics {

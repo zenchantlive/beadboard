@@ -63,7 +63,7 @@ test('executeMutation surfaces bridge failures in normalized response', async ()
       return {
         success: false,
         classification: 'non_zero_exit',
-        command: 'bd.exe',
+        command: 'bd',
         args,
         cwd: root,
         stdout: '',
@@ -93,7 +93,7 @@ test('executeMutation returns successful normalized response', async () => {
       return {
         success: true,
         classification: null,
-        command: 'bd.exe',
+        command: 'bd',
         args,
         cwd: root,
         stdout: '{"id":"bb-123"}',
@@ -108,4 +108,63 @@ test('executeMutation returns successful normalized response', async () => {
   assert.equal(result.ok, true);
   assert.equal(result.operation, 'update');
   assert.equal(result.command.success, true);
+});
+
+test('executeMutation includes --actor when provided in payload', async () => {
+  const payload = validateMutationPayload('comment', {
+    projectRoot: root,
+    id: 'bb-123',
+    text: 'Operator note',
+    actor: 'zenchant',
+  });
+
+  const result = await executeMutation('comment', payload, {
+    runBdCommand: async ({ args }) => {
+      assert.deepEqual(args, ['--actor', 'zenchant', 'comments', 'add', 'bb-123', 'Operator note', '--json']);
+      return {
+        success: true,
+        classification: null,
+        command: 'bd',
+        args,
+        cwd: root,
+        stdout: '{"ok":true}',
+        stderr: '',
+        code: 0,
+        durationMs: 2,
+        error: null,
+      };
+    },
+  });
+
+  assert.equal(result.ok, true);
+});
+
+test('executeMutation ignores bdPath and uses default runner contract', async () => {
+  const payload = validateMutationPayload('update', {
+    projectRoot: root,
+    id: 'bb-123',
+    status: 'in_progress',
+    bdPath: 'C:/Tools/beads/bd.exe',
+  });
+
+  const result = await executeMutation('update', payload, {
+    runBdCommand: async (options) => {
+      assert.equal(options.explicitBdPath, undefined);
+      assert.deepEqual(options.args, ['update', 'bb-123', '-s', 'in_progress', '--json']);
+      return {
+        success: true,
+        classification: null,
+        command: 'bd',
+        args: options.args,
+        cwd: root,
+        stdout: '{"ok":true}',
+        stderr: '',
+        code: 0,
+        durationMs: 2,
+        error: null,
+      };
+    },
+  });
+
+  assert.equal(result.ok, true);
 });

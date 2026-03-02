@@ -111,25 +111,25 @@ export function formatRelativeTime(timestamp: string): string {
 function getAgentTone(status: AgentStatus): AgentTone {
   const tones: Record<AgentStatus, AgentTone> = {
     active: {
-      cardClass: 'bg-[#173126]',
+      cardClass: 'bg-[var(--status-ready)]',
       labelClass: 'text-[#7CB97A]',
       ringClass: 'ring-[#7CB97A]/45',
       glowClass: 'bg-[#7CB97A]/30',
     },
     stale: {
-      cardClass: 'bg-[#322817]',
+      cardClass: 'bg-[var(--status-in-progress)]',
       labelClass: 'text-[#D4A574]',
       ringClass: 'ring-[#D4A574]/45',
       glowClass: 'bg-[#D4A574]/30',
     },
     stuck: {
-      cardClass: 'bg-[#341a1f]',
+      cardClass: 'bg-[var(--status-blocked)]',
       labelClass: 'text-[#C97A7A]',
       ringClass: 'ring-[#C97A7A]/45',
       glowClass: 'bg-[#C97A7A]/30',
     },
     dead: {
-      cardClass: 'bg-[#2b232b]',
+      cardClass: 'bg-[var(--surface-primary)]',
       labelClass: 'text-[#A78A94]',
       ringClass: 'ring-[#A78A94]/40',
       glowClass: 'bg-[#A78A94]/25',
@@ -147,84 +147,84 @@ export function getEventTone(kind: string): EventTone {
       label: 'Created',
       labelClass: 'text-[#7CB97A]',
       dotClass: 'bg-[#7CB97A]',
-      cardClass: 'bg-[#182f25]',
+      cardClass: 'bg-[var(--status-ready)]',
       idClass: 'text-[#9ACB98]',
     },
     opened: {
       label: 'Opened',
       labelClass: 'text-[#7CB97A]',
       dotClass: 'bg-[#7CB97A]',
-      cardClass: 'bg-[#182f25]',
+      cardClass: 'bg-[var(--status-ready)]',
       idClass: 'text-[#9ACB98]',
     },
     closed: {
       label: 'Closed',
       labelClass: 'text-[#D4A574]',
       dotClass: 'bg-[#D4A574]',
-      cardClass: 'bg-[#332716]',
+      cardClass: 'bg-[var(--status-in-progress)]',
       idClass: 'text-[#DAB891]',
     },
     reopened: {
       label: 'Reopened',
       labelClass: 'text-[#5B95E8]',
       dotClass: 'bg-[#5B95E8]',
-      cardClass: 'bg-[#1b2b43]',
+      cardClass: 'bg-[var(--surface-primary)]',
       idClass: 'text-[#8DB4EF]',
     },
     status_changed: {
       label: 'Status changed',
       labelClass: 'text-[#D4A574]',
       dotClass: 'bg-[#D4A574]',
-      cardClass: 'bg-[#2f2518]',
+      cardClass: 'bg-[var(--status-in-progress)]',
       idClass: 'text-[#DAB891]',
     },
     priority_changed: {
       label: 'Priority changed',
       labelClass: 'text-[#D4A574]',
       dotClass: 'bg-[#D4A574]',
-      cardClass: 'bg-[#2f2518]',
+      cardClass: 'bg-[var(--status-in-progress)]',
       idClass: 'text-[#DAB891]',
     },
     assignee_changed: {
       label: 'Assigned',
       labelClass: 'text-[#D4A574]',
       dotClass: 'bg-[#D4A574]',
-      cardClass: 'bg-[#2f2518]',
+      cardClass: 'bg-[var(--status-in-progress)]',
       idClass: 'text-[#DAB891]',
     },
     dependency_added: {
       label: 'Dependency added',
       labelClass: 'text-[#D4A574]',
       dotClass: 'bg-[#D4A574]',
-      cardClass: 'bg-[#2f2518]',
+      cardClass: 'bg-[var(--status-in-progress)]',
       idClass: 'text-[#DAB891]',
     },
     dependency_removed: {
       label: 'Dependency removed',
       labelClass: 'text-[#C97A7A]',
       dotClass: 'bg-[#C97A7A]',
-      cardClass: 'bg-[#321b21]',
+      cardClass: 'bg-[var(--status-blocked)]',
       idClass: 'text-[#D9A9A9]',
     },
     heartbeat: {
       label: 'Heartbeat',
       labelClass: 'text-[#5BA8A0]',
       dotClass: 'bg-[#5BA8A0]',
-      cardClass: 'bg-[#173034]',
+      cardClass: 'bg-[var(--surface-primary)]',
       idClass: 'text-[#8BC9C1]',
     },
     commented: {
       label: 'Commented',
       labelClass: 'text-[#5BA8A0]',
       dotClass: 'bg-[#5BA8A0]',
-      cardClass: 'bg-[#173034]',
+      cardClass: 'bg-[var(--surface-primary)]',
       idClass: 'text-[#8BC9C1]',
     },
     comment_added: {
       label: 'Commented',
       labelClass: 'text-[#5BA8A0]',
       dotClass: 'bg-[#5BA8A0]',
-      cardClass: 'bg-[#173034]',
+      cardClass: 'bg-[var(--surface-primary)]',
       idClass: 'text-[#8BC9C1]',
     },
   };
@@ -234,7 +234,7 @@ export function getEventTone(kind: string): EventTone {
       label: normalized.replace(/_/g, ' '),
       labelClass: 'text-[#5BA8A0]',
       dotClass: 'bg-[#5BA8A0]',
-      cardClass: 'bg-[#173034]',
+      cardClass: 'bg-[var(--surface-primary)]',
       idClass: 'text-[#8BC9C1]',
     }
   );
@@ -299,7 +299,7 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
   const activeAgents = agentRoster.filter(a => a.status === 'active').length;
   if (collapsed) {
     return (
-      <div className="flex flex-col items-center gap-6 py-6 h-full bg-[linear-gradient(180deg,rgba(0,0,0,0.2),rgba(0,0,0,0.36))] shadow-[inset_10px_0_22px_-20px_rgba(0,0,0,0.9)]">
+      <div className="flex flex-col items-center gap-6 py-6 h-full bg-[var(--surface-secondary)]">
         {/* Collapsed Agent Icons with ZFC Rings */}
         <div className="flex flex-col gap-4">
           {agentRoster.slice(0, 6).map(agent => (
@@ -316,7 +316,7 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
                   agent.status === 'stale' ? 'ring-[#D4A574]/45' :
                     agent.status === 'stuck' ? 'ring-[#C97A7A]/45' : 'ring-[#A78A94]/40'
               )}>
-                <AvatarFallback className="text-[10px] font-bold bg-[#1a1a1a] text-text-muted">
+                <AvatarFallback className="text-[10px] font-bold bg-[var(--surface-primary)] text-text-muted">
                   {getInitials(agent.name)}
                 </AvatarFallback>
               </Avatar>
@@ -340,9 +340,9 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#070f19] backdrop-blur-xl">
+    <div className="flex flex-col h-full bg-[var(--surface-secondary)]">
       {/* AGENT ROSTER SECTION */}
-      <div className="flex-shrink-0 p-4 bg-[#0b1625] shadow-[0_16px_24px_-24px_rgba(0,0,0,0.9)]">
+      <div className="flex-shrink-0 p-4 bg-[var(--surface-primary)] border-b border-[var(--border-subtle)]">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
@@ -368,7 +368,7 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
                     getAgentTone(agent.status).glowClass
                   )} />
                   <Avatar className={cn("h-8 w-8 relative z-10 ring-1", getAgentTone(agent.status).ringClass)}>
-                    <AvatarFallback className="text-[10px] font-bold bg-[#252525]">
+                    <AvatarFallback className="text-[10px] font-bold bg-[var(--surface-primary)]">
                       {getInitials(agent.name)}
                     </AvatarFallback>
                   </Avatar>

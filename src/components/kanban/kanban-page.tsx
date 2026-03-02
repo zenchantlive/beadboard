@@ -107,6 +107,7 @@ export function KanbanPage({
   );
   const graphHref = useMemo(() => {
     const params = new URLSearchParams();
+    params.set('view', 'graph');
     if (projectScopeMode !== 'single') {
       params.set('mode', projectScopeMode);
     }
@@ -114,7 +115,7 @@ export function KanbanPage({
       params.set('project', projectScopeKey);
     }
     const query = params.toString();
-    return query ? `/graph?${query}` : '/graph';
+    return query ? `/?${query}` : '/?view=graph';
   }, [projectScopeKey, projectScopeMode]);
   const allowMutations = projectScopeMode === 'single';
   const blockedTree = useMemo(

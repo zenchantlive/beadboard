@@ -41,9 +41,9 @@ export async function GET(request: Request): Promise<Response> {
   try {
     const issues = await readIssuesFromDisk({ projectRoot, preferBd: true });
     const activity = activityEventBus.getHistory(projectRoot);
-    const communication = await getCommunicationSummary();
+    const communication = await getCommunicationSummary(projectRoot);
     const livenessMap = await getAgentLivenessMap(projectRoot, activity);
-    const incursions = await calculateIncursions();
+    const incursions = await calculateIncursions(projectRoot, livenessMap);
     const agentsResult = await listAgents({}, { projectRoot });
 
     const feed = buildSessionTaskFeed(issues, activity, communication, livenessMap);

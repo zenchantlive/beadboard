@@ -10,25 +10,35 @@ export const MIN_LEFT_WIDTH = 192;
 export const MIN_RIGHT_WIDTH = 256;
 
 export function usePanelResize() {
-    const [leftWidth, setLeftWidth] = useState(() => {
-        if (typeof window === 'undefined') return DEFAULT_LEFT_WIDTH;
-        const saved = localStorage.getItem(LEFT_PANEL_KEY);
-        return saved ? parseInt(saved, 10) : DEFAULT_LEFT_WIDTH;
-    });
-
-    const [rightWidth, setRightWidth] = useState(() => {
-        if (typeof window === 'undefined') return DEFAULT_RIGHT_WIDTH;
-        const saved = localStorage.getItem(RIGHT_PANEL_KEY);
-        return saved ? parseInt(saved, 10) : DEFAULT_RIGHT_WIDTH;
-    });
+    const [leftWidth, setLeftWidth] = useState(DEFAULT_LEFT_WIDTH);
+    const [rightWidth, setRightWidth] = useState(DEFAULT_RIGHT_WIDTH);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        localStorage.setItem(LEFT_PANEL_KEY, String(leftWidth));
-    }, [leftWidth]);
+        const savedLeft = localStorage.getItem(LEFT_PANEL_KEY);
+        const savedRight = localStorage.getItem(RIGHT_PANEL_KEY);
+
+        if (savedLeft) {
+            setLeftWidth(parseInt(savedLeft, 10));
+        }
+        if (savedRight) {
+            setRightWidth(parseInt(savedRight, 10));
+        }
+
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
-        localStorage.setItem(RIGHT_PANEL_KEY, String(rightWidth));
-    }, [rightWidth]);
+        if (mounted) {
+            localStorage.setItem(LEFT_PANEL_KEY, String(leftWidth));
+        }
+    }, [leftWidth, mounted]);
+
+    useEffect(() => {
+        if (mounted) {
+            localStorage.setItem(RIGHT_PANEL_KEY, String(rightWidth));
+        }
+    }, [rightWidth, mounted]);
 
     const clampLeftWidth = useCallback((width: number) => {
         const maxWidth = Math.floor(window.innerWidth * 0.30);

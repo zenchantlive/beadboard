@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
@@ -17,6 +18,7 @@ import { SocialPage } from '../social/social-page';
 import { buildSocialCards } from '../../lib/social-cards';
 import { ContextualRightPanel } from '../activity/contextual-right-panel';
 import { AssignmentPanel } from '../graph/assignment-panel';
+import { TelemetryStrip } from './telemetry-strip';
 import { useSwarmList } from '../../hooks/use-swarm-list';
 import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
 import { useBdHealth } from '../../hooks/use-bd-health';
@@ -66,6 +68,10 @@ export function UnifiedShell({
   // Assign mode state for graph view
   const [assignMode, setAssignMode] = useState(false);
   const [selectedAssignIssue, setSelectedAssignIssue] = useState<BeadIssue | null>(null);
+  
+  // Remember last non-telemetry state for minimize button
+  const [lastTaskId, setLastTaskId] = useState<string | null>(null);
+  const [lastAssignMode, setLastAssignMode] = useState(false);
 
   const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
   const { swarms: swarmCards } = useSwarmList(projectRoot);
@@ -108,6 +114,35 @@ export function UnifiedShell({
     setSelectedAssignIssue(issue);
   }, []);
 
+  // Social card Rocket: clear task and open AssignmentPanel in right panel
+  const handleSocialRocket = useCallback(() => {
+    setTaskId(null);
+    setAssignMode(true);
+  }, [setTaskId]);
+
+  // Minimize: restore last clicked thing (task or assign mode)
+  const handleMinimize = useCallback(() => {
+    if (lastTaskId) {
+      setTaskId(lastTaskId);
+      setAssignMode(false);
+    } else if (lastAssignMode) {
+      setTaskId(null);
+      setAssignMode(true);
+    }
+  }, [lastTaskId, lastAssignMode, setTaskId]);
+
+  // Track last non-telemetry state changes
+  useEffect(() => {
+    if (taskId) setLastTaskId(taskId);
+  }, [taskId]);
+  
+  useEffect(() => {
+    if (assignMode) setLastAssignMode(true);
+  }, [assignMode]);
+
+  // Non-telemetry: conversation or assignment panel is active → show mini telemetry strip
+  const isNonTelemetry = !!taskId || assignMode;
+
   // Chat Mode Logic: If a card is selected (drawer='open'), we show Chat popup
   const isChatOpen = drawer === 'open' && (!!taskId || !!swarmId || !!epicId);
   const selectedEpic = epicId ? issues.find((issue) => issue.id === epicId && issue.issue_type === 'epic') ?? null : null;
@@ -136,7 +171,7 @@ export function UnifiedShell({
           selectedTaskId={taskId ?? undefined}
           onSelectTask={handleGraphSelect}
           projectRoot={projectRoot}
-          hideClosed={graphTab !== 'flow'}
+          initialTab={graphTab === 'flow' ? 'dependencies' : 'tasks'}
           onAssignModeChange={handleAssignModeChange}
           onSelectedIssueChange={handleSelectedIssueChange}
           swarmId={swarmId ?? undefined}
@@ -146,7 +181,7 @@ export function UnifiedShell({
 
     if (view === 'social') {
       return (
-        <SocialPage
+      <SocialPage
           issues={filteredIssues}
           selectedId={taskId ?? undefined}
           onSelect={handleCardSelect}
@@ -154,6 +189,7 @@ export function UnifiedShell({
           blockedOnly={blockedOnly}
           projectRoot={projectRoot}
           swarmId={swarmId ?? undefined}
+          onRocketClick={handleSocialRocket}
         />
       );
     }
@@ -167,21 +203,36 @@ export function UnifiedShell({
       return customRightPanel;
     }
 
-    // Show AssignmentPanel when in graph view with assign mode enabled
-    if (view === 'graph' && assignMode) {
+    // Show AssignmentPanel when assign mode is enabled and no task conversation is active
+    if (assignMode && !taskId) {
       return (
-        <AssignmentPanel
-          selectedIssue={selectedAssignIssue}
-          projectRoot={projectRoot}
-          issues={issues}
-          epicId={epicId ?? undefined}
-          onIssueUpdated={async () => { router.refresh(); }}
-        />
+        <div className="flex h-full flex-col">
+          <div className="flex shrink-0 items-center justify-between border-b border-[var(--border-subtle)] px-3 py-2">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--text-tertiary)]">Swarm Assignment</span>
+            <button
+              type="button"
+              onClick={() => setAssignMode(false)}
+              className="rounded p-1 text-[var(--text-tertiary)] transition-colors hover:bg-[var(--alpha-white-low)] hover:text-[var(--text-primary)]"
+              aria-label="Close assignment panel"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <AssignmentPanel
+              selectedIssue={selectedAssignIssue}
+              projectRoot={projectRoot}
+              issues={issues}
+              epicId={epicId ?? undefined}
+              onIssueUpdated={async () => { router.refresh(); }}
+            />
+          </div>
+        </div>
       );
     }
 
     // Default: ContextualRightPanel
-    return <ContextualRightPanel epicId={epicId} taskId={taskId} swarmId={swarmId} issues={issues} projectRoot={projectRoot} actor={actor} />;
+    return <ContextualRightPanel epicId={epicId} taskId={taskId} swarmId={swarmId} issues={issues} projectRoot={projectRoot} actor={actor} onMinimize={handleMinimize} />;
   };
 
   return (
@@ -194,7 +245,7 @@ export function UnifiedShell({
         idleCount={0}
         actor={actor}
         onActorChange={handleActorChange}
-        projectRoot={projectRoot}
+        onLaunchSwarm={() => { setTaskId(null); setAssignMode(true); }}
       />
       {!bdHealth.loading && !bdHealth.healthy ? (
         <div className="border-b border-amber-500/35 bg-amber-500/12 px-4 py-2 text-xs text-amber-100">
@@ -216,7 +267,7 @@ export function UnifiedShell({
             onEpicEdit={(id) => { setEpicId(id); setDrawer('open'); }}
             filters={filters}
             onFiltersChange={setFilters}
-            projectRoot={projectRoot}
+            onAssignMode={(epicId) => { setEpicId(epicId); setTaskId(null); setAssignMode(true); }}
           />
         </div>
 
@@ -232,10 +283,18 @@ export function UnifiedShell({
         <ResizeHandle direction="right" onResize={handleRightResize} />
 
         {/* RIGHT PANEL: always visible, content adapts to selection */}
-        <div style={{ width: rightWidth }} className="flex-shrink-0 overflow-hidden">
-          <RightPanel isOpen={true}>
-            {renderRightPanelContent()}
-          </RightPanel>
+        <div style={{ width: rightWidth }} className="flex flex-shrink-0 overflow-hidden">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <RightPanel isOpen={true}>
+              {renderRightPanelContent()}
+            </RightPanel>
+          </div>
+          {isNonTelemetry && (
+            <TelemetryStrip
+              issues={issues}
+              onMaximize={() => { setTaskId(null); setAssignMode(false); }}
+            />
+          )}
         </div>
       </div>
 

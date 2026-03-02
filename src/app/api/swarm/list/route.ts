@@ -21,9 +21,10 @@ export async function GET(request: Request): Promise<Response> {
   });
 
   if (!result.success) {
+    const status = result.classification === 'not_found' ? 503 : 400;
     return NextResponse.json(
       { ok: false, error: { classification: result.classification ?? 'unknown', message: result.error ?? result.stderr } },
-      { status: 400 },
+      { status },
     );
   }
 

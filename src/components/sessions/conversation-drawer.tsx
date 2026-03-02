@@ -14,6 +14,47 @@ interface ThreadItem {
   data: any;
 }
 
+export type CoordMessageAction = 'read' | 'ack';
+
+export function buildCoordMessageActionEvent(params: {
+  action: CoordMessageAction;
+  message: AgentMessage;
+  beadId: string;
+  projectRoot: string;
+  nowIso?: string;
+}): Record<string, unknown> {
+  const now = params.nowIso ?? new Date().toISOString();
+  const eventType = params.action === 'read' ? 'READ' : 'ACK';
+  const compactNow = now.replace(/[-:.TZ]/g, '');
+  return {
+    version: 'coord.v1',
+    kind: 'coord_event',
+    issue_id: params.beadId,
+    actor: params.message.to_agent,
+    timestamp: now,
+    data: {
+      event_type: eventType,
+      event_id: `evt_${eventType.toLowerCase()}_${compactNow}_${params.message.message_id}`,
+      event_ref: params.message.message_id,
+      project_root: params.projectRoot,
+      payload: {},
+    },
+  };
+}
+
+export function buildCommentMutationBody(params: {
+  projectRoot: string;
+  text: string;
+  actor?: string;
+}): Record<string, unknown> {
+  const actor = params.actor?.trim();
+  return {
+    projectRoot: params.projectRoot,
+    text: params.text,
+    ...(actor ? { actor } : {}),
+  };
+}
+
 interface ConversationDrawerProps {
   beadId: string | null;
   bead: BeadIssue | null;
@@ -26,6 +67,7 @@ interface ConversationDrawerProps {
   onBackToAgent?: () => void;
   embedded?: boolean;
   refreshTrigger?: number;
+  actor?: string;
 }
 
 export function ConversationDrawer({
@@ -39,11 +81,13 @@ export function ConversationDrawer({
   showAgentContext,
   onBackToAgent,
   embedded = false,
-  refreshTrigger = 0
+  refreshTrigger = 0,
+  actor = '',
 }: ConversationDrawerProps) {
   const [thread, setThread] = useState<ThreadItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [commentActor, setCommentActor] = useState(actor);
   const [submitting, setSubmitting] = useState(false);
   const [metrics, setMetrics] = useState<AgentMetrics | null>(null);
   const [showSummary, setShowSummary] = useState(false);
@@ -78,6 +122,10 @@ export function ConversationDrawer({
   }, [agentId, projectRoot]);
 
   useEffect(() => {
+    setCommentActor(actor);
+  }, [actor]);
+
+  useEffect(() => {
     if (open) {
       if (beadId) fetchConversation({ silent: refreshTrigger > 0 });
       if (agentId) fetchAgentMetrics();
@@ -107,7 +155,7 @@ export function ConversationDrawer({
       const res = await fetch(`/api/sessions/${beadId}/comment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectRoot, text: commentText })
+        body: JSON.stringify(buildCommentMutationBody({ projectRoot, text: commentText, actor: commentActor })),
       });
       if (res.ok) {
         setCommentText('');
@@ -127,8 +175,16 @@ export function ConversationDrawer({
     if (!message) return;
 
     try {
-      const res = await fetch(`/api/sessions/${beadId}/messages/${messageId}/${action}?agent=${encodeURIComponent(message.to_agent)}`, {
-        method: 'POST'
+      const event = buildCoordMessageActionEvent({
+        action,
+        message,
+        beadId,
+        projectRoot,
+      });
+      const res = await fetch('/api/coord/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectRoot, event }),
       });
       if (res.ok) {
         await fetchConversation();
@@ -259,6 +315,12 @@ export function ConversationDrawer({
       {beadId && !showSummary && (
         <footer className="border-t border-white/5 bg-white/[0.01] p-6 flex-none shadow-[0_-12px_32px_rgba(0,0,0,0.2)]">
           <form onSubmit={handleAddComment} className="space-y-4">
+            <input
+              value={commentActor}
+              onChange={(e) => setCommentActor(e.target.value)}
+              placeholder="Comment as (username)"
+              className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-text-body outline-none transition-all focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/20 placeholder:text-text-muted/30"
+            />
             <textarea
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}

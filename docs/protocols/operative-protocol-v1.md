@@ -1,7 +1,7 @@
 # Operative Protocol v1 (Session Constitution)
 
 Date: 2026-02-14  
-Status: Approved for implementation  
+Status: Approved for implementation (superseded for migration planning by `docs/protocols/2026-02-28-bd-audit-coordination-schema.md`)  
 Scope: `bb-u6f.6.1`  
 Applies to: `bb-u6f.6.2`, `bb-u6f.6.3`, `bb-u6f.6.4`, `bb-u6f.6.5`
 
@@ -14,6 +14,10 @@ Boundaries:
 2. Agent coordination state lives in `bb agent` surfaces and supporting local stores.
 3. No direct writes to `.beads/issues.jsonl`.
 4. User-facing labels must stay plain language.
+
+Migration note:
+1. New work should target the `coord.v1` `bd audit` event model documented in `docs/protocols/2026-02-28-bd-audit-coordination-schema.md`.
+2. `bb` coordination semantics are legacy compatibility behavior pending removal after migration sign-off.
 
 ## 2. Normative Language
 

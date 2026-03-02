@@ -1,11 +1,10 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
-import { LayoutGrid, Lock, Plus, Sidebar, SidebarClose, Rocket } from 'lucide-react';
+import { LayoutGrid, Lock, Plus, Rocket, Sidebar, SidebarClose } from 'lucide-react';
 import { useUrlState } from '../../hooks/use-url-state';
 import { useResponsive } from '../../hooks/use-responsive';
 import { ThemeToggle } from './theme-toggle';
-import { LaunchSwarmDialog } from '../swarm/launch-dialog';
 
 export interface TopBarProps {
   onCreateTask?: () => Promise<void> | void;
@@ -18,7 +17,7 @@ export interface TopBarProps {
   busyCount?: number;
   actor?: string;
   onActorChange?: (name: string) => void;
-  projectRoot?: string;
+  onLaunchSwarm?: () => void;
 }
 
 interface MetricTileProps {
@@ -87,7 +86,7 @@ export function TopBar({
   busyCount = 0,
   actor = '',
   onActorChange,
-  projectRoot,
+  onLaunchSwarm,
 }: TopBarProps) {
   const { leftPanel, toggleLeftPanel, rightPanel, toggleRightPanel, blockedOnly, toggleBlockedOnly } = useUrlState();
   const { isDesktop } = useResponsive();
@@ -150,10 +149,6 @@ export function TopBar({
               </span>
             </button>
 
-            {projectRoot && (
-              <LaunchSwarmDialog projectRoot={projectRoot} />
-            )}
-
             <button
               type="button"
               onClick={() => {
@@ -169,6 +164,17 @@ export function TopBar({
           </>
         )}
 
+        {onLaunchSwarm ? (
+          <button
+            type="button"
+            onClick={onLaunchSwarm}
+            className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.11em] text-emerald-400 transition-colors hover:bg-emerald-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
+            aria-label="Launch Swarm"
+          >
+            <Rocket className="h-3.5 w-3.5" aria-hidden="true" />
+            Launch Swarm
+          </button>
+        ) : null}
         {onActorChange ? <IdentityChip actor={actor} onActorChange={onActorChange} /> : null}
 
         <ThemeToggle />

@@ -41,7 +41,7 @@ const DEFAULT_VIEW: ViewType = 'social';
 const DEFAULT_LEFT_PANEL: PanelState = 'open';
 const DEFAULT_RIGHT_PANEL: PanelState = 'open';
 const DEFAULT_DRAWER: DrawerState = 'closed';
-const DEFAULT_GRAPH_TAB: GraphTabType = 'flow';
+const DEFAULT_GRAPH_TAB: GraphTabType = 'overview';
 
 const VALID_VIEWS: ViewType[] = ['social', 'graph', 'activity'];
 const VALID_PANELS: PanelState[] = ['open', 'closed'];

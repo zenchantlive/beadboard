@@ -8,104 +8,135 @@
   /* ==========================================================================
      1. SURFACE LAYERS - Softer greys, not pure white
      ========================================================================== */
-  --surface-backdrop: #e2e8f0;
-  --surface-elevated: #f1f5f9;
-  --surface-primary: #e8edf5;
-  --surface-secondary: #f8fafc;
-  --surface-tertiary: #cbd5e1;
-  --surface-quaternary: #ffffff;
-  --surface-overlay: #f1f5f9;
-  --surface-input: #ffffff;
-  --surface-hover: rgba(15, 23, 42, 0.06);
-  --surface-active: rgba(59, 130, 246, 0.15);
+  --surface-backdrop: #e8edf3;
+  --surface-elevated: #f7f9fc;
+  --surface-primary: #dce4ee;
+  --surface-secondary: #f1f5f9;
+  --surface-tertiary: #e5ebf3;
+  --surface-quaternary: #f8fafc;
+  --surface-overlay: #eef3f8;
+  --surface-input: #fcfdff;
+  --surface-hover: rgba(15, 23, 42, 0.08);
+  --surface-active: rgba(37, 99, 235, 0.22);
   --surface-tooltip: #1e293b;
 
   /* ==========================================================================
      2. BORDERS - Visible grey
      ========================================================================== */
-  --border-subtle: rgba(71, 85, 105, 0.2);
-  --border-default: rgba(71, 85, 105, 0.35);
-  --border-strong: rgba(51, 65, 85, 0.5);
-  --border-accent: rgba(37, 99, 235, 0.6);
+  --border-subtle: rgba(51, 65, 85, 0.28);
+  --border-default: rgba(51, 65, 85, 0.44);
+  --border-strong: rgba(30, 41, 59, 0.62);
+  --border-accent: rgba(29, 78, 216, 0.72);
 
   /* ==========================================================================
      3. TEXT - Dark slate (NOT white!)
      ========================================================================== */
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-tertiary: #64748b;
-  --text-disabled: #94a3b8;
+  --text-primary: #0b1324;
+  --text-secondary: #1f344e;
+  --text-tertiary: #4b6078;
+  --text-disabled: #7d92a9;
   --text-inverse: #f8fafc;
 
   /* ==========================================================================
      4. ACCENTS - Vibrant but not neon
      ========================================================================== */
-  --accent-info: #2563eb;
-  --accent-success: #16a34a;
-  --accent-warning: #d97706;
-  --accent-danger: #dc2626;
+  --accent-info: #1d4ed8;
+  --accent-success: #15803d;
+  --accent-warning: #b45309;
+  --accent-danger: #b91c1c;
 
   /* ==========================================================================
      5. ACCENT GLOWS - Subtle on light
      ========================================================================== */
-  --glow-info: 0 0 16px rgba(37, 99, 235, 0.2);
-  --glow-success: 0 0 16px rgba(22, 163, 74, 0.2);
-  --glow-warning: 0 0 16px rgba(217, 119, 6, 0.2);
-  --glow-danger: 0 0 16px rgba(220, 38, 38, 0.2);
+  --glow-info: 0 0 18px rgba(29, 78, 216, 0.24);
+  --glow-success: 0 0 18px rgba(21, 128, 61, 0.22);
+  --glow-warning: 0 0 18px rgba(180, 83, 9, 0.24);
+  --glow-danger: 0 0 18px rgba(185, 28, 28, 0.22);
 
   /* ==========================================================================
      6. GRAPH COLORS
      ========================================================================== */
-  --graph-node-default: rgba(255, 255, 255, 0.95);
-  --graph-node-epic: rgba(37, 99, 235, 0.15);
-  --graph-edge-default: rgba(71, 85, 105, 0.4);
-  --graph-edge-selected: #2563eb;
-  --graph-edge-cycle: #d97706;
+  --graph-node-default: rgba(248, 250, 252, 0.96);
+  --graph-node-epic: rgba(29, 78, 216, 0.18);
+  --graph-edge-default: rgba(51, 65, 85, 0.48);
+  --graph-edge-selected: #1d4ed8;
+  --graph-edge-cycle: #b45309;
 
   /* ==========================================================================
      7. SEMANTIC ALPHAS - Dark overlays for light theme
      ========================================================================== */
-  --alpha-white-low: rgba(255, 255, 255, 0.6);
-  --alpha-white-medium: rgba(255, 255, 255, 0.8);
-  --alpha-white-high: rgba(255, 255, 255, 0.95);
-  --alpha-black-low: rgba(15, 23, 42, 0.06);
-  --alpha-black-medium: rgba(15, 23, 42, 0.12);
-  --alpha-black-high: rgba(15, 23, 42, 0.2);
+  --alpha-white-low: rgba(255, 255, 255, 0.55);
+  --alpha-white-medium: rgba(255, 255, 255, 0.75);
+  --alpha-white-high: rgba(255, 255, 255, 0.9);
+  --alpha-black-low: rgba(15, 23, 42, 0.08);
+  --alpha-black-medium: rgba(15, 23, 42, 0.15);
+  --alpha-black-high: rgba(15, 23, 42, 0.24);
 
   /* ==========================================================================
      8. STATUS COLORS - More opaque for visibility
      ========================================================================== */
-  --status-ready: rgba(22, 163, 74, 0.2);
-  --status-in-progress: rgba(217, 119, 6, 0.2);
-  --status-blocked: rgba(220, 38, 38, 0.2);
-  --status-closed: rgba(100, 116, 139, 0.15);
-  --status-deferred: rgba(100, 116, 139, 0.1);
+  --status-ready: rgba(21, 128, 61, 0.22);
+  --status-in-progress: rgba(180, 83, 9, 0.22);
+  --status-blocked: rgba(185, 28, 28, 0.22);
+  --status-closed: rgba(71, 85, 105, 0.18);
+  --status-deferred: rgba(71, 85, 105, 0.13);
 
   /* ==========================================================================
      9. SHADOWS - Softer on light
      ========================================================================== */
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.1);
-  --shadow-md: 0 4px 6px rgba(15, 23, 42, 0.12);
-  --shadow-lg: 0 10px 15px rgba(15, 23, 42, 0.15);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.14);
+  --shadow-md: 0 6px 14px rgba(15, 23, 42, 0.16);
+  --shadow-lg: 0 14px 26px rgba(15, 23, 42, 0.2);
 
   /* ==========================================================================
      10. AGENT ROLE COLORS
      ========================================================================== */
-  --agent-role-ui: #2563eb;
-  --agent-role-graph: #16a34a;
+  --agent-role-ui: #1d4ed8;
+  --agent-role-graph: #15803d;
   --agent-role-orchestrator: #7c3aed;
   --agent-role-researcher: #ea580c;
 
   /* ==========================================================================
      11. SCROLLBARS
      ========================================================================== */
-  --scrollbar-track: rgba(15, 23, 42, 0.05);
-  --scrollbar-thumb: rgba(100, 116, 139, 0.3);
-  --scrollbar-thumb-hover: rgba(71, 85, 105, 0.45);
+  --scrollbar-track: rgba(15, 23, 42, 0.08);
+  --scrollbar-thumb: rgba(71, 85, 105, 0.38);
+  --scrollbar-thumb-hover: rgba(51, 65, 85, 0.52);
 
   /* ==========================================================================
      12. CODE/SYNTAX
      ========================================================================== */
-  --code-background: #e2e8f0;
-  --code-text: #334155;
+  --code-background: #dbe5f1;
+  --code-text: #1f344e;
+
+  /* ==========================================================================
+     14. LEGACY UI MAPPINGS - For components using --ui-* variables
+     ========================================================================== */
+  --ui-bg-app: var(--surface-backdrop);
+  --ui-bg-header: var(--surface-primary);
+  --ui-bg-shell: var(--surface-primary);
+  --ui-bg-panel: var(--surface-tertiary);
+  --ui-bg-main: var(--surface-backdrop);
+  --ui-bg-card: var(--surface-quaternary);
+  --ui-bg-elevated: var(--surface-elevated);
+  
+  --ui-border-soft: var(--border-subtle);
+  --ui-border-strong: var(--border-default);
+  
+  --ui-text-primary: var(--text-primary);
+  --ui-text-muted: var(--text-tertiary);
+  
+  --ui-accent-ready: var(--accent-success);
+  --ui-accent-blocked: var(--accent-danger);
+  --ui-accent-warning: var(--accent-warning);
+  --ui-accent-info: var(--accent-info);
+}
+
+[data-theme="light"] body {
+  background-color: var(--ui-bg-app);
+  background-image:
+    radial-gradient(1200px 520px at 24% -12%, rgba(29, 78, 216, 0.09), transparent 62%),
+    radial-gradient(980px 420px at 82% 18%, rgba(21, 128, 61, 0.07), transparent 58%),
+    linear-gradient(180deg, color-mix(in srgb, var(--ui-bg-app) 92%, white), var(--ui-bg-main));
+  background-attachment: fixed;
 }

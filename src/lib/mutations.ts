@@ -7,6 +7,7 @@ export type MutationStatus = 'open' | 'in_progress' | 'blocked' | 'deferred' | '
 interface MutationBasePayload {
   projectRoot: string;
   bdPath?: string;
+  actor?: string;
 }
 
 export interface CreateMutationPayload extends MutationBasePayload {
@@ -155,6 +156,7 @@ function parseBasePayload(raw: unknown): MutationBasePayload {
   return {
     projectRoot: asNonEmptyString(data.projectRoot, 'projectRoot'),
     bdPath: asOptionalString(data.bdPath),
+    actor: asOptionalString(data.actor),
   };
 }
 
@@ -235,7 +237,7 @@ function pushOptionalArg(args: string[], flag: string, value: string | undefined
 
 function pushOptionalLabels(args: string[], labels: string[] | undefined): void {
   if (labels && labels.length > 0) {
-    args.push('-l', labels.join(','));
+    args.push('--set-labels', labels.join(','));
   }
 }
 
@@ -267,7 +269,7 @@ export function buildBdMutationArgs(operation: MutationOperation, payload: Mutat
     pushOptionalArg(args, '-a', data.assignee);
     pushOptionalLabels(args, data.labels);
     if (data.metadata) {
-      args.push('--metadata', JSON.stringify(data.metadata));
+      args.push(`--metadata=${JSON.stringify(data.metadata)}`);
     }
     args.push('--json');
     return args;
@@ -303,11 +305,12 @@ export async function executeMutation(
   deps: Partial<ExecuteMutationDeps> = {},
 ): Promise<MutationResponse> {
   const runner = deps.runBdCommand ?? runBdCommand;
-  const args = buildBdMutationArgs(operation, payload);
+  const args = payload.actor
+    ? ['--actor', payload.actor, ...buildBdMutationArgs(operation, payload)]
+    : buildBdMutationArgs(operation, payload);
   const command = await runner({
     projectRoot: payload.projectRoot,
     args,
-    explicitBdPath: payload.bdPath,
   });
 
   if (!command.success) {
@@ -317,7 +320,7 @@ export async function executeMutation(
       command,
       error: {
         classification: command.classification ?? 'unknown',
-        message: command.error ?? (command.stderr || 'Mutation command failed.'),
+        message: command.stderr || command.error || 'Mutation command failed.',
       },
     };
   }
