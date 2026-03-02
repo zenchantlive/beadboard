@@ -291,7 +291,7 @@ export function UnifiedShell({
           </div>
           {isNonTelemetry && (
             <TelemetryStrip
-              issues={issues}
+              projectRoot={projectRoot}
               onMaximize={() => { setTaskId(null); setAssignMode(false); }}
             />
           )}

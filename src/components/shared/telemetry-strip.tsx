@@ -1,32 +1,47 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Signal } from 'lucide-react';
-import type { BeadIssue } from '../../lib/types';
+import type { ActivityEvent } from '../../lib/activity';
+import { getEventTone } from '../activity/activity-panel';
+import { cn } from '../../lib/utils';
 
 interface TelemetryStripProps {
-  issues: BeadIssue[];
+  projectRoot: string;
   onMaximize: () => void;
 }
 
-function dotColor(status: BeadIssue['status']): { bg: string; glow: string } {
-  switch (status) {
-    case 'blocked':     return { bg: 'var(--accent-danger)',  glow: 'rgba(255,76,114,0.4)' };
-    case 'in_progress': return { bg: 'var(--accent-warning)', glow: 'rgba(255,178,74,0.4)' };
-    case 'open':        return { bg: 'var(--accent-success)', glow: 'rgba(53,217,143,0.4)' };
-    case 'closed':      return { bg: 'var(--text-tertiary)',  glow: 'transparent' };
-    default:            return { bg: 'var(--accent-info)',    glow: 'rgba(125,211,252,0.3)' };
-  }
-}
+export function TelemetryStrip({ projectRoot, onMaximize }: TelemetryStripProps) {
+  const [activities, setActivities] = useState<ActivityEvent[]>([]);
 
-export function TelemetryStrip({ issues, onMaximize }: TelemetryStripProps) {
-  // Show the 8 most recently updated tasks as live dots
-  const recentTasks = useMemo(() => {
-    return [...issues]
-      .filter((i) => i.issue_type !== 'epic')
-      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-      .slice(0, 8);
-  }, [issues]);
+  // Fetch initial activity history
+  useEffect(() => {
+    async function fetchActivity() {
+      try {
+        const response = await fetch('/api/activity');
+        if (response.ok) {
+          const data = await response.json();
+          setActivities(data.slice(0, 12));
+        }
+      } catch { /* ignore */ }
+    }
+    fetchActivity();
+  }, []);
+
+  // Subscribe to real-time activity via SSE
+  useEffect(() => {
+    const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
+    const onActivity = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data?.beadId) {
+          setActivities(prev => [data, ...prev].slice(0, 12));
+        }
+      } catch { /* ignore */ }
+    };
+    source.addEventListener('activity', onActivity as EventListener);
+    return () => { source.removeEventListener('activity', onActivity as EventListener); source.close(); };
+  }, [projectRoot]);
 
   return (
     <div className="flex h-full w-9 flex-shrink-0 flex-col items-center border-l border-[var(--border-subtle)] bg-[var(--surface-primary)] py-2">
@@ -41,17 +56,15 @@ export function TelemetryStrip({ issues, onMaximize }: TelemetryStripProps) {
       </button>
 
       <div className="flex flex-1 flex-col items-center gap-2 overflow-hidden">
-        {recentTasks.map((task) => {
-          const { bg, glow } = dotColor(task.status);
+        {activities.map((act) => {
+          const tone = getEventTone(act.kind);
           return (
-            <div key={task.id} className="flex flex-col items-center" title={`${task.id}: ${task.title} (${task.status})`}>
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{
-                  backgroundColor: bg,
-                  boxShadow: `0 0 5px 1px ${glow}`,
-                }}
-              />
+            <div
+              key={act.id}
+              className="flex flex-col items-center"
+              title={`${act.beadId}: ${act.beadTitle} (${tone.label})`}
+            >
+              <span className={cn('h-2 w-2 rounded-full', tone.dotClass)} />
             </div>
           );
         })}

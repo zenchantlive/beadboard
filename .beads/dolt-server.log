@@ -3034,3 +3034,206 @@ time="2026-03-01T18:18:43-08:00" level=info msg=ConnectionClosed connectionID=11
 time="2026-03-01T18:18:44-08:00" level=info msg=ConnectionClosed connectionID=1198
 time="2026-03-01T18:20:06-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1199
 time="2026-03-01T18:20:29-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1200
+time="2026-03-01T18:21:05-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1201
+time="2026-03-01T18:21:06-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1202
+time="2026-03-01T18:21:06-08:00" level=warning msg="Cannot read client handshake response from client 1202 (127.0.0.1:65449): read tcp 127.0.0.1:3307->127.0.0.1:65449: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:21:06-08:00" level=info msg=ConnectionClosed connectionID=1202
+time="2026-03-01T18:21:06-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1203
+time="2026-03-01T18:21:06-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1204
+time="2026-03-01T18:21:06-08:00" level=info msg=ConnectionClosed connectionID=1203
+time="2026-03-01T18:21:07-08:00" level=info msg=ConnectionClosed connectionID=1204
+time="2026-03-01T18:21:07-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1205
+time="2026-03-01T18:21:07-08:00" level=warning msg="Cannot read client handshake response from client 1205 (127.0.0.1:65458): read tcp 127.0.0.1:3307->127.0.0.1:65458: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:21:07-08:00" level=info msg=ConnectionClosed connectionID=1205
+time="2026-03-01T18:21:07-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1206
+time="2026-03-01T18:21:07-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1207
+time="2026-03-01T18:21:07-08:00" level=info msg=ConnectionClosed connectionID=1206
+time="2026-03-01T18:21:07-08:00" level=info msg=ConnectionClosed connectionID=1207
+time="2026-03-01T18:21:07-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1208
+time="2026-03-01T18:21:09-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1209
+time="2026-03-01T18:21:09-08:00" level=error msg="Cannot send HandshakeV10 packet: write tcp 127.0.0.1:3307->127.0.0.1:59639: wsasend: An established connection was aborted by the software in your host machine.\nWrite(packet) failed\nconn 1209"
+time="2026-03-01T18:21:09-08:00" level=info msg=ConnectionClosed connectionID=1209
+time="2026-03-01T18:21:09-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1210
+time="2026-03-01T18:21:09-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1211
+time="2026-03-01T18:21:09-08:00" level=info msg=ConnectionClosed connectionID=1210
+time="2026-03-01T18:21:09-08:00" level=info msg=ConnectionClosed connectionID=1211
+time="2026-03-01T18:21:10-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1212
+time="2026-03-01T18:21:10-08:00" level=warning msg="Cannot read client handshake response from client 1212 (127.0.0.1:59643): read tcp 127.0.0.1:3307->127.0.0.1:59643: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:21:10-08:00" level=info msg=ConnectionClosed connectionID=1212
+time="2026-03-01T18:21:10-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1213
+time="2026-03-01T18:21:10-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1214
+time="2026-03-01T18:21:10-08:00" level=info msg=ConnectionClosed connectionID=1213
+time="2026-03-01T18:21:10-08:00" level=info msg=ConnectionClosed connectionID=1214
+time="2026-03-01T18:21:12-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1215
+time="2026-03-01T18:21:12-08:00" level=warning msg="Cannot read client handshake response from client 1215 (127.0.0.1:58101): read tcp 127.0.0.1:3307->127.0.0.1:58101: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:21:12-08:00" level=info msg=ConnectionClosed connectionID=1215
+time="2026-03-01T18:21:12-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1216
+time="2026-03-01T18:21:12-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1217
+time="2026-03-01T18:21:12-08:00" level=info msg=ConnectionClosed connectionID=1216
+time="2026-03-01T18:21:12-08:00" level=info msg=ConnectionClosed connectionID=1217
+time="2026-03-01T18:21:12-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1218
+time="2026-03-01T18:21:12-08:00" level=error msg="Cannot send HandshakeV10 packet: write tcp 127.0.0.1:3307->127.0.0.1:58105: wsasend: An existing connection was forcibly closed by the remote host.\nWrite(packet) failed\nconn 1218"
+time="2026-03-01T18:21:12-08:00" level=info msg=ConnectionClosed connectionID=1218
+time="2026-03-01T18:21:12-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1219
+time="2026-03-01T18:21:12-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1220
+time="2026-03-01T18:21:12-08:00" level=info msg=ConnectionClosed connectionID=1219
+time="2026-03-01T18:21:12-08:00" level=info msg=ConnectionClosed connectionID=1220
+time="2026-03-01T18:21:44-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1221
+time="2026-03-01T18:21:44-08:00" level=warning msg="Cannot read client handshake response from client 1221 (127.0.0.1:60292): read tcp 127.0.0.1:3307->127.0.0.1:60292: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:21:44-08:00" level=info msg=ConnectionClosed connectionID=1221
+time="2026-03-01T18:21:44-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1222
+time="2026-03-01T18:21:44-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1223
+time="2026-03-01T18:21:44-08:00" level=info msg=ConnectionClosed connectionID=1222
+time="2026-03-01T18:21:44-08:00" level=info msg=ConnectionClosed connectionID=1223
+time="2026-03-01T18:21:44-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1224
+time="2026-03-01T18:21:44-08:00" level=warning msg="Cannot read client handshake response from client 1224 (127.0.0.1:60397): read tcp 127.0.0.1:3307->127.0.0.1:60397: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:21:44-08:00" level=info msg=ConnectionClosed connectionID=1224
+time="2026-03-01T18:21:44-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1225
+time="2026-03-01T18:21:44-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1226
+time="2026-03-01T18:21:44-08:00" level=info msg=ConnectionClosed connectionID=1225
+time="2026-03-01T18:21:44-08:00" level=info msg=ConnectionClosed connectionID=1226
+time="2026-03-01T18:21:53-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1227
+time="2026-03-01T18:21:53-08:00" level=warning msg="Cannot read client handshake response from client 1227 (127.0.0.1:54990): read tcp 127.0.0.1:3307->127.0.0.1:54990: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:21:53-08:00" level=info msg=ConnectionClosed connectionID=1227
+time="2026-03-01T18:21:53-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1228
+time="2026-03-01T18:21:53-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1229
+time="2026-03-01T18:21:53-08:00" level=info msg=ConnectionClosed connectionID=1228
+time="2026-03-01T18:21:53-08:00" level=info msg=ConnectionClosed connectionID=1229
+time="2026-03-01T18:21:53-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1230
+time="2026-03-01T18:21:53-08:00" level=warning msg="Cannot read client handshake response from client 1230 (127.0.0.1:55002): read tcp 127.0.0.1:3307->127.0.0.1:55002: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:21:53-08:00" level=info msg=ConnectionClosed connectionID=1230
+time="2026-03-01T18:21:53-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1231
+time="2026-03-01T18:21:53-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1232
+time="2026-03-01T18:21:53-08:00" level=info msg=ConnectionClosed connectionID=1231
+time="2026-03-01T18:21:54-08:00" level=info msg=ConnectionClosed connectionID=1232
+time="2026-03-01T18:22:07-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1233
+time="2026-03-01T18:22:07-08:00" level=warning msg="Cannot read client handshake response from client 1233 (127.0.0.1:56025): read tcp 127.0.0.1:3307->127.0.0.1:56025: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:22:07-08:00" level=info msg=ConnectionClosed connectionID=1233
+time="2026-03-01T18:22:07-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1234
+time="2026-03-01T18:22:07-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1235
+time="2026-03-01T18:22:07-08:00" level=info msg=ConnectionClosed connectionID=1234
+time="2026-03-01T18:22:07-08:00" level=info msg=ConnectionClosed connectionID=1235
+time="2026-03-01T18:22:07-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1236
+time="2026-03-01T18:22:07-08:00" level=error msg="Cannot send HandshakeV10 packet: write tcp 127.0.0.1:3307->127.0.0.1:56028: wsasend: An existing connection was forcibly closed by the remote host.\nWrite(packet) failed\nconn 1236"
+time="2026-03-01T18:22:07-08:00" level=info msg=ConnectionClosed connectionID=1236
+time="2026-03-01T18:22:07-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1237
+time="2026-03-01T18:22:07-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1238
+time="2026-03-01T18:22:07-08:00" level=info msg=ConnectionClosed connectionID=1237
+time="2026-03-01T18:22:07-08:00" level=info msg=ConnectionClosed connectionID=1238
+time="2026-03-01T18:22:11-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1239
+time="2026-03-01T18:22:11-08:00" level=warning msg="Cannot read client handshake response from client 1239 (127.0.0.1:51707): read tcp 127.0.0.1:3307->127.0.0.1:51707: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:22:11-08:00" level=info msg=ConnectionClosed connectionID=1239
+time="2026-03-01T18:22:11-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1240
+time="2026-03-01T18:22:11-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1241
+time="2026-03-01T18:22:11-08:00" level=info msg=ConnectionClosed connectionID=1240
+time="2026-03-01T18:22:11-08:00" level=info msg=ConnectionClosed connectionID=1241
+time="2026-03-01T18:22:11-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1242
+time="2026-03-01T18:22:11-08:00" level=warning msg="Cannot read client handshake response from client 1242 (127.0.0.1:51710): read tcp 127.0.0.1:3307->127.0.0.1:51710: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:22:11-08:00" level=info msg=ConnectionClosed connectionID=1242
+time="2026-03-01T18:22:11-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1243
+time="2026-03-01T18:22:11-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1244
+time="2026-03-01T18:22:11-08:00" level=info msg=ConnectionClosed connectionID=1243
+time="2026-03-01T18:22:12-08:00" level=info msg=ConnectionClosed connectionID=1244
+time="2026-03-01T18:23:24-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1245
+time="2026-03-01T18:23:24-08:00" level=warning msg="Cannot read client handshake response from client 1245 (127.0.0.1:54419): read tcp 127.0.0.1:3307->127.0.0.1:54419: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:23:24-08:00" level=info msg=ConnectionClosed connectionID=1245
+time="2026-03-01T18:23:24-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1246
+time="2026-03-01T18:23:24-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1247
+time="2026-03-01T18:23:24-08:00" level=info msg=ConnectionClosed connectionID=1246
+time="2026-03-01T18:23:24-08:00" level=info msg=ConnectionClosed connectionID=1247
+time="2026-03-01T18:23:24-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1248
+time="2026-03-01T18:23:24-08:00" level=warning msg="Cannot read client handshake response from client 1248 (127.0.0.1:54422): read tcp 127.0.0.1:3307->127.0.0.1:54422: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:23:24-08:00" level=info msg=ConnectionClosed connectionID=1248
+time="2026-03-01T18:23:24-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1249
+time="2026-03-01T18:23:24-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1250
+time="2026-03-01T18:23:24-08:00" level=info msg=ConnectionClosed connectionID=1249
+time="2026-03-01T18:23:24-08:00" level=info msg=ConnectionClosed connectionID=1250
+time="2026-03-01T18:23:27-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1251
+time="2026-03-01T18:23:27-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1252
+time="2026-03-01T18:23:28-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1253
+time="2026-03-01T18:23:29-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1254
+time="2026-03-01T18:23:29-08:00" level=warning msg="Cannot read client handshake response from client 1254 (127.0.0.1:49651): read tcp 127.0.0.1:3307->127.0.0.1:49651: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:23:29-08:00" level=info msg=ConnectionClosed connectionID=1254
+time="2026-03-01T18:23:29-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1255
+time="2026-03-01T18:23:29-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1256
+time="2026-03-01T18:23:29-08:00" level=info msg=ConnectionClosed connectionID=1255
+time="2026-03-01T18:23:29-08:00" level=info msg=ConnectionClosed connectionID=1256
+time="2026-03-01T18:23:30-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1257
+time="2026-03-01T18:23:30-08:00" level=warning msg="Cannot read client handshake response from client 1257 (127.0.0.1:49655): read tcp 127.0.0.1:3307->127.0.0.1:49655: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:23:30-08:00" level=info msg=ConnectionClosed connectionID=1257
+time="2026-03-01T18:23:30-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1258
+time="2026-03-01T18:23:30-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1259
+time="2026-03-01T18:23:30-08:00" level=info msg=ConnectionClosed connectionID=1258
+time="2026-03-01T18:23:30-08:00" level=info msg=ConnectionClosed connectionID=1259
+time="2026-03-01T18:23:33-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1260
+time="2026-03-01T18:23:34-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1261
+time="2026-03-01T18:23:34-08:00" level=warning msg="Cannot read client handshake response from client 1261 (127.0.0.1:63297): read tcp 127.0.0.1:3307->127.0.0.1:63297: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:23:34-08:00" level=info msg=ConnectionClosed connectionID=1261
+time="2026-03-01T18:23:34-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1262
+time="2026-03-01T18:23:34-08:00" level=error msg="Cannot send HandshakeV10 packet: write tcp 127.0.0.1:3307->127.0.0.1:63298: wsasend: An established connection was aborted by the software in your host machine.\nWrite(packet) failed\nconn 1262"
+time="2026-03-01T18:23:34-08:00" level=info msg=ConnectionClosed connectionID=1262
+time="2026-03-01T18:23:34-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1263
+time="2026-03-01T18:23:34-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1264
+time="2026-03-01T18:23:34-08:00" level=info msg=ConnectionClosed connectionID=1263
+time="2026-03-01T18:23:34-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1265
+time="2026-03-01T18:23:34-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1266
+time="2026-03-01T18:23:34-08:00" level=info msg=ConnectionClosed connectionID=1265
+time="2026-03-01T18:23:34-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1267
+time="2026-03-01T18:23:34-08:00" level=error msg="Cannot send HandshakeV10 packet: write tcp 127.0.0.1:3307->127.0.0.1:63304: wsasend: An established connection was aborted by the software in your host machine.\nWrite(packet) failed\nconn 1267"
+time="2026-03-01T18:23:34-08:00" level=info msg=ConnectionClosed connectionID=1267
+time="2026-03-01T18:23:34-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1268
+time="2026-03-01T18:23:34-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1269
+time="2026-03-01T18:23:34-08:00" level=info msg=ConnectionClosed connectionID=1268
+time="2026-03-01T18:23:35-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1270
+time="2026-03-01T18:23:35-08:00" level=error msg="Cannot send HandshakeV10 packet: write tcp 127.0.0.1:3307->127.0.0.1:63307: wsasend: An established connection was aborted by the software in your host machine.\nWrite(packet) failed\nconn 1270"
+time="2026-03-01T18:23:35-08:00" level=info msg=ConnectionClosed connectionID=1270
+time="2026-03-01T18:23:35-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1271
+time="2026-03-01T18:23:35-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1272
+time="2026-03-01T18:23:35-08:00" level=info msg=ConnectionClosed connectionID=1271
+time="2026-03-01T18:23:35-08:00" level=info msg=ConnectionClosed connectionID=1269
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1266
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1264
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1272
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1273
+time="2026-03-01T18:23:36-08:00" level=warning msg="Cannot read client handshake response from client 1273 (127.0.0.1:63328): read tcp 127.0.0.1:3307->127.0.0.1:63328: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1273
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1274
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1275
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1274
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1275
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1276
+time="2026-03-01T18:23:36-08:00" level=warning msg="Cannot read client handshake response from client 1276 (127.0.0.1:63333): read tcp 127.0.0.1:3307->127.0.0.1:63333: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1276
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1277
+time="2026-03-01T18:23:36-08:00" level=warning msg="Cannot read client handshake response from client 1277 (127.0.0.1:63334): read tcp 127.0.0.1:3307->127.0.0.1:63334: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1277
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1278
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1279
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1278
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1280
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1281
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1280
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1282
+time="2026-03-01T18:23:36-08:00" level=warning msg="Cannot read client handshake response from client 1282 (127.0.0.1:63339): read tcp 127.0.0.1:3307->127.0.0.1:63339: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1282
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1283
+time="2026-03-01T18:23:36-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1284
+time="2026-03-01T18:23:36-08:00" level=info msg=ConnectionClosed connectionID=1283
+time="2026-03-01T18:23:37-08:00" level=info msg=ConnectionClosed connectionID=1279
+time="2026-03-01T18:23:37-08:00" level=info msg=ConnectionClosed connectionID=1281
+time="2026-03-01T18:23:38-08:00" level=info msg=ConnectionClosed connectionID=1284
+time="2026-03-01T18:23:38-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1285
+time="2026-03-01T18:23:40-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1286
+time="2026-03-01T18:23:40-08:00" level=error msg="Cannot send HandshakeV10 packet: write tcp 127.0.0.1:3307->127.0.0.1:53191: wsasend: An established connection was aborted by the software in your host machine.\nWrite(packet) failed\nconn 1286"
+time="2026-03-01T18:23:40-08:00" level=info msg=ConnectionClosed connectionID=1286
+time="2026-03-01T18:23:40-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1287
+time="2026-03-01T18:23:40-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1288
+time="2026-03-01T18:23:40-08:00" level=info msg=ConnectionClosed connectionID=1287
+time="2026-03-01T18:23:41-08:00" level=info msg=ConnectionClosed connectionID=1288
+time="2026-03-01T18:23:41-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1289
+time="2026-03-01T18:23:41-08:00" level=warning msg="Cannot read client handshake response from client 1289 (127.0.0.1:53200): read tcp 127.0.0.1:3307->127.0.0.1:53200: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:23:41-08:00" level=info msg=ConnectionClosed connectionID=1289
+time="2026-03-01T18:23:41-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1290
+time="2026-03-01T18:23:41-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1291
+time="2026-03-01T18:23:41-08:00" level=info msg=ConnectionClosed connectionID=1290
+time="2026-03-01T18:23:41-08:00" level=info msg=ConnectionClosed connectionID=1291
