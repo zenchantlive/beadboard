@@ -87,7 +87,7 @@ function hasQualitySignal(issue: BeadIssue): boolean {
   return false;
 }
 
-function deriveBlockedIds(issues: BeadIssue[]): Set<string> {
+export function deriveBlockedIds(issues: BeadIssue[]): Set<string> {
   const issueById = new Map(issues.map((issue) => [issue.id, issue]));
   const blockedIds = new Set<string>();
 
