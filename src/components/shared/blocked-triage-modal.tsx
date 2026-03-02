@@ -12,7 +12,7 @@ import { deriveBlockedIds, buildBlockedByTree, type BlockedTreeNode } from '../.
 import { useArchetypePicker } from '../../hooks/use-archetype-picker';
 import { useArchetypes } from '../../hooks/use-archetypes';
 import type { BeadIssue } from '../../lib/types';
-import { Blocks, ChevronRight, UserPlus } from 'lucide-react';
+import { Blocks, ChevronRight, UserPlus, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface BlockedTriageModalProps {
@@ -20,6 +20,7 @@ export interface BlockedTriageModalProps {
   onClose: () => void;
   issues: BeadIssue[];
   projectRoot: string;
+  onSelectTask?: (taskId: string) => void;
 }
 
 export function BlockedTriageModal({
@@ -27,6 +28,7 @@ export function BlockedTriageModal({
   onClose,
   issues,
   projectRoot,
+  onSelectTask,
 }: BlockedTriageModalProps) {
   const { archetypes } = useArchetypes(projectRoot);
   const blockedIdsSet = useMemo(() => deriveBlockedIds(issues), [issues]);
@@ -102,6 +104,18 @@ export function BlockedTriageModal({
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
+                      {onSelectTask && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectTask(issue.id);
+                          }}
+                          className="p-1 rounded hover:bg-[var(--surface-hover)] text-[var(--text-tertiary)] hover:text-[var(--accent-info)]"
+                          title="Open in panel"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
+                      )}
                       {issue.status === 'blocked' && (
                         <span className="text-xs px-2 py-0.5 rounded bg-[var(--status-blocked)] text-[var(--text-inverse)]">
                           explicit

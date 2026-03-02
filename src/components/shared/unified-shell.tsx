@@ -340,6 +340,10 @@ export function UnifiedShell({
         onClose={handleCloseBlockedTriage}
         issues={issues}
         projectRoot={projectRoot}
+        onSelectTask={(taskId) => {
+          setTaskId(taskId);
+          handleCloseBlockedTriage();
+        }}
       />
     </div>
   );

@@ -51,6 +51,18 @@ function mapPriority(priority: number): SocialCardPriority {
   return 'P4';
 }
 
+function extractAgentName(bead: BeadIssue): string | null {
+  // First check title for "Agent: <name>" pattern
+  const agentMatch = bead.title.match(/Agent:\s*(\S+)/i);
+  if (agentMatch) return agentMatch[1];
+  
+  // Then check labels for "agent:" prefix
+  const agentLabel = bead.labels.find(l => l.startsWith('agent:'));
+  if (agentLabel) return agentLabel.replace('agent:', '');
+  
+  return null;
+}
+
 function extractAgents(bead: BeadIssue): AgentInfo[] {
   const agents: AgentInfo[] = [];
   if (bead.assignee) {
@@ -64,8 +76,11 @@ function extractAgents(bead: BeadIssue): AgentInfo[] {
         ? (bead.metadata.agentRole as AgentRole)
         : undefined;
 
+    // Get actual agent name from title/labels, fallback to assignee (bead ID)
+    const agentName = extractAgentName(bead) || bead.assignee;
+    
     agents.push({ 
-      name: bead.assignee, 
+      name: agentName, 
       status: agentStatus,
       role: agentRole
     });
