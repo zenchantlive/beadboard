@@ -681,3 +681,5 @@
 {"issue_id":"beadboard-zas","label":"mem-hard"}
 {"issue_id":"beadboard-zas","label":"memory"}
 {"issue_id":"beadboard-zas","label":"memory-arch"}
+{"issue_id":"beadboard-zqt","label":"gt:agent"}
+{"issue_id":"beadboard-zqt","label":"role:orchestrator"}
