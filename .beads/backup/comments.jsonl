@@ -4,3 +4,10 @@
 {"author":"ZenchantLive","created_at":"2026-03-02T04:13:21Z","id":4,"issue_id":"beadboard-43c","text":"this is a multi word test comment"}
 {"author":"ZenchantLive","created_at":"2026-03-02T04:14:15Z","id":5,"issue_id":"beadboard-43c","text":"we"}
 {"author":"ZenchantLive","created_at":"2026-03-02T04:15:29Z","id":6,"issue_id":"beadboard-43c","text":"we"}
+{"author":"zenchant","created_at":"2026-03-02T04:21:18Z","id":7,"issue_id":"bb-18e.4","text":"\"yo"}
+{"author":"ZenchantLive","created_at":"2026-03-02T04:29:59Z","id":8,"issue_id":"beadboard-43c","text":"this is a multi word test via full shell path"}
+{"author":"zenchantlive","created_at":"2026-03-02T04:31:41Z","id":9,"issue_id":"beadboard-43c","text":"\"this"}
+{"author":"zenchant","created_at":"2026-03-02T04:33:32Z","id":10,"issue_id":"bb-ui2.23","text":"\"multi"}
+{"author":"zenchant","created_at":"2026-03-02T04:35:12Z","id":11,"issue_id":"bb-ui2.23","text":"hello helloo"}
+{"author":"zenchant","created_at":"2026-03-02T04:36:22Z","id":12,"issue_id":"beadboard-d2x.1","text":"we need to make sure that we are corectly calculating blocked and anywhere wher eitis reffenced that it saccurate."}
+{"author":"zenchantlive","created_at":"2026-03-02T04:36:24Z","id":13,"issue_id":"beadboard-43c","text":"this is a multi word comment after the fix"}
