@@ -139,6 +139,7 @@ export function UnifiedShell({
           hideClosed={graphTab !== 'flow'}
           onAssignModeChange={handleAssignModeChange}
           onSelectedIssueChange={handleSelectedIssueChange}
+          swarmId={swarmId ?? undefined}
         />
       );
     }
@@ -152,6 +153,7 @@ export function UnifiedShell({
           projectScopeOptions={projectScopeOptions}
           blockedOnly={blockedOnly}
           projectRoot={projectRoot}
+          swarmId={swarmId ?? undefined}
         />
       );
     }

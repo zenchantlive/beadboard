@@ -16,6 +16,7 @@ interface SocialPageProps {
   projectScopeOptions?: ProjectScopeOption[];
   blockedOnly?: boolean;
   projectRoot: string;
+  swarmId?: string;
 }
 
 type SectionKey = 'ready' | 'in_progress' | 'blocked' | 'deferred' | 'done';
@@ -66,6 +67,7 @@ export function SocialPage({
   projectScopeOptions = [],
   blockedOnly = false,
   projectRoot,
+  swarmId,
 }: SocialPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -238,6 +240,7 @@ export function SocialPage({
                         blockedByDetails={toDependencyDetails(card.unblocks)}
                         unblocksDetails={toDependencyDetails(card.blocks)}
                         archetypes={archetypes}
+                        swarmId={swarmId}
                       />
                     );
                   })}

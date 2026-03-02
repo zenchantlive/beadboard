@@ -25,6 +25,7 @@ interface SocialCardProps {
   blockedByDetails?: Array<{ id: string; title: string; epic?: string }>;
   unblocksDetails?: Array<{ id: string; title: string; epic?: string }>;
   archetypes?: AgentArchetype[];
+  swarmId?: string;
 }
 
 function handleCardKeyDown(event: KeyboardEvent<HTMLDivElement>, onClick?: MouseEventHandler<HTMLDivElement>) {
@@ -120,10 +121,12 @@ export function SocialCard({
   blockedByDetails = [],
   unblocksDetails = [],
   archetypes = [],
+  swarmId,
 }: SocialCardProps) {
   const status = statusVisual(data.status);
   const { selectedArchetype, setSelectedArchetype, isAssigning, assignSuccess, handleAssign } = useArchetypePicker();
   const showAssign = (data.status === 'blocked' || data.agents.length === 0) && archetypes.length > 0;
+  const isSwarmHighlighted = swarmId && data.id.includes(swarmId);
 
   return (
     <div
@@ -134,6 +137,7 @@ export function SocialCard({
       aria-label={`Open ${data.title}`}
       className={cn(
         'group relative flex min-h-[290px] cursor-pointer flex-col rounded-[14px] border px-3.5 py-3 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]',
+        isSwarmHighlighted && 'ring-2 ring-blue-500',
         className,
       )}
       style={{

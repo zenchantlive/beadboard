@@ -28,6 +28,7 @@ export interface WorkflowGraphProps {
   hideClosed?: boolean;
   archetypes?: AgentArchetype[];
   assignMode?: boolean;
+  swarmId?: string;
 }
 
 const NODE_WIDTH = 320;

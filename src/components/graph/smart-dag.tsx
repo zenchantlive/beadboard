@@ -20,6 +20,7 @@ export interface SmartDagProps {
   hideClosed?: boolean;
   onAssignModeChange?: (assignMode: boolean) => void;
   onSelectedIssueChange?: (issue: BeadIssue | null) => void;
+  swarmId?: string;
 }
 
 const DEPTH_OPTIONS: GraphHopDepth[] = [1, 2, 'full'];
@@ -33,6 +34,7 @@ export function SmartDag({
   hideClosed: hideClosedProp = false,
   onAssignModeChange,
   onSelectedIssueChange,
+  swarmId,
 }: SmartDagProps) {
   const { archetypes } = useArchetypes(projectRoot);
 
@@ -251,6 +253,7 @@ export function SmartDag({
               blocksDetailsMap={blocksDetailsMap}
               actionableIds={actionableNodeIds}
               onSelect={handleTaskSelect}
+              swarmId={swarmId}
             />
           </div>
         ) : (
@@ -262,6 +265,7 @@ export function SmartDag({
               hideClosed={hideClosed}
               archetypes={archetypes}
               assignMode={assignMode}
+              swarmId={swarmId}
             />
           </div>
         )}

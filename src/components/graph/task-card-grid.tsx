@@ -42,6 +42,8 @@ interface TaskCardGridProps {
     actionableIds: Set<string>;
     /** Callback fired when the user selects a task. */
     onSelect: (id: string, shouldOpenDrawer?: boolean) => void;
+    /** Optional swarm ID for highlighting swarm tasks. */
+    swarmId?: string;
 }
 
 /**
