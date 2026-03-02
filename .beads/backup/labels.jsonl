@@ -596,6 +596,9 @@
 {"issue_id":"bb-zenchantlive","label":"role:architect"}
 {"issue_id":"bb-zzr","label":"gt:agent"}
 {"issue_id":"bb-zzr","label":"swarm:test-swarm-1"}
+{"issue_id":"beadboard-05a","label":"decision"}
+{"issue_id":"beadboard-05a","label":"installation"}
+{"issue_id":"beadboard-05a","label":"skills"}
 {"issue_id":"beadboard-116","label":"mem-canonical"}
 {"issue_id":"beadboard-116","label":"mem-hard"}
 {"issue_id":"beadboard-116","label":"memory"}
@@ -691,9 +694,15 @@
 {"issue_id":"beadboard-btn.1","label":"documentation"}
 {"issue_id":"beadboard-btn.1","label":"memory"}
 {"issue_id":"beadboard-btn.1","label":"skills"}
+{"issue_id":"beadboard-btt","label":"installation"}
+{"issue_id":"beadboard-btt","label":"skills"}
 {"issue_id":"beadboard-c08","label":"agent:architect"}
 {"issue_id":"beadboard-c08","label":"agent:system-architect"}
 {"issue_id":"beadboard-c08","label":"status:documenting"}
+{"issue_id":"beadboard-c70","label":"agents"}
+{"issue_id":"beadboard-c70","label":"documentation"}
+{"issue_id":"beadboard-c70","label":"installation"}
+{"issue_id":"beadboard-c70","label":"skills"}
 {"issue_id":"beadboard-d2x","label":"--json"}
 {"issue_id":"beadboard-dc0","label":"mem-canonical"}
 {"issue_id":"beadboard-dc0","label":"mem-soft"}
@@ -719,6 +728,10 @@
 {"issue_id":"beadboard-fld","label":"memory"}
 {"issue_id":"beadboard-fld","label":"memory-anchor"}
 {"issue_id":"beadboard-fld","label":"memory-ux"}
+{"issue_id":"beadboard-frf","label":"gt:agent"}
+{"issue_id":"beadboard-frf","label":"role:orchestrator"}
+{"issue_id":"beadboard-i0q","label":"documentation"}
+{"issue_id":"beadboard-i0q","label":"skills"}
 {"issue_id":"beadboard-i4c","label":"memory"}
 {"issue_id":"beadboard-i4c","label":"memory-provenance"}
 {"issue_id":"beadboard-ij8","label":"docs"}
