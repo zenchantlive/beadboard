@@ -742,6 +742,8 @@
 {"issue_id":"beadboard-nq9","label":"memory-workflow"}
 {"issue_id":"beadboard-rnk","label":"gt:agent"}
 {"issue_id":"beadboard-rnk","label":"role:orchestrator"}
+{"issue_id":"beadboard-tmj","label":"bug"}
+{"issue_id":"beadboard-tmj","label":"frontend"}
 {"issue_id":"beadboard-x3l","label":"template:release"}
 {"issue_id":"beadboard-yad","label":"agent:coder"}
 {"issue_id":"beadboard-yz6","label":"memory"}
