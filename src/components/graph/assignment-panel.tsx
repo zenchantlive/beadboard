@@ -9,6 +9,7 @@ import { TemplatePicker } from '../swarm/template-picker';
 import { useArchetypes } from '../../hooks/use-archetypes';
 import { useTemplates } from '../../hooks/use-templates';
 import { useGraphAnalysis } from '../../hooks/use-graph-analysis';
+import { useArchetypePicker } from '../../hooks/use-archetype-picker';
 import type { BeadIssue } from '../../lib/types';
 import type { AgentArchetype, SwarmTemplate } from '../../lib/types-swarm';
 import { getArchetypeDisplayChar } from '../../lib/utils';
@@ -18,6 +19,7 @@ export interface AssignmentPanelProps {
     projectRoot: string;
     issues: BeadIssue[];
     epicId?: string;
+    onIssueUpdated?: () => void;
 }
 
 function hasAgentLabel(labels: string[]): boolean {
@@ -38,21 +40,24 @@ function truncateTitle(title: string, maxLength: number = 30): string {
 }
 
 function getTemplateId(issue: BeadIssue): string | null {
+    const templateLabel = issue.labels?.find(l => l.startsWith('template:'));
+    if (templateLabel) {
+        return templateLabel.replace('template:', '');
+    }
     if (issue.metadata?.templateId && typeof issue.metadata.templateId === 'string') {
         return issue.metadata.templateId;
     }
     return issue.templateId;
 }
 
-export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: AssignmentPanelProps) {
+export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId, onIssueUpdated }: AssignmentPanelProps) {
     const [inspectingArchetypeId, setInspectingArchetypeId] = useState<string | null>(null);
     const [inspectingTemplateId, setInspectingTemplateId] = useState<string | null>(null);
     const [showArchetypeList, setShowArchetypeList] = useState(false);
     const [showTemplateList, setShowTemplateList] = useState(false);
-    const [selectedArchetypeForPrep, setSelectedArchetypeForPrep] = useState<string>('');
-    const [isPrepping, setIsPrepping] = useState(false);
-    const [prepSuccess, setPrepSuccess] = useState(false);
     const [quickAssignDropdown, setQuickAssignDropdown] = useState<string | null>(null);
+
+    const { selectedArchetype, setSelectedArchetype, isAssigning, assignSuccess, handleAssign } = useArchetypePicker();
 
     const [needsAgentCollapsed, setNeedsAgentCollapsed] = useState(false);
     const [preAssignedCollapsed, setPreAssignedCollapsed] = useState(false);
@@ -127,21 +132,28 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
 
     const handleApplyTemplateToEpic = async (templateId: string, targetEpicId: string) => {
         try {
+            const epic = issues.find(issue => issue.id === targetEpicId);
+            const currentLabels = epic?.labels || [];
+            const newLabels = [...currentLabels.filter(l => !l.startsWith('template:')), `template:${templateId}`];
+
             const res = await fetch('/api/beads/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     projectRoot,
                     id: targetEpicId,
-                    metadata: { templateId }
+                    labels: newLabels
                 })
             });
 
             if (!res.ok) {
-                throw new Error('Failed to apply template');
+                const errorData = await res.json();
+                console.error('Template API error:', errorData);
+                throw new Error(errorData?.error?.message || 'Failed to apply template');
             }
 
             console.log('Template applied successfully:', { templateId, epicId: targetEpicId });
+            onIssueUpdated?.();
         } catch (error) {
             console.error('Failed to apply template:', error);
         }
@@ -149,74 +161,42 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
 
     const handleRemoveTemplateFromEpic = async (targetEpicId: string) => {
         try {
+            const epic = issues.find(issue => issue.id === targetEpicId);
+            const currentLabels = epic?.labels || [];
+            const newLabels = currentLabels.filter(l => !l.startsWith('template:'));
+
             const res = await fetch('/api/beads/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     projectRoot,
                     id: targetEpicId,
-                    metadata: { templateId: null }
+                    labels: newLabels
                 })
             });
 
             if (!res.ok) {
-                throw new Error('Failed to remove template');
+                const errorData = await res.json();
+                console.error('Template API error:', errorData);
+                throw new Error(errorData?.error?.message || 'Failed to remove template');
             }
 
             console.log('Template removed successfully');
+            onIssueUpdated?.();
         } catch (error) {
             console.error('Failed to remove template:', error);
         }
     };
 
     const handlePrepTask = async () => {
-        if (!selectedIssue || !selectedArchetypeForPrep) return;
-
-        setIsPrepping(true);
-        setPrepSuccess(false);
-
-        try {
-            const res = await fetch('/api/swarm/prep', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    beadId: selectedIssue.id,
-                    archetypeId: selectedArchetypeForPrep
-                })
-            });
-
-            if (!res.ok) {
-                throw new Error('Failed to prep task');
-            }
-
-            setPrepSuccess(true);
-            setTimeout(() => setPrepSuccess(false), 2000);
-        } catch (error) {
-            console.error('Failed to prep task:', error);
-        } finally {
-            setIsPrepping(false);
-        }
+        if (!selectedIssue) return;
+        await handleAssign(selectedIssue.id);
     };
 
     const handleQuickAssign = async (issueId: string, archetypeId: string) => {
-        try {
-            const res = await fetch('/api/swarm/prep', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    beadId: issueId,
-                    archetypeId: archetypeId
-                })
-            });
-
-            if (!res.ok) {
-                throw new Error('Failed to assign agent');
-            }
-
-            setQuickAssignDropdown(null);
-        } catch (error) {
-            console.error('Failed to assign agent:', error);
-        }
+        setSelectedArchetype(archetypeId);
+        await handleAssign(issueId);
+        setQuickAssignDropdown(null);
     };
 
     const getArchetypeForAgentLabel = (label: string): AgentArchetype | undefined => {
@@ -315,7 +295,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                 isOpen={showArchetypeList}
                 onClose={() => setShowArchetypeList(false)}
                 onSelect={(archetype) => {
-                    setSelectedArchetypeForPrep(archetype.id);
+                    setSelectedArchetype(archetype.id);
                     setShowArchetypeList(false);
                 }}
                 onEdit={(archetypeId) => {
@@ -458,8 +438,8 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                                 <div>
                                     <label className="text-xs font-medium text-[var(--text-tertiary)] mb-1.5 block">Assign Agent Archetype</label>
                                     <select
-                                        value={selectedArchetypeForPrep}
-                                        onChange={(e) => setSelectedArchetypeForPrep(e.target.value)}
+                                        value={selectedArchetype ?? ''}
+                                        onChange={(e) => setSelectedArchetype(e.target.value || null)}
                                         className="w-full bg-[var(--surface-input)] border border-[var(--border-subtle)] rounded-md px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-info)]"
                                     >
                                         <option value="" disabled>Select archetype...</option>
@@ -470,10 +450,10 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId }: 
                                 </div>
                                 <button
                                     onClick={handlePrepTask}
-                                    disabled={!selectedArchetypeForPrep || isPrepping || prepSuccess}
-                                    className={`w-full py-2 text-[var(--text-inverse)] text-sm font-bold rounded-md disabled:opacity-50 transition-colors flex items-center justify-center ${prepSuccess ? 'bg-[var(--accent-success)]' : 'bg-[var(--accent-info)] hover:bg-[var(--accent-info)]/90'}`}
+                                    disabled={!selectedArchetype || isAssigning || assignSuccess}
+                                    className={`w-full py-2 text-[var(--text-inverse)] text-sm font-bold rounded-md disabled:opacity-50 transition-colors flex items-center justify-center ${assignSuccess ? 'bg-[var(--accent-success)]' : 'bg-[var(--accent-info)] hover:bg-[var(--accent-info)]/90'}`}
                                 >
-                                    {isPrepping ? <Loader2 className="w-4 h-4 animate-spin" /> : prepSuccess ? 'Prep Successful!' : 'Prep Task for Swarm'}
+                                    {isAssigning ? <Loader2 className="w-4 h-4 animate-spin" /> : assignSuccess ? 'Prep Successful!' : 'Prep Task for Swarm'}
                                 </button>
                             </div>
                         ) : (
