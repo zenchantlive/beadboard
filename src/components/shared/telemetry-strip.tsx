@@ -1,6 +1,7 @@
 'use client';
 
-import { ChevronRight } from 'lucide-react';
+import { useMemo } from 'react';
+import { Signal } from 'lucide-react';
 import type { BeadIssue } from '../../lib/types';
 
 interface TelemetryStripProps {
@@ -8,53 +9,52 @@ interface TelemetryStripProps {
   onMaximize: () => void;
 }
 
-interface Dot {
-  color: string;
-  glow: string;
-  count: number;
-  label: string;
+function dotColor(status: BeadIssue['status']): { bg: string; glow: string } {
+  switch (status) {
+    case 'blocked':     return { bg: 'var(--accent-danger)',  glow: 'rgba(255,76,114,0.4)' };
+    case 'in_progress': return { bg: 'var(--accent-warning)', glow: 'rgba(255,178,74,0.4)' };
+    case 'open':        return { bg: 'var(--accent-success)', glow: 'rgba(53,217,143,0.4)' };
+    case 'closed':      return { bg: 'var(--text-tertiary)',  glow: 'transparent' };
+    default:            return { bg: 'var(--accent-info)',    glow: 'rgba(125,211,252,0.3)' };
+  }
 }
 
 export function TelemetryStrip({ issues, onMaximize }: TelemetryStripProps) {
-  const tasks = issues.filter((i) => i.issue_type !== 'epic');
-  const blocked = tasks.filter((i) => i.status === 'blocked').length;
-  const active = tasks.filter((i) => i.status === 'in_progress').length;
-  const ready = tasks.filter((i) => i.status === 'open').length;
-  const done = tasks.filter((i) => i.status === 'closed').length;
-
-  const dots: Dot[] = [
-    { color: 'var(--accent-danger)', glow: 'rgba(255,76,114,0.4)', count: blocked, label: 'blocked' },
-    { color: 'var(--accent-warning)', glow: 'rgba(255,178,74,0.4)', count: active, label: 'active' },
-    { color: 'var(--accent-success)', glow: 'rgba(53,217,143,0.4)', count: ready, label: 'ready' },
-    { color: 'var(--text-tertiary)', glow: 'transparent', count: done, label: 'done' },
-  ];
+  // Show the 8 most recently updated tasks as live dots
+  const recentTasks = useMemo(() => {
+    return [...issues]
+      .filter((i) => i.issue_type !== 'epic')
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      .slice(0, 8);
+  }, [issues]);
 
   return (
     <div className="flex h-full w-9 flex-shrink-0 flex-col items-center border-l border-[var(--border-subtle)] bg-[var(--surface-primary)] py-2">
       <button
         type="button"
         onClick={onMaximize}
-        className="mb-3 rounded p-1 text-[var(--text-tertiary)] transition-colors hover:bg-[var(--alpha-white-low)] hover:text-[var(--text-primary)]"
+        className="mb-2 rounded p-1 text-[var(--accent-info)] transition-colors hover:bg-[var(--alpha-white-low)] hover:text-[var(--text-primary)]"
         title="Restore live feed"
         aria-label="Restore live feed"
       >
-        <ChevronRight className="h-3.5 w-3.5" />
+        <Signal className="h-3.5 w-3.5" />
       </button>
 
-      <div className="flex flex-col items-center gap-3">
-        {dots.map((dot) => (
-          <div key={dot.label} className="flex flex-col items-center gap-0.5" title={`${dot.count} ${dot.label}`}>
-            <span
-              className="h-2.5 w-2.5 rounded-full transition-all"
-              style={{
-                backgroundColor: dot.color,
-                boxShadow: dot.count > 0 ? `0 0 6px 1px ${dot.glow}` : 'none',
-                opacity: dot.count > 0 ? 1 : 0.25,
-              }}
-            />
-            <span className="font-mono text-[8px] text-[var(--text-tertiary)]">{dot.count}</span>
-          </div>
-        ))}
+      <div className="flex flex-1 flex-col items-center gap-2 overflow-hidden">
+        {recentTasks.map((task) => {
+          const { bg, glow } = dotColor(task.status);
+          return (
+            <div key={task.id} className="flex flex-col items-center" title={`${task.id}: ${task.title} (${task.status})`}>
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{
+                  backgroundColor: bg,
+                  boxShadow: `0 0 5px 1px ${glow}`,
+                }}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -294,16 +294,6 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
                                 <Signal className="h-3 w-3" />
                             </button>
                         ) : null}
-                        {onViewTelemetry ? (
-                            <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); onViewTelemetry(id); }}
-                                className="rounded p-0.5 text-[var(--accent-info)]/50 transition-colors hover:text-[var(--accent-info)] hover:bg-[var(--alpha-white-low)]"
-                                title="Live feed"
-                            >
-                                <Signal className="h-3 w-3" />
-                            </button>
-                        ) : null}
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                         {assignedArchetypes.map((archetype) => (

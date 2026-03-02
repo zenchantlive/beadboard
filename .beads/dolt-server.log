@@ -3002,3 +3002,35 @@ time="2026-03-01T18:17:37-08:00" level=info msg=NewConnection DisableClientMulti
 time="2026-03-01T18:17:37-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1183
 time="2026-03-01T18:17:37-08:00" level=info msg=ConnectionClosed connectionID=1182
 time="2026-03-01T18:17:38-08:00" level=info msg=ConnectionClosed connectionID=1183
+time="2026-03-01T18:18:37-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1184
+time="2026-03-01T18:18:39-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1185
+time="2026-03-01T18:18:39-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1186
+time="2026-03-01T18:18:39-08:00" level=warning msg="Cannot read client handshake response from client 1186 (127.0.0.1:62203): read tcp 127.0.0.1:3307->127.0.0.1:62203: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:18:39-08:00" level=info msg=ConnectionClosed connectionID=1186
+time="2026-03-01T18:18:39-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1187
+time="2026-03-01T18:18:39-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1188
+time="2026-03-01T18:18:39-08:00" level=info msg=ConnectionClosed connectionID=1187
+time="2026-03-01T18:18:39-08:00" level=info msg=ConnectionClosed connectionID=1188
+time="2026-03-01T18:18:40-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1189
+time="2026-03-01T18:18:40-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1190
+time="2026-03-01T18:18:40-08:00" level=info msg=ConnectionClosed connectionID=1190
+time="2026-03-01T18:18:40-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1191
+time="2026-03-01T18:18:40-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1192
+time="2026-03-01T18:18:40-08:00" level=info msg=ConnectionClosed connectionID=1191
+time="2026-03-01T18:18:40-08:00" level=info msg=ConnectionClosed connectionID=1192
+time="2026-03-01T18:18:43-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1193
+time="2026-03-01T18:18:43-08:00" level=warning msg="Cannot read client handshake response from client 1193 (127.0.0.1:51203): read tcp 127.0.0.1:3307->127.0.0.1:51203: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:18:43-08:00" level=info msg=ConnectionClosed connectionID=1193
+time="2026-03-01T18:18:43-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1194
+time="2026-03-01T18:18:43-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1195
+time="2026-03-01T18:18:43-08:00" level=info msg=ConnectionClosed connectionID=1194
+time="2026-03-01T18:18:43-08:00" level=info msg=ConnectionClosed connectionID=1195
+time="2026-03-01T18:18:43-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1196
+time="2026-03-01T18:18:43-08:00" level=warning msg="Cannot read client handshake response from client 1196 (127.0.0.1:51207): read tcp 127.0.0.1:3307->127.0.0.1:51207: wsarecv: An existing connection was forcibly closed by the remote host.\nio.ReadFull(header size) failed, it may not be a valid MySQL client"
+time="2026-03-01T18:18:43-08:00" level=info msg=ConnectionClosed connectionID=1196
+time="2026-03-01T18:18:43-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1197
+time="2026-03-01T18:18:43-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1198
+time="2026-03-01T18:18:43-08:00" level=info msg=ConnectionClosed connectionID=1197
+time="2026-03-01T18:18:44-08:00" level=info msg=ConnectionClosed connectionID=1198
+time="2026-03-01T18:20:06-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1199
+time="2026-03-01T18:20:29-08:00" level=info msg=NewConnection DisableClientMultiStatements=false connectionID=1200

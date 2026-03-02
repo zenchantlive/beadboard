@@ -43,11 +43,29 @@ export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectR
 
     if (epicId) {
         return (
-            <SwarmCommandFeed
-                epicId={epicId}
-                issues={issues}
-                projectRoot={projectRoot}
-            />
+            <div className="flex h-full flex-col overflow-hidden bg-[var(--surface-primary)]">
+                {onMinimize && (
+                    <div className="flex shrink-0 items-center justify-between border-b border-[var(--border-subtle)] px-3 py-2">
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--text-tertiary)]">Epic Command Feed</span>
+                        <button
+                            type="button"
+                            onClick={onMinimize}
+                            className="rounded p-1 text-[var(--text-tertiary)] transition-colors hover:bg-[var(--alpha-white-low)] hover:text-[var(--text-primary)]"
+                            aria-label="Minimize to telemetry"
+                            title="Minimize to telemetry"
+                        >
+                            <ChevronLeft className="h-3.5 w-3.5" />
+                        </button>
+                    </div>
+                )}
+                <div className="min-h-0 flex-1 overflow-hidden">
+                    <SwarmCommandFeed
+                        epicId={epicId}
+                        issues={issues}
+                        projectRoot={projectRoot}
+                    />
+                </div>
+            </div>
         );
     }
 
