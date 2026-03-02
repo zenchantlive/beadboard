@@ -11,7 +11,6 @@ import {
 import { deriveBlockedIds, buildBlockedByTree, type BlockedTreeNode } from '../../lib/kanban';
 import { useArchetypePicker } from '../../hooks/use-archetype-picker';
 import type { BeadIssue } from '../../lib/types';
-import type { ProjectContext } from '../../lib/types';
 import { Blocks, ChevronRight, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,7 +18,7 @@ export interface BlockedTriageModalProps {
   isOpen: boolean;
   onClose: () => void;
   issues: BeadIssue[];
-  projectRoot: ProjectContext;
+  projectRoot: string;
 }
 
 export function BlockedTriageModal({

@@ -5,7 +5,6 @@ import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
-import { buildProjectContext } from '../../lib/project-context';
 import { TopBar } from './top-bar';
 import { LeftPanel, type LeftPanelFilters } from './left-panel';
 import { RightPanel } from './right-panel';
@@ -80,10 +79,9 @@ export function UnifiedShell({
   const handleOpenBlockedTriage = useCallback(() => setBlockedTriageOpen(true), []);
   const handleCloseBlockedTriage = useCallback(() => setBlockedTriageOpen(false), []);
 
-const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
+  const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
   const { swarms: swarmCards } = useSwarmList(projectRoot);
   const bdHealth = useBdHealth(projectRoot);
-  const projectContext = useMemo(() => buildProjectContext(projectRoot), [projectRoot]);
 
   const selectedSocialCard = taskId ? socialCards.find(c => c.id === taskId) : null;
   const selectedSwarmCard = swarmId ? swarmCards.find(c => c.swarmId === swarmId) : null;
@@ -336,7 +334,7 @@ const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
         isOpen={blockedTriageOpen}
         onClose={handleCloseBlockedTriage}
         issues={issues}
-        projectRoot={projectContext}
+        projectRoot={projectRoot}
       />
     </div>
   );
