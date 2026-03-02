@@ -676,6 +676,8 @@
 {"issue_id":"beadboard-4vr","label":"memory"}
 {"issue_id":"beadboard-4vr","label":"planning"}
 {"issue_id":"beadboard-4vr","label":"roadmap"}
+{"issue_id":"beadboard-5jf","label":"gt:agent"}
+{"issue_id":"beadboard-5jf","label":"role:orchestrator"}
 {"issue_id":"beadboard-5r1","label":"memory"}
 {"issue_id":"beadboard-5r1","label":"memory-agent"}
 {"issue_id":"beadboard-5r1","label":"memory-anchor"}
@@ -695,6 +697,8 @@
 {"issue_id":"beadboard-6iq","label":"mem-hard"}
 {"issue_id":"beadboard-6iq","label":"memory"}
 {"issue_id":"beadboard-6iq","label":"memory-ui"}
+{"issue_id":"beadboard-6wu","label":"gt:agent"}
+{"issue_id":"beadboard-6wu","label":"role:ui"}
 {"issue_id":"beadboard-76p","label":"memory"}
 {"issue_id":"beadboard-76p","label":"memory-anchor"}
 {"issue_id":"beadboard-76p","label":"memory-arch"}
@@ -710,6 +714,9 @@
 {"issue_id":"beadboard-at4","label":"memory-agent"}
 {"issue_id":"beadboard-axe","label":"gt:agent"}
 {"issue_id":"beadboard-axe","label":"role:orchestrator"}
+{"issue_id":"beadboard-ay9","label":"epic"}
+{"issue_id":"beadboard-ay9","label":"graph"}
+{"issue_id":"beadboard-ay9","label":"ui"}
 {"issue_id":"beadboard-b7t","label":"agent:coder"}
 {"issue_id":"beadboard-bgh","label":"brainstorm"}
 {"issue_id":"beadboard-bgh","label":"dolt"}
@@ -773,6 +780,10 @@
 {"issue_id":"beadboard-jq5","label":"backend"}
 {"issue_id":"beadboard-jq5","label":"frontend"}
 {"issue_id":"beadboard-jq5","label":"project-scope"}
+{"issue_id":"beadboard-jq5.1","label":"backend"}
+{"issue_id":"beadboard-jq5.1","label":"frontend"}
+{"issue_id":"beadboard-jq5.1","label":"project-scope"}
+{"issue_id":"beadboard-jq5.1","label":"ui"}
 {"issue_id":"beadboard-lgs","label":"documentation"}
 {"issue_id":"beadboard-lgs","label":"installation"}
 {"issue_id":"beadboard-mdo","label":"mem-canonical"}
@@ -804,6 +815,8 @@
 {"issue_id":"beadboard-u4i","label":"installation"}
 {"issue_id":"beadboard-u4i","label":"tests"}
 {"issue_id":"beadboard-x3l","label":"template:release"}
+{"issue_id":"beadboard-xz5","label":"graph"}
+{"issue_id":"beadboard-xz5","label":"ui"}
 {"issue_id":"beadboard-yad","label":"agent:coder"}
 {"issue_id":"beadboard-ydu","label":"decision"}
 {"issue_id":"beadboard-ydu","label":"installation"}

@@ -657,6 +657,7 @@
 {"created_at":"2026-03-02T14:01:03Z","created_by":"ZenchantLive","depends_on_id":"beadboard-c70","issue_id":"beadboard-i0q","type":"relates-to"}
 {"created_at":"2026-02-24T01:38:07Z","created_by":"zenchantlive","depends_on_id":"beadboard-uui","issue_id":"beadboard-j3u","type":"parent"}
 {"created_at":"2026-03-01T16:53:51Z","created_by":"ZenchantLive","depends_on_id":"beadboard-116","issue_id":"beadboard-jgy","type":"relates-to"}
+{"created_at":"2026-03-02T15:34:22Z","created_by":"zenchantlive","depends_on_id":"beadboard-jq5","issue_id":"beadboard-jq5.1","type":"parent-child"}
 {"created_at":"2026-03-02T15:06:50Z","created_by":"ZenchantLive","depends_on_id":"beadboard-c70","issue_id":"beadboard-lgs","type":"relates-to"}
 {"created_at":"2026-03-02T15:07:07Z","created_by":"ZenchantLive","depends_on_id":"beadboard-u4i","issue_id":"beadboard-lgs","type":"blocks"}
 {"created_at":"2026-03-01T18:28:26Z","created_by":"zenchantlive","depends_on_id":"beadboard-6wv","issue_id":"beadboard-mdo","type":"relates-to"}
@@ -689,6 +690,7 @@
 {"created_at":"2026-02-28T14:34:43Z","created_by":"ZenchantLive","depends_on_id":"beadboard-x3l","issue_id":"beadboard-x3l.4","type":"parent-child"}
 {"created_at":"2026-02-28T14:34:48Z","created_by":"ZenchantLive","depends_on_id":"beadboard-x3l.1","issue_id":"beadboard-x3l.4","type":"blocks"}
 {"created_at":"2026-03-01T22:11:12Z","created_by":"ZenchantLive","depends_on_id":"beadboard-xte","issue_id":"beadboard-xte.1","type":"parent-child"}
+{"created_at":"2026-03-02T15:31:48Z","created_by":"ZenchantLive","depends_on_id":"beadboard-ay9","issue_id":"beadboard-xz5","type":"parent-child"}
 {"created_at":"2026-03-01T18:26:24Z","created_by":"zenchantlive","depends_on_id":"beadboard-6wv","issue_id":"beadboard-y8k","type":"blocks"}
 {"created_at":"2026-03-01T18:28:26Z","created_by":"zenchantlive","depends_on_id":"beadboard-mdo","issue_id":"beadboard-y8k","type":"relates-to"}
 {"created_at":"2026-02-21T04:03:21Z","created_by":"zenchantlive","depends_on_id":"beadboard-3xc","issue_id":"beadboard-yad","type":"parent"}
