@@ -498,6 +498,7 @@
 {"created_at":"2026-03-02T15:06:44Z","created_by":"ZenchantLive","depends_on_id":"beadboard-c70","issue_id":"beadboard-2fo","type":"relates-to"}
 {"created_at":"2026-03-02T15:06:57Z","created_by":"ZenchantLive","depends_on_id":"beadboard-ydu","issue_id":"beadboard-2fo","type":"blocks"}
 {"created_at":"2026-02-19T21:27:39Z","created_by":"zenchantlive","depends_on_id":"bb-ui2","issue_id":"beadboard-2on","type":"relates-to"}
+{"created_at":"2026-03-02T21:31:24Z","created_by":"ZenchantLive","depends_on_id":"beadboard-3cv","issue_id":"beadboard-3cv.1","type":"parent-child"}
 {"created_at":"2026-03-01T18:26:24Z","created_by":"zenchantlive","depends_on_id":"beadboard-6wv","issue_id":"beadboard-3de","type":"blocks"}
 {"created_at":"2026-03-02T19:29:39Z","created_by":"ZenchantLive","depends_on_id":"beadboard-cyk","issue_id":"beadboard-4k8","type":"relates-to"}
 {"created_at":"2026-03-02T19:29:39Z","created_by":"ZenchantLive","depends_on_id":"beadboard-om4","issue_id":"beadboard-4k8","type":"relates-to"}
@@ -648,6 +649,7 @@
 {"created_at":"2026-03-01T18:28:51Z","created_by":"zenchantlive","depends_on_id":"beadboard-fld","issue_id":"beadboard-e6w","type":"relates-to"}
 {"created_at":"2026-02-21T04:03:20Z","created_by":"zenchantlive","depends_on_id":"beadboard-3xc","issue_id":"beadboard-eo8","type":"parent"}
 {"created_at":"2026-02-21T04:03:22Z","created_by":"zenchantlive","depends_on_id":"beadboard-c08","issue_id":"beadboard-eo8","type":"blocks"}
+{"created_at":"2026-03-02T21:24:31Z","created_by":"ZenchantLive","depends_on_id":"beadboard-f31","issue_id":"beadboard-f31.1","type":"parent-child"}
 {"created_at":"2026-03-01T16:54:06Z","created_by":"ZenchantLive","depends_on_id":"bb-6bx","issue_id":"beadboard-fga","type":"relates-to"}
 {"created_at":"2026-03-01T16:54:06Z","created_by":"ZenchantLive","depends_on_id":"bb-ff6","issue_id":"beadboard-fga","type":"relates-to"}
 {"created_at":"2026-03-01T16:54:07Z","created_by":"ZenchantLive","depends_on_id":"beadboard-5vs","issue_id":"beadboard-fga","type":"relates-to"}
@@ -702,6 +704,7 @@
 {"created_at":"2026-02-28T13:54:16Z","created_by":"ZenchantLive","depends_on_id":"beadboard-r1i.1","issue_id":"beadboard-r1i.2","type":"blocks"}
 {"created_at":"2026-02-28T13:54:08Z","created_by":"ZenchantLive","depends_on_id":"beadboard-r1i","issue_id":"beadboard-r1i.3","type":"parent-child"}
 {"created_at":"2026-02-28T13:54:14Z","created_by":"ZenchantLive","depends_on_id":"beadboard-r1i.1","issue_id":"beadboard-r1i.3","type":"blocks"}
+{"created_at":"2026-03-02T21:20:44Z","created_by":"ZenchantLive","depends_on_id":"beadboard-rc8","issue_id":"beadboard-rc8.1","type":"parent-child"}
 {"created_at":"2026-03-02T19:36:09Z","created_by":"zenchantlive","depends_on_id":"beadboard-txj","issue_id":"beadboard-txj.1","type":"parent-child"}
 {"created_at":"2026-03-02T19:36:41Z","created_by":"zenchantlive","depends_on_id":"beadboard-txj","issue_id":"beadboard-txj.2","type":"parent-child"}
 {"created_at":"2026-03-02T19:37:57Z","created_by":"zenchantlive","depends_on_id":"beadboard-txj.1","issue_id":"beadboard-txj.2","type":"blocks"}
