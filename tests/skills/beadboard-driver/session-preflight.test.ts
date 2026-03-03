@@ -32,18 +32,30 @@ test('session-preflight fails when bd is unavailable', async () => {
 
   assert.equal(result.ok, false);
   assert.equal(result.error_code, 'BD_NOT_FOUND');
+  assert.match(result.remediation, /npm i -g beadboard/i);
+  if (process.platform === 'win32') {
+    assert.match(result.remediation, /install\.ps1/i);
+  } else {
+    assert.match(result.remediation, /install\.sh/i);
+  }
 });
 
 test('session-preflight succeeds with fake bd and BB_REPO', async () => {
   await withTempDir(async (root) => {
     const repo = path.join(root, 'beadboard');
     const toolsDir = path.join(root, 'tools');
-    const bdCmd = path.join(toolsDir, 'bd.cmd');
+    const bdExecutable = process.platform === 'win32' ? 'bd.cmd' : 'bd';
+    const bdCmd = path.join(toolsDir, bdExecutable);
 
     await fs.mkdir(path.join(repo, 'tools'), { recursive: true });
     await fs.mkdir(toolsDir, { recursive: true });
     await fs.writeFile(path.join(repo, 'bb.ps1'), 'echo ok', 'utf8');
-    await fs.writeFile(bdCmd, '@echo off\r\necho beads\r\n', 'utf8');
+    if (process.platform === 'win32') {
+      await fs.writeFile(bdCmd, '@echo off\r\necho beads\r\n', 'utf8');
+    } else {
+      await fs.writeFile(bdCmd, '#!/usr/bin/env sh\necho beads\n', 'utf8');
+      await fs.chmod(bdCmd, 0o755);
+    }
 
     const result = await runPreflight({
       PATH: toolsDir,
