@@ -8,8 +8,18 @@ const execFileAsync = promisify(execFile);
 const launcherPath = path.resolve('install/beadboard.mjs');
 
 test('status --json reports runtime root and install mode', async () => {
-  const { stdout } = await execFileAsync(process.execPath, [launcherPath, 'status', '--json']);
+  let stdout = '';
+  try {
+    ({ stdout } = await execFileAsync(process.execPath, [launcherPath, 'status', '--json']));
+  } catch (error) {
+    stdout = (error as { stdout?: string }).stdout || '';
+  }
   const payload = JSON.parse(stdout);
   assert.ok(payload.runtimeRoot);
   assert.ok(payload.installMode);
+  assert.ok(payload.bd);
+  assert.equal(typeof payload.bd.available, 'boolean');
+  assert.ok('path' in payload.bd);
+  assert.ok(payload.bd.project);
+  assert.equal(typeof payload.bd.project.hasBeadsDir, 'boolean');
 });
