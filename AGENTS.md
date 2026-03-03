@@ -9,15 +9,20 @@ Execution-first, evidence-first, beads-driven.
    - Example: `beadboard-05a.1` (task under epic beadboard-05a), `beadboard-05a.1.1` (subtask)
    - **WHY**: Tasks without parent-child relationships to an epic are ORPHANS and will NOT appear in the left panel navigation.
    - Always run `bd dep relate <epic-id> <task-id> --type parent-child` after creating a task bead.
-2. Working directory: `codex/beadboard`. Run all `bd` and `npm` commands from here.
-3. `bd` is the source of truth for work state. No direct writes to `.beads/issues.jsonl`.
-4. **"yo" / "what's up" / any greeting** → run `bd query "status=closed" --sort closed --reverse --limit 10` and `bd ready`, then suggest the next bead.
-5. Evidence before assertions: never claim fixed/passing/done without fresh command output.
-6. Keep user-facing labels and UI copy simple and explicit.
-6. Reuse shared code paths/components; avoid one-off logic drift across views.
-7. BeadBoard is a multi-agent coordination system first. Optimize for swarm execution clarity over cosmetics.
-8. Runtime UI is query-driven from `/` (`view=social|graph`). Do not reintroduce App Router page sprawl without approval.
-9. Keep the active page surface minimal under `src/app`. Maintain backward-compatible redirects in `next.config.ts` when route contracts change.
+2. **Never work without a bead**: Every task, bug fix, or feature must have a corresponding bead created BEFORE starting work.
+   - Follow `docs/protocols/bead-prompting.md` when creating bead descriptions.
+   - Ensure correct dependencies and parent epic are set.
+3. Working directory: `codex/beadboard`. Run all `bd` and `npm` commands from here.
+4. `bd` is the source of truth for work state. No direct writes to `.beads/issues.jsonl`.
+5. **"yo" / "what's up" / any greeting** → run `bd query "status=closed" --sort closed --reverse --limit 10` and `bd ready`, then suggest the next bead.
+6. Evidence before assertions: never claim fixed/passing/done without fresh command output.
+7. Keep user-facing labels and UI copy simple and explicit.
+8. Reuse shared code paths/components; avoid one-off logic drift across views.
+9. BeadBoard is a multi-agent coordination system first. Optimize for swarm execution clarity over cosmetics.
+10. Runtime UI is query-driven from `/` (`view=social|graph`). Do not reintroduce App Router page sprawl without approval.
+11. Keep the active page surface minimal under `src/app`. Maintain backward-compatible redirects in `next.config.ts` when route contracts change.
+12. **Close beads with evidence**: When finished, always close beads with detailed notes including commands run, files changed, and verification output.
+
 
 ## Craft Standards
 
