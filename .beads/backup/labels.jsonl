@@ -830,6 +830,12 @@
 {"issue_id":"beadboard-mdo","label":"mem-hard"}
 {"issue_id":"beadboard-mdo","label":"memory"}
 {"issue_id":"beadboard-mdo","label":"memory-arch"}
+{"issue_id":"beadboard-mmd","label":"cli"}
+{"issue_id":"beadboard-mmd","label":"diagnostics"}
+{"issue_id":"beadboard-mmd","label":"status"}
+{"issue_id":"beadboard-mmd.1","label":"cli"}
+{"issue_id":"beadboard-mmd.1","label":"diagnostics"}
+{"issue_id":"beadboard-mmd.1","label":"status"}
 {"issue_id":"beadboard-n1h","label":"quality"}
 {"issue_id":"beadboard-n1h","label":"testing"}
 {"issue_id":"beadboard-n1h.1","label":"quality"}
