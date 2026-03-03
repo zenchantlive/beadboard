@@ -814,6 +814,8 @@
 {"issue_id":"beadboard-u4i","label":"ci"}
 {"issue_id":"beadboard-u4i","label":"installation"}
 {"issue_id":"beadboard-u4i","label":"tests"}
+{"issue_id":"beadboard-x1y","label":"bug"}
+{"issue_id":"beadboard-x1y","label":"frontend"}
 {"issue_id":"beadboard-x3l","label":"template:release"}
 {"issue_id":"beadboard-xz5","label":"graph"}
 {"issue_id":"beadboard-xz5","label":"ui"}

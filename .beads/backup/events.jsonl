@@ -661,3 +661,6 @@
 {"actor":"zenchantlive","comment":null,"created_at":"2026-03-02T15:37:31Z","event_type":"closed","id":665,"issue_id":"beadboard-jq5.1","new_value":"Added ProjectScopeControls to UnifiedShell - now visible in all views","old_value":""}
 {"actor":"zenchantlive","comment":null,"created_at":"2026-03-02T15:37:31Z","event_type":"closed","id":666,"issue_id":"beadboard-jq5","new_value":"all steps complete","old_value":""}
 {"actor":"zenchantlive","comment":null,"created_at":"2026-03-02T15:37:52Z","event_type":"closed","id":667,"issue_id":"beadboard-6wu","new_value":"Completed jq5.1 - Added ProjectScopeControls to UnifiedShell","old_value":""}
+{"actor":"zenchantlive","comment":null,"created_at":"2026-03-02T16:04:32Z","event_type":"created","id":668,"issue_id":"beadboard-x1y","new_value":"","old_value":""}
+{"actor":"zenchantlive","comment":"Added label: bug","created_at":"2026-03-02T16:04:32Z","event_type":"label_added","id":669,"issue_id":"beadboard-x1y","new_value":null,"old_value":null}
+{"actor":"zenchantlive","comment":"Added label: frontend","created_at":"2026-03-02T16:04:32Z","event_type":"label_added","id":670,"issue_id":"beadboard-x1y","new_value":null,"old_value":null}
