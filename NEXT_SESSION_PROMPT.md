@@ -1,113 +1,159 @@
-# Next Session: Investigate Frontend/Dolt Data Mismatch
+# Next Session: Power Through [EPIC] Global BeadBoard Installer + Runtime Launch (`beadboard-05a`)
 
-## Critical Unresolved Issue
+## Mission
 
-The frontend is showing STALE data that doesn't match Dolt. We could NOT figure out the root cause.
+Complete `beadboard-05a` end-to-end with strict TDD and evidence-first closeout.
 
-### Symptoms:
-1. **bb-u6f.7** shows as OPEN in frontend left sidebar, but is CLOSED in Dolt
-2. **beadboard-2e6** and **beadboard-6cc** (brainstorming epics) don't appear in frontend, but exist in Dolt as OPEN
-3. Memory-anchor epics ARE correctly filtered out (this works)
-4. Frontend loads without Dolt connection errors
+This epic implements a single cross-platform BeadBoard installer system (Windows/Linux/macOS wrappers over one shared contract), global `bb`/`beadboard` command availability, runtime launcher behavior, and driver-skill detection-only remediation messaging.
 
-### What We Verified:
-- Dolt IS running (bd dolt status shows PID 77304, port 3307)
-- Dolt has CORRECT data (direct MySQL queries confirmed bb-u6f.7=status:closed, beadboard-2e6=status:open)
-- issues.jsonl has WRONG data (bb-u6f.7=status:open, issue_type=task - both wrong!)
-- No errors in console or Dolt logs
+## Non-Negotiable Context
 
-### What We Tried (ALL FAILED):
-1. Added memory-anchor filter to left-panel.tsx line 73 - worked for filtering memory, but didn't fix stale data
-2. Removed issues.jsonl fallback in read-issues.ts - didn't change anything
-3. Cleared .next cache and restarted dev server - didn't change anything
-4. Restarted Dolt server - didn't change anything
-5. Multiple browser hard refreshes - didn't change anything
+1. BeadBoard global install is for humans/operators.
+2. Driver skill does not install BeadBoard; it only checks install/discovery and proceeds.
+3. Bead hierarchy in this epic must stay `beadboard-05a.x(.x)` style.
+4. Use `bd` as source of truth; no direct JSONL writes.
+5. Evidence before completion claims.
 
-### What I Thought Was The Cause (WRONG):
-1. ~~Dolt server not running~~ - it WAS running
-2. ~~Frontend falling back to issues.jsonl~~ - removed fallback, same result
-3. ~~Next.js build cache~~ - cleared, same result
-4. ~~LeftPanel filter hiding epics~~ - verified filter logic is correct
-5. ~~Dolt connection failing silently~~ - but no error means Dolt IS connecting
+## First 10 Minutes (Start From Scratch)
 
-### Files Modified This Session:
-- `src/components/shared/left-panel.tsx` - added memory-anchor filter (line 73)
-- `src/lib/read-issues.ts` - removed issues.jsonl fallback (Dolt-only now)
-
-### Files To Read To Understand What Happened:
-1. `src/lib/read-issues.ts` - Dolt-only read path
-2. `src/lib/read-issues-dolt.ts` - Dolt query logic
-3. `src/lib/aggregate-read.ts` - calls readIssuesFromDisk
-4. `src/app/page.tsx` - SSR entry point
-5. `src/components/shared/left-panel.tsx` - epic display logic
-6. `.beads/dolt-server.log` - connection logs (no errors found)
-
-### Key Questions For Next Session:
-1. Why does the frontend show different data than Dolt when Dolt is clearly accessible?
-2. Is there another caching layer we're missing?
-3. Is there something in the Next.js SSR that's caching data?
-4. Could there be a second Dolt instance or database being read?
-
----
-
-## What Was Accomplished This Session:
-
-### Completed Earlier:
-1. Fixed BlockedTriageModal CSS theme variables
-2. Fixed agent names displaying as bead IDs (extract human-readable names)
-3. Fixed blocked count to include derived blockers
-4. Created memory node beadboard-6iq (Extract human-readable names)
-5. Closed old bb-* epics (they were from old architecture)
-6. Created beadboard-1bg epic for skill v4 rewrite (closed - all tasks done)
-7. Created beadboard-n1h epic for quality gates
-8. Created beadboard-jq5 epic for project scope UI (closed)
-9. Created beadboard-2e6 epic for UX critique brainstorming
-
-### Memory Nodes Created:
-- beadboard-6iq - [MEMORY][UI][HARD] Extract human-readable names from raw data fields
-- beadboard-dc0 - [MEMORY][ARCH][SOFT] Skill structure pattern
-
-### Skills Used This Session:
-1. `systematic-debugging` - followed the debugging process but couldn't find root cause
-2. `beadboard-driver` - used bd commands throughout
-3. `verification-before-completion` - ran gates before closing beads
-
----
-
-## Ready Work (from bd ready):
-
-- `beadboard-n1h.1` - Unit Tests: Core Libraries
-- `beadboard-n1h.2` - API Integration Tests
-- `beadboard-2e6` - [BRAINSTORM] UX Continuity and Critique (needs brainstorming skill)
-- Other quality/testing tasks
-
----
-
-## Non-Negotiable Context:
-
-1. Run `bd` commands from `codex/beadboard` directory
-2. `bd` is source of truth - no direct JSONL writes
-3. Evidence before assertions - always cite command output
-4. Read hard memory first: `bd show beadboard-116 beadboard-60a beadboard-zas`
-
-## First 10 Minutes:
+Run exactly:
 
 ```bash
 cd /mnt/c/Users/Zenchant/codex/beadboard
 
-# 1) Read hard memory
-bd show beadboard-116 beadboard-60a beadboard-zas beadboard-6fv
+# 1) Read hard memory / contract memory
+bd show beadboard-116 beadboard-60a beadboard-zas beadboard-6fv beadboard-at4
 
-# 2) Check current state
-bd query "status=closed" --sort closed --reverse --limit 10
-bd ready
+# 2) Load recent context
+bd query "status=closed" --sort closed --reverse --limit 20
+bd ready -n 25
 
-# 3) Check Dolt status
-bd dolt status
+# 3) Inspect epic + task tree
+bd show beadboard-c70 beadboard-05a
+bd dep tree beadboard-05a
 
-# 4) Verify data consistency
-# Compare Dolt vs frontend for a known-closed epic
-bd show bb-u6f.7
-# Then check what frontend shows
+# 4) Create your session agent bead and claim work
+bd create --title="Agent: <role-name>" --description="Own beadboard-05a execution" --type=task --priority=0 --label="gt:agent,role:orchestrator"
+bd update beadboard-05a --status in_progress --assignee <your-agent-bead-id>
 ```
+
+## Required Skills To Use
+
+Use these skills explicitly during implementation:
+
+1. `using-superpowers`
+2. `beadboard-driver`
+3. `test-driven-development`
+4. `verification-before-completion`
+5. `linus-beads-discipline`
+6. `writing-plans` (if you need to re-slice tasks before coding)
+
+## Latest Closed Beads (Most Relevant)
+
+Recent close context that matters here:
+
+- `beadboard-x1y` - Hide Closed regression fix (epic visibility bug)
+- `beadboard-om4` - [MEMORY] Stale UI parity triage order
+- `beadboard-cyk` - [MEMORY] HideClosed invariants
+- `beadboard-btt` - Driver install check contract + remediation messaging
+- `beadboard-i0q` - Global skill project-context contract
+
+Current open execution epic:
+
+- `beadboard-05a` - `[EPIC] Global BeadBoard Installer + Runtime Launch`
+
+## Exact Task IDs For Execution
+
+Work this exact tree:
+
+- `beadboard-05a.1` Installer Contract: canonical manifest + shared semantics
+  - `beadboard-05a.1.1` Installer Contract ADR
+  - `beadboard-05a.1.2` Manifest Schema + Validation
+- `beadboard-05a.2` Windows installer wrapper
+  - `beadboard-05a.2.1` Windows one-liner + PATH contract
+- `beadboard-05a.3` beadboard launcher (start/open/status)
+- `beadboard-05a.4` Linux/mac installer wrapper
+- `beadboard-05a.5` Driver detection alignment
+- `beadboard-05a.6` Installer CI + smoke tests
+- `beadboard-05a.7` Installer docs + operator quickstart
+
+Execution order is dependency-driven; do not bypass.
+
+## Important Files To Read First
+
+Read these before coding:
+
+1. `/mnt/c/Users/Zenchant/codex/beadboard/AGENTS.md`
+2. `/mnt/c/Users/Zenchant/codex/beadboard/skills/beadboard-driver/SKILL.md`
+3. `/mnt/c/Users/Zenchant/codex/beadboard/skills/beadboard-driver/scripts/session-preflight.mjs`
+4. `/mnt/c/Users/Zenchant/codex/beadboard/skills/beadboard-driver/scripts/diagnose-env.mjs`
+5. `/mnt/c/Users/Zenchant/codex/beadboard/skills/beadboard-driver/scripts/resolve-bb.mjs`
+6. `/mnt/c/Users/Zenchant/codex/beadboard/skills/beadboard-driver/scripts/lib/driver-lib.mjs`
+7. `/mnt/c/Users/Zenchant/codex/beadboard/tools/bb.ts`
+8. `/mnt/c/Users/Zenchant/codex/beadboard/scripts/bb-init.mjs`
+9. `/mnt/c/Users/Zenchant/codex/beadboard/package.json`
+10. `/mnt/c/Users/Zenchant/codex/beadboard/docs/adr/2026-02-14-beadboard-driver-skill-and-bb-resolution.md`
+
+Also note current state:
+
+- `install/` directory does not yet exist; this epic will introduce it.
+
+## Strict TDD Execution Flow (Per Task)
+
+For every `beadboard-05a.x` task:
+
+1. `bd update <task-id> --status in_progress --assignee <your-agent-bead-id>`
+2. Write failing test(s) first.
+3. Run focused test and confirm red for correct reason.
+4. Implement minimum code to pass.
+5. Re-run focused tests (green).
+6. Run broader relevant suite.
+7. Record evidence in notes:
+   - commands run
+   - pass/fail output summary
+8. Close only after evidence is recorded.
+
+Do not claim complete without fresh command output.
+
+## Verification Gates
+
+Before closing each code-changing bead and before epic close:
+
+```bash
+npm run typecheck
+npm run lint
+npm run test
+```
+
+If non-epic unrelated failures appear, cite exact failing file/test in bead notes and proceed transparently.
+
+## Implementation Guardrails
+
+1. Keep installer architecture unified: one canonical manifest contract + thin OS wrappers.
+2. Keep skill boundary strict: detection/remediation only, no install side effects.
+3. Preserve Windows support as mandatory while implementing Linux/mac parity.
+4. Keep user-facing install/docs copy simple and explicit.
+5. Do not resurrect deferred legacy tasks (`beadboard-ydu`, `beadboard-27u`, etc.); use `beadboard-05a.x` tree only.
+
+## Expected Deliverables At Epic Close
+
+1. New installer contract + manifest definition.
+2. `install.ps1` and `install.sh` wrappers aligned to the same manifest semantics.
+3. Global `bb` + `beadboard` command behavior implemented.
+4. `beadboard` launcher behavior: start/open/status contract.
+5. Driver detection messaging updated for platform install remediation.
+6. CI/smoke tests for install/reinstall/failure modes.
+7. Operator docs with one-liners and runtime command behavior.
+8. `bd` notes/close reasons with full verification evidence.
+
+## Session Landing Checklist
+
+Before handing off:
+
+1. `bd ready` and confirm unblocked next steps are accurate.
+2. Update `NEXT_SESSION_PROMPT.md` with what changed, verified commands, risks, and exact next task.
+3. Memory review:
+   - if reusable new rule: create/supersede canonical memory bead
+   - else add note: "Memory review: no new reusable memory."
+4. Close your session agent bead.
 
