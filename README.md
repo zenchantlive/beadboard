@@ -95,6 +95,38 @@ cd beadboard
 npm install
 ```
 
+### Global CLI Install (Optional)
+Primary install path:
+
+```bash
+npm i -g beadboard
+```
+
+Fallback wrappers from repo root:
+
+POSIX (Linux/macOS):
+```bash
+bash ./install/install.sh
+```
+
+Windows (PowerShell):
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install\install.ps1
+```
+
+Both wrappers install shims at:
+- `~/.beadboard/bin/bb`
+- `~/.beadboard/bin/beadboard`
+
+Runtime home:
+- `~/.beadboard/runtime/<version>`
+- `~/.beadboard/runtime/current.json`
+
+Launcher commands:
+- `beadboard start`
+- `beadboard open`
+- `beadboard status`
+
 ---
 
 ## Quick Start
