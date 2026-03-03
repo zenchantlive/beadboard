@@ -661,6 +661,8 @@
 {"issue_id":"beadboard-1bg.8","label":"documentation"}
 {"issue_id":"beadboard-1bg.8","label":"skill-md"}
 {"issue_id":"beadboard-1bg.8","label":"skills"}
+{"issue_id":"beadboard-1kt","label":"gt:agent"}
+{"issue_id":"beadboard-1kt","label":"role:orchestrator"}
 {"issue_id":"beadboard-27u","label":"installation"}
 {"issue_id":"beadboard-27u","label":"windows"}
 {"issue_id":"beadboard-2e6","label":"critique"}
@@ -718,6 +720,8 @@
 {"issue_id":"beadboard-9xb","label":"mem-soft"}
 {"issue_id":"beadboard-9xb","label":"memory"}
 {"issue_id":"beadboard-9xb","label":"memory-agent-ops"}
+{"issue_id":"beadboard-agent-anti","label":"gt:agent"}
+{"issue_id":"beadboard-agent-anti","label":"role:orchestrator"}
 {"issue_id":"beadboard-at4","label":"mem-canonical"}
 {"issue_id":"beadboard-at4","label":"mem-hard"}
 {"issue_id":"beadboard-at4","label":"memory"}
@@ -849,6 +853,9 @@
 {"issue_id":"beadboard-u4i","label":"ci"}
 {"issue_id":"beadboard-u4i","label":"installation"}
 {"issue_id":"beadboard-u4i","label":"tests"}
+{"issue_id":"beadboard-vyt","label":"cli"}
+{"issue_id":"beadboard-vyt","label":"installation"}
+{"issue_id":"beadboard-vyt","label":"runtime"}
 {"issue_id":"beadboard-x1y","label":"bug"}
 {"issue_id":"beadboard-x1y","label":"frontend"}
 {"issue_id":"beadboard-x3l","label":"template:release"}
