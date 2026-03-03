@@ -1,155 +1,113 @@
-# Next Session: Dolt Direct SQL Integration (beadboard-550)
+# Next Session: Investigate Frontend/Dolt Data Mismatch
 
-## What This Session Accomplished
+## Critical Unresolved Issue
 
-This session completed **Phase 0** and **Phase 1** of the UX redesign PRD, then pivoted to a more important infrastructure fix: replacing the stale `issues.jsonl` read path with direct Dolt SQL queries.
+The frontend is showing STALE data that doesn't match Dolt. We could NOT figure out the root cause.
 
-### Phase 0 + 1 (done, committed as `7d37d02` and `a2e523b`)
-- `unified-shell.tsx`: wired `blockedOnly` to SocialPage, TopBar with live counts
-- `thread-drawer.tsx`: dynamic status instead of hardcoded "In Progress"
-- `social-page.tsx`: fixed `onJumpToActivity` dead URL
-- `contextual-right-panel.tsx`: added `taskId` branch (ThreadDrawer embedded) and `swarmId` branch (MissionInspector via SwarmIdBranch inner component)
-- `AGENTS.md`: documented WSL2 mirrored networking workaround for mixed environments
+### Symptoms:
+1. **bb-u6f.7** shows as OPEN in frontend left sidebar, but is CLOSED in Dolt
+2. **beadboard-2e6** and **beadboard-6cc** (brainstorming epics) don't appear in frontend, but exist in Dolt as OPEN
+3. Memory-anchor epics ARE correctly filtered out (this works)
+4. Frontend loads without Dolt connection errors
 
-### Why we pivoted to beadboard-550
-The frontend reads `issues.jsonl` as its data source, but `bd` in dolt-native mode writes to a Dolt SQL server (`127.0.0.1:3307`). In mixed WSL2+Windows environments (and whenever Windows `bd` fails with a CGO error), the JSONL gets stale and the frontend shows outdated data.
+### What We Verified:
+- Dolt IS running (bd dolt status shows PID 77304, port 3307)
+- Dolt has CORRECT data (direct MySQL queries confirmed bb-u6f.7=status:closed, beadboard-2e6=status:open)
+- issues.jsonl has WRONG data (bb-u6f.7=status:open, issue_type=task - both wrong!)
+- No errors in console or Dolt logs
 
-The right fix: **BeadBoard connects to Dolt directly via `mysql2`** — same MySQL wire protocol, no CGO needed, no sync step, and it unlocks Dolt's time-travel version history for future history/audit views.
+### What We Tried (ALL FAILED):
+1. Added memory-anchor filter to left-panel.tsx line 73 - worked for filtering memory, but didn't fix stale data
+2. Removed issues.jsonl fallback in read-issues.ts - didn't change anything
+3. Cleared .next cache and restarted dev server - didn't change anything
+4. Restarted Dolt server - didn't change anything
+5. Multiple browser hard refreshes - didn't change anything
+
+### What I Thought Was The Cause (WRONG):
+1. ~~Dolt server not running~~ - it WAS running
+2. ~~Frontend falling back to issues.jsonl~~ - removed fallback, same result
+3. ~~Next.js build cache~~ - cleared, same result
+4. ~~LeftPanel filter hiding epics~~ - verified filter logic is correct
+5. ~~Dolt connection failing silently~~ - but no error means Dolt IS connecting
+
+### Files Modified This Session:
+- `src/components/shared/left-panel.tsx` - added memory-anchor filter (line 73)
+- `src/lib/read-issues.ts` - removed issues.jsonl fallback (Dolt-only now)
+
+### Files To Read To Understand What Happened:
+1. `src/lib/read-issues.ts` - Dolt-only read path
+2. `src/lib/read-issues-dolt.ts` - Dolt query logic
+3. `src/lib/aggregate-read.ts` - calls readIssuesFromDisk
+4. `src/app/page.tsx` - SSR entry point
+5. `src/components/shared/left-panel.tsx` - epic display logic
+6. `.beads/dolt-server.log` - connection logs (no errors found)
+
+### Key Questions For Next Session:
+1. Why does the frontend show different data than Dolt when Dolt is clearly accessible?
+2. Is there another caching layer we're missing?
+3. Is there something in the Next.js SSR that's caching data?
+4. Could there be a second Dolt instance or database being read?
 
 ---
 
-## Active Epic: beadboard-550
+## What Was Accomplished This Session:
 
-```
-bd show beadboard-550
-```
+### Completed Earlier:
+1. Fixed BlockedTriageModal CSS theme variables
+2. Fixed agent names displaying as bead IDs (extract human-readable names)
+3. Fixed blocked count to include derived blockers
+4. Created memory node beadboard-6iq (Extract human-readable names)
+5. Closed old bb-* epics (they were from old architecture)
+6. Created beadboard-1bg epic for skill v4 rewrite (closed - all tasks done)
+7. Created beadboard-n1h epic for quality gates
+8. Created beadboard-jq5 epic for project scope UI (closed)
+9. Created beadboard-2e6 epic for UX critique brainstorming
 
-**4 sequential child tasks:**
+### Memory Nodes Created:
+- beadboard-6iq - [MEMORY][UI][HARD] Extract human-readable names from raw data fields
+- beadboard-dc0 - [MEMORY][ARCH][SOFT] Skill structure pattern
 
-| Bead | Status | What |
-|---|---|---|
-| `beadboard-550.1` | in_progress (mysql2 installed, bead claimed) | Install mysql2, create `src/lib/dolt-client.ts` |
-| `beadboard-550.2` | blocked on 550.1 | `readIssuesViaDolt()` — JOIN issues+deps+labels |
-| `beadboard-550.3` | blocked on 550.2 | Wire Dolt as primary path in `readIssuesFromDisk()` |
-| `beadboard-550.4` | blocked on 550.3 | Verify SSE/watcher still fires, remove manual export from AGENTS.md |
+### Skills Used This Session:
+1. `systematic-debugging` - followed the debugging process but couldn't find root cause
+2. `beadboard-driver` - used bd commands throughout
+3. `verification-before-completion` - ran gates before closing beads
 
 ---
 
-## Session Start Protocol
+## Ready Work (from bd ready):
+
+- `beadboard-n1h.1` - Unit Tests: Core Libraries
+- `beadboard-n1h.2` - API Integration Tests
+- `beadboard-2e6` - [BRAINSTORM] UX Continuity and Critique (needs brainstorming skill)
+- Other quality/testing tasks
+
+---
+
+## Non-Negotiable Context:
+
+1. Run `bd` commands from `codex/beadboard` directory
+2. `bd` is source of truth - no direct JSONL writes
+3. Evidence before assertions - always cite command output
+4. Read hard memory first: `bd show beadboard-116 beadboard-60a beadboard-zas`
+
+## First 10 Minutes:
 
 ```bash
 cd /mnt/c/Users/Zenchant/codex/beadboard
-bd show beadboard-550.1   # read the full spec
-bd ready                  # confirm 550.1 is the only unblocked task
-npm run typecheck         # baseline should pass (pre-existing status-badge error is expected)
+
+# 1) Read hard memory
+bd show beadboard-116 beadboard-60a beadboard-zas beadboard-6fv
+
+# 2) Check current state
+bd query "status=closed" --sort closed --reverse --limit 10
+bd ready
+
+# 3) Check Dolt status
+bd dolt status
+
+# 4) Verify data consistency
+# Compare Dolt vs frontend for a known-closed epic
+bd show bb-u6f.7
+# Then check what frontend shows
 ```
 
----
-
-## Key Technical Context
-
-### Dolt schema (confirmed this session)
-
-The Dolt server runs at `127.0.0.1:3307`, database `beadboard`. Key tables:
-
-- **`issues`** — main table, all fields including `metadata` (JSON column), `status`, `issue_type`, `priority`, `close_reason`, etc.
-- **`dependencies`** — `(issue_id, depends_on_id, type, created_at, created_by)` — maps to `BeadDependency[]`
-- **`labels`** — `(issue_id, label)` — maps to `string[]`
-
-Connection config lives in `.beads/metadata.json`:
-```json
-{
-  "database": "dolt",
-  "dolt_server_port": 3307,
-  "dolt_database": "beadboard",
-  "backend": "dolt"
-}
-```
-Host defaults to `127.0.0.1` (not in metadata.json).
-
-### Current read path (what to replace)
-
-`src/app/page.tsx` calls `readIssuesForScope({ preferBd: true })`:
-1. `preferBd: true` → `readIssuesViaBd()` → runs `bd list --all --json` via CLI → works in WSL2, fails in Windows (CGO error)
-2. Falls back to `readIssuesFromDisk()` → reads `issues.jsonl` → stale
-
-Target: replace step 1 with `readIssuesViaDolt()` → `mysql2` → always works regardless of platform.
-
-### BeadIssue shape (what mysql2 rows must normalize to)
-
-See `src/lib/types.ts` for the full `BeadIssue` interface. Key fields:
-- `id`, `title`, `description`, `status`, `priority`, `issue_type`
-- `labels: string[]` — from `labels` table
-- `dependencies: BeadDependency[]` — from `dependencies` table
-- `created_at`, `updated_at`, `closed_at` — ISO strings (Dolt returns Date objects from mysql2)
-- `metadata: Record<string, unknown>` — Dolt stores as JSON column, mysql2 auto-parses to object
-
-### normalizeBdIssue() already exists
-
-`src/lib/read-issues.ts` has `normalizeBdIssue()` which handles the JSON→BeadIssue mapping from `bd list --json` output. The Dolt SQL rows will have the same field names, so reuse this function (or factor it out) for 550.2.
-
-### SSE / watcher (concern for 550.4)
-
-`src/lib/watcher.ts` watches `.beads/issues.jsonl` + `.beads/last_touched` for changes and fires SSE events. Need to check whether `bd` still updates `last_touched` when writing to Dolt — if yes, watcher fires correctly and no change needed. If no, need a lightweight poll.
-
----
-
-## Skills to Use
-
-This is an implementation task — use the standard hyperpowers workflow:
-
-```
-hyperpowers:executing-plans  — execute one task at a time, STOP after each
-hyperpowers:test-driven-development — write test before implementation
-hyperpowers:verification-before-completion — run typecheck+lint+test before closing any bead
-```
-
-Per `hyperpowers:executing-plans`: execute ONE bead, verify, close it, STOP for user review, then run `/hyperpowers:execute-plan` again to continue.
-
----
-
-## Files to Read Before Starting
-
-```
-src/lib/read-issues.ts          — current read path, normalizeBdIssue(), readIssuesViaBd()
-src/lib/types.ts                — BeadIssue, BeadDependency interfaces
-src/lib/bridge.ts               — runBdCommand (the CLI path being replaced)
-src/app/page.tsx                — how preferBd: true is called
-.beads/metadata.json            — Dolt connection config
-```
-
----
-
-## Verification Gates (every bead before closing)
-
-```bash
-npm run typecheck && npm run lint && npm run test
-```
-
-Pre-existing known failure: `status-badge.tsx TS2307: Cannot find module '@/lib/types'` — ignore, it predates this work.
-
----
-
-## What Comes After beadboard-550
-
-The UX phases (Phase 2–5) are still waiting:
-- **Phase 2** (`beadboard-0fi`) — operator identity (now unblocked since Phase 1 closed)
-- **Phase 3** (`beadboard-8ij`) — coordination layer
-- **Phase 4** (`beadboard-x3l`) — agent presence
-- **Phase 5** (`beadboard-d2x`) — blocked triage modal
-
-But those have lower urgency than 550 (data infrastructure correctness > UI features).
-
----
-
-## Platform Note (WSL2 + Windows)
-
-The Dolt server runs in WSL2 at `127.0.0.1:3307`. If the frontend runs in Windows PowerShell, enable WSL2 mirrored networking first (one-time):
-
-```
-C:\Users\<you>\.wslconfig:
-[wsl2]
-networkingMode=mirrored
-```
-
-Then `wsl --shutdown`. Not required for single-platform setups. See `AGENTS.md` Data Backend section for full details.

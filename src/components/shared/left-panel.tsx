@@ -70,7 +70,7 @@ function formatRelative(timestamp: string): string {
 }
 
 function buildEntries(issues: BeadIssue[]): EpicEntry[] {
-  const epics = issues.filter((issue) => issue.issue_type === 'epic');
+  const epics = issues.filter((issue) => issue.issue_type === 'epic' && !issue.labels?.includes('memory-anchor'));
   const tasks = issues.filter((issue) => issue.issue_type !== 'epic');
   const taskById = new Map(tasks.map((task) => [task.id, task] as const));
   const incomingBlockers = new Map<string, string[]>();
