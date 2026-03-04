@@ -68,43 +68,6 @@ function getPort() {
   return Number.isFinite(value) ? value : 3000;
 }
 
-function splitPathVariable(value) {
-  if (!value) return [];
-  return value.split(path.delimiter).map((entry) => entry.trim()).filter(Boolean);
-}
-
-function resolveBdPath() {
-  const pathEntries = splitPathVariable(process.env.PATH || '');
-  const candidates =
-    process.platform === 'win32'
-      ? ['bd.cmd', 'bd.exe', 'bd.ps1', 'bd.bat', 'bd']
-      : ['bd'];
-  for (const dir of pathEntries) {
-    for (const candidate of candidates) {
-      const fullPath = path.join(dir, candidate);
-      if (fs.existsSync(fullPath)) {
-        return fullPath;
-      }
-    }
-  }
-  return null;
-}
-
-function getBdDiagnostics() {
-  const beadsDir = path.resolve(process.cwd(), '.beads');
-  const dbPath = path.join(beadsDir, 'beads.db');
-  const bdPath = resolveBdPath();
-  return {
-    available: Boolean(bdPath),
-    path: bdPath,
-    project: {
-      cwd: process.cwd(),
-      hasBeadsDir: fs.existsSync(beadsDir),
-      hasBeadsDb: fs.existsSync(dbPath),
-    },
-  };
-}
-
 function statusRequest(port) {
   return new Promise((resolve) => {
     const req = http.get(
@@ -177,7 +140,6 @@ async function main() {
       runtimeRoot: runtime.runtimeRoot,
       installMode: runtime.installMode,
       shimTarget: runtime.shimTarget,
-      bd: getBdDiagnostics(),
     };
     output(payload, json);
     process.exit(probe.running ? 0 : 1);
