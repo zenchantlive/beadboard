@@ -1,53 +1,46 @@
-# Next Session: Post-v5 Follow-On (beadboard-txj)
+# Next Session: v5 Skill Validation + Full Critique
 
-## TL;DR
+## Objective
 
-`beadboard-maf` (Driver Skill v5) is complete and closed. Start next on `beadboard-txj` (Enhanced Graph Edge Visualization), beginning with `beadboard-txj.2`.
-
----
-
-## What Changed (Completed This Session)
-
-### v5 epic closed
-
-- Closed: `beadboard-maf` and all children `maf.1` through `maf.10`.
-
-### Major outputs landed
-
-- New/refreshed skill references under `skills/beadboard-driver/references/`:
-  - `agent-state-liveness.md` (new)
-  - `memory-system.md`
-  - `archetypes-templates-swarms.md`
-  - `session-lifecycle.md`
-  - `coord-events-sessions-ack.md`
-  - `command-matrix.md`
-  - `failure-modes.md`
-  - `coordination-system.md` (already added in izs; used as canonical source)
-- Script/platform updates:
-  - `skills/beadboard-driver/scripts/lib/driver-lib.mjs`
-  - Added `skills/beadboard-driver/scripts/ensure-bb-mail-configured.mjs`
-- Test expansion:
-  - Added bb-mail lifecycle and config contract coverage
-  - Updated cross-platform resolve/preflight tests
-  - Registered all new tests in `skills/beadboard-driver/tests/run-tests.mjs` and `package.json`
-- Template + entrypoint rewrite:
-  - `skills/beadboard-driver/project.template.md`
-  - `skills/beadboard-driver/SKILL.md` (full v5 rewrite)
-
-### Commit log (this session chain)
-
-- `a4de66a` fix(skill): support linux and wsl bb discovery
-- `5364885` docs(skill): rewrite coordination events and ack protocol
-- `1880301` docs(skill): refresh command matrix and failure modes
-- `003aba3` test(skill): add bb mail lifecycle and preflight coverage
-- `60415cc` docs(skill): expand project template for v5 coordination
-- `3006698` docs(skill): rewrite beadboard-driver entrypoint for v5
+Do **not** implement new features first. Use this session to pressure-test the finished `beadboard-driver` v5 skill end-to-end, critique it hard, and produce a prioritized fix list.
 
 ---
 
-## Verification Evidence
+## Scope
 
-For code-affecting bead `maf.8`, gates were run and passed:
+Validate and critique all of:
+
+- `skills/beadboard-driver/SKILL.md`
+- `skills/beadboard-driver/project.template.md`
+- `skills/beadboard-driver/references/*.md`
+- `skills/beadboard-driver/scripts/*.mjs`
+- `skills/beadboard-driver/scripts/lib/driver-lib.mjs`
+- `skills/beadboard-driver/tests/*.contract.test.mjs`
+- `tests/skills/beadboard-driver/*.test.ts`
+
+---
+
+## Ground Rules
+
+1. Treat this as an adversarial review, not a celebration.
+2. Evidence before assertions: every finding must cite command output or file evidence.
+3. Prefer identifying regressions, ambiguities, missing guarantees, and operator confusion risks.
+4. For every critique finding, include a concrete fix proposal.
+
+---
+
+## Session Steps
+
+### Step 1: Context Recovery
+
+```bash
+cd /mnt/c/Users/Zenchant/codex/beadboard
+git log --oneline -12
+bd show beadboard-maf
+bd ready
+```
+
+### Step 2: Run Full Gates (Baseline)
 
 ```bash
 npm run typecheck
@@ -55,50 +48,82 @@ npm run lint
 npm run test
 ```
 
-- `typecheck`: pass
-- `lint`: pass (warnings only, no errors)
-- `test`: pass (full suite including new skill contract tests)
+Capture exact pass/fail state and any warnings.
 
----
-
-## Important Notes
-
-- Communication path remains global-install based:
-  - `bd mail` delegates through `bb-mail-shim.mjs` to global `bb` CLI
-  - Requirement is still `bb/beadboard` on `PATH`
-- `project.md` policy is now explicit in template/skill:
-  - first agent creates `project.md` in target repo root
-  - subsequent agents must read/update it before work
-
----
-
-## Open Risks / Follow-Ups
-
-1. `dolt` remote auto-push warnings occurred during some bead closes due to non-fast-forward; local work is committed.
-2. One large commit (`003aba3`) intentionally includes deletion of tracked `tmp/bbmaf8*` fixture/worktree artifacts.
-
----
-
-## Exact Next Bead(s)
+### Step 3: Run Skill-Local Contract Suite Explicitly
 
 ```bash
-cd /mnt/c/Users/Zenchant/codex/beadboard
-bd ready
-bd show beadboard-txj beadboard-txj.2
-bd update beadboard-txj.2 --status in_progress --assignee <agent-bead-id>
+node skills/beadboard-driver/tests/run-tests.mjs
 ```
 
+### Step 4: Manual Runbook Dry-Run Against SKILL.md
+
+Walk through SKILL.md steps exactly as written and verify each command exists/is actionable.
+
+Required checks:
+
+- Preflight commands run cleanly (or fail with useful remediation)
+- Mail delegate validation behaves as documented
+- Runbook commands use real flags (`--assignee`, slot hook flow, etc.)
+- No deprecated command surfaces remain
+- `project.md` lifecycle guidance is clear for first vs later agents
+
+### Step 5: Documentation Quality Critique
+
+Critique every major doc on:
+
+- Cold-start clarity (can a new agent execute without guessing?)
+- Command accuracy (flags/surfaces real and current)
+- Consistency across docs (no contradictions)
+- Operational safety (state, mail, evidence, closeout)
+- Cognitive load (too verbose vs too vague)
+
+### Step 6: Test Coverage Critique
+
+Identify missing coverage, especially:
+
+- Global install assumptions (`bd`, `bb/beadboard`)
+- Linux/WSL path discovery edge cases
+- Mail delegate misconfiguration and mismatch paths
+- `bb-mail-shim` lifecycle and invalid message ID behavior
+- `project.template.md` contract assumptions not exercised by tests
+
+### Step 7: Produce Findings Artifact
+
+Create a single markdown report under:
+
+- `docs/reviews/YYYY-MM-DD-beadboard-driver-v5-audit.md`
+
+Required report structure:
+
+1. Executive verdict (ship-ready / conditionally-ready / not-ready)
+2. Findings by severity (Critical, High, Medium, Low)
+3. Evidence per finding (commands + file refs)
+4. Proposed fixes per finding
+5. Suggested bead breakdown for remediation
+
+### Step 8: Create Remediation Beads
+
+From findings, create actionable beads using:
+
+- `beadboard-<new-epic>.x.x` naming format
+- explicit `Scope`, `Out of Scope`, `Success Criteria`
+- correct dependency order
+
+### Step 9: Session Closeout
+
+- Update bead notes with evidence summary
+- If reusable lesson emerged, create canonical memory bead; otherwise note no new memory
+- Update this file (`NEXT_SESSION_PROMPT.md`) with next concrete action
+
 ---
 
-## Skills Used
+## Deliverable Definition of Done
 
-- beadboard-driver
-- verification-before-completion
-- (execution pattern) implementing beads in dependency order with per-bead commits
+This session is done only when all are true:
 
----
+1. Gates executed with captured output.
+2. Full skill critique written to `docs/reviews/...`.
+3. Remediation bead set created with dependency graph.
+4. Clear go/no-go verdict stated with evidence.
 
-## Memory Review
-
-- No new canonical memory bead created in this session.
-- Reused existing hard-memory anchors/rules during execution.
