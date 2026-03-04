@@ -75,35 +75,9 @@ export async function runCli(argv: string[], env: NodeJS.ProcessEnv = process.en
   };
 }
 
-function renderHelpText(): string {
-  return [
-    'Usage:',
-    '  beadboard <command> [options]',
-    '',
-    'Runtime Commands:',
-    '  beadboard start              Start BeadBoard runtime',
-    '  beadboard open               Open BeadBoard in browser',
-    '  beadboard status [--json]    Show runtime + bd diagnostics',
-    '',
-    'Management Commands:',
-    '  beadboard doctor [--json]    Show install/runtime diagnostics',
-    '  beadboard self-update        Print update guidance',
-    '  beadboard uninstall --yes    Remove runtime + shims',
-    '',
-    'Options:',
-    '  --json                       Return structured JSON output',
-  ].join('\n');
-}
-
 async function main() {
-  const argv = process.argv.slice(2);
-  const asJson = argv.includes('--json');
-  const result = await runCli(argv);
-  if (!asJson && result.command === 'help') {
-    process.stdout.write(`${renderHelpText()}\n`);
-  } else {
-    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
-  }
+  const result = await runCli(process.argv.slice(2));
+  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   if (!result.ok) {
     process.exitCode = 1;
   }
