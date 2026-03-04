@@ -655,11 +655,15 @@
 {"issue_id":"beadboard-4k8","label":"incident"}
 {"issue_id":"beadboard-4k8","label":"p0"}
 {"issue_id":"beadboard-4k8","label":"reliability"}
+{"issue_id":"beadboard-4tp","label":"area:docs"}
+{"issue_id":"beadboard-4tp","label":"skill:beadboard-driver"}
 {"issue_id":"beadboard-4vr","label":"brainstorm"}
 {"issue_id":"beadboard-4vr","label":"dolt"}
 {"issue_id":"beadboard-4vr","label":"memory"}
 {"issue_id":"beadboard-4vr","label":"planning"}
 {"issue_id":"beadboard-4vr","label":"roadmap"}
+{"issue_id":"beadboard-5lb","label":"area:docs"}
+{"issue_id":"beadboard-5lb","label":"skill:beadboard-driver"}
 {"issue_id":"beadboard-5m0","label":"cli"}
 {"issue_id":"beadboard-5m0","label":"diagnostics"}
 {"issue_id":"beadboard-5m0","label":"status"}
