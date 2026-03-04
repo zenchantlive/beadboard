@@ -362,6 +362,16 @@
 {"issue_id":"bb-maf8-recipient-1772594345463-5e30","label":"role:graph"}
 {"issue_id":"bb-maf8-recipient-1772595830876-a2bd","label":"gt:agent"}
 {"issue_id":"bb-maf8-recipient-1772595830876-a2bd","label":"role:graph"}
+{"issue_id":"bb-maf8-recipient-1772602336486-77cc","label":"gt:agent"}
+{"issue_id":"bb-maf8-recipient-1772602336486-77cc","label":"role:graph"}
+{"issue_id":"bb-maf8-recipient-1772602408666-684a","label":"gt:agent"}
+{"issue_id":"bb-maf8-recipient-1772602408666-684a","label":"role:graph"}
+{"issue_id":"bb-maf8-recipient-1772602498124-349c","label":"gt:agent"}
+{"issue_id":"bb-maf8-recipient-1772602498124-349c","label":"role:graph"}
+{"issue_id":"bb-maf8-recipient-1772602543590-2e77","label":"gt:agent"}
+{"issue_id":"bb-maf8-recipient-1772602543590-2e77","label":"role:graph"}
+{"issue_id":"bb-maf8-recipient-1772602590511-8617","label":"gt:agent"}
+{"issue_id":"bb-maf8-recipient-1772602590511-8617","label":"role:graph"}
 {"issue_id":"bb-maf8-sender-1772594142586-920f","label":"gt:agent"}
 {"issue_id":"bb-maf8-sender-1772594142586-920f","label":"role:ui"}
 {"issue_id":"bb-maf8-sender-1772594167363-e2c2","label":"gt:agent"}
@@ -372,6 +382,16 @@
 {"issue_id":"bb-maf8-sender-1772594345463-989c","label":"role:ui"}
 {"issue_id":"bb-maf8-sender-1772595830876-d567","label":"gt:agent"}
 {"issue_id":"bb-maf8-sender-1772595830876-d567","label":"role:ui"}
+{"issue_id":"bb-maf8-sender-1772602336486-811e","label":"gt:agent"}
+{"issue_id":"bb-maf8-sender-1772602336486-811e","label":"role:ui"}
+{"issue_id":"bb-maf8-sender-1772602408666-4c54","label":"gt:agent"}
+{"issue_id":"bb-maf8-sender-1772602408666-4c54","label":"role:ui"}
+{"issue_id":"bb-maf8-sender-1772602498124-83bc","label":"gt:agent"}
+{"issue_id":"bb-maf8-sender-1772602498124-83bc","label":"role:ui"}
+{"issue_id":"bb-maf8-sender-1772602543590-06fb","label":"gt:agent"}
+{"issue_id":"bb-maf8-sender-1772602543590-06fb","label":"role:ui"}
+{"issue_id":"bb-maf8-sender-1772602590511-758a","label":"gt:agent"}
+{"issue_id":"bb-maf8-sender-1772602590511-758a","label":"role:ui"}
 {"issue_id":"bb-n7p","label":"kanban"}
 {"issue_id":"bb-n7p","label":"status"}
 {"issue_id":"bb-n7p","label":"swimlane"}
@@ -530,6 +550,8 @@
 {"issue_id":"beadboard-05a.6","label":"tests"}
 {"issue_id":"beadboard-05a.7","label":"documentation"}
 {"issue_id":"beadboard-05a.7","label":"installation"}
+{"issue_id":"beadboard-0m9","label":"gt:agent"}
+{"issue_id":"beadboard-0m9","label":"role:backend"}
 {"issue_id":"beadboard-116","label":"mem-canonical"}
 {"issue_id":"beadboard-116","label":"mem-hard"}
 {"issue_id":"beadboard-116","label":"memory"}
@@ -623,6 +645,8 @@
 {"issue_id":"beadboard-8st","label":"memory"}
 {"issue_id":"beadboard-8st","label":"memory-anchor"}
 {"issue_id":"beadboard-8st","label":"memory-reliability"}
+{"issue_id":"beadboard-9ha","label":"documentation"}
+{"issue_id":"beadboard-9ha","label":"skills"}
 {"issue_id":"beadboard-9xb","label":"mem-canonical"}
 {"issue_id":"beadboard-9xb","label":"mem-soft"}
 {"issue_id":"beadboard-9xb","label":"memory"}
@@ -714,6 +738,15 @@
 {"issue_id":"beadboard-ilu.2","label":"documentation"}
 {"issue_id":"beadboard-ilu.2","label":"skills"}
 {"issue_id":"beadboard-ilu.2","label":"skills documentation"}
+{"issue_id":"beadboard-ilu.3","label":"documentation"}
+{"issue_id":"beadboard-ilu.3","label":"skills"}
+{"issue_id":"beadboard-ilu.3","label":"skills documentation"}
+{"issue_id":"beadboard-ilu.4","label":"documentation"}
+{"issue_id":"beadboard-ilu.4","label":"skills"}
+{"issue_id":"beadboard-ilu.4","label":"skills documentation"}
+{"issue_id":"beadboard-ilu.5","label":"documentation"}
+{"issue_id":"beadboard-ilu.5","label":"skills"}
+{"issue_id":"beadboard-ilu.5","label":"skills documentation"}
 {"issue_id":"beadboard-izs","label":"agents"}
 {"issue_id":"beadboard-izs","label":"bb"}
 {"issue_id":"beadboard-izs","label":"mail"}
