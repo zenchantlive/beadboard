@@ -1,8 +1,48 @@
 #!/usr/bin/env node
 
+import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
 import { findCommandInPath, resolveBbPath } from './lib/driver-lib.mjs';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+function configureMailDelegate(bdPath, shimPath) {
+  if (!existsSync(shimPath)) {
+    return {
+      configured: false,
+      reason: `shim not found at ${shimPath}`,
+    };
+  }
+
+  const delegateCmd = `node ${shimPath}`;
+  const result = spawnSync(bdPath, ['config', 'set', 'mail.delegate', delegateCmd], {
+    stdio: 'pipe',
+    shell: false,
+  });
+
+  if (result.status !== 0) {
+    const stderr = result.stderr?.toString().trim() || '';
+    return {
+      configured: false,
+      reason: `bd config set failed: ${stderr || 'non-zero exit'}`,
+      delegate: delegateCmd,
+    };
+  }
+
+  return {
+    configured: true,
+    delegate: delegateCmd,
+    shim_path: shimPath,
+    note: 'Set BB_AGENT to your agent name before using bd mail.',
+  };
+}
+
 async function main() {
+  const shimPath = join(__dirname, 'bb-mail-shim.mjs');
+
   try {
     const bdPath = await findCommandInPath('bd');
     if (!bdPath) {
@@ -20,6 +60,7 @@ async function main() {
               bd: { available: false, path: null },
             },
             bb: null,
+            mail: null,
           },
           null,
           2,
@@ -41,6 +82,10 @@ async function main() {
               bd: { available: true, path: bdPath },
             },
             bb,
+            mail: {
+              configured: false,
+              reason: 'bb not available — mail delegate requires bb agent commands',
+            },
           },
           null,
           2,
@@ -48,6 +93,8 @@ async function main() {
       );
       return;
     }
+
+    const mail = configureMailDelegate(bdPath, shimPath);
 
     process.stdout.write(
       `${JSON.stringify(
@@ -58,6 +105,7 @@ async function main() {
             bd: { available: true, path: bdPath },
           },
           bb,
+          mail,
         },
         null,
         2,
@@ -75,6 +123,7 @@ async function main() {
             bd: { available: false, path: null },
           },
           bb: null,
+          mail: null,
         },
         null,
         2,

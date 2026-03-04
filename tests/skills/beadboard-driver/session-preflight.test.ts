@@ -58,7 +58,7 @@ test('session-preflight succeeds with fake bd and BB_REPO', async () => {
     }
 
     const result = await runPreflight({
-      PATH: toolsDir,
+      PATH: `${toolsDir}${path.delimiter}${process.env.PATH || ''}`,
       BB_REPO: repo,
       BB_SKILL_HOME: path.join(root, 'home'),
       BB_SKIP_PROBE: '1',
@@ -68,5 +68,7 @@ test('session-preflight succeeds with fake bd and BB_REPO', async () => {
     assert.equal(result.bb.ok, true);
     assert.equal(result.bb.source, 'env');
     assert.equal(result.tools.bd.available, true);
+    assert.equal(result.mail.configured, true, JSON.stringify(result));
+    assert.match(String(result.mail.delegate), /node .*bb-mail-shim\.mjs/);
   });
 });
