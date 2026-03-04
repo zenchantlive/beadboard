@@ -815,6 +815,10 @@
 {"issue_id":"beadboard-i4c","label":"memory-provenance"}
 {"issue_id":"beadboard-ij8","label":"docs"}
 {"issue_id":"beadboard-ij8","label":"memory"}
+{"issue_id":"beadboard-izs","label":"agents"}
+{"issue_id":"beadboard-izs","label":"bb"}
+{"issue_id":"beadboard-izs","label":"mail"}
+{"issue_id":"beadboard-izs","label":"skills"}
 {"issue_id":"beadboard-jgy","label":"docs"}
 {"issue_id":"beadboard-jgy","label":"memory"}
 {"issue_id":"beadboard-jq5","label":"backend"}
