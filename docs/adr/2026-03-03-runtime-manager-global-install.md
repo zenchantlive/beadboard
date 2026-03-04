@@ -41,14 +41,9 @@ Legacy repo-bound shim migration is required:
 - Rewrite shims to runtime-managed targets atomically.
 - Preserve user-facing command names and shell compatibility.
 
-## Supported Platforms
-
-- Linux: npm-global primary, POSIX wrapper fallback.
-- macOS: npm-global primary, POSIX wrapper fallback.
-- Windows: npm-global primary, PowerShell wrapper fallback.
-
 ## Failure Modes and Rollback
 
 - Missing runtime metadata: launcher reports actionable remediation and install mode.
 - Corrupt runtime target: launcher falls back to previous known-good metadata when present.
 - Partial install: installer leaves active runtime unchanged and exits non-zero.
+
