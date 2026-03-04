@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildGraphModel } from '../../src/lib/graph';
-import { analyzeBlockedChain, buildGraphViewModel, buildPathWorkspace, detectDependencyCycles } from '../../src/lib/graph-view';
+import { analyzeBlockedChain, buildGraphViewModel, buildPathWorkspace, detectDependencyCycles, identifyTransitiveEdges } from '../../src/lib/graph-view';
 import type { BeadIssue } from '../../src/lib/types';
 
 function issue(overrides: Partial<BeadIssue>): BeadIssue {
@@ -172,4 +172,17 @@ test('detectDependencyCycles does not mark non-cycle predecessor as cyclic', () 
   assert.deepEqual(anomaly.cycleNodeIds, ['bb-a', 'bb-b', 'bb-c']);
   assert.equal(anomaly.cycleNodeIds.includes('bb-x'), false);
   assert.equal(anomaly.cycleEdgeIds.includes('bb-a:blocks:bb-x'), false);
+});
+
+test('identifyTransitiveEdges identifies redundant paths in DAG', () => {
+  const model = buildGraphModel([
+    issue({ id: 'bb-a' }), // Upstream blocker
+    issue({ id: 'bb-b', dependencies: [{ type: 'blocks', target: 'bb-a' }] }), // Blocked by A
+    issue({ id: 'bb-c', dependencies: [{ type: 'blocks', target: 'bb-b' }, { type: 'blocks', target: 'bb-a' }] }), // Blocked by B and A
+  ]);
+
+  const transitiveEdges = identifyTransitiveEdges(model);
+
+  assert.equal(transitiveEdges.size, 1);
+  assert.equal(transitiveEdges.has('bb-a:blocks:bb-c'), true);
 });

@@ -50,7 +50,7 @@ describe('URL State Integration - bb-ui2.22', () => {
       const sp = createMockSearchParams({ view: 'graph' });
       const state = parseUrlState(sp);
       assert.strictEqual(state.view, 'graph');
-      assert.strictEqual(state.graphTab, 'flow');
+      assert.strictEqual(state.graphTab, 'overview');
     });
 
     it('/?view=graph&task=bb-buff.1 - graph with task selected', () => {
@@ -135,7 +135,7 @@ describe('URL State Integration - bb-ui2.22', () => {
     it('/?view=graph&graphTab=invalid - invalid graphTab defaults to flow', () => {
       const sp = createMockSearchParams({ view: 'graph', graphTab: 'invalid' });
       const state = parseUrlState(sp);
-      assert.strictEqual(state.graphTab, 'flow');
+      assert.strictEqual(state.graphTab, 'overview');
     });
 
     it('/?panel=invalid - invalid panel defaults to open', () => {

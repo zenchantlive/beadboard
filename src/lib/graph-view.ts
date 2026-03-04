@@ -419,6 +419,60 @@ export function analyzeBlockedChain(model: GraphModel, options: { focusId: strin
   };
 }
 
+/**
+ * Identifies edges in the graph that are transitive (redundant).
+ * For example, if A -> B -> C exists, the edge A -> C is transitive.
+ * This is primarily used to visually de-emphasize redundant blocks in the DAG.
+ * Returns a Set of edge keys formatted as `${source}:blocks:${target}`.
+ */
+export function identifyTransitiveEdges(model: GraphModel): Set<string> {
+  const transitiveEdgeKeys = new Set<string>();
+
+  for (const edge of model.edges) {
+    if (edge.type !== 'blocks') continue;
+
+    const sourceId = edge.source;
+    const targetId = edge.target;
+
+    const visited = new Set<string>();
+    const queue = [sourceId];
+    visited.add(sourceId);
+
+    let foundAlternativePath = false;
+
+    while (queue.length > 0) {
+      const currentId = queue.shift()!;
+      if (currentId === targetId && currentId !== sourceId) {
+        foundAlternativePath = true;
+        break;
+      }
+
+      const adjacency = model.adjacency[currentId];
+      if (!adjacency) continue;
+
+      for (const outEdge of adjacency.outgoing) {
+        if (outEdge.type !== 'blocks') continue;
+
+        // Skip the immediate direct edge we are evaluating
+        if (currentId === sourceId && outEdge.target === targetId) {
+          continue;
+        }
+
+        if (!visited.has(outEdge.target)) {
+          visited.add(outEdge.target);
+          queue.push(outEdge.target);
+        }
+      }
+    }
+
+    if (foundAlternativePath) {
+      transitiveEdgeKeys.add(`${sourceId}:blocks:${targetId}`);
+    }
+  }
+
+  return transitiveEdgeKeys;
+}
+
 export interface CycleAnomaly {
   cycles: string[][];
   cycleNodeIds: string[];

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { promisify } from 'node:util';
 import path from 'node:path';
 
@@ -26,5 +27,15 @@ test('status text output includes runtime and bd diagnostics', async () => {
   assert.match(stdout, /bd Path:/i);
   assert.match(stdout, /Project CWD:/i);
   assert.match(stdout, /\.beads Dir:/i);
-  assert.match(stdout, /\.beads DB:/i);
+  assert.match(stdout, /SQLite Legacy DB:/i);
+  assert.match(stdout, /SQLite Migrated DB:/i);
+  assert.match(stdout, /Dolt Repo:/i);
+});
+
+test('status text mode exits success even when runtime is down', () => {
+  const result = spawnSync(process.execPath, [launcherPath, 'status'], {
+    env: { ...process.env, BB_PORT: '65534' },
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0);
 });

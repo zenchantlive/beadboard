@@ -49,8 +49,8 @@ test('UnifiedShell - checks bd health and renders setup warning', async () => {
 // Test that AssignmentPanel is rendered conditionally based on view and assignMode
 test('UnifiedShell - renders AssignmentPanel conditionally', async () => {
   const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
-  // Check for the condition: view === 'graph' && assignMode
-  assert.ok(fileContent.includes("view === 'graph' && assignMode"), 'Should check view === graph && assignMode condition for AssignmentPanel');
+  // Check for the condition: assignMode && !taskId
+  assert.ok(fileContent.includes("assignMode && !taskId"), 'Should check assignMode && !taskId condition for AssignmentPanel');
 });
 
 // Test that SwarmWorkspace import is removed (deprecated)

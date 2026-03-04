@@ -15,6 +15,8 @@ import dagre from 'dagre';
 
 import type { BeadIssue } from '../../lib/types';
 import type { AgentArchetype } from '../../lib/types-swarm';
+import { buildGraphModel } from '../../lib/graph';
+import { identifyTransitiveEdges } from '../../lib/graph-view';
 
 // Custom Node for the Agent DAG
 interface AgentNodeData extends Record<string, unknown> {
@@ -152,19 +154,45 @@ function SpecializedAgentDagInner({ beads, archetypes, selectedId, onSelect }: {
         const graphEdges: Edge[] = [];
         const beadIds = new Set(visibleBeads.map(b => b.id));
 
+        const graphModel = buildGraphModel(visibleBeads);
+        const transitiveEdges = identifyTransitiveEdges(graphModel);
+
         visibleBeads.forEach(issue => {
             issue.dependencies.forEach(dep => {
                 if (dep.type === 'blocks' && beadIds.has(dep.target)) {
                     // issue depends on dep.target (issue is blocked by dep.target)
                     // Edge should flow from blocker to blocked
+                    const sourceNode = visibleBeads.find(i => i.id === dep.target);
+                    const isActiveBlocker = sourceNode?.status === 'in_progress' || sourceNode?.status === 'blocked';
+                    const edgeId = `${dep.target}:blocks:${issue.id}`;
+                    const isTransitive = transitiveEdges.has(edgeId);
+
+                    const isLinked = issue.id === selectedId || dep.target === selectedId;
+
+                    let stroke = '#475569';
+                    let dashArray: string | undefined = undefined;
+                    let opacity = 0.8;
+
+                    if (isTransitive && !isLinked) {
+                        stroke = '#334155';
+                        dashArray = '4 4';
+                        opacity = 0.4;
+                    } else if (isActiveBlocker) {
+                        stroke = isLinked ? '#7dd3fc' : '#fbbf24';
+                        opacity = 1;
+                    } else {
+                        stroke = isLinked ? '#7dd3fc' : '#475569';
+                        opacity = isLinked ? 1 : 0.8;
+                    }
+
                     graphEdges.push({
                         id: `e-${dep.target}-${issue.id}`,
                         source: dep.target,
                         target: issue.id,
                         type: 'smoothstep',
-                        animated: issue.status === 'in_progress' || issue.status === 'closed',
-                        style: { stroke: '#475569', strokeWidth: 2 },
-                        markerEnd: { type: MarkerType.ArrowClosed, color: '#475569' }
+                        animated: isLinked || isActiveBlocker,
+                        style: { stroke, strokeWidth: isLinked ? 2.8 : 2, opacity, strokeDasharray: dashArray },
+                        markerEnd: { type: MarkerType.ArrowClosed, color: stroke }
                     });
                 }
             });

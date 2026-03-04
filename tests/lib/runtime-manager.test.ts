@@ -9,6 +9,6 @@ test('normalizeVersion supports semver and rejects empty', () => {
 
 test('getRuntimePaths builds ~/.beadboard/runtime/<version> layout', () => {
   const p = getRuntimePaths('/tmp/home', '1.2.3');
-  assert.match(p.runtimeRoot, /runtime\/1\.2\.3$/);
-  assert.match(p.shimDir, /\.beadboard\/bin$/);
+  assert.match(p.runtimeRoot, /[/\\]runtime[/\\]1\.2\.3$/);
+  assert.match(p.shimDir, /\.beadboard[/\\]bin$/);
 });

@@ -161,6 +161,19 @@ export function UnifiedShell({
   const drawerId = taskId || swarmId || epicId || '';
   const selectedItem = selectedEpic ?? selectedIssue;
 
+  useEffect(() => {
+    if (!filters.hideClosed || !epicId) {
+      return;
+    }
+    const epic = issues.find((issue) => issue.id === epicId && issue.issue_type === 'epic');
+    if (!epic) {
+      return;
+    }
+    if (epic.status === 'closed' || epic.status === 'tombstone') {
+      setEpicId(null);
+    }
+  }, [filters.hideClosed, epicId, issues, setEpicId]);
+
   // Panel resize hook
   const { leftWidth, rightWidth, handleLeftResize, handleRightResize } = usePanelResize();
 

@@ -22,4 +22,8 @@ test('status --json reports runtime root and install mode', async () => {
   assert.ok('path' in payload.bd);
   assert.ok(payload.bd.project);
   assert.equal(typeof payload.bd.project.hasBeadsDir, 'boolean');
+  assert.ok(payload.bd.backend);
+  assert.equal(typeof payload.bd.backend.sqliteLegacyDb, 'boolean');
+  assert.equal(typeof payload.bd.backend.sqliteMigratedDb, 'boolean');
+  assert.equal(typeof payload.bd.backend.doltRepo, 'boolean');
 });

@@ -7,6 +7,7 @@ import { useUrlState, buildUrlParams } from '../../hooks/use-url-state';
 
 import type { BeadIssue } from '../../lib/types';
 import type { GraphHopDepth } from '../../lib/graph-view';
+import { collectEpicDescendantIds } from '../../lib/epic-graph';
 import { WorkflowGraph } from '../shared/workflow-graph';
 import { WorkflowTabs, type WorkflowTab } from './workflow-tabs';
 import { TaskCardGrid, type BlockerDetail } from './task-card-grid';
@@ -75,11 +76,8 @@ export function SmartDag({
 
   const displayBeads = useMemo(() => {
     if (!epicId) return issues;
-    return issues.filter(issue => {
-      if (issue.issue_type === 'epic') return false;
-      const parent = issue.dependencies.find(d => d.type === 'parent');
-      return parent?.target === epicId;
-    });
+    const descendantIds = collectEpicDescendantIds(issues, epicId);
+    return issues.filter((issue) => descendantIds.has(issue.id));
   }, [issues, epicId]);
 
   const {

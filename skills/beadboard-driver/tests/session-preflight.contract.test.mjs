@@ -26,10 +26,17 @@ test('session-preflight contract: succeeds with bd + BB_REPO', async () => {
   try {
     const repo = path.join(root, 'beadboard');
     const toolsDir = path.join(root, 'tools');
+    const bdExecutable = process.platform === 'win32' ? 'bd.cmd' : 'bd';
+    const bdPath = path.join(toolsDir, bdExecutable);
     await fs.mkdir(path.join(repo, 'tools'), { recursive: true });
     await fs.mkdir(toolsDir, { recursive: true });
     await fs.writeFile(path.join(repo, 'bb.ps1'), 'echo ok', 'utf8');
-    await fs.writeFile(path.join(toolsDir, 'bd.cmd'), '@echo off\r\necho beads\r\n', 'utf8');
+    if (process.platform === 'win32') {
+      await fs.writeFile(bdPath, '@echo off\r\necho beads\r\n', 'utf8');
+    } else {
+      await fs.writeFile(bdPath, '#!/usr/bin/env sh\necho beads\n', 'utf8');
+      await fs.chmod(bdPath, 0o755);
+    }
 
     const { stdout } = await execFileAsync(process.execPath, [scriptPath], {
       env: { ...process.env, PATH: toolsDir, BB_REPO: repo, BB_SKILL_HOME: path.join(root, 'home') },

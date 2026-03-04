@@ -2,10 +2,13 @@
 
 ## 1) Start Session
 
-1. Run preflight.
-2. Resolve bb path and confirm `bd` availability.
-3. Generate unique session agent name.
-4. Register agent identity.
+1. Run environment diagnosis.
+2. Run preflight.
+3. Resolve bb path and confirm `bd` availability.
+4. Generate unique session agent name.
+5. Register agent identity.
+6. Confirm you are operating in the assigned target repository.
+7. Do not change project scope (scope is user-controlled in BeadBoard UI).
 
 ## 2) Pick and Claim Work
 

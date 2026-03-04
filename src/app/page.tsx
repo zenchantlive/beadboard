@@ -4,6 +4,8 @@ import { readIssuesForScope } from '../lib/aggregate-read';
 import { resolveProjectScope } from '../lib/project-scope';
 import { listProjects } from '../lib/registry';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }

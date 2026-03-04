@@ -21,6 +21,7 @@ import { TaskCardGrid, type BlockerDetail } from './task-card-grid';
 import { TaskDetailsDrawer } from './task-details-drawer';
 import { DependencyFlowStrip } from './dependency-flow-strip';
 import { GraphNodeCard, type GraphNodeData } from './graph-node-card';
+import { OffsetEdge } from './offset-edge';
 import { GraphSection } from './graph-section';
 import { ProjectScopeControls } from '../shared/project-scope-controls';
 import { WorkspaceHero } from '../shared/workspace-hero';
@@ -31,6 +32,7 @@ import {
   type GraphHopDepth,
   analyzeBlockedChain,
   detectDependencyCycles,
+  identifyTransitiveEdges,
 } from '../../lib/graph-view';
 import { buildBlockedByTree } from '../../lib/kanban';
 import { type BeadIssue } from '../../lib/types';
@@ -167,6 +169,10 @@ export function DependencyGraphPage({
         }),
     [issues, hideClosed],
   );
+  const selectableEpics = useMemo(
+    () => epics.filter((epic) => (!hideClosed ? true : epic.status !== 'closed' && epic.status !== 'tombstone')),
+    [epics, hideClosed],
+  );
 
   // --- Derived data: tasks grouped by parent epic ---
   const tasksByEpic = useMemo(() => {
@@ -226,18 +232,18 @@ export function DependencyGraphPage({
 
   // --- Auto-select first epic if none selected ---
   useEffect(() => {
-    if (epics.length === 0) {
+    if (selectableEpics.length === 0) {
       if (selectedEpicId !== null) {
         setSelectedEpicId(null);
       }
       return;
     }
 
-    const hasSelectedEpic = selectedEpicId ? epics.some((epic) => epic.id === selectedEpicId) : false;
+    const hasSelectedEpic = selectedEpicId ? selectableEpics.some((epic) => epic.id === selectedEpicId) : false;
     if (!hasSelectedEpic) {
-      setSelectedEpicId(epics[0].id);
+      setSelectedEpicId(selectableEpics[0].id);
     }
-  }, [epics, selectedEpicId]);
+  }, [selectableEpics, selectedEpicId]);
 
   useEffect(() => {
     if (requestedTab === 'tasks' || requestedTab === 'dependencies') {
@@ -247,9 +253,9 @@ export function DependencyGraphPage({
 
   useEffect(() => {
     if (!requestedEpicId) return;
-    if (!epics.some((epic) => epic.id === requestedEpicId)) return;
+    if (!selectableEpics.some((epic) => epic.id === requestedEpicId)) return;
     setSelectedEpicId(requestedEpicId);
-  }, [epics, requestedEpicId]);
+  }, [selectableEpics, requestedEpicId]);
 
   useEffect(() => {
     if (!requestedTaskId) {
@@ -272,7 +278,7 @@ export function DependencyGraphPage({
   }, [issues, selectedId]);
 
   // --- Derived: selected epic and its tasks ---
-  const selectedEpic = useMemo(() => epics.find((epic) => epic.id === selectedEpicId) ?? null, [epics, selectedEpicId]);
+  const selectedEpic = useMemo(() => selectableEpics.find((epic) => epic.id === selectedEpicId) ?? null, [selectableEpics, selectedEpicId]);
   const projectLevelTasks = useMemo(
     () =>
       issues
@@ -301,8 +307,8 @@ export function DependencyGraphPage({
     }
 
     // Last-resort fallback: if there are only epics, render epics as selectable items.
-    return epics.filter((epic) => (!hideClosed ? true : epic.status !== 'closed'));
-  }, [epics, hideClosed, projectLevelTasks, selectedEpic, tasksByEpic]);
+    return selectableEpics;
+  }, [projectLevelTasks, selectableEpics, selectedEpic, tasksByEpic]);
 
   const selectedEpicHasChildren = useMemo(() => {
     if (selectedEpic) {
@@ -325,6 +331,9 @@ export function DependencyGraphPage({
 
   // --- Graph model ---
   const graphModel = useMemo(() => buildGraphModel(issues, { projectKey: projectRoot }), [issues, projectRoot]);
+
+  // --- Transitive edges (redundant blocks) ---
+  const transitiveEdges = useMemo(() => identifyTransitiveEdges(graphModel), [graphModel]);
 
   // --- Signal map: blocker/blocks counts per issue ---
   const signalById = useMemo(() => {
@@ -531,7 +540,7 @@ export function DependencyGraphPage({
           blocks: signalById.get(issue.id)?.blocks ?? 0,
           isActionable: actionableNodeIds.has(issue.id),
           isCycleNode: cycleNodeIdSet.has(issue.id),
-          isDimmed: selectedId ? !chainNodeIds.has(issue.id) : false,
+          isDimmed: focusId ? !chainNodeIds.has(issue.id) : false,
           blockerTooltipLines: externalBlockerNames.get(issue.id) ?? blockerTooltipMap.get(issue.id) ?? [],
           labels: issue.labels,
         },
@@ -542,6 +551,63 @@ export function DependencyGraphPage({
       }));
 
     const visibleIds = new Set(baseNodes.map((node) => node.id));
+
+    // Use requestedTaskId from URL as the focus node for upstream/downstream highlighting.
+    // `selectedId` is local state that tracks click selection for the drawer,
+    // but it starts as null. The URL `task` param is what the user clicked in the graph
+    // (set by handleNodeSelect -> router.push). We use requestedTaskId here
+    // so that clicking a node - which updates the URL - also triggers edge color changes.
+    const focusId = requestedTaskId;
+
+    // --- Compute Upstream / Downstream Focus ---
+    const upstreamIds = new Set<string>();
+    const downstreamIds = new Set<string>();
+
+    if (focusId && visibleIds.has(focusId)) {
+      upstreamIds.add(focusId);
+      downstreamIds.add(focusId);
+
+      const outgoing = new Map<string, string[]>();
+      const incoming = new Map<string, string[]>();
+
+      for (const issue of issues) {
+        for (const dep of issue.dependencies) {
+          if (dep.type === 'blocks') {
+            const blocker = dep.target;
+            const blocked = issue.id;
+
+            if (!outgoing.has(blocker)) outgoing.set(blocker, []);
+            if (!incoming.has(blocked)) incoming.set(blocked, []);
+
+            outgoing.get(blocker)!.push(blocked);
+            incoming.get(blocked)!.push(blocker);
+          }
+        }
+      }
+
+      let queue = [focusId];
+      while (queue.length > 0) {
+        const curr = queue.shift()!;
+        for (const b of (incoming.get(curr) || [])) {
+          if (!upstreamIds.has(b)) {
+            upstreamIds.add(b);
+            queue.push(b);
+          }
+        }
+      }
+
+      queue = [focusId];
+      while (queue.length > 0) {
+        const curr = queue.shift()!;
+        for (const b of (outgoing.get(curr) || [])) {
+          if (!downstreamIds.has(b)) {
+            downstreamIds.add(b);
+            queue.push(b);
+          }
+        }
+      }
+    }
+
     const graphEdges: Edge[] = [];
 
     // Search ALL issues for blocking edges between visible nodes.
@@ -550,25 +616,87 @@ export function DependencyGraphPage({
     for (const issue of issues) {
       for (const dep of issue.dependencies) {
         // Both endpoints must be visible in the graph
-        if (!visibleIds.has(issue.id) && !visibleIds.has(dep.target)) continue;
         if (!visibleIds.has(issue.id) || !visibleIds.has(dep.target)) continue;
         // Only show blocking edges (skip parent, relates_to, etc.)
         if (dep.type !== 'blocks') continue;
         // Avoid self-loops
         if (issue.id === dep.target) continue;
-        const edgeId = `${dep.target}:blocks:${issue.id}`;
 
-        const linkedToSelection = selectedId ? issue.id === selectedId || dep.target === selectedId : false;
+        const edgeId = `${dep.target}:blocks:${issue.id}`;
+        const sourceId = dep.target;
+        const targetId = issue.id;
+
+        const isUpstreamOfFocus = focusId ? upstreamIds.has(sourceId) && upstreamIds.has(targetId) : false;
+        const isDownstreamOfFocus = focusId ? downstreamIds.has(sourceId) && downstreamIds.has(targetId) : false;
+        const isDirectlyFocused = focusId ? sourceId === focusId || targetId === focusId : false;
+
+        let isUnrelated = false;
+        if (focusId) {
+          isUnrelated = !isUpstreamOfFocus && !isDownstreamOfFocus && !isDirectlyFocused;
+        }
+
+        const sourceNode = issues.find(i => i.id === sourceId);
+        const sourceStatus = sourceNode?.status || 'open';
+        const isTransitive = transitiveEdges.has(edgeId);
+
+        let stroke = '#3b82f6';
+        let strokeBg = 'rgba(59, 130, 246, 0.25)';
+        let dashArray: string | undefined = undefined;
+        let opacity = 0.8;
+
+        const isFocusedPath = isUpstreamOfFocus || isDownstreamOfFocus || isDirectlyFocused;
+        const isAnimated = isFocusedPath || sourceStatus === 'in_progress';
+
+        // Base Status Colors
+        if (sourceStatus === 'in_progress') {
+          stroke = '#fbbf24'; // Bright Amber
+          strokeBg = 'rgba(251, 191, 36, 0.25)';
+        } else if (sourceStatus === 'blocked') {
+          stroke = '#f43f5e'; // Rose/Red for deep block
+          strokeBg = 'rgba(244, 63, 94, 0.25)';
+        } else {
+          stroke = '#3b82f6'; // Blue for open/ready
+          strokeBg = 'rgba(59, 130, 246, 0.25)';
+        }
+
+        // Selection Focus Overrides
+        if (focusId) {
+          if (isUnrelated) {
+            stroke = '#1e293b'; // Super dim unrelated edges
+            strokeBg = 'transparent';
+            opacity = 0.15;
+          } else if (isUpstreamOfFocus || (isDirectlyFocused && targetId === focusId)) {
+            stroke = '#f59e0b'; // Amber -- "I am blocking you"
+            strokeBg = 'rgba(245, 158, 11, 0.35)';
+            opacity = 1;
+          } else if (isDownstreamOfFocus || (isDirectlyFocused && sourceId === focusId)) {
+            stroke = '#0ea5e9'; // Cyan -- "you are blocking me"
+            strokeBg = 'rgba(14, 165, 233, 0.35)';
+            opacity = 1;
+          }
+        }
+
+        // Transitive Styling
+        if (isTransitive) {
+          dashArray = '4 4';
+          if (!focusId || isUnrelated) {
+            stroke = '#334155';
+            strokeBg = 'rgba(51, 65, 85, 0.3)';
+            opacity = 0.4;
+          } else {
+            opacity = 0.6; // Keep focused color but make dashed/transparent
+          }
+        }
 
         graphEdges.push({
           id: edgeId,
-          source: dep.target,
-          target: issue.id,
-          className: linkedToSelection ? 'workflow-edge-selected' : 'workflow-edge-muted',
-          animated: linkedToSelection,
+          source: sourceId,
+          target: targetId,
+          className: isFocusedPath ? 'workflow-edge-selected' : 'workflow-edge-muted',
+          animated: isAnimated,
           label: 'BLOCKS',
           labelStyle: {
-            fill: linkedToSelection ? '#e2e8f0' : '#cbd5e1',
+            fill: isFocusedPath ? '#e2e8f0' : '#cbd5e1',
             fontSize: 10,
             fontWeight: 700,
             letterSpacing: '0.08em',
@@ -577,16 +705,41 @@ export function DependencyGraphPage({
           labelBgBorderRadius: 999,
           labelBgStyle: {
             fill: 'rgba(2, 6, 23, 0.92)',
-            stroke: linkedToSelection ? 'rgba(125, 211, 252, 0.35)' : 'rgba(251, 191, 36, 0.25)',
+            stroke: strokeBg,
             strokeWidth: 1,
           },
           style: {
-            stroke: linkedToSelection ? '#7dd3fc' : '#fbbf24',
-            strokeWidth: linkedToSelection ? 2.8 : 2.1,
-            opacity: linkedToSelection ? 1 : 0.78,
+            stroke,
+            strokeWidth: isFocusedPath ? 2.8 : 2.1,
+            opacity,
+            strokeDasharray: dashArray,
           },
-          markerEnd: { type: MarkerType.ArrowClosed, color: linkedToSelection ? '#7dd3fc' : '#fbbf24', width: 14, height: 14 },
+          markerEnd: { type: MarkerType.ArrowClosed, color: stroke, width: 14, height: 14 },
         });
+      }
+    }
+
+    // --- Apply Offsets to Edge Data ---
+    // Count how many edges share the same source and target, or just
+    // group them by axis line to separate them visually.
+    const edgeGroups = new Map<string, Edge[]>();
+
+    for (const edge of graphEdges) {
+      // Create a normalized key roughly defining the segment direction
+      const key = [edge.source, edge.target].sort().join('-');
+      if (!edgeGroups.has(key)) edgeGroups.set(key, []);
+      edgeGroups.get(key)!.push(edge);
+    }
+
+    // Assign offsets based on index in their shared group.
+    for (const [unused_, groupEdges] of edgeGroups) {
+      if (groupEdges.length <= 1) continue;
+      const step = 8; // 8px offset per line
+      const totalSpread = (groupEdges.length - 1) * step;
+      let currentOffset = -(totalSpread / 2);
+      for (const edge of groupEdges) {
+        edge.data = { ...edge.data, offset: currentOffset };
+        currentOffset += step;
       }
     }
 
@@ -595,7 +748,7 @@ export function DependencyGraphPage({
       edges: graphEdges,
     };
   }, [
-    hideClosed, issues, selectedEpicTasks, selectedId,
+    transitiveEdges, hideClosed, issues, selectedEpicTasks, requestedTaskId,
     signalById, actionableNodeIds, cycleNodeIdSet,
     chainNodeIds, blockerTooltipMap, externalBlockerNames,
   ]);
@@ -605,6 +758,13 @@ export function DependencyGraphPage({
       flowNode: GraphNodeCard as NodeTypes['flowNode'],
     }),
     [],
+  );
+
+  const edgeTypes = useMemo(
+    () => ({
+      offset: OffsetEdge,
+    }),
+    []
   );
 
   // --- Handle node click in the graph (also opens detail drawer) ---
@@ -714,7 +874,7 @@ export function DependencyGraphPage({
           {/* Epic chip strip - shows titles, not just IDs */}
           <div className="flex-1 min-w-0">
             <EpicChipStrip
-              epics={epics}
+              epics={selectableEpics}
               selectedEpicId={selectedEpicId}
               beadCounts={beadCounts}
               onSelect={setSelectedEpicId}
@@ -826,7 +986,7 @@ export function DependencyGraphPage({
               <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted/70">1) Select Epic</h2>
               <div className="mt-4">
                 <EpicChipStrip
-                  epics={epics}
+                  epics={selectableEpics}
                   selectedEpicId={selectedEpicId}
                   beadCounts={beadCounts}
                   onSelect={setSelectedEpicId}
@@ -893,6 +1053,7 @@ export function DependencyGraphPage({
                 nodes={flowModel.nodes}
                 edges={flowModel.edges}
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 defaultEdgeOptions={defaultEdgeOptions}
                 onNodeClick={handleFlowNodeClick}
                 blockerAnalysis={blockerAnalysis}

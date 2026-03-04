@@ -20,6 +20,7 @@ interface GraphSectionProps {
     edges: Edge[];
     /** Map of custom node type names to their React components. */
     nodeTypes: NodeTypes;
+    edgeTypes?: any;
     /** Default edge rendering options. */
     defaultEdgeOptions: {
         type: 'smoothstep';
@@ -43,6 +44,7 @@ export function GraphSection({
     nodes,
     edges,
     nodeTypes,
+    edgeTypes,
     defaultEdgeOptions,
     onNodeClick,
     blockerAnalysis,
@@ -101,6 +103,7 @@ export function GraphSection({
                     nodes={nodes}
                     edges={edges}
                     nodeTypes={nodeTypes}
+                    edgeTypes={edgeTypes}
                     nodesDraggable={false}
                     nodesConnectable={false}
                     elementsSelectable

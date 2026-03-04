@@ -1,0 +1,1395 @@
+
+> beadboard@0.1.0 test
+> node --test tests/bootstrap.test.mjs && node --import tsx --test tests/components/shared/base-card.test.tsx && node --import tsx --test tests/components/shared/agent-avatar.test.tsx && node --import tsx --test tests/components/sessions/sessions-header.test.ts && node --import tsx --test tests/components/sessions/agent-station-logic.test.ts && node --import tsx --test tests/lib/parser.test.ts && node --import tsx --test tests/lib/pathing.test.ts && node --import tsx --test tests/components/shared/left-panel.test.tsx && node --import tsx --test tests/components/shared/top-bar.test.tsx && node --import tsx --test tests/components/shared/mobile-nav.test.tsx && node --import tsx --test tests/components/swarm/swarm-card.test.tsx && node --import tsx --test tests/hooks/url-state-integration.test.ts && node --import tsx --test tests/hooks/use-graph-analysis.test.ts && node --import tsx --test tests/components/graph/smart-dag.test.tsx && node --import tsx --test tests/components/unified-shell.test.tsx && node --import tsx --test tests/components/blocked-triage-modal.test.tsx && node --import tsx --test tests/components/graph/graph-node-labels.test.tsx && node --import tsx --test tests/components/graph/graph-node-assign.test.tsx && node --import tsx --test tests/components/graph/graph-node-conversation.test.tsx && node --import tsx --test tests/lib/coord-schema.test.ts && node --import tsx --test tests/lib/install-manifest.test.ts && node --import tsx --test tests/lib/coord-events.test.ts && node --import tsx --test tests/api/coord-events-route.test.ts && node --import tsx --test tests/lib/coord-projections-inbox.test.ts && node --import tsx --test tests/lib/coord-projections-reservations.test.ts && node --import tsx --test tests/components/sessions/conversation-drawer-coord.test.tsx && node --import tsx --test tests/scripts/beadboard-launcher.test.ts && node --import tsx --test tests/scripts/install-wrappers-contract.test.ts && node --import tsx --test tests/scripts/install-sh-smoke.test.ts && node --import tsx --test tests/scripts/installer-ci-contract.test.ts && node --import tsx --test tests/docs/installer-quickstart-contract.test.ts && node --import tsx --test tests/skills/beadboard-driver/resolve-bb.test.ts && node --import tsx --test tests/skills/beadboard-driver/session-preflight.test.ts && node --import tsx --test tests/skills/beadboard-driver/generate-agent-name.test.ts && node --import tsx --test tests/skills/beadboard-driver/readiness-report.test.ts && node --import tsx --test tests/skills/beadboard-driver/skill-local-runner.test.ts && node --import tsx --test tests/skills/beadboard-driver/diagnose-env.test.ts && node --import tsx --test tests/skills/beadboard-driver/heal-common-issues.test.ts && node --import tsx --test tests/lib/epic-graph.test.ts && node --import tsx --test tests/components/shared/left-panel-filtering.test.ts && node --import tsx --test tests/hooks/use-beads-subscription-contract.test.ts && node --import tsx --test tests/components/graph/dependency-graph-hide-closed-contract.test.ts && node --import tsx --test tests/components/shared/unified-shell-hide-closed-contract.test.ts
+
+TAP version 13
+# Subtest: bootstrap scaffold files exist
+ok 1 - bootstrap scaffold files exist
+  ---
+  duration_ms: 1.5814
+  ...
+# Subtest: package.json has next/react/typescript scripts and deps
+ok 2 - package.json has next/react/typescript scripts and deps
+  ---
+  duration_ms: 0.8583
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 113.5969
+TAP version 13
+# Subtest: BaseCard Component Contract
+    # Subtest: exports BaseCard component
+    ok 1 - exports BaseCard component
+      ---
+      duration_ms: 60.6082
+      ...
+    1..1
+ok 1 - BaseCard Component Contract
+  ---
+  duration_ms: 61.2636
+  type: 'suite'
+  ...
+# Subtest: BaseCard Styling Logic
+    # Subtest: should be possible to import the component
+    ok 1 - should be possible to import the component
+      ---
+      duration_ms: 2.2838
+      ...
+    # Subtest: applies correct status border class for "ready" status
+    ok 2 - applies correct status border class for "ready" status
+      ---
+      duration_ms: 9.2258
+      ...
+    # Subtest: applies correct status border class for "blocked" status
+    ok 3 - applies correct status border class for "blocked" status
+      ---
+      duration_ms: 2.645
+      ...
+    # Subtest: applies selection ring when selected prop is true
+    ok 4 - applies selection ring when selected prop is true
+      ---
+      duration_ms: 1.9216
+      ...
+    1..4
+ok 2 - BaseCard Styling Logic
+  ---
+  duration_ms: 16.6272
+  type: 'suite'
+  ...
+1..2
+# tests 5
+# suites 2
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 448.3115
+TAP version 13
+# Subtest: AgentAvatar Component Contract
+    # Subtest: exports AgentAvatar component
+    ok 1 - exports AgentAvatar component
+      ---
+      duration_ms: 379.632
+      ...
+    1..1
+ok 1 - AgentAvatar Component Contract
+  ---
+  duration_ms: 380.7834
+  type: 'suite'
+  ...
+# Subtest: AgentAvatar Role Styling
+    # Subtest: applies correct role color class for "ui" role
+    ok 1 - applies correct role color class for "ui" role
+      ---
+      duration_ms: 57.5869
+      ...
+    # Subtest: applies correct role color class for "orchestrator" role
+    ok 2 - applies correct role color class for "orchestrator" role
+      ---
+      duration_ms: 49.7205
+      ...
+    1..2
+ok 2 - AgentAvatar Role Styling
+  ---
+  duration_ms: 112.2505
+  type: 'suite'
+  ...
+# Subtest: AgentAvatar ZFC States
+    # Subtest: applies working pulse glow
+    ok 1 - applies working pulse glow
+      ---
+      duration_ms: 31.1975
+      ...
+    1..1
+ok 3 - AgentAvatar ZFC States
+  ---
+  duration_ms: 33.5533
+  type: 'suite'
+  ...
+1..3
+# tests 4
+# suites 3
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 945.1231
+TAP version 13
+# Subtest: SessionsHeader: Agent Grouping
+    # Subtest: groups agents by swarm
+    ok 1 - groups agents by swarm
+      ---
+      duration_ms: 2.9349
+      ...
+    # Subtest: shows fallback bucket for unassigned agents
+    ok 2 - shows fallback bucket for unassigned agents
+      ---
+      duration_ms: 0.3047
+      ...
+    # Subtest: handles empty swarm groups
+    ok 3 - handles empty swarm groups
+      ---
+      duration_ms: 0.214
+      ...
+    1..3
+ok 1 - SessionsHeader: Agent Grouping
+  ---
+  duration_ms: 5.0577
+  type: 'suite'
+  ...
+1..1
+# tests 3
+# suites 1
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 416.7877
+TAP version 13
+# Subtest: getAgentRoleColor returns correct color for known roles
+ok 1 - getAgentRoleColor returns correct color for known roles
+  ---
+  duration_ms: 1.2099
+  ...
+# Subtest: getAgentRoleColor returns default for unknown role
+ok 2 - getAgentRoleColor returns default for unknown role
+  ---
+  duration_ms: 0.1692
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 336.3402
+TAP version 13
+# Subtest: parseIssuesJsonl applies defaults and preserves priority 0
+ok 1 - parseIssuesJsonl applies defaults and preserves priority 0
+  ---
+  duration_ms: 1.6475
+  ...
+# Subtest: parseIssuesJsonl skips malformed and blank lines
+ok 2 - parseIssuesJsonl skips malformed and blank lines
+  ---
+  duration_ms: 0.2657
+  ...
+# Subtest: parseIssuesJsonl filters tombstones by default
+ok 3 - parseIssuesJsonl filters tombstones by default
+  ---
+  duration_ms: 0.2125
+  ...
+# Subtest: parseIssuesJsonl can include tombstones when requested
+ok 4 - parseIssuesJsonl can include tombstones when requested
+  ---
+  duration_ms: 0.2357
+  ...
+# Subtest: parseIssuesJsonl supports beads dependency schema with depends_on_id and parent-child
+ok 5 - parseIssuesJsonl supports beads dependency schema with depends_on_id and parent-child
+  ---
+  duration_ms: 1.139
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 348.1631
+TAP version 13
+# Subtest: canonicalizeWindowsPath normalizes separators and drive casing
+ok 1 - canonicalizeWindowsPath normalizes separators and drive casing
+  ---
+  duration_ms: 1.2383
+  ...
+# Subtest: windowsPathKey is case-insensitive stable key
+ok 2 - windowsPathKey is case-insensitive stable key
+  ---
+  duration_ms: 0.2253
+  ...
+# Subtest: toDisplayPath renders forward slashes for UI readability
+ok 3 - toDisplayPath renders forward slashes for UI readability
+  ---
+  duration_ms: 0.1376
+  ...
+# Subtest: sameWindowsPath handles case/separator differences
+ok 4 - sameWindowsPath handles case/separator differences
+  ---
+  duration_ms: 0.1283
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 281.2221
+TAP version 13
+# Subtest: LeftPanel Component Contract
+    # Subtest: exports LeftPanel component
+    ok 1 - exports LeftPanel component
+      ---
+      duration_ms: 276.4646
+      ...
+    # Subtest: LeftPanel accepts issues and onEpicSelect props
+    ok 2 - LeftPanel accepts issues and onEpicSelect props
+      ---
+      duration_ms: 1.358
+      ...
+    1..2
+ok 1 - LeftPanel Component Contract
+  ---
+  duration_ms: 278.8584
+  type: 'suite'
+  ...
+# Subtest: LeftPanel Tree Structure
+    # Subtest: renders epics as expandable tree items
+    ok 1 - renders epics as expandable tree items
+      ---
+      duration_ms: 1.1557
+      ...
+    # Subtest: groups beads under their parent epic
+    ok 2 - groups beads under their parent epic
+      ---
+      duration_ms: 1.0946
+      ...
+    1..2
+ok 2 - LeftPanel Tree Structure
+  ---
+  duration_ms: 2.5212
+  type: 'suite'
+  ...
+# Subtest: LeftPanel Responsive Behavior
+    # Subtest: applies responsive classes for desktop, tablet, and mobile
+    ok 1 - applies responsive classes for desktop, tablet, and mobile
+      ---
+      duration_ms: 1.1394
+      ...
+    1..1
+ok 3 - LeftPanel Responsive Behavior
+  ---
+  duration_ms: 1.295
+  type: 'suite'
+  ...
+# Subtest: LeftPanel Scope Controls
+    # Subtest: renders scope section
+    ok 1 - renders scope section
+      ---
+      duration_ms: 1.105
+      ...
+    1..1
+ok 4 - LeftPanel Scope Controls
+  ---
+  duration_ms: 1.4433
+  type: 'suite'
+  ...
+1..4
+# tests 6
+# suites 4
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 530.4094
+TAP version 13
+# Subtest: TopBar Component Contract
+    # Subtest: exports TopBar component
+    ok 1 - exports TopBar component
+      ---
+      duration_ms: 522.3747
+      ...
+    # Subtest: TopBar component can be imported without errors
+    ok 2 - TopBar component can be imported without errors
+      ---
+      duration_ms: 1.5584
+      ...
+    1..2
+ok 1 - TopBar Component Contract
+  ---
+  duration_ms: 525.0872
+  type: 'suite'
+  ...
+# Subtest: TopBar View Tabs
+    # Subtest: renders view tabs: Social, Graph
+    ok 1 - renders view tabs: Social, Graph
+      ---
+      duration_ms: 1.6122
+      ...
+    # Subtest: active tab has bold text and accent underline
+    ok 2 - active tab has bold text and accent underline
+      ---
+      duration_ms: 1.1985
+      ...
+    1..2
+ok 2 - TopBar View Tabs
+  ---
+  duration_ms: 3.0725
+  type: 'suite'
+  ...
+# Subtest: TopBar Filter and Controls
+    # Subtest: renders filter/search input placeholder
+    ok 1 - renders filter/search input placeholder
+      ---
+      duration_ms: 1.1645
+      ...
+    # Subtest: renders settings placeholder
+    ok 2 - renders settings placeholder
+      ---
+      duration_ms: 1.1389
+      ...
+    1..2
+ok 3 - TopBar Filter and Controls
+  ---
+  duration_ms: 2.6511
+  type: 'suite'
+  ...
+1..3
+# tests 6
+# suites 3
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 776.792
+TAP version 13
+# Subtest: Mobile Navigation - Hamburger Menu
+    # Subtest: exports MobileNav component
+    ok 1 - exports MobileNav component
+      ---
+      duration_ms: 112.1069
+      ...
+    # Subtest: renders tab buttons: Social, Graph
+    ok 2 - renders tab buttons: Social, Graph
+      ---
+      duration_ms: 1.7096
+      ...
+    # Subtest: highlights active tab with accent color
+    ok 3 - highlights active tab with accent color
+      ---
+      duration_ms: 1.0951
+      ...
+    # Subtest: uses setView from useUrlState on tab click
+    ok 4 - uses setView from useUrlState on tab click
+      ---
+      duration_ms: 0.9875
+      ...
+    1..4
+ok 1 - Mobile Navigation - Hamburger Menu
+  ---
+  duration_ms: 117.0127
+  type: 'suite'
+  ...
+# Subtest: TopBar Hamburger Menu
+    # Subtest: shows hamburger button on mobile and tablet
+    ok 1 - shows hamburger button on mobile and tablet
+      ---
+      duration_ms: 416.9695
+      ...
+    # Subtest: hamburger button opens left panel drawer
+    ok 2 - hamburger button opens left panel drawer
+      ---
+      duration_ms: 1.4668
+      ...
+    # Subtest: hides hamburger on desktop
+    ok 3 - hides hamburger on desktop
+      ---
+      duration_ms: 1.0338
+      ...
+    1..3
+ok 2 - TopBar Hamburger Menu
+  ---
+  duration_ms: 419.927
+  type: 'suite'
+  ...
+1..2
+# tests 7
+# suites 2
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 788.7947
+TAP version 13
+# Subtest: SwarmCard Component Contract
+    # Subtest: exports SwarmCard component
+    ok 1 - exports SwarmCard component
+      ---
+      duration_ms: 234.3514
+      ...
+    # Subtest: SwarmCard component can be imported without errors
+    ok 2 - SwarmCard component can be imported without errors
+      ---
+      duration_ms: 1.4885
+      ...
+    1..2
+ok 1 - SwarmCard Component Contract
+  ---
+  duration_ms: 236.7813
+  type: 'suite'
+  ...
+# Subtest: SwarmCard Agent Roster
+    # Subtest: renders agent avatars with liveness glow
+    ok 1 - renders agent avatars with liveness glow
+      ---
+      duration_ms: 1.7621
+      ...
+    # Subtest: displays agent current task when available
+    ok 2 - displays agent current task when available
+      ---
+      duration_ms: 1.428
+      ...
+    1..2
+ok 2 - SwarmCard Agent Roster
+  ---
+  duration_ms: 3.4988
+  type: 'suite'
+  ...
+# Subtest: SwarmCard Progress Bar
+    # Subtest: renders progress bar showing completion percentage
+    ok 1 - renders progress bar showing completion percentage
+      ---
+      duration_ms: 1.3663
+      ...
+    1..1
+ok 3 - SwarmCard Progress Bar
+  ---
+  duration_ms: 1.5378
+  type: 'suite'
+  ...
+# Subtest: SwarmCard Attention Items
+    # Subtest: renders attention items with warning styling
+    ok 1 - renders attention items with warning styling
+      ---
+      duration_ms: 1.308
+      ...
+    1..1
+ok 4 - SwarmCard Attention Items
+  ---
+  duration_ms: 1.8092
+  type: 'suite'
+  ...
+# Subtest: SwarmCard View-Jump Icons
+    # Subtest: renders view-jump icons for navigation
+    ok 1 - renders view-jump icons for navigation
+      ---
+      duration_ms: 1.4018
+      ...
+    1..1
+ok 5 - SwarmCard View-Jump Icons
+  ---
+  duration_ms: 1.5647
+  type: 'suite'
+  ...
+1..5
+# tests 7
+# suites 5
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 489.5417
+TAP version 13
+# Subtest: URL State Integration - bb-ui2.22
+    # Subtest: Valid URL Patterns - Social View
+        # Subtest: /?view=social - defaults to social view
+        ok 1 - /?view=social - defaults to social view
+          ---
+          duration_ms: 0.8765
+          ...
+        # Subtest: /?view=social&task=bb-buff.1&panel=open - task selected, panel open
+        ok 2 - /?view=social&task=bb-buff.1&panel=open - task selected, panel open
+          ---
+          duration_ms: 0.213
+          ...
+        # Subtest: /?view=social&task=bb-ui2.22 - task with dots in ID
+        ok 3 - /?view=social&task=bb-ui2.22 - task with dots in ID
+          ---
+          duration_ms: 0.1767
+          ...
+        1..3
+    ok 1 - Valid URL Patterns - Social View
+      ---
+      duration_ms: 1.9424
+      type: 'suite'
+      ...
+    # Subtest: Valid URL Patterns - Graph View
+        # Subtest: /?view=graph - graph view default
+        ok 1 - /?view=graph - graph view default
+          ---
+          duration_ms: 0.2306
+          ...
+        # Subtest: /?view=graph&task=bb-buff.1 - graph with task selected
+        ok 2 - /?view=graph&task=bb-buff.1 - graph with task selected
+          ---
+          duration_ms: 0.1202
+          ...
+        # Subtest: /?view=graph&graphTab=flow - flow tab selected
+        ok 3 - /?view=graph&graphTab=flow - flow tab selected
+          ---
+          duration_ms: 0.1698
+          ...
+        # Subtest: /?view=graph&graphTab=overview - overview tab selected
+        ok 4 - /?view=graph&graphTab=overview - overview tab selected
+          ---
+          duration_ms: 0.6718
+          ...
+        # Subtest: /?view=graph&swarm=bb-buff - graph filtered by swarm
+        ok 5 - /?view=graph&swarm=bb-buff - graph filtered by swarm
+          ---
+          duration_ms: 0.2634
+          ...
+        1..5
+    ok 2 - Valid URL Patterns - Graph View
+      ---
+      duration_ms: 1.8248
+      type: 'suite'
+      ...
+    # Subtest: Deprecated Swarm View Fallback
+        # Subtest: /?view=swarm - falls back to social (swarm view deprecated)
+        ok 1 - /?view=swarm - falls back to social (swarm view deprecated)
+          ---
+          duration_ms: 0.1873
+          ...
+        # Subtest: /?view=swarm&swarm=bb-buff - falls back to social but preserves swarmId
+        ok 2 - /?view=swarm&swarm=bb-buff - falls back to social but preserves swarmId
+          ---
+          duration_ms: 0.2808
+          ...
+        # Subtest: /?view=swarm&swarm=bb-buff&panel=open - falls back to social with panel open
+        ok 3 - /?view=swarm&swarm=bb-buff&panel=open - falls back to social with panel open
+          ---
+          duration_ms: 0.1226
+          ...
+        1..3
+    ok 3 - Deprecated Swarm View Fallback
+      ---
+      duration_ms: 0.7326
+      type: 'suite'
+      ...
+    # Subtest: Valid URL Patterns - Activity View
+        # Subtest: /?view=activity - activity view default
+        ok 1 - /?view=activity - activity view default
+          ---
+          duration_ms: 0.1383
+          ...
+        # Subtest: /?view=activity&agent=bb-silver-castle - filtered by agent
+        ok 2 - /?view=activity&agent=bb-silver-castle - filtered by agent
+          ---
+          duration_ms: 0.0884
+          ...
+        # Subtest: /?view=activity&swarm=bb-buff - filtered by swarm
+        ok 3 - /?view=activity&swarm=bb-buff - filtered by swarm
+          ---
+          duration_ms: 0.0817
+          ...
+        1..3
+    ok 4 - Valid URL Patterns - Activity View
+      ---
+      duration_ms: 0.4648
+      type: 'suite'
+      ...
+    # Subtest: Invalid Param Handling
+        # Subtest: /?view=invalid - invalid view defaults to social
+        ok 1 - /?view=invalid - invalid view defaults to social
+          ---
+          duration_ms: 0.1193
+          ...
+        # Subtest: /?view=graph&graphTab=invalid - invalid graphTab defaults to flow
+        ok 2 - /?view=graph&graphTab=invalid - invalid graphTab defaults to flow
+          ---
+          duration_ms: 0.0838
+          ...
+        # Subtest: /?panel=invalid - invalid panel defaults to open
+        ok 3 - /?panel=invalid - invalid panel defaults to open
+          ---
+          duration_ms: 0.0842
+          ...
+        # Subtest: /?task=invalid-id - invalid task ID still parsed (no validation)
+        ok 4 - /?task=invalid-id - invalid task ID still parsed (no validation)
+          ---
+          duration_ms: 0.0803
+          ...
+        1..4
+    ok 5 - Invalid Param Handling
+      ---
+      duration_ms: 0.4862
+      type: 'suite'
+      ...
+    # Subtest: URL Building - State to URL
+        # Subtest: builds social view URL
+        ok 1 - builds social view URL
+          ---
+          duration_ms: 0.2919
+          ...
+        # Subtest: builds graph view with task URL
+        ok 2 - builds graph view with task URL
+          ---
+          duration_ms: 0.1887
+          ...
+        # Subtest: builds swarm view with swarm param
+        ok 3 - builds swarm view with swarm param
+          ---
+          duration_ms: 0.1366
+          ...
+        # Subtest: builds activity view with agent filter
+        ok 4 - builds activity view with agent filter
+          ---
+          duration_ms: 0.1034
+          ...
+        # Subtest: preserves existing params when adding new ones
+        ok 5 - preserves existing params when adding new ones
+          ---
+          duration_ms: 0.1792
+          ...
+        # Subtest: removes params when set to null
+        ok 6 - removes params when set to null
+          ---
+          duration_ms: 0.1266
+          ...
+        # Subtest: returns root when all params cleared
+        ok 7 - returns root when all params cleared
+          ---
+          duration_ms: 0.0975
+          ...
+        1..7
+    ok 6 - URL Building - State to URL
+      ---
+      duration_ms: 1.3119
+      type: 'suite'
+      ...
+    # Subtest: Complex URL Scenarios
+        # Subtest: handles all params together
+        ok 1 - handles all params together
+          ---
+          duration_ms: 0.1303
+          ...
+        # Subtest: empty string values treated as null/empty
+        ok 2 - empty string values treated as null/empty
+          ---
+          duration_ms: 0.0905
+          ...
+        1..2
+    ok 7 - Complex URL Scenarios
+      ---
+      duration_ms: 0.3031
+      type: 'suite'
+      ...
+    # Subtest: Deep Link Patterns - From Card Icons
+        # Subtest: SocialCard Graph icon: /?view=graph&task={id}
+        ok 1 - SocialCard Graph icon: /?view=graph&task={id}
+          ---
+          duration_ms: 0.1634
+          ...
+        # Subtest: SwarmCard Graph icon: /?view=graph&swarm={id}
+        ok 2 - SwarmCard Graph icon: /?view=graph&swarm={id}
+          ---
+          duration_ms: 0.1551
+          ...
+        # Subtest: SwarmCard Timeline icon: /?view=activity&swarm={id}
+        ok 3 - SwarmCard Timeline icon: /?view=activity&swarm={id}
+          ---
+          duration_ms: 0.0822
+          ...
+        # Subtest: Agent avatar click: /?view=activity&agent={id}
+        ok 4 - Agent avatar click: /?view=activity&agent={id}
+          ---
+          duration_ms: 0.0903
+          ...
+        1..4
+    ok 8 - Deep Link Patterns - From Card Icons
+      ---
+      duration_ms: 0.6075
+      type: 'suite'
+      ...
+    1..8
+ok 1 - URL State Integration - bb-ui2.22
+  ---
+  duration_ms: 8.473
+  type: 'suite'
+  ...
+1..1
+# tests 31
+# suites 9
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 386.839
+TAP version 13
+# Subtest: useGraphAnalysis - module exports
+ok 1 - useGraphAnalysis - module exports
+  ---
+  duration_ms: 28.8411
+  ...
+# Subtest: useGraphAnalysis underlying logic - graphModel is built correctly
+ok 2 - useGraphAnalysis underlying logic - graphModel is built correctly
+  ---
+  duration_ms: 9.7836
+  ...
+# Subtest: useGraphAnalysis underlying logic - cycleNodeIdSet detects cycles
+ok 3 - useGraphAnalysis underlying logic - cycleNodeIdSet detects cycles
+  ---
+  duration_ms: 0.4513
+  ...
+# Subtest: useGraphAnalysis underlying logic - cycleNodeIdSet empty for acyclic graph
+ok 4 - useGraphAnalysis underlying logic - cycleNodeIdSet empty for acyclic graph
+  ---
+  duration_ms: 0.1646
+  ...
+# Subtest: useGraphAnalysis underlying logic - blockerAnalysis returns blockers
+ok 5 - useGraphAnalysis underlying logic - blockerAnalysis returns blockers
+  ---
+  duration_ms: 0.4363
+  ...
+# Subtest: useGraphAnalysis underlying logic - blockerTooltipMap shows blocker info
+ok 6 - useGraphAnalysis underlying logic - blockerTooltipMap shows blocker info
+  ---
+  duration_ms: 0.3036
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 520.8617
+TAP version 13
+# Subtest: SmartDag - file exists and exports
+ok 1 - SmartDag - file exists and exports
+  ---
+  duration_ms: 3.9622
+  ...
+# Subtest: SmartDag - contains Filters toggle button
+ok 2 - SmartDag - contains Filters toggle button
+  ---
+  duration_ms: 1.012
+  ...
+# Subtest: SmartDag - contains Assign toggle button
+ok 3 - SmartDag - contains Assign toggle button
+  ---
+  duration_ms: 0.7415
+  ...
+# Subtest: SmartDag - contains WorkflowTabs
+ok 4 - SmartDag - contains WorkflowTabs
+  ---
+  duration_ms: 1.0491
+  ...
+# Subtest: SmartDag - supports onAssignModeChange callback
+ok 5 - SmartDag - supports onAssignModeChange callback
+  ---
+  duration_ms: 1.4431
+  ...
+# Subtest: SmartDag - supports onSelectedIssueChange callback
+ok 6 - SmartDag - supports onSelectedIssueChange callback
+  ---
+  duration_ms: 0.9478
+  ...
+# Subtest: SmartDag - imports TaskCardGrid
+ok 7 - SmartDag - imports TaskCardGrid
+  ---
+  duration_ms: 0.8138
+  ...
+# Subtest: SmartDag - imports WorkflowGraph
+ok 8 - SmartDag - imports WorkflowGraph
+  ---
+  duration_ms: 0.6587
+  ...
+# Subtest: SmartDag - passes assignMode to WorkflowGraph
+ok 9 - SmartDag - passes assignMode to WorkflowGraph
+  ---
+  duration_ms: 0.8308
+  ...
+# Subtest: SmartDag - manages hideClosed filter
+ok 10 - SmartDag - manages hideClosed filter
+  ---
+  duration_ms: 0.8949
+  ...
+# Subtest: SmartDag - manages sortReadyFirst filter
+ok 11 - SmartDag - manages sortReadyFirst filter
+  ---
+  duration_ms: 0.6463
+  ...
+# Subtest: SmartDag - uses useGraphAnalysis hook
+ok 12 - SmartDag - uses useGraphAnalysis hook
+  ---
+  duration_ms: 0.5999
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 312.3206
+TAP version 13
+# Subtest: UnifiedShell - file exists and exports
+ok 1 - UnifiedShell - file exists and exports
+  ---
+  duration_ms: 4.0963
+  ...
+# Subtest: UnifiedShell - has assignMode state
+ok 2 - UnifiedShell - has assignMode state
+  ---
+  duration_ms: 1.2945
+  ...
+# Subtest: UnifiedShell - has selectedAssignIssue state
+ok 3 - UnifiedShell - has selectedAssignIssue state
+  ---
+  duration_ms: 0.83
+  ...
+# Subtest: UnifiedShell - passes onAssignModeChange to SmartDag
+ok 4 - UnifiedShell - passes onAssignModeChange to SmartDag
+  ---
+  duration_ms: 0.8774
+  ...
+# Subtest: UnifiedShell - passes onSelectedIssueChange to SmartDag
+ok 5 - UnifiedShell - passes onSelectedIssueChange to SmartDag
+  ---
+  duration_ms: 1.3425
+  ...
+# Subtest: UnifiedShell - imports AssignmentPanel
+ok 6 - UnifiedShell - imports AssignmentPanel
+  ---
+  duration_ms: 0.7903
+  ...
+# Subtest: UnifiedShell - checks bd health and renders setup warning
+ok 7 - UnifiedShell - checks bd health and renders setup warning
+  ---
+  duration_ms: 0.782
+  ...
+# Subtest: UnifiedShell - renders AssignmentPanel conditionally
+ok 8 - UnifiedShell - renders AssignmentPanel conditionally
+  ---
+  duration_ms: 0.673
+  ...
+# Subtest: UnifiedShell - does not import SwarmWorkspace
+ok 9 - UnifiedShell - does not import SwarmWorkspace
+  ---
+  duration_ms: 0.8607
+  ...
+# Subtest: UnifiedShell - does not import SwarmMissionPicker
+ok 10 - UnifiedShell - does not import SwarmMissionPicker
+  ---
+  duration_ms: 0.9023
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 294.6473
+TAP version 13
+# Subtest: BlockedTriageModal - file exists and exports
+ok 1 - BlockedTriageModal - file exists and exports
+  ---
+  duration_ms: 4.3148
+  ...
+# Subtest: BlockedTriageModal - imports Dialog from shadcn
+ok 2 - BlockedTriageModal - imports Dialog from shadcn
+  ---
+  duration_ms: 1.0182
+  ...
+# Subtest: BlockedTriageModal - imports deriveBlockedIds and buildBlockedByTree from kanban
+ok 3 - BlockedTriageModal - imports deriveBlockedIds and buildBlockedByTree from kanban
+  ---
+  duration_ms: 0.842
+  ...
+# Subtest: BlockedTriageModal - imports useArchetypePicker hook
+ok 4 - BlockedTriageModal - imports useArchetypePicker hook
+  ---
+  duration_ms: 0.9348
+  ...
+# Subtest: BlockedTriageModal - imports BeadIssue type
+ok 5 - BlockedTriageModal - imports BeadIssue type
+  ---
+  duration_ms: 0.8126
+  ...
+# Subtest: BlockedTriageModal - accepts isOpen, onClose, issues, projectRoot props
+ok 6 - BlockedTriageModal - accepts isOpen, onClose, issues, projectRoot props
+  ---
+  duration_ms: 2.0387
+  ...
+# Subtest: BlockedTriageModal - uses useMemo for blockedIds computation
+ok 7 - BlockedTriageModal - uses useMemo for blockedIds computation
+  ---
+  duration_ms: 1.1922
+  ...
+# Subtest: BlockedTriageModal - computes blocked tasks using status=blocked AND deriveBlockedIds
+ok 8 - BlockedTriageModal - computes blocked tasks using status=blocked AND deriveBlockedIds
+  ---
+  duration_ms: 0.99
+  ...
+# Subtest: BlockedTriageModal - uses buildBlockedByTree for blocker chain display
+ok 9 - BlockedTriageModal - uses buildBlockedByTree for blocker chain display
+  ---
+  duration_ms: 0.9272
+  ...
+# Subtest: BlockedTriageModal - has local state for showing/hiding archetype picker per row
+ok 10 - BlockedTriageModal - has local state for showing/hiding archetype picker per row
+  ---
+  duration_ms: 1.052
+  ...
+# Subtest: BlockedTriageModal - modal content is scrollable
+ok 11 - BlockedTriageModal - modal content is scrollable
+  ---
+  duration_ms: 0.6697
+  ...
+# Subtest: BlockedTriageModal - reuses useArchetypePicker for row assignments
+ok 12 - BlockedTriageModal - reuses useArchetypePicker for row assignments
+  ---
+  duration_ms: 0.7558
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 297.9767
+TAP version 13
+# Subtest: GraphNodeData interface includes labels field
+ok 1 - GraphNodeData interface includes labels field
+  ---
+  duration_ms: 4.1316
+  ...
+# Subtest: GraphNodeData labels is typed as string array
+ok 2 - GraphNodeData labels is typed as string array
+  ---
+  duration_ms: 1.2384
+  ...
+# Subtest: WorkflowGraph passes issue.labels to node data
+ok 3 - WorkflowGraph passes issue.labels to node data
+  ---
+  duration_ms: 0.8461
+  ...
+# Subtest: WorkflowGraph uses labels from issue in node mapping
+ok 4 - WorkflowGraph uses labels from issue in node mapping
+  ---
+  duration_ms: 1.0122
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 298.9521
+TAP version 13
+# Subtest: GraphNodeCard checks for assignable status (open, blocked, ready)
+ok 1 - GraphNodeCard checks for assignable status (open, blocked, ready)
+  ---
+  duration_ms: 3.5054
+  ...
+# Subtest: GraphNodeCard excludes closed tasks from assign button
+ok 2 - GraphNodeCard excludes closed tasks from assign button
+  ---
+  duration_ms: 1.015
+  ...
+# Subtest: GraphNodeCard parses agent: label to show assigned archetype
+ok 3 - GraphNodeCard parses agent: label to show assigned archetype
+  ---
+  duration_ms: 1.134
+  ...
+# Subtest: GraphNodeCard imports Radix dropdown-menu for archetype selection
+ok 4 - GraphNodeCard imports Radix dropdown-menu for archetype selection
+  ---
+  duration_ms: 0.9127
+  ...
+# Subtest: GraphNodeCard receives and uses archetypes for dropdown
+ok 5 - GraphNodeCard receives and uses archetypes for dropdown
+  ---
+  duration_ms: 1.074
+  ...
+# Subtest: GraphNodeCard supports assignment callback
+ok 6 - GraphNodeCard supports assignment callback
+  ---
+  duration_ms: 1.5119
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 299.8879
+TAP version 13
+# Subtest: GraphNodeCard - has MessageSquare conversation icon
+ok 1 - GraphNodeCard - has MessageSquare conversation icon
+  ---
+  duration_ms: 5.4138
+  ...
+# Subtest: GraphNodeCard - does NOT use useUrlState (ReactFlow context/timing issues)
+ok 2 - GraphNodeCard - does NOT use useUrlState (ReactFlow context/timing issues)
+  ---
+  duration_ms: 0.8329
+  ...
+# Subtest: GraphNodeCard - reads onConversationOpen callback from node data
+ok 3 - GraphNodeCard - reads onConversationOpen callback from node data
+  ---
+  duration_ms: 0.6903
+  ...
+# Subtest: GraphNodeCard - stops event propagation on icon click
+ok 4 - GraphNodeCard - stops event propagation on icon click
+  ---
+  duration_ms: 1.2454
+  ...
+# Subtest: GraphNodeCard - highlights icon when selectedTaskId matches this node
+ok 5 - GraphNodeCard - highlights icon when selectedTaskId matches this node
+  ---
+  duration_ms: 0.7095
+  ...
+# Subtest: WorkflowGraph - passes onConversationOpen into node data
+ok 6 - WorkflowGraph - passes onConversationOpen into node data
+  ---
+  duration_ms: 0.6598
+  ...
+# Subtest: WorkflowGraph - passes selectedTaskId into node data for icon highlight
+ok 7 - WorkflowGraph - passes selectedTaskId into node data for icon highlight
+  ---
+  duration_ms: 0.728
+  ...
+# Subtest: ContextualRightPanel - task branch onClose is NOT a no-op
+ok 8 - ContextualRightPanel - task branch onClose is NOT a no-op
+  ---
+  duration_ms: 0.6707
+  ...
+# Subtest: ContextualRightPanel - task branch onClose clears taskId
+ok 9 - ContextualRightPanel - task branch onClose clears taskId
+  ---
+  duration_ms: 0.8296
+  ...
+# Subtest: ContextualRightPanel - swarm branch onClose clears swarmId
+ok 10 - ContextualRightPanel - swarm branch onClose clears swarmId
+  ---
+  duration_ms: 0.8731
+  ...
+# Subtest: ContextualRightPanel - taskId if-branch appears before epicId if-branch
+ok 11 - ContextualRightPanel - taskId if-branch appears before epicId if-branch
+  ---
+  duration_ms: 0.6104
+  ...
+# Subtest: UnifiedShell - right panel NOT gated behind panel === open
+ok 12 - UnifiedShell - right panel NOT gated behind panel === open
+  ---
+  duration_ms: 0.6447
+  ...
+# Subtest: UnifiedShell - passes taskId to ContextualRightPanel
+ok 13 - UnifiedShell - passes taskId to ContextualRightPanel
+  ---
+  duration_ms: 0.5937
+  ...
+# Subtest: page.tsx - wraps UnifiedShell in Suspense for useSearchParams
+ok 14 - page.tsx - wraps UnifiedShell in Suspense for useSearchParams
+  ---
+  duration_ms: 0.592
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 303.4901
+TAP version 13
+# Subtest: validateCoordEventEnvelope accepts valid SEND
+ok 1 - validateCoordEventEnvelope accepts valid SEND
+  ---
+  duration_ms: 0.9228
+  ...
+# Subtest: validateCoordEventEnvelope rejects READ without event_ref
+ok 2 - validateCoordEventEnvelope rejects READ without event_ref
+  ---
+  duration_ms: 0.2944
+  ...
+# Subtest: validateCoordEventEnvelope accepts TAKEOVER with stale mode
+ok 3 - validateCoordEventEnvelope accepts TAKEOVER with stale mode
+  ---
+  duration_ms: 0.1236
+  ...
+# Subtest: validateCoordEventEnvelope rejects TAKEOVER with invalid mode
+ok 4 - validateCoordEventEnvelope rejects TAKEOVER with invalid mode
+  ---
+  duration_ms: 0.1481
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 269.5262
+TAP version 13
+# Subtest: validateInstallerManifest accepts canonical installer.v1 shape
+ok 1 - validateInstallerManifest accepts canonical installer.v1 shape
+  ---
+  duration_ms: 0.8823
+  ...
+# Subtest: validateInstallerManifest rejects wrong version
+ok 2 - validateInstallerManifest rejects wrong version
+  ---
+  duration_ms: 0.2628
+  ...
+# Subtest: validateInstallerManifest rejects missing runtime status command
+ok 3 - validateInstallerManifest rejects missing runtime status command
+  ---
+  duration_ms: 0.1537
+  ...
+# Subtest: validateInstallerManifest rejects driver mode that is not detect_only
+ok 4 - validateInstallerManifest rejects driver mode that is not detect_only
+  ---
+  duration_ms: 0.1365
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 254.0237
+TAP version 13
+# Subtest: writeCoordEvent rejects invalid payload
+ok 1 - writeCoordEvent rejects invalid payload
+  ---
+  duration_ms: 1.0079
+  ...
+# Subtest: writeCoordEvent invokes bd audit record with --stdin payload
+ok 2 - writeCoordEvent invokes bd audit record with --stdin payload
+  ---
+  duration_ms: 0.8609
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 261.1351
+TAP version 13
+# Subtest: handleCoordEventsPost returns 400 for invalid body
+ok 1 - handleCoordEventsPost returns 400 for invalid body
+  ---
+  duration_ms: 5.2884
+  ...
+# Subtest: handleCoordEventsPost writes event and returns success
+ok 2 - handleCoordEventsPost writes event and returns success
+  ---
+  duration_ms: 0.8855
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 399.1944
+TAP version 13
+# Subtest: projectMessageState derives unread -> read -> acked
+ok 1 - projectMessageState derives unread -> read -> acked
+  ---
+  duration_ms: 10.3467
+  ...
+# Subtest: projectInbox tolerates out-of-order and unknown refs
+ok 2 - projectInbox tolerates out-of-order and unknown refs
+  ---
+  duration_ms: 0.3784
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 272.6123
+TAP version 13
+# Subtest: isTakeoverAllowed enforces active/stale/evicted policy
+ok 1 - isTakeoverAllowed enforces active/stale/evicted policy
+  ---
+  duration_ms: 0.7999
+  ...
+# Subtest: projectReservations applies reserve/release transitions
+ok 2 - projectReservations applies reserve/release transitions
+  ---
+  duration_ms: 10.0466
+  ...
+# Subtest: projectReservations rejects stale takeover when owner active
+ok 3 - projectReservations rejects stale takeover when owner active
+  ---
+  duration_ms: 0.1748
+  ...
+# Subtest: projectReservations allows stale takeover when owner stale
+ok 4 - projectReservations allows stale takeover when owner stale
+  ---
+  duration_ms: 0.1624
+  ...
+# Subtest: calculateReservationIncursions finds partial overlap
+ok 5 - calculateReservationIncursions finds partial overlap
+  ---
+  duration_ms: 0.448
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 274.6244
+TAP version 13
+# Subtest: ConversationDrawer coord action payloads
+    # Subtest: builds READ event with event_ref to message id
+    ok 1 - builds READ event with event_ref to message id
+      ---
+      duration_ms: 0.7032
+      ...
+    # Subtest: builds ACK event with recipient as actor
+    ok 2 - builds ACK event with recipient as actor
+      ---
+      duration_ms: 0.1394
+      ...
+    1..2
+ok 1 - ConversationDrawer coord action payloads
+  ---
+  duration_ms: 1.7238
+  type: 'suite'
+  ...
+# Subtest: ConversationDrawer comment payload
+    # Subtest: includes actor when provided
+    ok 1 - includes actor when provided
+      ---
+      duration_ms: 0.16
+      ...
+    # Subtest: omits actor when blank
+    ok 2 - omits actor when blank
+      ---
+      duration_ms: 0.105
+      ...
+    1..2
+ok 2 - ConversationDrawer comment payload
+  ---
+  duration_ms: 0.4482
+  type: 'suite'
+  ...
+1..2
+# tests 4
+# suites 2
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 393.5646
+TAP version 13
+# Subtest: beadboard launcher status --json reports running server
+ok 1 - beadboard launcher status --json reports running server
+  ---
+  duration_ms: 109.0013
+  ...
+# Subtest: beadboard launcher open --json supports noop mode
+ok 2 - beadboard launcher open --json supports noop mode
+  ---
+  duration_ms: 77.5411
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 429.2062
+TAP version 13
+# Subtest: install wrapper scripts exist with canonical filenames
+ok 1 - install wrapper scripts exist with canonical filenames
+  ---
+  duration_ms: 4.2528
+  ...
+# Subtest: install wrappers provision both bb and beadboard shims
+ok 2 - install wrappers provision both bb and beadboard shims
+  ---
+  duration_ms: 1.4403
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 246.3488
+TAP version 13
+# Subtest: install.sh supports install and reinstall into BB_INSTALL_HOME
+not ok 1 - install.sh supports install and reinstall into BB_INSTALL_HOME
+  ---
+  duration_ms: 177.653
+  location: 'C:\\Users\\Zenchant\\codex\\beadboard\\tests\\scripts\\install-sh-smoke.test.ts:2:1314'
+  failureType: 'testCodeFailure'
+  error: |-
+    Command failed: bash C:\Users\Zenchant\codex\beadboard\install\install.sh
+    /bin/bash: C:UsersZenchantcodexbeadboardinstallinstall.sh: No such file or directory
+    
+  code: 127
+  stack: |-
+    genericNodeError (node:internal/errors:983:15)
+    wrappedFn (node:internal/errors:537:14)
+    ChildProcess.exithandler (node:child_process:414:12)
+    ChildProcess.emit (node:events:524:28)
+    maybeClose (node:internal/child_process:1101:16)
+    ChildProcess._handle.onexit (node:internal/child_process:304:5)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 419.6451

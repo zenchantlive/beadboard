@@ -18,8 +18,11 @@ import { Maximize2 } from 'lucide-react';
 
 import type { BeadIssue } from '../../lib/types';
 import type { AgentArchetype } from '../../lib/types-swarm';
+import { buildWorkflowEdges } from '../../lib/epic-graph';
 import { useGraphAnalysis } from '../../hooks/use-graph-analysis';
+import { identifyTransitiveEdges } from '../../lib/graph-view';
 import { GraphNodeCard, type GraphNodeData } from '../graph/graph-node-card';
+import { OffsetEdge } from '../graph/offset-edge';
 
 export interface WorkflowGraphProps {
   beads: BeadIssue[];
@@ -92,9 +95,11 @@ function WorkflowGraphInner({
   const { fitView } = useReactFlow();
   const [layoutDirection, setLayoutDirection] = useState<LayoutDirection>('LR');
   const [layoutDensity, setLayoutDensity] = useState<LayoutDensity>('normal');
+  const [showHierarchy, setShowHierarchy] = useState(true);
 
   // Use the extracted hook for all graph analysis
   const {
+    graphModel,
     signalById,
     cycleNodeIdSet,
     actionableNodeIds,
@@ -102,6 +107,8 @@ function WorkflowGraphInner({
     blockerAnalysis,
     chainNodeIds,
   } = useGraphAnalysis(beads, 'workflow', selectedId);
+
+  const transitiveEdges = useMemo(() => identifyTransitiveEdges(graphModel), [graphModel]);
 
   const flowModel = useMemo(() => {
     const visibleBeads = beads.filter((issue) => (!hideClosed ? true : issue.status !== 'closed'));
@@ -155,52 +162,128 @@ function WorkflowGraphInner({
     });
 
     const visibleIds = new Set(baseNodes.map((node) => node.id));
-    const graphEdges: Edge[] = [];
+    const edgeDescriptors = buildWorkflowEdges({
+      issues: beads,
+      visibleIds,
+      selectedId: selectedId ?? null,
+      includeHierarchy: showHierarchy,
+    });
 
-    for (const issue of beads) {
-      for (const dep of issue.dependencies) {
-        if (!visibleIds.has(issue.id) && !visibleIds.has(dep.target)) continue;
-        if (!visibleIds.has(issue.id) || !visibleIds.has(dep.target)) continue;
-        if (dep.type !== 'blocks') continue;
-        if (issue.id === dep.target) continue;
+    const graphEdges: Edge[] = edgeDescriptors.map((edge) => {
+      const isSubtask = edge.kind === 'subtask';
+      const label = isSubtask ? 'SUBTASK' : 'BLOCKS';
+      const isTransitive = transitiveEdges.has(`${edge.source}:blocks:${edge.target}`);
 
-        const edgeId = `${dep.target}:blocks:${issue.id}`;
-        const linkedToSelection = selectedId ? issue.id === selectedId || dep.target === selectedId : false;
-        const sourceIssue = beads.find((i) => i.id === dep.target);
-        const isInProgressEdge = issue.status === 'in_progress' || sourceIssue?.status === 'in_progress';
+      let stroke = '#64748b'; // default slate for subtasks / generic
+      let strokeBg = 'rgba(100, 116, 139, 0.3)';
+      let dashArray: string | undefined = undefined;
+      let opacity = 0.78;
 
-        graphEdges.push({
-          id: edgeId,
-          source: dep.target,
-          target: issue.id,
-          className: linkedToSelection ? 'workflow-edge-selected' : 'workflow-edge-muted',
-          animated: linkedToSelection || isInProgressEdge,
-          label: 'BLOCKS',
-          labelStyle: {
-            fill: linkedToSelection ? '#e2e8f0' : '#cbd5e1',
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: '0.08em',
-          },
-          labelBgPadding: [6, 3],
-          labelBgBorderRadius: 999,
-          labelBgStyle: {
-            fill: 'rgba(2, 6, 23, 0.92)',
-            stroke: linkedToSelection ? 'rgba(125, 211, 252, 0.35)' : 'rgba(251, 191, 36, 0.25)',
-            strokeWidth: 1,
-          },
-          style: {
-            stroke: linkedToSelection ? '#7dd3fc' : '#fbbf24',
-            strokeWidth: linkedToSelection ? 2.8 : 2.1,
-            opacity: linkedToSelection ? 1 : 0.78,
-          },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: linkedToSelection ? '#7dd3fc' : '#fbbf24',
-            width: 14,
-            height: 14,
-          },
-        });
+      const isFocusedPath = edge.isUpstreamOfFocus || edge.isDownstreamOfFocus || edge.isDirectlyFocused;
+      const isAnimated = isFocusedPath || edge.sourceStatus === 'in_progress';
+
+      if (isSubtask) {
+        stroke = isFocusedPath ? '#94a3b8' : '#64748b';
+        strokeBg = isFocusedPath ? 'rgba(148, 163, 184, 0.4)' : 'rgba(100, 116, 139, 0.3)';
+        dashArray = '6 4';
+        opacity = isFocusedPath ? 1 : (edge.isUnrelated ? 0.15 : 0.58);
+      } else {
+        // Evaluate Base Status
+        if (edge.sourceStatus === 'in_progress') {
+          stroke = '#fbbf24'; // Bright Amber
+          strokeBg = 'rgba(251, 191, 36, 0.25)';
+        } else if (edge.sourceStatus === 'blocked') {
+          stroke = '#f43f5e'; // Rose/Red for deep block
+          strokeBg = 'rgba(244, 63, 94, 0.25)';
+        } else {
+          stroke = '#3b82f6'; // Blue
+          strokeBg = 'rgba(59, 130, 246, 0.25)';
+        }
+
+        // Overrides for Selection
+        if (selectedId) {
+          if (edge.isUnrelated) {
+            stroke = '#1e293b'; // Super dim
+            strokeBg = 'transparent';
+            opacity = 0.15;
+          } else if (edge.isUpstreamOfFocus || (edge.isDirectlyFocused && edge.target === selectedId)) {
+            stroke = '#f59e0b'; // Amber for upstream blockers
+            strokeBg = 'rgba(245, 158, 11, 0.35)';
+            opacity = 1;
+          } else if (edge.isDownstreamOfFocus || (edge.isDirectlyFocused && edge.source === selectedId)) {
+            stroke = '#0ea5e9'; // Cyan for downstream impact
+            strokeBg = 'rgba(14, 165, 233, 0.35)';
+            opacity = 1;
+          }
+        }
+
+        // Transitive styling
+        if (isTransitive) {
+          dashArray = '4 4';
+          if (!selectedId || edge.isUnrelated) {
+            stroke = '#334155';
+            strokeBg = 'rgba(51, 65, 85, 0.3)';
+            opacity = 0.4;
+          } else {
+            opacity = 0.6; // Keep the focused color but make it dashed & slightly transparent
+          }
+        }
+      }
+
+      return {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        className: isFocusedPath ? 'workflow-edge-selected' : 'workflow-edge-muted',
+        animated: isAnimated,
+        label,
+        labelStyle: {
+          fill: isFocusedPath ? '#e2e8f0' : '#cbd5e1',
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: '0.08em',
+        },
+        labelBgPadding: [6, 3],
+        labelBgBorderRadius: 999,
+        labelBgStyle: {
+          fill: 'rgba(2, 6, 23, 0.92)',
+          stroke: strokeBg,
+          strokeWidth: 1,
+        },
+        style: {
+          stroke,
+          strokeWidth: isFocusedPath ? 2.8 : 2.1,
+          opacity,
+          strokeDasharray: dashArray,
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: stroke,
+          width: 14,
+          height: 14,
+        },
+      };
+    });
+
+    // --- Apply Offsets to Edge Data ---
+    const edgeGroups = new Map<string, Edge[]>();
+
+    for (const edge of graphEdges) {
+      const key = [edge.source, edge.target].sort().join('-');
+      if (!edgeGroups.has(key)) edgeGroups.set(key, []);
+      edgeGroups.get(key)!.push(edge);
+    }
+
+    for (const [unused_, groupEdges] of edgeGroups) {
+      if (groupEdges.length <= 1) continue;
+      // In Vertical layout, we might want X offset, in Horizontal Y offset.
+      // OffsetEdge component already handles adjusting the correct axis based on sourcePosition.
+      const step = 8;
+      const totalSpread = (groupEdges.length - 1) * step;
+      let currentOffset = -(totalSpread / 2);
+      for (const edge of groupEdges) {
+        edge.data = { ...edge.data, offset: currentOffset };
+        currentOffset += step;
       }
     }
 
@@ -208,7 +291,7 @@ function WorkflowGraphInner({
       nodes: layoutDagre(baseNodes, graphEdges, layoutDirection, layoutDensity),
       edges: graphEdges,
     };
-  }, [beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap, archetypes, assignMode, onSelect, onViewInSocial, onAssignMode, onViewTelemetry, layoutDirection, layoutDensity]);
+  }, [transitiveEdges, beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap, archetypes, assignMode, onSelect, onViewInSocial, onAssignMode, onViewTelemetry, layoutDirection, layoutDensity, showHierarchy]);
 
   const nodeTypes: NodeTypes = useMemo(
     () => ({
@@ -217,9 +300,16 @@ function WorkflowGraphInner({
     [],
   );
 
+  const edgeTypes = useMemo(
+    () => ({
+      offset: OffsetEdge,
+    }),
+    []
+  );
+
   const defaultEdgeOptions = useMemo(
     () => ({
-      type: 'smoothstep' as const,
+      type: 'offset' as const,
       zIndex: 40,
       interactionWidth: 24,
     }),
@@ -271,23 +361,32 @@ function WorkflowGraphInner({
         <div className="inline-flex items-center gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-tertiary)] p-1">
           <button
             type="button"
+            onClick={() => setShowHierarchy((current) => !current)}
+            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${showHierarchy
+              ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            title="Show parent/subtask links"
+          >
+            Hierarchy
+          </button>
+          <button
+            type="button"
             onClick={() => setLayoutDirection('LR')}
-            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
-              layoutDirection === 'LR'
-                ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
+            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${layoutDirection === 'LR'
+              ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
           >
             Horizontal
           </button>
           <button
             type="button"
             onClick={() => setLayoutDirection('TB')}
-            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
-              layoutDirection === 'TB'
-                ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
+            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${layoutDirection === 'TB'
+              ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
           >
             Vertical
           </button>
@@ -296,22 +395,20 @@ function WorkflowGraphInner({
           <button
             type="button"
             onClick={() => setLayoutDensity('compact')}
-            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
-              layoutDensity === 'compact'
-                ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
+            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${layoutDensity === 'compact'
+              ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
           >
             Compact
           </button>
           <button
             type="button"
             onClick={() => setLayoutDensity('normal')}
-            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
-              layoutDensity === 'normal'
-                ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
+            className={`rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${layoutDensity === 'normal'
+              ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }`}
           >
             Normal
           </button>
@@ -339,6 +436,7 @@ function WorkflowGraphInner({
         nodes={flowModel.nodes}
         edges={flowModel.edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable
@@ -348,7 +446,7 @@ function WorkflowGraphInner({
         <Background gap={32} size={1} color="rgba(255,255,255,0.03)" />
       </ReactFlow>
     </div>
-    );
+  );
 }
 
 export function WorkflowGraph(props: WorkflowGraphProps) {

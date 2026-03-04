@@ -1,4 +1,4 @@
 interface:
   display_name: "Beadboard Driver"
-  short_description: "Safe bd+bb agent workflow orchestration"
-  default_prompt: "Use Beadboard Driver to resolve bb path, register a unique session agent, coordinate via bb agent commands, and produce verification-backed closeout notes."
+  short_description: "BeadBoard control-plane workflow for agents in external repos"
+  default_prompt: "Use BeadBoard Driver v4 to run evidence-backed bd workflow in the target repo while the user orchestrates via BeadBoard UI; do not mutate project scope, use coordination events/inbox acks, and publish verification-backed closeout notes."

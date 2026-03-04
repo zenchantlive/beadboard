@@ -1,0 +1,25 @@
+{
+  "version": "installer.v1",
+  "distribution": {
+    "packageName": "beadboard",
+    "shimNames": ["bb", "beadboard"]
+  },
+  "wrappers": {
+    "windows": {
+      "script": "install.ps1"
+    },
+    "posix": {
+      "script": "install.sh"
+    }
+  },
+  "runtime": {
+    "start": "beadboard start",
+    "open": "beadboard open",
+    "status": "beadboard status"
+  },
+  "driver": {
+    "remediationMode": "detect_only",
+    "installSideEffects": false
+  }
+}
+

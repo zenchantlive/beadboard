@@ -38,3 +38,10 @@
 - Do not write `.beads/issues.jsonl` directly.
 - Do not close beads without verification evidence.
 - Do not bypass `BB_REPO` when it is set but invalid; fix it explicitly.
+
+## Local Environment Repair Signals
+
+- `GIT_INDEX_LOCK_PRESENT`: stale git lock can block local operations.
+  - Recovery:
+    - confirm no active git process is using the repository,
+    - run `node skills/beadboard-driver/scripts/heal-common-issues.mjs --project-root <repo> --apply --fix-git-index-lock`.

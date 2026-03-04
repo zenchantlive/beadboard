@@ -41,6 +41,32 @@ interface EpicEntry {
   latestTimestamp: string;
 }
 
+export function shouldHideEpicEntry(params: {
+  epicStatus: BeadIssue['status'];
+  matchedChildrenCount: number;
+  totalChildrenCount: number;
+  isSelected: boolean;
+  filters: LeftPanelFilters;
+}): boolean {
+  const { epicStatus, matchedChildrenCount, totalChildrenCount, isSelected, filters } = params;
+  const hasTaskFilters =
+    filters.query.trim().length > 0 ||
+    filters.status !== 'all' ||
+    filters.priority !== 'all' ||
+    filters.preset !== 'all';
+  const epicClosed = epicStatus === 'closed' || epicStatus === 'tombstone';
+  const noVisibleChildren = matchedChildrenCount === 0 && totalChildrenCount > 0;
+  const hiddenByTaskFilters = hasTaskFilters && noVisibleChildren;
+  const hiddenByHideClosed = filters.hideClosed && noVisibleChildren;
+  const hiddenByEpicClosed = filters.hideClosed && epicClosed;
+
+  if (hiddenByEpicClosed) {
+    return true;
+  }
+
+  return !isSelected && (hiddenByTaskFilters || hiddenByHideClosed);
+}
+
 function mapStatus(task: BeadIssue): LeftPanelStatusFilter {
   if (task.status === 'open') return 'ready';
   if (task.status === 'in_progress') return 'in_progress';
@@ -178,13 +204,6 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, onEpicEdit, fi
   const { view, setView } = useUrlState();
   const entries = useMemo(() => buildEntries(issues), [issues]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-
-  const hasActiveFilters =
-    filters.query.trim().length > 0 ||
-    filters.status !== 'all' ||
-    filters.priority !== 'all' ||
-    filters.preset !== 'all' ||
-    filters.hideClosed;
 
   const views: Array<{ id: ViewType; label: string }> = [
     { id: 'social', label: 'Social' },
@@ -324,7 +343,13 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, onEpicEdit, fi
           const laneColor = blockedCount > 0 ? 'var(--accent-danger)' : activeCount > 0 ? 'var(--accent-warning)' : 'var(--accent-success)';
           const rowBackground = rowTone(entry);
 
-          if (matchedChildren.length === 0 && hasActiveFilters && !isSelected) {
+          if (shouldHideEpicEntry({
+            epicStatus: epic.status,
+            matchedChildrenCount: matchedChildren.length,
+            totalChildrenCount: total,
+            isSelected,
+            filters,
+          })) {
             return null;
           }
 

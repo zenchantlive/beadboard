@@ -36,3 +36,6 @@
 - `node skills/beadboard-driver/scripts/session-preflight.mjs`
 - `node skills/beadboard-driver/scripts/generate-agent-name.mjs`
 - `node skills/beadboard-driver/scripts/readiness-report.mjs --checks <json> --artifacts <json>`
+- `node skills/beadboard-driver/scripts/diagnose-env.mjs`
+- `node skills/beadboard-driver/scripts/heal-common-issues.mjs [--project-root <path>] [--apply] [--fix-git-index-lock]`
+- `node skills/beadboard-driver/scripts/ensure-project-context.mjs [--project-root <path>]`

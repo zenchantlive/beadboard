@@ -66,6 +66,10 @@ export function useBeadsSubscription(
   }, [projectRoot, onUpdate]);
 
   useEffect(() => {
+    void refresh({ silent: true });
+  }, [refresh]);
+
+  useEffect(() => {
     const source = new EventSource(`/api/events?projectRoot=${encodeURIComponent(projectRoot)}`);
 
     source.onopen = () => {
