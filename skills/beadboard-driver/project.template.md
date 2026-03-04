@@ -1,6 +1,7 @@
 # Project Driver Template
 
-Use this file to define project-specific operating notes for agents using the BeadBoard Driver skill.
+Use this template to create `project.md` at the target repository root.
+The first agent in a repo should create this file; later agents must read and update it before work.
 
 ## Project Identity
 
@@ -9,17 +10,39 @@ Use this file to define project-specific operating notes for agents using the Be
 - Primary language/runtime:
 - Primary package manager:
 
-## BeadBoard Relationship
+## Tooling Baseline (Global Installs)
 
-- BeadBoard host/UI location:
-- Project registration identifier (if used):
-- Notes about how this project appears in BeadBoard UI:
+Record what is already installed on this machine so later agents do not re-check unnecessarily.
 
-## Scope and Authority
+- `bd` installed and on PATH: yes/no
+- `bb` or `beadboard` installed and on PATH: yes/no
+- Detection commands used (with date):
+- Notes on shell/platform quirks (WSL/Windows/macOS/Linux):
 
-- User controls project scope selection in BeadBoard UI.
-- Agents do not change scope.
-- Agent execution context in this repo:
+## BeadBoard/Communication Setup
+
+- Mail delegate command configured:
+  - `bd config set mail.delegate "node <abs-path>/skills/beadboard-driver/scripts/bb-mail-shim.mjs"`
+- Agent identity env var policy:
+  - Preferred: `BB_AGENT=<agent-id>`
+  - Fallback: `BD_ACTOR=<agent-id>`
+- Delegate validation status:
+  - `node skills/beadboard-driver/scripts/ensure-bb-mail-configured.mjs` pass/fail
+- Session preflight status:
+  - `node skills/beadboard-driver/scripts/session-preflight.mjs` pass/fail
+
+## Agent State + Heartbeat Policy
+
+- Agent bead naming convention for this repo:
+- Required state transitions (spawning -> running -> working -> stuck/done/stopped):
+- Heartbeat cadence during active work (recommended 30-120s):
+- Stuck escalation timeout before user ping:
+
+## Swarm / Formula Defaults
+
+- Primary epic/swarm pattern used by this repo:
+- Formula/proto id(s) commonly used (if any):
+- Preferred swarm command flow (`bd swarm validate/create/status` etc.):
 
 ## Command Baseline
 
@@ -36,12 +59,19 @@ Use this file to define project-specific operating notes for agents using the Be
 - Known slow gates and timeout guidance:
 - Evidence format expected in bead notes:
 
-## Environment Constraints
+## Scope and Safety
 
-- OS/platform expectations:
-- Required environment variables:
-- Secrets handling guidance:
-- Known path/shell quirks:
+- Forbidden commands/actions for this repo:
+- Paths requiring reservation before edits:
+- External systems requiring human approval:
+- Secret handling guidance:
+
+## Coordination Defaults
+
+- Default handoff style:
+- Blocker escalation policy:
+- ACK expectations for `HANDOFF`/`BLOCKED`:
+- Reservation conflict policy (`--takeover-stale` rules):
 
 ## Known Workarounds
 
@@ -59,19 +89,6 @@ Document only stable, repeatable workarounds.
    - Verification:
    - Owner:
 
-## Coordination Defaults
-
-- Default role/archetype mapping used by this project:
-- Default handoff style:
-- Blocker escalation policy:
-- Ack expectations for blocker/handoff messages:
-
-## Safety Guardrails
-
-- Forbidden commands/actions for this repo:
-- Files/paths requiring explicit reservation before edit:
-- External systems that require human approval:
-
 ## Session Closeout Checklist
 
 - [ ] Bead status/assignee updated
@@ -79,7 +96,8 @@ Document only stable, repeatable workarounds.
 - [ ] Artifacts attached/linked
 - [ ] Memory review performed
 - [ ] Follow-up beads created (if needed)
+- [ ] `project.md` updated with any new environment facts
 
 ## Change Log
 
-- YYYY-MM-DD: Initial project template completed.
+- YYYY-MM-DD: Initial `project.md` created from template.
