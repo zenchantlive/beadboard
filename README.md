@@ -124,13 +124,8 @@ Runtime home:
 
 Launcher commands:
 - `beadboard start`
-- `beadboard start --dolt` (runs `bd dolt start` in the current project folder, then starts BeadBoard)
 - `beadboard open`
 - `beadboard status`
-
-Startup note:
-- In project repositories, run `bd dolt start` from the project directory (the folder with `.beads`).
-- If you want one command for both steps, use `beadboard start --dolt`.
 
 ---
 

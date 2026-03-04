@@ -4,8 +4,6 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import http from 'node:http';
-import fs from 'node:fs';
-import os from 'node:os';
 
 const execFileAsync = promisify(execFile);
 const launcherPath = path.resolve('install/beadboard.mjs');
@@ -62,44 +60,4 @@ test('beadboard launcher open --json supports noop mode', async () => {
   assert.equal(payload.ok, true);
   assert.equal(payload.command, 'open');
   assert.match(payload.url, /3456/);
-});
-
-test('beadboard launcher start text includes dolt guidance', async () => {
-  const { stdout } = await execFileAsync(process.execPath, [launcherPath, 'start'], {
-    env: { ...process.env, BB_START_NOOP: '1' },
-  });
-  assert.match(stdout, /Starting BeadBoard dev server/i);
-  assert.match(stdout, /bd dolt start/i);
-  assert.match(stdout, /beadboard start --dolt/i);
-});
-
-test('beadboard launcher start --dolt runs bd dolt start in cwd', async () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'beadboard-start-dolt-'));
-  const binDir = path.join(tmpDir, 'bin');
-  fs.mkdirSync(binDir, { recursive: true });
-  const logPath = path.join(tmpDir, 'bd.log');
-  const fakeBdPath = path.join(binDir, 'bd');
-  fs.writeFileSync(
-    fakeBdPath,
-    '#!/usr/bin/env bash\nprintf "%s|%s\\n" "$PWD" "$*" > "$BB_FAKE_BD_LOG"\n',
-    'utf8',
-  );
-  fs.chmodSync(fakeBdPath, 0o755);
-
-  const { stdout } = await execFileAsync(process.execPath, [launcherPath, 'start', '--dolt', '--json'], {
-    cwd: tmpDir,
-    env: {
-      ...process.env,
-      BB_START_NOOP: '1',
-      BB_FAKE_BD_LOG: logPath,
-      PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
-    },
-  });
-
-  const payload = JSON.parse(stdout);
-  assert.equal(payload.ok, true);
-  assert.equal(payload.command, 'start');
-  assert.equal(payload.doltRequested, true);
-  const bdInvocation = fs.readFileSync(logPath, 'utf8').trim();
-  assert.equal(bdInvocation, `${tmpDir}|dolt start`);
 });
