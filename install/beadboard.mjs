@@ -45,21 +45,11 @@ function output(payload, asJson) {
     return;
   }
   if (payload.command === 'status') {
-    const statusLines = [
-      'BeadBoard status',
-      `Running: ${payload.running ? 'yes' : 'no'}`,
-      `URL: ${payload.url}`,
-      `Port: ${payload.port}`,
-      `Install Mode: ${payload.installMode}`,
-      `Runtime Root: ${payload.runtimeRoot}`,
-      `Shim Target: ${payload.shimTarget}`,
-      `bd Available: ${payload.bd?.available ? 'yes' : 'no'}`,
-      `bd Path: ${payload.bd?.path || '(not found)'}`,
-      `Project CWD: ${payload.bd?.project?.cwd || process.cwd()}`,
-      `.beads Dir: ${payload.bd?.project?.hasBeadsDir ? 'yes' : 'no'}`,
-      `.beads DB: ${payload.bd?.project?.hasBeadsDb ? 'yes' : 'no'}`,
-    ];
-    process.stdout.write(`${statusLines.join('\n')}\n`);
+    process.stdout.write(
+      payload.running
+        ? `BeadBoard is running at ${payload.url}\n`
+        : `BeadBoard is not running at ${payload.url}\n`,
+    );
     return;
   }
   if (payload.command === 'open') {
