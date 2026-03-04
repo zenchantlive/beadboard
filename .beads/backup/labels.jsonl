@@ -372,6 +372,14 @@
 {"issue_id":"bb-maf8-recipient-1772602543590-2e77","label":"role:graph"}
 {"issue_id":"bb-maf8-recipient-1772602590511-8617","label":"gt:agent"}
 {"issue_id":"bb-maf8-recipient-1772602590511-8617","label":"role:graph"}
+{"issue_id":"bb-maf8-recipient-1772603344712-1862","label":"gt:agent"}
+{"issue_id":"bb-maf8-recipient-1772603344712-1862","label":"role:graph"}
+{"issue_id":"bb-maf8-recipient-1772603406999-2bf7","label":"gt:agent"}
+{"issue_id":"bb-maf8-recipient-1772603406999-2bf7","label":"role:graph"}
+{"issue_id":"bb-maf8-recipient-1772603447464-07c5","label":"gt:agent"}
+{"issue_id":"bb-maf8-recipient-1772603447464-07c5","label":"role:graph"}
+{"issue_id":"bb-maf8-recipient-1772604126900-0df6","label":"gt:agent"}
+{"issue_id":"bb-maf8-recipient-1772604126900-0df6","label":"role:graph"}
 {"issue_id":"bb-maf8-sender-1772594142586-920f","label":"gt:agent"}
 {"issue_id":"bb-maf8-sender-1772594142586-920f","label":"role:ui"}
 {"issue_id":"bb-maf8-sender-1772594167363-e2c2","label":"gt:agent"}
@@ -392,6 +400,14 @@
 {"issue_id":"bb-maf8-sender-1772602543590-06fb","label":"role:ui"}
 {"issue_id":"bb-maf8-sender-1772602590511-758a","label":"gt:agent"}
 {"issue_id":"bb-maf8-sender-1772602590511-758a","label":"role:ui"}
+{"issue_id":"bb-maf8-sender-1772603344712-93c7","label":"gt:agent"}
+{"issue_id":"bb-maf8-sender-1772603344712-93c7","label":"role:ui"}
+{"issue_id":"bb-maf8-sender-1772603406999-8469","label":"gt:agent"}
+{"issue_id":"bb-maf8-sender-1772603406999-8469","label":"role:ui"}
+{"issue_id":"bb-maf8-sender-1772603447464-a701","label":"gt:agent"}
+{"issue_id":"bb-maf8-sender-1772603447464-a701","label":"role:ui"}
+{"issue_id":"bb-maf8-sender-1772604126900-011d","label":"gt:agent"}
+{"issue_id":"bb-maf8-sender-1772604126900-011d","label":"role:ui"}
 {"issue_id":"bb-n7p","label":"kanban"}
 {"issue_id":"bb-n7p","label":"status"}
 {"issue_id":"bb-n7p","label":"swimlane"}
@@ -725,10 +741,14 @@
 {"issue_id":"beadboard-fld","label":"memory"}
 {"issue_id":"beadboard-fld","label":"memory-anchor"}
 {"issue_id":"beadboard-fld","label":"memory-ux"}
+{"issue_id":"beadboard-hp4","label":"documentation"}
+{"issue_id":"beadboard-hp4","label":"skills"}
 {"issue_id":"beadboard-i0q","label":"documentation"}
 {"issue_id":"beadboard-i0q","label":"skills"}
 {"issue_id":"beadboard-i4c","label":"memory"}
 {"issue_id":"beadboard-i4c","label":"memory-provenance"}
+{"issue_id":"beadboard-i9z","label":"documentation"}
+{"issue_id":"beadboard-i9z","label":"skills"}
 {"issue_id":"beadboard-ij8","label":"docs"}
 {"issue_id":"beadboard-ij8","label":"memory"}
 {"issue_id":"beadboard-ilu","label":"skills documentation"}
