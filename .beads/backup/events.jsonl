@@ -885,3 +885,88 @@
 {"actor":"ZenchantLive","comment":"Added label: bb","created_at":"2026-03-03T17:29:11Z","event_type":"label_added","id":890,"issue_id":"beadboard-izs","new_value":null,"old_value":null}
 {"actor":"ZenchantLive","comment":"Added label: mail","created_at":"2026-03-03T17:29:11Z","event_type":"label_added","id":891,"issue_id":"beadboard-izs","new_value":null,"old_value":null}
 {"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:29:11Z","event_type":"label_added","id":892,"issue_id":"beadboard-izs","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:33:01Z","event_type":"created","id":911,"issue_id":"beadboard-izs.1","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:33:01Z","event_type":"label_added","id":912,"issue_id":"beadboard-izs.1","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: bb","created_at":"2026-03-03T17:33:01Z","event_type":"label_added","id":913,"issue_id":"beadboard-izs.1","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: design","created_at":"2026-03-03T17:33:01Z","event_type":"label_added","id":914,"issue_id":"beadboard-izs.1","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: mail","created_at":"2026-03-03T17:33:01Z","event_type":"label_added","id":915,"issue_id":"beadboard-izs.1","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:33:18Z","event_type":"created","id":916,"issue_id":"beadboard-izs.2","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:33:18Z","event_type":"label_added","id":917,"issue_id":"beadboard-izs.2","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: bb","created_at":"2026-03-03T17:33:18Z","event_type":"label_added","id":918,"issue_id":"beadboard-izs.2","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: implementation","created_at":"2026-03-03T17:33:18Z","event_type":"label_added","id":919,"issue_id":"beadboard-izs.2","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: mail","created_at":"2026-03-03T17:33:18Z","event_type":"label_added","id":920,"issue_id":"beadboard-izs.2","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:33:18Z","event_type":"created","id":921,"issue_id":"beadboard-izs.3","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:33:18Z","event_type":"label_added","id":922,"issue_id":"beadboard-izs.3","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: bb","created_at":"2026-03-03T17:33:18Z","event_type":"label_added","id":923,"issue_id":"beadboard-izs.3","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: implementation","created_at":"2026-03-03T17:33:18Z","event_type":"label_added","id":924,"issue_id":"beadboard-izs.3","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: mail","created_at":"2026-03-03T17:33:18Z","event_type":"label_added","id":925,"issue_id":"beadboard-izs.3","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:33:38Z","event_type":"created","id":926,"issue_id":"beadboard-izs.4","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:33:38Z","event_type":"label_added","id":927,"issue_id":"beadboard-izs.4","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: bb","created_at":"2026-03-03T17:33:38Z","event_type":"label_added","id":928,"issue_id":"beadboard-izs.4","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: implementation","created_at":"2026-03-03T17:33:38Z","event_type":"label_added","id":929,"issue_id":"beadboard-izs.4","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: mail","created_at":"2026-03-03T17:33:38Z","event_type":"label_added","id":930,"issue_id":"beadboard-izs.4","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:33:39Z","event_type":"created","id":931,"issue_id":"beadboard-izs.5","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:33:39Z","event_type":"label_added","id":932,"issue_id":"beadboard-izs.5","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: bb","created_at":"2026-03-03T17:33:39Z","event_type":"label_added","id":933,"issue_id":"beadboard-izs.5","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: mail","created_at":"2026-03-03T17:33:39Z","event_type":"label_added","id":934,"issue_id":"beadboard-izs.5","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: scripts","created_at":"2026-03-03T17:33:39Z","event_type":"label_added","id":935,"issue_id":"beadboard-izs.5","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:33:57Z","event_type":"created","id":936,"issue_id":"beadboard-izs.6","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:33:57Z","event_type":"label_added","id":937,"issue_id":"beadboard-izs.6","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: bb","created_at":"2026-03-03T17:33:57Z","event_type":"label_added","id":938,"issue_id":"beadboard-izs.6","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: mail","created_at":"2026-03-03T17:33:57Z","event_type":"label_added","id":939,"issue_id":"beadboard-izs.6","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: tests","created_at":"2026-03-03T17:33:57Z","event_type":"label_added","id":940,"issue_id":"beadboard-izs.6","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:33:57Z","event_type":"created","id":941,"issue_id":"beadboard-izs.7","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:33:57Z","event_type":"label_added","id":942,"issue_id":"beadboard-izs.7","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: bb","created_at":"2026-03-03T17:33:57Z","event_type":"label_added","id":943,"issue_id":"beadboard-izs.7","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: documentation","created_at":"2026-03-03T17:33:57Z","event_type":"label_added","id":944,"issue_id":"beadboard-izs.7","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: mail","created_at":"2026-03-03T17:33:57Z","event_type":"label_added","id":945,"issue_id":"beadboard-izs.7","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:34:21Z","event_type":"created","id":946,"issue_id":"beadboard-maf","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:34:21Z","event_type":"label_added","id":947,"issue_id":"beadboard-maf","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: documentation","created_at":"2026-03-03T17:34:21Z","event_type":"label_added","id":948,"issue_id":"beadboard-maf","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:34:21Z","event_type":"label_added","id":949,"issue_id":"beadboard-maf","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:34:53Z","event_type":"created","id":950,"issue_id":"beadboard-maf.1","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:34:53Z","event_type":"label_added","id":951,"issue_id":"beadboard-maf.1","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: documentation","created_at":"2026-03-03T17:34:53Z","event_type":"label_added","id":952,"issue_id":"beadboard-maf.1","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:34:53Z","event_type":"label_added","id":953,"issue_id":"beadboard-maf.1","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:34:53Z","event_type":"created","id":954,"issue_id":"beadboard-maf.2","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:34:53Z","event_type":"label_added","id":955,"issue_id":"beadboard-maf.2","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: documentation","created_at":"2026-03-03T17:34:53Z","event_type":"label_added","id":956,"issue_id":"beadboard-maf.2","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: memory","created_at":"2026-03-03T17:34:53Z","event_type":"label_added","id":957,"issue_id":"beadboard-maf.2","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:34:53Z","event_type":"label_added","id":958,"issue_id":"beadboard-maf.2","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:36:29Z","event_type":"created","id":959,"issue_id":"beadboard-maf.3","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:36:29Z","event_type":"label_added","id":960,"issue_id":"beadboard-maf.3","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: documentation","created_at":"2026-03-03T17:36:29Z","event_type":"label_added","id":961,"issue_id":"beadboard-maf.3","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:36:29Z","event_type":"label_added","id":962,"issue_id":"beadboard-maf.3","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: swarms","created_at":"2026-03-03T17:36:29Z","event_type":"label_added","id":963,"issue_id":"beadboard-maf.3","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:36:29Z","event_type":"created","id":964,"issue_id":"beadboard-maf.4","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:36:29Z","event_type":"label_added","id":965,"issue_id":"beadboard-maf.4","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: documentation","created_at":"2026-03-03T17:36:29Z","event_type":"label_added","id":966,"issue_id":"beadboard-maf.4","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: lifecycle","created_at":"2026-03-03T17:36:29Z","event_type":"label_added","id":967,"issue_id":"beadboard-maf.4","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:36:29Z","event_type":"label_added","id":968,"issue_id":"beadboard-maf.4","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:36:51Z","event_type":"created","id":969,"issue_id":"beadboard-maf.5","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:36:51Z","event_type":"label_added","id":970,"issue_id":"beadboard-maf.5","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: bug","created_at":"2026-03-03T17:36:51Z","event_type":"label_added","id":971,"issue_id":"beadboard-maf.5","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: scripts","created_at":"2026-03-03T17:36:51Z","event_type":"label_added","id":972,"issue_id":"beadboard-maf.5","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:36:51Z","event_type":"label_added","id":973,"issue_id":"beadboard-maf.5","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:36:51Z","event_type":"created","id":974,"issue_id":"beadboard-maf.6","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:36:51Z","event_type":"label_added","id":975,"issue_id":"beadboard-maf.6","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: documentation","created_at":"2026-03-03T17:36:51Z","event_type":"label_added","id":976,"issue_id":"beadboard-maf.6","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: mail","created_at":"2026-03-03T17:36:51Z","event_type":"label_added","id":977,"issue_id":"beadboard-maf.6","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:36:51Z","event_type":"label_added","id":978,"issue_id":"beadboard-maf.6","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:37:08Z","event_type":"created","id":979,"issue_id":"beadboard-maf.7","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:37:08Z","event_type":"label_added","id":980,"issue_id":"beadboard-maf.7","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: documentation","created_at":"2026-03-03T17:37:08Z","event_type":"label_added","id":981,"issue_id":"beadboard-maf.7","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:37:08Z","event_type":"label_added","id":982,"issue_id":"beadboard-maf.7","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:37:08Z","event_type":"created","id":983,"issue_id":"beadboard-maf.8","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:37:08Z","event_type":"label_added","id":984,"issue_id":"beadboard-maf.8","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:37:08Z","event_type":"label_added","id":985,"issue_id":"beadboard-maf.8","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: tests","created_at":"2026-03-03T17:37:08Z","event_type":"label_added","id":986,"issue_id":"beadboard-maf.8","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:37:55Z","event_type":"created","id":987,"issue_id":"beadboard-maf.9","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:37:55Z","event_type":"label_added","id":988,"issue_id":"beadboard-maf.9","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: documentation","created_at":"2026-03-03T17:37:55Z","event_type":"label_added","id":989,"issue_id":"beadboard-maf.9","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:37:55Z","event_type":"label_added","id":990,"issue_id":"beadboard-maf.9","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":null,"created_at":"2026-03-03T17:37:55Z","event_type":"created","id":991,"issue_id":"beadboard-maf.10","new_value":"","old_value":""}
+{"actor":"ZenchantLive","comment":"Added label: agents","created_at":"2026-03-03T17:37:55Z","event_type":"label_added","id":992,"issue_id":"beadboard-maf.10","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: documentation","created_at":"2026-03-03T17:37:55Z","event_type":"label_added","id":993,"issue_id":"beadboard-maf.10","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skill-md","created_at":"2026-03-03T17:37:55Z","event_type":"label_added","id":994,"issue_id":"beadboard-maf.10","new_value":null,"old_value":null}
+{"actor":"ZenchantLive","comment":"Added label: skills","created_at":"2026-03-03T17:37:55Z","event_type":"label_added","id":995,"issue_id":"beadboard-maf.10","new_value":null,"old_value":null}
