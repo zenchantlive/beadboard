@@ -55,12 +55,6 @@ test('resolve-bb fails with remediation when BB_REPO is invalid', async () => {
     assert.equal(result.source, 'env');
     assert.match(result.reason, /BB_REPO/i);
     assert.match(result.remediation, /Set BB_REPO/i);
-    assert.match(result.remediation, /npm i -g beadboard/i);
-    if (process.platform === 'win32') {
-      assert.match(result.remediation, /install\.ps1/i);
-    } else {
-      assert.match(result.remediation, /install\.sh/i);
-    }
   });
 });
 

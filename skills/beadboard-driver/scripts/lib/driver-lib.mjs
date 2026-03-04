@@ -77,13 +77,6 @@ async function validateRepoPath(repoPath) {
   return { ok: true, bbPath };
 }
 
-function installerRemediation() {
-  if (process.platform === 'win32') {
-    return 'Primary: npm i -g beadboard. Fallback: powershell -ExecutionPolicy Bypass -File .\\install\\install.ps1';
-  }
-  return 'Primary: npm i -g beadboard. Fallback: bash ./install/install.sh';
-}
-
 async function discoverBbPath() {
   const configuredRoots = splitPathVariable(process.env.BB_SEARCH_ROOTS || '');
   const roots = configuredRoots.length > 0 ? configuredRoots : [process.cwd(), path.join(homeRoot(), 'codex'), homeRoot()];
@@ -133,7 +126,7 @@ async function resolveBbPath() {
         source: 'env',
         resolved_path: null,
         reason: validated.reason,
-        remediation: `Set BB_REPO to your BeadBoard repo root, e.g. \`$env:BB_REPO="C:\\path\\to\\beadboard"\`. ${installerRemediation()}`,
+        remediation: 'Set BB_REPO to your BeadBoard repo root, e.g. `$env:BB_REPO="C:\\path\\to\\beadboard"`.',
       };
     }
 
@@ -184,7 +177,8 @@ async function resolveBbPath() {
     source: 'none',
     resolved_path: null,
     reason: 'Unable to find bb command or bb.ps1.',
-    remediation: `Set BB_REPO to your BeadBoard repo root, or install a global bb command, then retry. ${installerRemediation()}`,
+    remediation:
+      'Set BB_REPO to your BeadBoard repo root, or install a global bb command, then retry.',
   };
 }
 

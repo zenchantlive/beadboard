@@ -12,10 +12,7 @@ async function main() {
             ok: false,
             error_code: 'BD_NOT_FOUND',
             reason: 'Could not find bd in PATH.',
-            remediation:
-              process.platform === 'win32'
-                ? 'Primary: npm i -g beadboard. Fallback: powershell -ExecutionPolicy Bypass -File .\\install\\install.ps1. Then ensure bd is available in PATH.'
-                : 'Primary: npm i -g beadboard. Fallback: bash ./install/install.sh. Then ensure bd is available in PATH.',
+            remediation: 'Install beads CLI or add bd executable to PATH.',
             tools: {
               bd: { available: false, path: null },
             },
