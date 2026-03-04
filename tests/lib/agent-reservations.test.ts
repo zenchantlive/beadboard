@@ -176,3 +176,38 @@ test('stale reservation conflict and takeover behavior', async () => {
     assert.equal(wrongRelease.error?.code, 'RELEASE_FORBIDDEN');
   });
 });
+
+test('active reservation blocks takeover by another active agent', async () => {
+  await withTempUserProfile(async () => {
+    await seedAgents();
+
+    const initial = await reserveAgentScope(
+      {
+        agent: 'agent-ui-1',
+        scope: 'src/components/social/*',
+        bead: 'bb-dcv.4',
+        ttl: 120,
+      },
+      {
+        now: () => '2026-02-14T00:00:00.000Z',
+        idGenerator: () => 'res_active_block',
+      },
+    );
+    assert.equal(initial.ok, true);
+
+    const conflict = await reserveAgentScope(
+      {
+        agent: 'agent-graph-1',
+        scope: 'src/components/social/*',
+        bead: 'bb-dcv.4',
+        ttl: 120,
+      },
+      {
+        now: () => '2026-02-14T00:01:00.000Z',
+        idGenerator: () => 'res_active_block_2',
+      },
+    );
+    assert.equal(conflict.ok, false);
+    assert.equal(conflict.error?.code, 'RESERVATION_CONFLICT');
+  });
+});

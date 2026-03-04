@@ -65,3 +65,13 @@ test('GET /api/agents/reservations returns AGENT_NOT_FOUND for unknown agent', a
   assert.equal(data.ok, false);
   assert.equal(data.error?.code, 'AGENT_NOT_FOUND');
 });
+
+test('GET /api/agents/reservations without agent returns success payload', async () => {
+  const response = await getReservations(
+    new Request('http://localhost/api/agents/reservations'),
+  );
+  const data = await readJson(response);
+  assert.equal(response.status, 200);
+  assert.equal(data.ok, true);
+  assert.equal(data.command, 'agent status');
+});
