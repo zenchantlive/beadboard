@@ -363,6 +363,10 @@
 {"issue_id":"bb-q1s.4","label":"ux"}
 {"issue_id":"bb-q1s.4","label":"verification"}
 {"issue_id":"bb-review-cleanup","label":"code-quality"}
+{"issue_id":"bb-silver-scribe","label":"gt:agent"}
+{"issue_id":"bb-silver-scribe","label":"role:implementer"}
+{"issue_id":"bb-test-coord-izs2","label":"gt:agent"}
+{"issue_id":"bb-test-coord-izs2","label":"role:test"}
 {"issue_id":"bb-tpc","label":"realtime"}
 {"issue_id":"bb-tpc","label":"sse"}
 {"issue_id":"bb-tpc","label":"watcher"}
