@@ -125,6 +125,10 @@
 {"issue_id":"bb-92d.5","label":"windows"}
 {"issue_id":"bb-92d.6","label":"guardrail"}
 {"issue_id":"bb-92d.6","label":"safety"}
+{"issue_id":"bb-agent-graph-1","label":"gt:agent"}
+{"issue_id":"bb-agent-graph-1","label":"role:graph"}
+{"issue_id":"bb-agent-ui-1","label":"gt:agent"}
+{"issue_id":"bb-agent-ui-1","label":"role:ui"}
 {"issue_id":"bb-atl","label":"smoke"}
 {"issue_id":"bb-atl","label":"writeback"}
 {"issue_id":"bb-b4j","label":"design-system"}
