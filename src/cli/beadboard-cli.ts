@@ -81,7 +81,7 @@ function renderHelpText(): string {
     '  beadboard <command> [options]',
     '',
     'Runtime Commands:',
-    '  beadboard start              Start BeadBoard runtime',
+    '  beadboard start [--dolt]     Start BeadBoard runtime (optionally start Dolt first)',
     '  beadboard open               Open BeadBoard in browser',
     '  beadboard status [--json]    Show runtime + bd diagnostics',
     '',

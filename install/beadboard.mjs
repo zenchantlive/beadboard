@@ -4,7 +4,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,9 +29,13 @@ function parseArgs(argv) {
   const jsonIndex = args.indexOf('--json');
   const json = jsonIndex !== -1;
   if (json) args.splice(jsonIndex, 1);
+  const doltIndex = args.indexOf('--dolt');
+  const dolt = doltIndex !== -1;
+  if (dolt) args.splice(doltIndex, 1);
   return {
     command: args[0] || 'help',
     json,
+    dolt,
   };
 }
 
@@ -57,7 +61,9 @@ function output(payload, asJson) {
       `bd Path: ${payload.bd?.path || '(not found)'}`,
       `Project CWD: ${payload.bd?.project?.cwd || process.cwd()}`,
       `.beads Dir: ${payload.bd?.project?.hasBeadsDir ? 'yes' : 'no'}`,
-      `.beads DB: ${payload.bd?.project?.hasBeadsDb ? 'yes' : 'no'}`,
+      `SQLite Legacy DB: ${payload.bd?.backend?.sqliteLegacyDb ? 'yes' : 'no'}`,
+      `SQLite Migrated DB: ${payload.bd?.backend?.sqliteMigratedDb ? 'yes' : 'no'}`,
+      `Dolt Repo: ${payload.bd?.backend?.doltRepo ? 'yes' : 'no'}`,
     ];
     process.stdout.write(`${statusLines.join('\n')}\n`);
     return;
@@ -67,10 +73,21 @@ function output(payload, asJson) {
     return;
   }
   if (payload.command === 'start') {
-    process.stdout.write('Starting BeadBoard dev server...\n');
+    const startLines = [
+      'Starting BeadBoard dev server...',
+      'Tip: In your project folder, run `bd dolt start` first.',
+      'Shortcut: `beadboard start --dolt` runs Dolt + BeadBoard startup together.',
+    ];
+    if (payload.doltRequested) {
+      startLines.push(`Dolt startup: ${payload.doltStarted ? 'started' : 'not started'}`);
+      if (payload.doltMessage) {
+        startLines.push(`Dolt detail: ${payload.doltMessage}`);
+      }
+    }
+    process.stdout.write(`${startLines.join('\n')}\n`);
     return;
   }
-  process.stdout.write('Usage: beadboard <start|open|status> [--json]\n');
+  process.stdout.write('Usage: beadboard <start|open|status> [--json] [--dolt]\n');
 }
 
 function getPort() {
@@ -103,6 +120,8 @@ function resolveBdPath() {
 function getBdDiagnostics() {
   const beadsDir = path.resolve(process.cwd(), '.beads');
   const dbPath = path.join(beadsDir, 'beads.db');
+  const migratedDbPath = path.join(beadsDir, 'beads.db.migrated');
+  const doltRepoPath = path.join(beadsDir, 'dolt');
   const bdPath = resolveBdPath();
   return {
     available: Boolean(bdPath),
@@ -111,6 +130,11 @@ function getBdDiagnostics() {
       cwd: process.cwd(),
       hasBeadsDir: fs.existsSync(beadsDir),
       hasBeadsDb: fs.existsSync(dbPath),
+    },
+    backend: {
+      sqliteLegacyDb: fs.existsSync(dbPath),
+      sqliteMigratedDb: fs.existsSync(migratedDbPath),
+      doltRepo: fs.existsSync(doltRepoPath),
     },
   };
 }
@@ -151,13 +175,55 @@ function openUrl(url) {
   spawn('xdg-open', [url], { stdio: 'ignore', detached: true }).unref();
 }
 
+function startDoltInProject(cwd) {
+  const bdPath = resolveBdPath();
+  if (!bdPath) {
+    return {
+      attempted: false,
+      started: false,
+      message: 'bd not found on PATH; run `bd dolt start` manually in your project folder.',
+    };
+  }
+
+  const dolt = spawnSync(bdPath, ['dolt', 'start'], {
+    cwd,
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+  });
+  const started = (dolt.status ?? 1) === 0;
+  return {
+    attempted: true,
+    started,
+    message: started
+      ? 'bd dolt start completed.'
+      : 'bd dolt start failed; continuing with BeadBoard startup.',
+  };
+}
+
 async function main() {
-  const { command, json } = parseArgs(process.argv.slice(2));
+  const { command, json, dolt } = parseArgs(process.argv.slice(2));
   const port = getPort();
   const url = `http://127.0.0.1:${port}`;
   const runtime = getRuntimeMetadata();
 
   if (command === 'start') {
+    const doltState = dolt
+      ? startDoltInProject(process.cwd())
+      : { attempted: false, started: false, message: null };
+    if (process.env.BB_START_NOOP === '1') {
+      output(
+        {
+          ok: true,
+          command: 'start',
+          doltRequested: dolt,
+          doltAttempted: doltState.attempted,
+          doltStarted: doltState.started,
+          doltMessage: doltState.message,
+        },
+        json,
+      );
+      return;
+    }
     const startRoot = fs.existsSync(runtime.runtimeRoot) ? runtime.runtimeRoot : repoRoot;
     const child = spawn('npm', ['run', 'dev'], {
       cwd: startRoot,
@@ -165,7 +231,17 @@ async function main() {
       shell: process.platform === 'win32',
     });
     child.on('exit', (code) => process.exit(code ?? 0));
-    output({ ok: true, command: 'start' }, json);
+    output(
+      {
+        ok: true,
+        command: 'start',
+        doltRequested: dolt,
+        doltAttempted: doltState.attempted,
+        doltStarted: doltState.started,
+        doltMessage: doltState.message,
+      },
+      json,
+    );
     return;
   }
 
@@ -190,7 +266,7 @@ async function main() {
       bd: getBdDiagnostics(),
     };
     output(payload, json);
-    process.exit(probe.running ? 0 : 1);
+    process.exit(json ? (probe.running ? 0 : 1) : 0);
     return;
   }
 
