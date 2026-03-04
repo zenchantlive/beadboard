@@ -1,149 +1,114 @@
 ---
 name: beadboard-driver
-description: Complete operating manual for agents running work in external repos while humans orchestrate from BeadBoard.
+description: Use when an agent is executing work in a non-BeadBoard repo while a human coordinates from BeadBoard, and you need reliable state, mail, assignment, and evidence flow from start to close.
 ---
 
 # BeadBoard Driver
 
-BeadBoard is for teams that want autonomous agents without losing control of the work.
+## Overview
 
-Most agent setups break down the same way: work happens quickly, but visibility collapses, handoffs get fuzzy, and “done” starts meaning “probably done.” This skill fixes that operating problem.
+This skill is the operator runbook for agent execution in external repos with BeadBoard as control plane.
 
-With BeadBoard Driver, agents execute inside the target project repo, while humans orchestrate from BeadBoard as the control plane: assign, redirect, intervene, verify, and keep a durable coordination record.
+Core principle: explicit state + explicit assignment + explicit evidence.
 
-BeadBoard project:
+## The Iron Law
 
-- GitHub: `https://github.com/zenchantlive/beadboard`
-
-## What This Changes
-
-- Work becomes observable, not performative.
-- Ownership stays explicit at bead level.
-- Handoffs and blockers become machine-readable events.
-- Completion claims require evidence, not confidence.
-- Multi-agent execution stays coordinated instead of chaotic.
-
-## Operating Reality
-
-- Agents usually run in a non-BeadBoard target repo.
-- The user controls project scope from BeadBoard UI.
-- Agents execute the current repo context they were assigned.
-- `bd` remains source of truth for task/memory state.
-
-## Start Here
-
-Run this quick confidence check before you start a session:
-
-```bash
-bd --version
-node skills/beadboard-driver/scripts/session-preflight.mjs
-node skills/beadboard-driver/scripts/resolve-bb.mjs
+```
+No bead claims, handoffs, or completion statements without:
+1) assignee set,
+2) coordination checked,
+3) evidence recorded.
 ```
 
-If discovery fails, install/repair from:
+## Requirements
 
-- `https://github.com/zenchantlive/beadboard`
+- `bd` must be installed and available on `PATH`.
+- `bb` or `beadboard` must be installed globally and available on `PATH`.
+- Work from the target repository root.
 
-## Session Runbook
+## Session Runbook (Do Not Skip Steps)
 
-1. Diagnose environment.
-2. Confirm preflight/discovery.
-3. Establish session identity.
-4. Read memory + ready work.
-5. Claim bead with assignee.
-6. Execute and coordinate via events.
-7. Run verification gates.
-8. Publish evidence and close.
-9. Perform memory review.
-
-## Core Commands
+### Step 1: Preflight and Communication Validation
 
 ```bash
-# Diagnostics and discovery
-node skills/beadboard-driver/scripts/diagnose-env.mjs
 node skills/beadboard-driver/scripts/session-preflight.mjs
-node skills/beadboard-driver/scripts/resolve-bb.mjs
-
-# Ensure project context exists in the target repository
-node skills/beadboard-driver/scripts/ensure-project-context.mjs --project-root <repo>
-
-# Identity helper
-node skills/beadboard-driver/scripts/generate-agent-name.mjs
-
-# Closeout evidence envelope
-node skills/beadboard-driver/scripts/readiness-report.mjs --checks '<json>' --artifacts '<json>'
-
-# Safe self-healing (dry-run default)
-node skills/beadboard-driver/scripts/heal-common-issues.mjs --project-root <repo>
-node skills/beadboard-driver/scripts/heal-common-issues.mjs --project-root <repo> --apply --fix-git-index-lock
+node skills/beadboard-driver/scripts/ensure-bb-mail-configured.mjs
 ```
 
-## Bead Lifecycle (Minimum Contract)
+Expected outcome:
+- `bd` detected
+- `bb` detected (global install)
+- `mail.delegate` points to `bb-mail-shim.mjs`
+- `BB_AGENT` or `BD_ACTOR` identity is available
+
+If either script fails, stop and fix environment first.
+
+### Step 2: Create Agent Bead Identity
 
 ```bash
-# Read context
-bd show <memory-or-task-id>
+bd create --title="Agent: <role-name>" --description="<scope>" --type=task --priority=0 --label="gt:agent,role:<orchestrator|ui|graph|backend|infra>"
+```
+
+Then set lifecycle state:
+
+```bash
+bd agent state <agent-bead-id> spawning
+bd agent state <agent-bead-id> running
+```
+
+### Step 3: Initialize/Update `project.md`
+
+`project.md` lives in the target repo root (not in the skill folder):
+- first agent in repo creates it from `skills/beadboard-driver/project.template.md`
+- later agents read and update it before work
+
+Required updates each session:
+- confirm whether `bd` and `bb/beadboard` are globally installed
+- record shell/platform facts affecting execution
+- record mail delegate/identity policy if changed
+
+### Step 4: Read Hard Memory and Task Context
+
+```bash
+bd show beadboard-116 beadboard-60a beadboard-zas
 bd ready
-
-# Claim explicitly
-bd update <bead-id> --status in_progress --assignee <agent-bead-id>
-
-# Record evidence and close
-bd update <bead-id> --notes "<commands + outputs>"
-bd close <bead-id> --reason "<completed outcome>"
+bd show <target-bead-id>
 ```
 
-## Use-The-Right-Doc Map
+Minimum: read task contract, dependencies, success criteria, and blockers.
 
-### `references/memory-system.md`
-Use when you need to query/apply/create canonical memory, validate provenance, or decide whether a lesson belongs in memory vs task notes.
-
-### `references/coord-events-sessions-ack.md`
-Use when you’re coordinating handoffs/blockers/incursions and need correct inbox/read/ack behavior.
-
-### `references/session-lifecycle.md`
-Use for end-to-end session choreography and closeout hygiene.
-
-### `references/archetypes-templates-swarms.md`
-Use when choosing team shape, role boundaries, and swarm ownership patterns.
-
-### `references/missions-realtime.md`
-Use when assigning work and troubleshooting stale/live-update behavior from mission/event flow.
-
-### `references/command-matrix.md`
-Use when you need exact command surfaces and argument shape.
-
-### `references/failure-modes.md`
-Use when preflight/discovery/coordination fails and you need deterministic recovery.
-
-## Project Context Template
-
-The skill ships a source template file: `project.template.md`.
-
-Runtime contract:
-
-- Agents should use `<target-repo>/project.md` for project context.
-- If `<target-repo>/project.md` is missing, create it from `project.template.md`.
-- If `<target-repo>/project.md` already exists, do not overwrite it.
-
-Helper command:
+### Step 5: Claim Work with Assignee + Hook Slot
 
 ```bash
-node skills/beadboard-driver/scripts/ensure-project-context.mjs --project-root <repo>
+bd update <target-bead-id> --status in_progress --assignee <agent-bead-id>
+bd slot set <agent-bead-id> hook <target-bead-id>
 ```
 
-## Tests
+Never use `--claim`. Use explicit `--assignee`.
 
-Skill-local contracts:
+### Step 6: Execute + Heartbeat + Coordinate via Mail
 
-- `skills/beadboard-driver/tests/run-tests.mjs`
-- `skills/beadboard-driver/tests/*.contract.test.mjs`
+During execution:
 
-Repo-level coverage:
+```bash
+bd agent heartbeat <agent-bead-id>
+```
 
-- `tests/skills/beadboard-driver/*.test.ts`
+Coordinate through delegated mail:
 
-## Verification Gates
+```bash
+bd mail inbox
+bd mail send --to <agent-or-role> --bead <bead-id> --category <HANDOFF|BLOCKED|DECISION|INFO> --subject "<short>" --body "<details>"
+bd mail read <message-id>
+bd mail ack <message-id>
+```
+
+When blocked:
+- send `BLOCKED`
+- set `bd agent state <agent-bead-id> stuck`
+- resume only after intervention/response
+
+### Step 7: Verification Gates (Code Changes)
 
 ```bash
 npm run typecheck
@@ -151,8 +116,55 @@ npm run lint
 npm run test
 ```
 
-If failures are outside your scope, cite exact failing files/tests and continue transparently.
+Do not claim fixed/done without fresh command output from this session.
+
+### Step 8: Publish Evidence and Close
+
+```bash
+bd update <target-bead-id> --notes "<commands run + key outputs + files changed>"
+bd close <target-bead-id> --reason "<what was completed>"
+bd slot clear <agent-bead-id> hook
+bd agent state <agent-bead-id> done
+```
+
+### Step 9: Memory Review
+
+If reusable lesson exists:
+- create/supersede canonical memory decision bead
+
+If no reusable lesson:
+- record: `Memory review: no new reusable memory.`
+
+## Red Flags
+
+Stop and correct if you are about to:
+- close without `--assignee` history
+- skip `bd mail` checks at session start/claim/close
+- claim completion without gate output
+- write project context inside skill folder instead of repo `project.md`
+- use deprecated direct command patterns from old docs
+
+## Use-The-Right-Doc Map
+
+- `references/session-lifecycle.md`:
+  Full end-to-end session choreography.
+- `references/agent-state-liveness.md`:
+  Agent states, heartbeat cadence, liveness interpretation.
+- `references/coordination-system.md`:
+  Canonical bb-mail command surface and category semantics.
+- `references/coord-events-sessions-ack.md`:
+  Trigger map, inbox polling protocol, blocked-to-resume walkthrough.
+- `references/command-matrix.md`:
+  Exact command inventory for day-to-day operation.
+- `references/failure-modes.md`:
+  Deterministic diagnosis and recovery paths.
+- `references/memory-system.md`:
+  Memory anchors, injection protocol, promotion/supersede rules.
+- `references/archetypes-templates-swarms.md`:
+  Swarm composition, molecule operations, worker dispatch patterns.
+- `references/missions-realtime.md`:
+  Real-time/watcher/event troubleshooting.
 
 ## Bottom Line
 
-This skill is the bridge between fast autonomous execution and human operator trust. Use it when speed matters, but coordination quality matters more.
+If you follow this runbook exactly, any agent can enter cold, coordinate safely, and deliver auditable completion without drift.
