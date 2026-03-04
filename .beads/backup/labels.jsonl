@@ -708,6 +708,12 @@
 {"issue_id":"beadboard-ij8","label":"docs"}
 {"issue_id":"beadboard-ij8","label":"memory"}
 {"issue_id":"beadboard-ilu","label":"skills documentation"}
+{"issue_id":"beadboard-ilu.1","label":"documentation"}
+{"issue_id":"beadboard-ilu.1","label":"skills"}
+{"issue_id":"beadboard-ilu.1","label":"skills documentation"}
+{"issue_id":"beadboard-ilu.2","label":"documentation"}
+{"issue_id":"beadboard-ilu.2","label":"skills"}
+{"issue_id":"beadboard-ilu.2","label":"skills documentation"}
 {"issue_id":"beadboard-izs","label":"agents"}
 {"issue_id":"beadboard-izs","label":"bb"}
 {"issue_id":"beadboard-izs","label":"mail"}
