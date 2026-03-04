@@ -1,121 +1,136 @@
 # Coordination Events, Sessions, and Acknowledgment
 
-## Purpose
+This guide defines how agents coordinate work using the live BeadBoard surface:
+- `bb agent send|inbox|read|ack`
+- `bd mail` delegated to `bb agent` through `bb-mail-shim.mjs`
 
-Define how agents communicate status, blockers, incursions, and handoffs in a machine-readable way that BeadBoard can render and users can act on.
+For full command reference, see `coordination-system.md`.
 
-## Operating Model
+## Canonical Event Categories
 
-- Agent works in a target repository.
-- User watches and orchestrates from BeadBoard UI.
-- Agent communication must flow through coordination events and inbox state transitions, not ad-hoc notes.
+Use only these categories:
+- `HANDOFF`
+- `BLOCKED`
+- `DECISION`
+- `INFO`
 
-## Event Categories
+Do not use deprecated categories such as `RESUME` or `INCURSION`.
 
-Use explicit categories with clear intent:
+## Message Lifecycle and ACK Rules
 
-- `HANDOFF`: transfer ownership or next action.
-- `BLOCKED`: explicit dependency or missing input.
-- `RESUME`: adoption/resumption event.
-- `INFO`: milestone or important context.
-- `INCURSION`: overlap/collision signal for reserved scope.
+Message states are:
+- `unread`
+- `read`
+- `acked`
 
-## Session Stream Expectations
+Rules:
+- `HANDOFF` and `BLOCKED` set `requires_ack=true` automatically.
+- `DECISION` and `INFO` set `requires_ack=false`.
+- `bb agent ack` on an unread message advances state to `acked` and sets both read/ack timestamps.
+- Only the recipient can `read`/`ack` a message.
 
-Session feeds should be audit-friendly:
+## WHEN-to-Use Trigger Map
 
-- Every coordination event has sender, recipient/system target, bead id, and timestamp.
-- `INCURSION` and `RESUME` are first-class timeline rows, not hidden diagnostics.
-- Events should be understandable by humans without reading implementation code.
+1. You finished your slice and someone else now owns the next step: send `HANDOFF`.
+2. You are hard blocked by dependency/input/env: send `BLOCKED` and set your agent state to `stuck`.
+3. You need a decision but can still make partial progress: send `DECISION`.
+4. You want traceable FYI context (milestone, caveat, pointer): send `INFO`.
+5. You receive `HANDOFF`/`BLOCKED` and have taken responsibility: run `read` then `ack`.
+6. You receive actionable mail before claiming a bead: process inbox first, then claim.
+7. You are stuck after retries: poll inbox, send/refresh `BLOCKED`, keep state `stuck` until unblocked.
 
-## Message Lifecycle
+## Inbox Polling Protocol
 
-Inbox state machine:
+Minimum checkpoints:
+- session start
+- immediately before claiming a bead
+- before closing a bead
+- whenever local execution becomes stuck
 
-1. `unread` when message is delivered.
-2. `read` when recipient opens/reads message.
-3. `acked` when recipient explicitly acknowledges.
+Recommended during active execution:
+- poll every 60-120 seconds
 
-Required behavior:
-
-- Only recipient may ack.
-- Acks are explicit, not implied by read.
-- Blocker and handoff flows should request ack when coordination certainty is required.
-
-## Recommended Command Patterns
-
-Send structured coordination event:
-
-```bash
-bb agent send \
-  --from <agent-id> \
-  --to <peer-agent-id> \
-  --bead <bead-id> \
-  --category <HANDOFF|BLOCKED|RESUME|INFO|INCURSION> \
-  --subject "<short summary>" \
-  --body "<actionable details>"
-```
-
-Read inbox for current bead/session work:
+Commands:
 
 ```bash
-bb agent inbox --agent <agent-id> --state unread --bead <bead-id>
+bb agent inbox --agent <agent-id> --state unread --limit 25
 bb agent read --agent <agent-id> --message <message-id>
 bb agent ack --agent <agent-id> --message <message-id>
 ```
 
-## Coordination Contracts
+## Worked BLOCKED Flow (End-to-End)
 
-### Handoff
+1. Agent hits a blocker and notifies coordinator/peer.
 
-A `HANDOFF` should include:
+```bash
+bb agent send \
+  --from amber-otter \
+  --to lead-orchestrator \
+  --bead beadboard-maf.8 \
+  --category BLOCKED \
+  --subject "Cannot run mail contract test" \
+  --body "bd mail delegate missing in this repo; need delegate config or approval to run preflight patch"
+```
 
-- what is done,
-- what remains,
-- concrete next action,
-- whether ack is required.
+2. Agent marks itself stuck for BeadBoard liveness/Witness surface.
 
-### Blocked
+```bash
+bd agent state amber-otter stuck
+```
 
-A `BLOCKED` should include:
+3. User sees the blocked signal in BeadBoard UI and intervenes (provides input, clears dependency, or updates config).
 
-- blocker description,
-- requested action,
-- urgency,
-- ack requirement.
+4. Agent checks inbox and reads response.
 
-### Incursion
+```bash
+bb agent inbox --agent amber-otter --state unread
+bb agent read --agent amber-otter --message <message-id>
+```
 
-An `INCURSION` should include:
+5. If the response resolved the blocker, agent acknowledges and resumes.
 
-- overlap kind (`exact` or `partial`),
-- owner identity,
-- incoming identity,
-- owner liveness,
-- resolution hint.
+```bash
+bb agent ack --agent amber-otter --message <message-id>
+bd agent state amber-otter running
+```
 
-### Resume
+6. Agent resumes bead execution and continues heartbeat + evidence updates.
 
-A `RESUME` should include:
+## `bd mail` Delegate Path (Alternative Invocation)
 
-- resume reason,
-- prior session identity,
-- adopted identity,
-- evidence summary for safe adoption.
+`bd mail` should delegate to the BeadBoard mail shim:
 
-## UX Alignment
+```bash
+bd config set mail.delegate "node <abs-path>/skills/beadboard-driver/scripts/bb-mail-shim.mjs"
+export BB_AGENT=<agent-id>
+```
 
-Session UI should map event semantics to plain-language actions:
+Delegate mapping:
+- `bd mail send ...` -> `bb agent send --from <BB_AGENT> ...`
+- `bd mail inbox ...` -> `bb agent inbox --agent <BB_AGENT> ...`
+- `bd mail read <id>` -> `bb agent read --agent <BB_AGENT> --message <id>`
+- `bd mail ack <id>` -> `bb agent ack --agent <BB_AGENT> --message <id>`
 
-- Handoff label: "Passed to"
-- Blocked label: "Needs input"
-- Read action: "Seen"
-- Ack action: "Accepted"
+If delegate is missing or invalid, run:
 
-## Anti-Patterns
+```bash
+node skills/beadboard-driver/scripts/ensure-bb-mail-configured.mjs
+```
 
-- Using comments instead of coordination events for handoffs.
-- Silent reservation collisions with no `INCURSION`/`INFO` signal.
-- Treating read as ack.
-- Sending vague events with no actionable payload.
-- Closing a blocked bead without tracking unblock communication.
+## Reservation Conflict Protocol
+
+Use reservations before editing contested scope:
+
+```bash
+bb agent reserve --agent <agent-id> --scope <path-or-surface> --bead <bead-id>
+```
+
+Conflict handling:
+- Active reservation conflict: stop and coordinate through mail.
+- Stale reservation warning: retry with `--takeover-stale` only after explicit coordination.
+
+Release when done:
+
+```bash
+bb agent release --agent <agent-id> --scope <path-or-surface>
+```
