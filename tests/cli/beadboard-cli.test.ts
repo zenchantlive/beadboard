@@ -20,3 +20,9 @@ test('uninstall requires --yes', async () => {
   assert.equal(out.ok, false);
   assert.match(String(out.error), /--yes/);
 });
+
+test('agent list routes to coordination CLI surface', async () => {
+  const out = await runCli(['agent', 'list', '--json']);
+  assert.equal(typeof out.command, 'string');
+  assert.equal(out.command, 'agent list');
+});
