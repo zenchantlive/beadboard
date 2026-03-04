@@ -12,6 +12,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const scriptPath = path.resolve(__dirname, '..', 'scripts', 'session-preflight.mjs');
 
+async function createRepoEntrypoint(repo) {
+  await fs.mkdir(path.join(repo, 'tools'), { recursive: true });
+  if (process.platform === 'win32') {
+    const bbPath = path.join(repo, 'bb.ps1');
+    await fs.writeFile(bbPath, 'echo ok', 'utf8');
+    return bbPath;
+  }
+  const bbPath = path.join(repo, 'bin', 'beadboard.js');
+  await fs.mkdir(path.dirname(bbPath), { recursive: true });
+  await fs.writeFile(bbPath, '#!/usr/bin/env node\nconsole.log("ok");\n', 'utf8');
+  await fs.chmod(bbPath, 0o755);
+  return bbPath;
+}
+
 test('session-preflight contract: surfaces BD_NOT_FOUND when missing', async () => {
   const { stdout } = await execFileAsync(process.execPath, [scriptPath], {
     env: { ...process.env, PATH: '' },
@@ -28,9 +42,8 @@ test('session-preflight contract: succeeds with bd + BB_REPO', async () => {
     const toolsDir = path.join(root, 'tools');
     const bdExecutable = process.platform === 'win32' ? 'bd.cmd' : 'bd';
     const bdPath = path.join(toolsDir, bdExecutable);
-    await fs.mkdir(path.join(repo, 'tools'), { recursive: true });
+    await createRepoEntrypoint(repo);
     await fs.mkdir(toolsDir, { recursive: true });
-    await fs.writeFile(path.join(repo, 'bb.ps1'), 'echo ok', 'utf8');
     if (process.platform === 'win32') {
       await fs.writeFile(bdPath, '@echo off\r\necho beads\r\n', 'utf8');
     } else {

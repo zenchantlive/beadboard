@@ -9,6 +9,20 @@ import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
 const scriptPath = path.resolve('skills/beadboard-driver/scripts/resolve-bb.mjs');
 
+async function createRepoEntrypoint(repo: string): Promise<string> {
+  await fs.mkdir(path.join(repo, 'tools'), { recursive: true });
+  if (process.platform === 'win32') {
+    const bbPath = path.join(repo, 'bb.ps1');
+    await fs.writeFile(bbPath, 'echo ok', 'utf8');
+    return bbPath;
+  }
+  const bbPath = path.join(repo, 'bin', 'beadboard.js');
+  await fs.mkdir(path.dirname(bbPath), { recursive: true });
+  await fs.writeFile(bbPath, '#!/usr/bin/env node\nconsole.log("ok");\n', 'utf8');
+  await fs.chmod(bbPath, 0o755);
+  return bbPath;
+}
+
 async function runResolve(env: Record<string, string | undefined> = {}) {
   const { stdout } = await execFileAsync(process.execPath, [scriptPath], {
     env: { ...process.env, ...env },
@@ -28,8 +42,7 @@ async function withTempDir(run: (root: string) => Promise<void>) {
 test('resolve-bb uses BB_REPO and returns env source', async () => {
   await withTempDir(async (root) => {
     const repo = path.join(root, 'beadboard');
-    await fs.mkdir(path.join(repo, 'tools'), { recursive: true });
-    await fs.writeFile(path.join(repo, 'bb.ps1'), 'echo ok', 'utf8');
+    const expectedPath = await createRepoEntrypoint(repo);
 
     const result = await runResolve({
       BB_REPO: repo,
@@ -39,7 +52,7 @@ test('resolve-bb uses BB_REPO and returns env source', async () => {
 
     assert.equal(result.ok, true);
     assert.equal(result.source, 'env');
-    assert.equal(result.resolved_path, path.join(repo, 'bb.ps1'));
+    assert.equal(result.resolved_path, expectedPath);
   });
 });
 
@@ -68,12 +81,11 @@ test('resolve-bb uses cache when env and global are unavailable', async () => {
   await withTempDir(async (root) => {
     const repo = path.join(root, 'beadboard');
     const home = path.join(root, 'home');
-    await fs.mkdir(path.join(repo, 'tools'), { recursive: true });
-    await fs.writeFile(path.join(repo, 'bb.ps1'), 'echo ok', 'utf8');
+    const expectedPath = await createRepoEntrypoint(repo);
     await fs.mkdir(path.join(home, '.beadboard'), { recursive: true });
     await fs.writeFile(
       path.join(home, '.beadboard', 'skill-config.json'),
-      JSON.stringify({ bb_path: path.join(repo, 'bb.ps1') }, null, 2),
+      JSON.stringify({ bb_path: expectedPath }, null, 2),
       'utf8',
     );
 
@@ -91,8 +103,7 @@ test('resolve-bb discovers repo and self-updates cache', async () => {
   await withTempDir(async (root) => {
     const repo = path.join(root, 'workspace', 'beadboard');
     const home = path.join(root, 'home');
-    await fs.mkdir(path.join(repo, 'tools'), { recursive: true });
-    await fs.writeFile(path.join(repo, 'bb.ps1'), 'echo ok', 'utf8');
+    const expectedPath = await createRepoEntrypoint(repo);
 
     const result = await runResolve({
       BB_SKILL_HOME: home,
@@ -105,7 +116,7 @@ test('resolve-bb discovers repo and self-updates cache', async () => {
 
     const cacheRaw = await fs.readFile(path.join(home, '.beadboard', 'skill-config.json'), 'utf8');
     const cache = JSON.parse(cacheRaw);
-    assert.equal(cache.bb_path, path.join(repo, 'bb.ps1'));
+    assert.equal(cache.bb_path, expectedPath);
   });
 });
 
@@ -115,14 +126,12 @@ test('resolve-bb uses BB_REPO over cache and rewrites stale cache', async () => 
     const repoB = path.join(root, 'repo-b');
     const home = path.join(root, 'home');
 
-    await fs.mkdir(path.join(repoA, 'tools'), { recursive: true });
-    await fs.mkdir(path.join(repoB, 'tools'), { recursive: true });
-    await fs.writeFile(path.join(repoA, 'bb.ps1'), 'echo a', 'utf8');
-    await fs.writeFile(path.join(repoB, 'bb.ps1'), 'echo b', 'utf8');
+    const repoAPath = await createRepoEntrypoint(repoA);
+    const repoBPath = await createRepoEntrypoint(repoB);
     await fs.mkdir(path.join(home, '.beadboard'), { recursive: true });
     await fs.writeFile(
       path.join(home, '.beadboard', 'skill-config.json'),
-      JSON.stringify({ bb_path: path.join(repoA, 'bb.ps1') }, null, 2),
+      JSON.stringify({ bb_path: repoAPath }, null, 2),
       'utf8',
     );
 
@@ -138,6 +147,6 @@ test('resolve-bb uses BB_REPO over cache and rewrites stale cache', async () => 
 
     const cacheRaw = await fs.readFile(path.join(home, '.beadboard', 'skill-config.json'), 'utf8');
     const cache = JSON.parse(cacheRaw);
-    assert.equal(cache.bb_path, path.join(repoB, 'bb.ps1'));
+    assert.equal(cache.bb_path, repoBPath);
   });
 });

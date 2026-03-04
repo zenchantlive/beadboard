@@ -136,7 +136,7 @@ function requiresAck(category: MessageCategory): boolean {
 
 function defaultMessageId(nowIso: string): string {
   const seed = Math.random().toString(16).slice(2, 6);
-  const compact = nowIso.replace(/[-:]/g, '').replace('.000Z', '').replace('T', '_');
+  const compact = nowIso.replace(/[.:-]/g, '').replace('T', '_').replace('Z', '');
   return `msg_${compact}_${seed}`;
 }
 

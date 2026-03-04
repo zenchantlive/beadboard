@@ -9,6 +9,20 @@ import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
 const scriptPath = path.resolve('skills/beadboard-driver/scripts/session-preflight.mjs');
 
+async function createRepoEntrypoint(repo: string): Promise<string> {
+  await fs.mkdir(path.join(repo, 'tools'), { recursive: true });
+  if (process.platform === 'win32') {
+    const bbPath = path.join(repo, 'bb.ps1');
+    await fs.writeFile(bbPath, 'echo ok', 'utf8');
+    return bbPath;
+  }
+  const bbPath = path.join(repo, 'bin', 'beadboard.js');
+  await fs.mkdir(path.dirname(bbPath), { recursive: true });
+  await fs.writeFile(bbPath, '#!/usr/bin/env node\nconsole.log("ok");\n', 'utf8');
+  await fs.chmod(bbPath, 0o755);
+  return bbPath;
+}
+
 async function runPreflight(env: Record<string, string | undefined> = {}) {
   const { stdout } = await execFileAsync(process.execPath, [scriptPath], {
     env: { ...process.env, ...env },
@@ -47,9 +61,8 @@ test('session-preflight succeeds with fake bd and BB_REPO', async () => {
     const bdExecutable = process.platform === 'win32' ? 'bd.cmd' : 'bd';
     const bdCmd = path.join(toolsDir, bdExecutable);
 
-    await fs.mkdir(path.join(repo, 'tools'), { recursive: true });
+    await createRepoEntrypoint(repo);
     await fs.mkdir(toolsDir, { recursive: true });
-    await fs.writeFile(path.join(repo, 'bb.ps1'), 'echo ok', 'utf8');
     if (process.platform === 'win32') {
       await fs.writeFile(bdCmd, '@echo off\r\necho beads\r\n', 'utf8');
     } else {

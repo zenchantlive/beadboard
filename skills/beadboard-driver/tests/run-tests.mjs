@@ -11,6 +11,8 @@ const tests = [
   path.join(__dirname, 'resolve-bb.contract.test.mjs'),
   path.join(__dirname, 'generate-agent-name.contract.test.mjs'),
   path.join(__dirname, 'session-preflight.contract.test.mjs'),
+  path.join(__dirname, 'ensure-bb-mail-configured.contract.test.mjs'),
+  path.join(__dirname, 'bb-mail-integration.contract.test.mjs'),
   path.join(__dirname, 'readiness-report.contract.test.mjs'),
   path.join(__dirname, 'diagnose-env.contract.test.mjs'),
   path.join(__dirname, 'heal-common-issues.contract.test.mjs'),
