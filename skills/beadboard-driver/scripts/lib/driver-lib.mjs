@@ -69,12 +69,20 @@ async function validateRepoPath(repoPath) {
     return { ok: false, reason: 'BB_REPO does not exist.' };
   }
 
-  const bbPath = path.join(repoPath, 'bb.ps1');
-  if (!(await pathExists(bbPath))) {
-    return { ok: false, reason: 'BB_REPO is set, but bb.ps1 was not found at BB_REPO\\bb.ps1.' };
+  const candidates = process.platform === 'win32'
+    ? [path.join(repoPath, 'bb.ps1'), path.join(repoPath, 'bin', 'beadboard.js')]
+    : [path.join(repoPath, 'bin', 'beadboard.js'), path.join(repoPath, 'bb.ps1')];
+
+  for (const candidate of candidates) {
+    if (await pathExists(candidate)) {
+      return { ok: true, bbPath: candidate };
+    }
   }
 
-  return { ok: true, bbPath };
+  return {
+    ok: false,
+    reason: 'BB_REPO is set, but no BeadBoard entrypoint was found (expected bb.ps1 or bin/beadboard.js).',
+  };
 }
 
 function installerRemediation() {
@@ -85,6 +93,11 @@ function installerRemediation() {
 }
 
 async function discoverBbPath() {
+  const pathBb = await findCommandInPath('bb');
+  if (pathBb) {
+    return pathBb;
+  }
+
   const configuredRoots = splitPathVariable(process.env.BB_SEARCH_ROOTS || '');
   const roots = configuredRoots.length > 0 ? configuredRoots : [process.cwd(), path.join(homeRoot(), 'codex'), homeRoot()];
   const maxDepth = 4;
@@ -97,10 +110,16 @@ async function discoverBbPath() {
     const queue = [{ dir: root, depth: 0 }];
     while (queue.length > 0) {
       const current = queue.shift();
-      const candidate = path.join(current.dir, 'bb.ps1');
-      if (await pathExists(candidate)) {
-        return candidate;
+      const candidates = process.platform === 'win32'
+        ? [path.join(current.dir, 'bb.ps1'), path.join(current.dir, 'bin', 'beadboard.js')]
+        : [path.join(current.dir, 'bin', 'beadboard.js'), path.join(current.dir, 'bb.ps1')];
+
+      for (const candidate of candidates) {
+        if (await pathExists(candidate)) {
+          return candidate;
+        }
       }
+
       if (current.depth >= maxDepth) {
         continue;
       }
