@@ -715,6 +715,7 @@
 {"created_at":"2026-03-02T15:07:05Z","created_by":"ZenchantLive","depends_on_id":"beadboard-2fo","issue_id":"beadboard-u4i","type":"blocks"}
 {"created_at":"2026-03-02T15:06:48Z","created_by":"ZenchantLive","depends_on_id":"beadboard-c70","issue_id":"beadboard-u4i","type":"relates-to"}
 {"created_at":"2026-03-02T15:07:03Z","created_by":"ZenchantLive","depends_on_id":"beadboard-nrb","issue_id":"beadboard-u4i","type":"blocks"}
+{"created_at":"2026-03-03T16:13:51Z","created_by":"ZenchantLive","depends_on_id":"beadboard-wk8","issue_id":"beadboard-wk8.1","type":"parent-child"}
 {"created_at":"2026-03-02T19:29:39Z","created_by":"ZenchantLive","depends_on_id":"beadboard-cyk","issue_id":"beadboard-x1y","type":"relates-to"}
 {"created_at":"2026-03-02T19:29:39Z","created_by":"ZenchantLive","depends_on_id":"beadboard-om4","issue_id":"beadboard-x1y","type":"relates-to"}
 {"created_at":"2026-03-02T19:29:39Z","created_by":"ZenchantLive","depends_on_id":"beadboard-x6f","issue_id":"beadboard-x1y","type":"relates-to"}

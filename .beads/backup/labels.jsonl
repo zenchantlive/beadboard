@@ -890,6 +890,12 @@
 {"issue_id":"beadboard-vyt","label":"cli"}
 {"issue_id":"beadboard-vyt","label":"installation"}
 {"issue_id":"beadboard-vyt","label":"runtime"}
+{"issue_id":"beadboard-wk8","label":"cli"}
+{"issue_id":"beadboard-wk8","label":"docs"}
+{"issue_id":"beadboard-wk8","label":"dolt"}
+{"issue_id":"beadboard-wk8.1","label":"cli"}
+{"issue_id":"beadboard-wk8.1","label":"docs"}
+{"issue_id":"beadboard-wk8.1","label":"dolt"}
 {"issue_id":"beadboard-x1y","label":"bug"}
 {"issue_id":"beadboard-x1y","label":"frontend"}
 {"issue_id":"beadboard-x3l","label":"template:release"}
