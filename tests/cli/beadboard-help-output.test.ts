@@ -11,6 +11,7 @@ test('bb --help prints human-readable usage by default', async () => {
   const { stdout } = await execFileAsync(process.execPath, [binPath, '--help']);
   assert.match(stdout, /Usage:/i);
   assert.match(stdout, /Runtime Commands:/i);
+  assert.match(stdout, /start \[--dolt\]/i);
   assert.match(stdout, /Management Commands:/i);
   assert.doesNotMatch(stdout, /^\s*\{/);
 });
