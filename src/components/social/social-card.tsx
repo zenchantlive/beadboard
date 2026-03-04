@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { KeyboardEvent, MouseEventHandler } from 'react';
 import { Clock3, GitBranch, Link2, MessageCircle, MessageSquare, Rocket, UserPlus } from 'lucide-react';
 
@@ -27,6 +28,18 @@ interface SocialCardProps {
   archetypes?: AgentArchetype[];
   swarmId?: string;
   onLaunchSwarm?: () => void;
+  agentUnreadByName?: Record<string, number>;
+  agentMessagesByName?: Record<string, Array<{
+    message_id: string;
+    from_agent: string;
+    category: 'HANDOFF' | 'BLOCKED' | 'DECISION' | 'INFO';
+    subject: string;
+    body: string;
+    state: 'unread' | 'read' | 'acked';
+    requires_ack: boolean;
+  }>>;
+  agentReservationsByName?: Record<string, string | undefined>;
+  onAckMessage?: (agent: string, messageId: string) => Promise<void> | void;
 }
 
 function handleCardKeyDown(event: KeyboardEvent<HTMLDivElement>, onClick?: MouseEventHandler<HTMLDivElement>) {
@@ -106,6 +119,13 @@ function dependencyPanel(
   );
 }
 
+function categoryBadgeClass(category: 'HANDOFF' | 'BLOCKED' | 'DECISION' | 'INFO'): string {
+  if (category === 'BLOCKED') return 'bg-red-600/25 text-red-200 border-red-500/40';
+  if (category === 'HANDOFF') return 'bg-amber-500/20 text-amber-200 border-amber-400/40';
+  if (category === 'DECISION') return 'bg-sky-500/20 text-sky-200 border-sky-400/40';
+  return 'bg-slate-600/20 text-slate-200 border-slate-500/40';
+}
+
 export function SocialCard({
   data,
   className,
@@ -124,11 +144,17 @@ export function SocialCard({
   archetypes = [],
   swarmId,
   onLaunchSwarm,
+  agentUnreadByName = {},
+  agentMessagesByName = {},
+  agentReservationsByName = {},
+  onAckMessage,
 }: SocialCardProps) {
   const status = statusVisual(data.status);
   const { selectedArchetype, setSelectedArchetype, isAssigning, assignSuccess, handleAssign } = useArchetypePicker();
   const showAssign = (data.status === 'blocked' || data.agents.length === 0) && archetypes.length > 0;
   const isSwarmHighlighted = swarmId && data.id.includes(swarmId);
+  const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
+  const [ackingMessageId, setAckingMessageId] = useState<string | null>(null);
 
   return (
     <div
@@ -176,17 +202,90 @@ export function SocialCard({
       </div>
 
       <div className="mt-2 flex items-center gap-2">
-        {data.agents.slice(0, 3).map((agent) => (
-          <AgentAvatar
-            key={`${data.id}-${agent.name}`}
-            name={agent.name}
-            status={agent.status as AgentStatus}
-            role={agent.role}
-            size="sm"
-          />
-        ))}
+        {data.agents.slice(0, 3).map((agent) => {
+          const unreadCount = agentUnreadByName[agent.name] ?? 0;
+          const reservation = agentReservationsByName[agent.name];
+          return (
+            <div key={`${data.id}-${agent.name}`} className="flex items-center gap-1.5">
+              <AgentAvatar
+                name={agent.name}
+                status={agent.status as AgentStatus}
+                role={agent.role}
+                size="sm"
+              />
+              <div className="flex flex-col gap-1">
+                <span className="max-w-[84px] truncate text-[10px] text-[var(--text-tertiary)]">{agent.name}</span>
+                <div className="flex items-center gap-1">
+                  {unreadCount > 0 ? (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setExpandedAgent((prev) => (prev === agent.name ? null : agent.name));
+                      }}
+                      className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--accent-danger)] px-1 text-[10px] font-semibold text-[var(--text-inverse)]"
+                      title={`Unread for ${agent.name}`}
+                    >
+                      {unreadCount}
+                    </button>
+                  ) : null}
+                  {reservation ? (
+                    <span className="max-w-[92px] truncate rounded border border-cyan-500/30 bg-cyan-500/10 px-1 py-0.5 text-[9px] text-cyan-200" title={reservation}>
+                      {reservation}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          );
+        })}
         {data.agents.length === 0 ? <span className="text-xs text-[var(--text-tertiary)]">No crew</span> : null}
       </div>
+
+      {expandedAgent ? (
+        <div className="mt-2 space-y-1.5 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-tertiary)] p-2">
+          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--text-tertiary)]">
+            {expandedAgent} inbox
+          </p>
+          {(agentMessagesByName[expandedAgent] ?? []).slice(0, 4).map((message) => (
+            <div
+              key={message.message_id}
+              className="rounded border border-[var(--border-subtle)] bg-[var(--surface-quaternary)] p-2"
+            >
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${categoryBadgeClass(message.category)}`}>
+                  {message.category}
+                </span>
+                <span className="text-[10px] text-[var(--text-tertiary)]">{message.state}</span>
+              </div>
+              <p className="text-[11px] font-semibold text-[var(--text-primary)]">{message.subject}</p>
+              <p className="mt-0.5 text-[11px] text-[var(--text-tertiary)]">{message.body}</p>
+              <p className="mt-1 text-[10px] text-[var(--text-tertiary)]">from {message.from_agent}</p>
+              {message.requires_ack && message.state !== 'acked' && onAckMessage ? (
+                <button
+                  type="button"
+                  onClick={async (event) => {
+                    event.stopPropagation();
+                    setAckingMessageId(message.message_id);
+                    try {
+                      await onAckMessage(expandedAgent, message.message_id);
+                    } finally {
+                      setAckingMessageId(null);
+                    }
+                  }}
+                  disabled={ackingMessageId === message.message_id}
+                  className="mt-1 rounded border border-amber-500/40 bg-amber-500/15 px-2 py-1 text-[10px] font-semibold text-amber-200 disabled:opacity-60"
+                >
+                  {ackingMessageId === message.message_id ? 'Acking...' : 'Ack'}
+                </button>
+              ) : null}
+            </div>
+          ))}
+          {(agentMessagesByName[expandedAgent] ?? []).length === 0 ? (
+            <p className="text-[11px] text-[var(--text-tertiary)]">No messages.</p>
+          ) : null}
+        </div>
+      ) : null}
 
       {showAssign && (
         <div className="mt-2 flex gap-2 items-center overflow-hidden" onClick={(e) => e.stopPropagation()}>

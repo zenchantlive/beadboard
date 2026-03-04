@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import type { BeadIssue } from '../../lib/types';
@@ -18,6 +18,17 @@ interface SocialPageProps {
   projectRoot: string;
   swarmId?: string;
   onRocketClick?: () => void;
+}
+
+interface CoordMessage {
+  message_id: string;
+  from_agent: string;
+  to_agent: string;
+  category: 'HANDOFF' | 'BLOCKED' | 'DECISION' | 'INFO';
+  subject: string;
+  body: string;
+  state: 'unread' | 'read' | 'acked';
+  requires_ack: boolean;
 }
 
 type SectionKey = 'ready' | 'in_progress' | 'blocked' | 'deferred' | 'done';
@@ -151,6 +162,86 @@ export function SocialPage({
     deferred: true,
     done: true,
   });
+  const [agentMessagesByName, setAgentMessagesByName] = useState<Record<string, CoordMessage[]>>({});
+  const [agentUnreadByName, setAgentUnreadByName] = useState<Record<string, number>>({});
+  const [agentReservationsByName, setAgentReservationsByName] = useState<Record<string, string | undefined>>({});
+
+  const agentNames = useMemo(() => {
+    const set = new Set<string>();
+    for (const card of visibleCards) {
+      for (const agent of card.agents) {
+        if (agent.name) set.add(agent.name);
+      }
+    }
+    return [...set];
+  }, [visibleCards]);
+
+  const refreshCoordination = useCallback(async () => {
+    if (agentNames.length === 0) {
+      setAgentMessagesByName({});
+      setAgentUnreadByName({});
+      setAgentReservationsByName({});
+      return;
+    }
+
+    const mailPairs = await Promise.all(
+      agentNames.map(async (agent) => {
+        const response = await fetch(`/api/agents/mail?agent=${encodeURIComponent(agent)}&limit=25`);
+        const payload = await response.json().catch(() => ({ ok: false }));
+        if (!response.ok || !payload.ok) {
+          return [agent, [] as CoordMessage[]] as const;
+        }
+        return [agent, (payload.data ?? []) as CoordMessage[]] as const;
+      }),
+    );
+
+    const reservationsPairs = await Promise.all(
+      agentNames.map(async (agent) => {
+        const response = await fetch(`/api/agents/reservations?agent=${encodeURIComponent(agent)}`);
+        const payload = await response.json().catch(() => ({ ok: false }));
+        if (!response.ok || !payload.ok) {
+          return [agent, undefined] as const;
+        }
+        const first = (payload.data?.reservations ?? [])[0];
+        return [agent, first?.scope as string | undefined] as const;
+      }),
+    );
+
+    const nextMessages: Record<string, CoordMessage[]> = {};
+    const nextUnread: Record<string, number> = {};
+    for (const [agent, messages] of mailPairs) {
+      nextMessages[agent] = messages;
+      nextUnread[agent] = messages.filter((m) => m.state === 'unread').length;
+    }
+    setAgentMessagesByName(nextMessages);
+    setAgentUnreadByName(nextUnread);
+    setAgentReservationsByName(Object.fromEntries(reservationsPairs));
+  }, [agentNames]);
+
+  useEffect(() => {
+    let active = true;
+    const run = async () => {
+      if (!active) return;
+      await refreshCoordination();
+    };
+    void run();
+    const timer = setInterval(() => {
+      void run();
+    }, 15000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [refreshCoordination]);
+
+  const handleAckMessage = async (agent: string, messageId: string) => {
+    await fetch('/api/agents/mail/ack', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ agent, message: messageId }),
+    });
+    await refreshCoordination();
+  };
 
   return (
     <div className="h-full overflow-y-auto bg-[var(--ui-bg-app)] custom-scrollbar">
@@ -245,6 +336,10 @@ export function SocialPage({
                         archetypes={archetypes}
                         swarmId={swarmId}
                         onLaunchSwarm={onRocketClick}
+                        agentUnreadByName={agentUnreadByName}
+                        agentMessagesByName={agentMessagesByName}
+                        agentReservationsByName={agentReservationsByName}
+                        onAckMessage={handleAckMessage}
                       />
                     );
                   })}

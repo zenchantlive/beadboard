@@ -31,6 +31,18 @@ interface AgentRosterEntry {
   beadId: string;
 }
 
+interface CoordMessage {
+  message_id: string;
+  bead_id: string;
+  from_agent: string;
+  to_agent: string;
+  category: 'HANDOFF' | 'BLOCKED' | 'DECISION' | 'INFO';
+  subject: string;
+  state: 'unread' | 'read' | 'acked';
+  created_at: string;
+  acked_at: string | null;
+}
+
 interface ActivityPanelProps {
   issues: BeadIssue[];
   collapsed?: boolean;
@@ -143,6 +155,20 @@ function getAgentTone(status: AgentStatus): AgentTone {
 export function getEventTone(kind: string): EventTone {
   const normalized = kind.toLowerCase();
   const byKind: Record<string, EventTone> = {
+    coord_send: {
+      label: 'Coord Send',
+      labelClass: 'text-[#D4A574]',
+      dotClass: 'bg-[#D4A574]',
+      cardClass: 'bg-[var(--status-in-progress)]',
+      idClass: 'text-[#DAB891]',
+    },
+    coord_ack: {
+      label: 'Coord Ack',
+      labelClass: 'text-[#7CB97A]',
+      dotClass: 'bg-[#7CB97A]',
+      cardClass: 'bg-[var(--status-ready)]',
+      idClass: 'text-[#9ACB98]',
+    },
     created: {
       label: 'Created',
       labelClass: 'text-[#7CB97A]',
@@ -246,6 +272,8 @@ export function getInitials(name: string): string {
 
 export function ActivityPanel({ issues, collapsed = false, projectRoot }: ActivityPanelProps) {
   const [activities, setActivities] = useState<ActivityEvent[]>([]);
+  const [coordActivities, setCoordActivities] = useState<ActivityEvent[]>([]);
+  const [reservationByAgent, setReservationByAgent] = useState<Record<string, string | undefined>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   const agentRoster = useMemo(() => buildAgentRoster(issues), [issues]);
@@ -268,6 +296,66 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
 
     fetchActivity();
   }, []);
+
+  useEffect(() => {
+    const fetchCoordination = async () => {
+      if (agentRoster.length === 0) {
+        setCoordActivities([]);
+        setReservationByAgent({});
+        return;
+      }
+
+      const mailResponses = await Promise.all(
+        agentRoster.map(async (agent) => {
+          const response = await fetch(`/api/agents/mail?agent=${encodeURIComponent(agent.name)}&limit=15`);
+          const payload = await response.json().catch(() => ({ ok: false }));
+          return [agent.name, response.ok && payload.ok ? (payload.data as CoordMessage[]) : []] as const;
+        }),
+      );
+
+      const reservationResponses = await Promise.all(
+        agentRoster.map(async (agent) => {
+          const response = await fetch(`/api/agents/reservations?agent=${encodeURIComponent(agent.name)}`);
+          const payload = await response.json().catch(() => ({ ok: false }));
+          if (!response.ok || !payload.ok) {
+            return [agent.name, undefined] as const;
+          }
+          return [agent.name, payload.data?.reservations?.[0]?.scope as string | undefined] as const;
+        }),
+      );
+
+      const uniqueMessages = new Map<string, CoordMessage>();
+      for (const [, messages] of mailResponses) {
+        for (const message of messages) {
+          uniqueMessages.set(message.message_id, message);
+        }
+      }
+
+      const mapped = [...uniqueMessages.values()]
+        .map((message) => ({
+          id: `coord-${message.message_id}`,
+          kind: (message.state === 'acked' ? 'coord_ack' : 'coord_send') as ActivityEvent['kind'],
+          beadId: message.bead_id,
+          beadTitle: `${message.category}: ${message.subject}`,
+          timestamp: message.state === 'acked' && message.acked_at ? message.acked_at : message.created_at,
+          actor: message.state === 'acked' ? message.to_agent : message.from_agent,
+          projectId: projectRoot,
+          projectName: 'beadboard',
+          payload: {},
+        }))
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 25);
+
+      setCoordActivities(mapped);
+      setReservationByAgent(Object.fromEntries(reservationResponses));
+    };
+
+    void fetchCoordination();
+    const timer = setInterval(() => {
+      void fetchCoordination();
+    }, 15000);
+    return () => clearInterval(timer);
+  }, [agentRoster, projectRoot]);
 
   // Subscribe to real-time activity
   useEffect(() => {
@@ -297,6 +385,12 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
   }, [projectRoot]);
 
   const activeAgents = agentRoster.filter(a => a.status === 'active').length;
+  const mergedActivities = useMemo(
+    () => [...coordActivities, ...activities]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 50),
+    [activities, coordActivities],
+  );
   if (collapsed) {
     return (
       <div className="flex flex-col items-center gap-6 py-6 h-full bg-[var(--surface-secondary)]">
@@ -328,7 +422,7 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
 
         {/* Activity Pulses */}
         <div className="flex flex-col gap-2 opacity-40">
-          {activities.slice(0, 8).map((act) => (
+          {mergedActivities.slice(0, 8).map((act) => (
             <div key={act.id} className={cn(
               "w-1 h-1 rounded-full",
               getEventTone(act.kind).dotClass
@@ -382,6 +476,11 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
                     )}>
                       {agent.status}
                     </span>
+                    {reservationByAgent[agent.name] ? (
+                      <span className="max-w-[140px] truncate rounded border border-cyan-500/30 bg-cyan-500/10 px-1 py-0.5 text-[9px] text-cyan-200" title={reservationByAgent[agent.name]}>
+                        {reservationByAgent[agent.name]}
+                      </span>
+                    ) : null}
                     <span className="text-[9px] text-text-muted/40 font-mono">
                       {agent.lastSeen ? formatRelativeTime(agent.lastSeen) : 'N/A'}
                     </span>
@@ -406,13 +505,13 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
               <div className="w-4 h-4 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
               <span className="text-[10px] font-mono text-text-muted">SYNCING...</span>
             </div>
-          ) : activities.length === 0 ? (
+          ) : mergedActivities.length === 0 ? (
             <div className="p-10 text-center opacity-30">
               <p className="text-[10px] font-mono">VOID_STREAM_NULL</p>
             </div>
           ) : (
             <div className="p-3 space-y-3">
-              {activities.map((activity) => {
+              {mergedActivities.map((activity) => {
                 const eventTone = getEventTone(activity.kind);
                 return (
                   <div key={activity.id} className="group relative">
