@@ -1,110 +1,130 @@
 # Memory System
 
-## Purpose
+Memory in BeadBoard is operational policy, not journal notes.
 
-Use BeadBoard memory to preserve reusable operating rules across sessions.
+## Core Rule
 
-Memory is tracked in `bd` decision beads, not markdown notes. Task notes are for local execution context; canonical memory is for reusable rules.
+- Reusable rule -> canonical memory bead (`type=decision`)
+- One-off context -> task notes on active bead
 
-## Execution Context
+Canonical memory is active when it is closed and labeled canonical.
 
-- Agents usually run in a target project repository, not the BeadBoard repository.
-- Project scope is controlled by the user in the BeadBoard UI.
-- Agents do not select or mutate project scope.
+## Domain Anchors (Use These IDs)
 
-## Core Objects
-
-- Anchor: domain parent bead (for example architecture, workflow, agent ops, reliability).
-- Canonical memory: `type=decision` bead with memory labels.
-- Provenance links: relations from memory to source evidence beads.
+- Architecture: `beadboard-76p`
+- Workflow Protocol: `beadboard-nq9`
+- Agent Operations: `beadboard-5r1`
+- UI/UX: `beadboard-fld`
+- Reliability and Errors: `beadboard-8st`
 
 ## Canonical Memory Contract
 
-Create canonical memory only when the rule is reusable.
-
 Required labels:
-
+- `memory`
 - `mem-canonical`
 - `mem-hard` or `mem-soft`
-- `memory`
-- domain label such as `memory-agent`, `memory-arch`, `memory-workflow`, `memory-reliability`, `memory-ui`
+- `memory-<domain>`
 
 Required description sections:
-
 - `Scope:`
 - `Out of Scope:`
 - `Rule:`
 - `Rationale:`
 - `Failure Mode:`
 
-Required acceptance style:
-
+Required acceptance format:
 - Given/When/Then invariant
 - Verification commands
 
-## Workflow
+## WHEN to Query Memory
 
-1. Query existing memory first.
-2. Validate the memory provenance before relying on it.
-3. Apply existing canonical memory to current task design.
-4. If a new reusable rule appears, create canonical memory.
-5. Link anchor, evidence, and related work with `bd dep relate`.
-6. Ratify by closing the memory bead once complete.
-7. For changes to an existing rule, supersede; do not rewrite history.
+Query memory at:
+1. Session start
+2. Before claiming new work
+3. When entering a new domain (arch/workflow/agent/ui/reliability)
 
-## Query and Validation Commands
+## Injection Playbook (Steps 1-7)
+
+Step 1: Select primary domain
 
 ```bash
-bd query "type=decision label:mem-canonical"
+# choose one:
+# memory-arch | memory-workflow | memory-ux | memory-agent | memory-reliability
+```
+
+Step 2: Query canonical memory for that domain
+
+```bash
+bd query "label=memory AND label=mem-canonical AND label=<domain> AND status=closed" --sort updated --reverse
+```
+
+Step 2b: Validate provenance before trusting it
+
+```bash
 bd show <memory-id>
 bd dep list <memory-id>
 ```
 
-Interpretation checklist:
-
-- Is the memory closed and canonical?
-- Are provenance links present (2-5 evidence beads preferred)?
-- Is the domain anchor relationship present?
-
-## Create and Index Canonical Memory
+Step 3: Query hard constraints subset
 
 ```bash
-bd create --title="[MEMORY][<DOMAIN>][HARD|SOFT] <rule sentence>" \
-  --description="Scope: ...\nOut of Scope: ...\nRule: ...\nRationale: ...\nFailure Mode: ..." \
-  --type=decision --priority=1 \
-  --label="mem-canonical,mem-hard,memory,memory-<domain>"
-
-bd dep relate <anchor-id> <memory-id>
-bd dep relate <memory-id> <source-bead-id>
+bd query "label=memory AND label=mem-canonical AND label=mem-hard AND label=<domain> AND status=closed" --sort updated --reverse
 ```
 
-Use `mem-soft` when the rule is guidance and `mem-hard` when it is non-negotiable.
+Step 4: Attach memory to active work
 
-## Evolve Memory Safely
+```bash
+bd dep relate <active-task-id> <memory-id>
+```
 
-Use supersession when changing canonical rules:
+Step 5: Optional hard-contract bead (for non-negotiable rules)
+
+```bash
+bd create --title "[MEMORY-CONTRACT] <hard-rule>" --type task --label "memory-contract,mem-hard,<domain>" --description "Contract for <active-task-id>"
+bd dep relate <contract-id> <canonical-memory-id>
+bd dep add <active-task-id> <contract-id>
+```
+
+Step 6: Record acknowledgement on active task
+
+```bash
+bd update <active-task-id> --notes "Memory injection: related <memory-id list>; hard contracts <contract-id list>."
+```
+
+Step 7: Preserve provenance evidence in notes
+
+```bash
+bd update <active-task-id> --append-notes "Memory provenance verified via bd show/dep list for <memory-id list>."
+```
+
+## Ratification Rule
+
+"Ratified by closing" means:
+- A decision bead is only an active canonical memory after it is closed.
+- Open decision beads are drafts/proposals, not mandatory policy.
+
+## Noise Budget and Promotion Policy
+
+Noise budget:
+- Per active task: 3-7 related memory nodes
+- Per active task: 0-2 blocker contracts
+- Per canonical memory: 1 primary anchor domain
+- Per canonical memory: 2-5 source-bead provenance links
+
+Promotion policy:
+1. Incident repeats 2+ times -> candidate `mem-soft`
+2. Workaround survives release window -> candidate `mem-hard` or stable `mem-soft`
+3. Obsolete memory -> supersede, do not rewrite history
+
+Supersession command:
 
 ```bash
 bd supersede <old-memory-id> --with <new-memory-id>
 ```
 
-Do not edit historical memory beads to represent new policy.
-
-## Noise Budget
-
-Apply memory sparingly per active task:
-
-- 3-7 related memory nodes
-- 0-2 blocker contracts
-- 1 primary anchor domain per canonical memory
-- 2-5 source-bead provenance links
-
-If the lesson is not reusable, record it in task notes instead of creating memory.
-
 ## Anti-Patterns
 
-- Writing policy in ad-hoc markdown only.
-- Using blocker edges for memory indexing.
-- Creating duplicate canonical memory for the same rule.
-- Creating memory for one-off incidents without recurrence.
-- Claiming memory-backed completion without verification evidence.
+- Writing policy in markdown without canonical bead
+- Using blocker edges to index memory (use `bd dep relate`)
+- Creating duplicate canonical memory for same rule
+- Skipping provenance check before applying a rule
