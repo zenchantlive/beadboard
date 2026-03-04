@@ -18,5 +18,5 @@ test('self-update returns explicit placeholder result', async () => {
 test('uninstall requires --yes', async () => {
   const out = await runCli(['uninstall', '--json']);
   assert.equal(out.ok, false);
-  assert.match(String(out.error), /--yes/);
+  assert.match(out.error, /--yes/);
 });
