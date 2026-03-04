@@ -1,96 +1,172 @@
 # Archetypes, Templates, and Swarms
 
-## Purpose
+This document defines how multi-agent work is structured so any agent can join, execute, and exit cleanly.
 
-Define reusable team structure for multi-agent work so assignments are predictable, auditable, and easy for users to orchestrate from BeadBoard.
+## Mental Model
 
-## Core Principle
+- Archetype: role contract (what an agent is accountable for)
+- Template/proto: reusable work shape (molecule source)
+- Swarm: live execution instance over an epic (or auto-wrapped task)
 
-Archetypes and templates define team composition. Missions define task execution.
+## Verified Command Surface
 
-Keep these concerns separate.
+Swarm lifecycle:
 
-## Archetypes (Role Contracts)
+```bash
+bd swarm create <epic-id> [--coordinator <rig/witness>] [--force]
+bd swarm status <epic-or-swarm-id> [--json]
+bd swarm list [--json]
+bd swarm validate <epic-id> [--verbose]
+```
 
-An archetype is a role with clear responsibilities and deliverable expectations.
+Template/proto discovery:
 
-Baseline archetypes:
+```bash
+bd mol show <molecule-id> [--parallel]
+```
 
-- `coder`: implements scoped changes and provides evidence.
-- `reviewer`: validates quality, regressions, and acceptance criteria.
-- `writer`: maintains user-facing docs, memory docs, and operator notes.
+## Swarm Creation and Discovery
 
-Optional archetypes may exist per project, but every archetype should specify:
+Create a swarm for an epic:
 
-- primary responsibilities,
-- quality gates,
-- handoff inputs/outputs,
-- escalation triggers.
+```bash
+bd swarm create beadboard-maf --coordinator beadboard/witness
+```
 
-## Team Templates (Composition Contracts)
+If you create from a single task, `bd` can auto-wrap it into an epic and then create swarm.
 
-A template is a named role composition for repeatable work patterns.
+Find active swarms:
 
-Examples:
+```bash
+bd swarm list
+```
 
-- Fast lane: `coder + reviewer`
-- Documentation lane: `writer + reviewer`
-- Parallel lane: `orchestrator + coder + reviewer + writer`
+Inspect swarm execution state (computed from beads):
 
-Template quality rules:
+```bash
+bd swarm status beadboard-maf
+```
 
-- keep composition minimal,
-- avoid duplicate authority,
-- define ownership boundaries,
-- define expected handoff order.
+Validate dependency quality before dispatch:
 
-## Swarms (Runtime Team Instances)
+```bash
+bd swarm validate beadboard-maf --verbose
+```
 
-A swarm is a live team instance operating on specific beads/epics.
+## Template/Proto Traceability
 
-Lifecycle:
+To understand what pattern a swarm or molecule came from, inspect molecule structure:
 
-1. Create swarm instance from a template or manual composition.
-2. Join agents into explicit roles.
-3. Assign beads with ownership.
-4. Coordinate via events and inbox.
-5. Leave or close swarm cleanly when complete.
+```bash
+bd mol show <molecule-id> --parallel
+```
 
-## Command Surface (Representative)
+Use this to answer:
+- Which steps can run in parallel right now
+- Which steps are dependency-blocked
+- Which work shape this execution follows
 
-Use your environment's swarm commands to manage lifecycle.
+## Archetype Contracts
 
-Expected operations:
+### Coder
 
-- create swarm
-- list/show swarm
-- join swarm with role
-- leave swarm
-- close swarm
+Primary responsibility:
+- Implement scoped changes for assigned bead
 
-All swarm actions should produce observable state changes in BeadBoard views.
+Quality gates:
+- `npm run typecheck`
+- `npm run lint`
+- `npm run test` (or focused + full as required)
 
-## Ownership Rules
+Handoff payload:
+- File list changed
+- Commands run + pass/fail
+- Remaining risks
 
-- Every in-progress bead should have one clear assignee.
-- Swarms may collaborate on an epic, but each bead needs an explicit owner.
-- Multi-agent edits require reservation and coordination signals.
+Escalation triggers:
+- Missing dependency/input
+- Conflicting ownership or reservation
+- Repeated failing gate without clear root cause
 
-## User Orchestration Relationship
+### Reviewer
 
-Users control orchestration from BeadBoard UI:
+Primary responsibility:
+- Validate behavior, regressions, and acceptance criteria
 
-- choose team shape/template,
-- assign or reassign roles,
-- intervene on blockers,
-- monitor throughput and liveness.
+Quality gates:
+- Reproduce relevant tests
+- Check edge-case behavior against bead contract
 
-Agents execute according to assigned role and bead ownership.
+Handoff payload:
+- Findings ordered by severity
+- Explicit “no findings” when clean
+- Residual risk/testing gaps
+
+Escalation triggers:
+- Spec ambiguity affecting correctness
+- Inconsistent cross-view behavior
+- Insufficient evidence to approve close
+
+### Writer
+
+Primary responsibility:
+- Keep user-facing and operator docs accurate and action-oriented
+
+Quality gates:
+- Command examples match real CLI help
+- Scope/out-of-scope and verification sections are explicit
+
+Handoff payload:
+- Updated doc paths
+- User impact summary
+- Remaining docs debt
+
+Escalation triggers:
+- Command surface changed but docs unclear
+- Contradictory references across skill docs
+
+## Worker Join Flow (Not Just Orchestrators)
+
+1. Check active swarms and pick assigned epic:
+
+```bash
+bd swarm list
+bd swarm status <epic-or-swarm-id>
+```
+
+2. Read epic + children context before claiming:
+
+```bash
+bd show <epic-id>
+bd children <epic-id>
+bd ready
+```
+
+3. Claim assigned bead with explicit assignee and attach hook slot:
+
+```bash
+bd update <bead-id> --status in_progress --assignee <agent-bead-id>
+bd slot set <agent-bead-id> hook <bead-id>
+```
+
+4. Report state and coordinate through mail/events while executing.
+
+## Swarm Closure Ownership
+
+Default ownership:
+- Orchestrator/coordinator closes swarm context after all child beads close
+- Workers close only their assigned beads and clear their hook slots
+
+Closure checklist:
+1. No open child beads remain for the swarm epic
+2. No unresolved BLOCKED handoffs remain
+3. Required verification evidence exists on completed beads
+4. Coordinator posts close summary and archives follow-ups as new beads
 
 ## Anti-Patterns
 
-- Role ambiguity (multiple agents assuming same responsibility).
-- Oversized swarms with no clear ownership boundaries.
-- Using templates as mission definitions.
-- Running unassigned parallel work with no bead claim.
-- Treating swarm closure as optional housekeeping.
+- Starting swarm work without reading epic dependencies
+- Treating templates as optional and inventing ad-hoc flows each run
+- Claiming multiple beads without explicit ownership updates
+- Closing swarm before child verification evidence exists
+- Hiding blocker state in chat instead of machine-readable bead/mail signals
