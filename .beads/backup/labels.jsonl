@@ -348,6 +348,7 @@
 {"issue_id":"bb-lvl","label":"realtime"}
 {"issue_id":"bb-lvl","label":"sse"}
 {"issue_id":"bb-lvl","label":"status"}
+{"issue_id":"bb-maf8-1772593966-a","label":"gt:agent"}
 {"issue_id":"bb-n7p","label":"kanban"}
 {"issue_id":"bb-n7p","label":"status"}
 {"issue_id":"bb-n7p","label":"swimlane"}
