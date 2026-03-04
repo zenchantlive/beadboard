@@ -1,129 +1,80 @@
-# Next Session: v5 Skill Validation + Full Critique
+# Next Session: Run Epic `beadboard-v5a` (Holistic v5 Audit)
 
-## Objective
-
-Do **not** implement new features first. Use this session to pressure-test the finished `beadboard-driver` v5 skill end-to-end, critique it hard, and produce a prioritized fix list.
-
----
-
-## Scope
-
-Validate and critique all of:
-
-- `skills/beadboard-driver/SKILL.md`
-- `skills/beadboard-driver/project.template.md`
-- `skills/beadboard-driver/references/*.md`
-- `skills/beadboard-driver/scripts/*.mjs`
-- `skills/beadboard-driver/scripts/lib/driver-lib.mjs`
-- `skills/beadboard-driver/tests/*.contract.test.mjs`
-- `tests/skills/beadboard-driver/*.test.ts`
-
----
-
-## Ground Rules
-
-1. Treat this as an adversarial review, not a celebration.
-2. Evidence before assertions: every finding must cite command output or file evidence.
-3. Prefer identifying regressions, ambiguities, missing guarantees, and operator confusion risks.
-4. For every critique finding, include a concrete fix proposal.
-
----
-
-## Session Steps
-
-### Step 1: Context Recovery
+## Start Here
 
 ```bash
 cd /mnt/c/Users/Zenchant/codex/beadboard
-git log --oneline -12
-bd show beadboard-maf
+bd show beadboard-v5a
 bd ready
 ```
 
-### Step 2: Run Full Gates (Baseline)
+You are not starting feature work first. Execute the audit epic and produce critique + remediation graph.
+
+## Epic and Bead Order
+
+Epic: `beadboard-v5a` — **[EPIC] BeadBoard Driver v5: Holistic Validation and Critique**
+
+Execution DAG (already wired):
+
+1. `beadboard-v5a.1` baseline verification run
+2. `beadboard-v5a.2` skill-local contract suite execution
+3. Parallel audit lane after baseline:
+   - `beadboard-v5a.3` SKILL.md runbook dry-run
+   - `beadboard-v5a.4` reference consistency audit
+   - `beadboard-v5a.5` test coverage gap audit
+   - `beadboard-v5a.6` failure-mode drill audit
+   - `beadboard-v5a.10` frontend visual validation gate (manual)
+   - `beadboard-v5a.11` communication system holistic audit
+   - `beadboard-v5a.12` memory system audit
+   - `beadboard-v5a.13` agent lifecycle/liveness audit
+   - `beadboard-v5a.14` swarm/molecule workflow audit
+   - `beadboard-v5a.15` cold-agent usability audit
+4. `beadboard-v5a.7` consolidated report (`docs/reviews/YYYY-MM-DD-beadboard-driver-v5-audit.md`)
+5. `beadboard-v5a.8` remediation epic + bead graph creation
+6. `beadboard-v5a.9` final go/no-go verdict + handoff update
+
+## Required Skills For This Session
+
+Use these skills explicitly:
+
+1. `beadboard-driver`
+2. `verification-before-completion`
+3. `systematic-debugging` (for any failing gate/drill)
+4. `writing-skills` (critiquing SKILL.md + reference quality)
+5. `writing-plans` (when translating findings into remediation plan)
+
+## Required Verification
+
+At minimum, run and capture outputs:
 
 ```bash
 npm run typecheck
 npm run lint
 npm run test
-```
-
-Capture exact pass/fail state and any warnings.
-
-### Step 3: Run Skill-Local Contract Suite Explicitly
-
-```bash
 node skills/beadboard-driver/tests/run-tests.mjs
 ```
 
-### Step 4: Manual Runbook Dry-Run Against SKILL.md
+Also capture manual visual evidence for frontend/comms validation (`v5a.10`): screenshots + explicit human confirmation note.
 
-Walk through SKILL.md steps exactly as written and verify each command exists/is actionable.
+## Bead Authoring Rule (When Creating Remediation Beads)
 
-Required checks:
+Follow:
 
-- Preflight commands run cleanly (or fail with useful remediation)
-- Mail delegate validation behaves as documented
-- Runbook commands use real flags (`--assignee`, slot hook flow, etc.)
-- No deprecated command surfaces remain
-- `project.md` lifecycle guidance is clear for first vs later agents
+- `docs/protocols/bead-prompting.md`
 
-### Step 5: Documentation Quality Critique
+Every new remediation bead description must include:
 
-Critique every major doc on:
+- `TASK CONTEXT`
+- `TASK CONTRACT` (Goal, Success Criteria, Scope, Out of Scope)
+- `IMPLEMENTATION CONSTRAINTS`
+- `VERIFICATION REQUIREMENTS`
 
-- Cold-start clarity (can a new agent execute without guessing?)
-- Command accuracy (flags/surfaces real and current)
-- Consistency across docs (no contradictions)
-- Operational safety (state, mail, evidence, closeout)
-- Cognitive load (too verbose vs too vague)
+## Deliverables (Definition of Done)
 
-### Step 6: Test Coverage Critique
+Session is done only when all are true:
 
-Identify missing coverage, especially:
-
-- Global install assumptions (`bd`, `bb/beadboard`)
-- Linux/WSL path discovery edge cases
-- Mail delegate misconfiguration and mismatch paths
-- `bb-mail-shim` lifecycle and invalid message ID behavior
-- `project.template.md` contract assumptions not exercised by tests
-
-### Step 7: Produce Findings Artifact
-
-Create a single markdown report under:
-
-- `docs/reviews/YYYY-MM-DD-beadboard-driver-v5-audit.md`
-
-Required report structure:
-
-1. Executive verdict (ship-ready / conditionally-ready / not-ready)
-2. Findings by severity (Critical, High, Medium, Low)
-3. Evidence per finding (commands + file refs)
-4. Proposed fixes per finding
-5. Suggested bead breakdown for remediation
-
-### Step 8: Create Remediation Beads
-
-From findings, create actionable beads using:
-
-- `beadboard-<new-epic>.x.x` naming format
-- explicit `Scope`, `Out of Scope`, `Success Criteria`
-- correct dependency order
-
-### Step 9: Session Closeout
-
-- Update bead notes with evidence summary
-- If reusable lesson emerged, create canonical memory bead; otherwise note no new memory
-- Update this file (`NEXT_SESSION_PROMPT.md`) with next concrete action
-
----
-
-## Deliverable Definition of Done
-
-This session is done only when all are true:
-
-1. Gates executed with captured output.
-2. Full skill critique written to `docs/reviews/...`.
-3. Remediation bead set created with dependency graph.
-4. Clear go/no-go verdict stated with evidence.
+1. `beadboard-v5a.1` through `beadboard-v5a.15` are completed per dependency order.
+2. Consolidated audit report committed under `docs/reviews/`.
+3. Remediation epic/bead graph created and linked with correct dependencies.
+4. Go/no-go verdict written with evidence and residual risks.
 
