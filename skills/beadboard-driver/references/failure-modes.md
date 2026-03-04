@@ -1,47 +1,75 @@
 # Failure Modes
 
+This document tracks high-impact coordination and environment failures for the BeadBoard driver skill.
+
 ## `BD_NOT_FOUND`
 
-- Cause: `bd` missing from PATH.
-- Recovery: install beads CLI or add `bd` executable directory to PATH.
+- Signal: preflight or scripts fail with `BD_NOT_FOUND`.
+- Cause: `bd` is not installed or not on `PATH`.
+- Recovery:
+  - Install beads CLI.
+  - Re-open shell so `PATH` updates apply.
+  - Re-run `node skills/beadboard-driver/scripts/session-preflight.mjs`.
 
 ## `BB_NOT_FOUND`
 
-- Cause: `BB_REPO` invalid or no `bb` command / cache / discovery hit.
+- Signal: `resolve-bb.mjs` or `bb-mail-shim.mjs` reports bb command missing.
+- Cause: global BeadBoard CLI not installed, or not discoverable.
 - Recovery:
-  - Set `BB_REPO` to BeadBoard repo root.
-  - Verify `bb.ps1` exists under `BB_REPO`.
-  - Retry preflight.
+  - Install BeadBoard globally (`bb`/`beadboard` on `PATH`).
+  - Re-run `node skills/beadboard-driver/scripts/resolve-bb.mjs`.
+  - Re-run preflight.
 
-## `NAME_GENERATION_EXHAUSTED`
+## `MAIL_DELEGATE_MISSING` / `BD_MAIL_DELEGATE_NOT_SET`
 
-- Cause: all generated names collided with existing registry entries.
+- Signal: `bd mail ...` returns delegate-not-configured or shim not invoked.
+- Cause: neither env delegate (`BEADS_MAIL_DELEGATE`/`BD_MAIL_DELEGATE`) nor `mail.delegate` config is set.
 - Recovery:
-  - increase retry count (`BB_NAME_MAX_RETRIES`),
-  - expand adjective/noun pools,
-  - retry generation.
+  - `bd config set mail.delegate "node <abs-path>/skills/beadboard-driver/scripts/bb-mail-shim.mjs"`
+  - `export BB_AGENT=<agent-id>`
+  - `node skills/beadboard-driver/scripts/ensure-bb-mail-configured.mjs`
 
-## Reservation Conflicts
+## `BB_MAIL_NOT_CONFIGURED`
 
-- `RESERVATION_CONFLICT`: active owner exists.
-- `RESERVATION_STALE_FOUND`: stale reservation exists; use takeover only when safe.
-- `RELEASE_FORBIDDEN`: non-owner attempted release.
+- Signal: `ensure-bb-mail-configured.mjs` fails contract checks.
+- Cause: delegate points to wrong command, missing shim path, or invalid `BB_AGENT` context.
+- Recovery:
+  - Run session preflight to re-apply expected delegate command.
+  - Set `BB_AGENT` explicitly.
+  - Validate with `node skills/beadboard-driver/scripts/ensure-bb-mail-configured.mjs`.
+
+## `DOLT_NOT_RUNNING`
+
+- Signal: `bd` reads stale/fallback data, API routes return Dolt connection failures, or status checks report backend unavailable.
+- Cause: Dolt SQL server not started for this workspace.
+- Recovery:
+  - From repo root: `bd dolt start`
+  - Verify backend health before proceeding (`beadboard status --json` or project-specific health checks).
+
+## `AGENT_HEARTBEAT_MISSED` (Witness liveness degradation)
+
+- Signal: agent appears stale/dead in liveness surfaces after inactivity window.
+- Cause: agent is not sending `bd agent heartbeat <agent-bead-id>` during active work.
+- Recovery:
+  - Resume periodic heartbeat (typically every 30-120 seconds while active).
+  - Set explicit state transitions: `running` -> `working` -> `stuck|done|stopped`.
+  - If work was interrupted, post a coordination note/message before resuming.
 
 ## Mail Lifecycle Errors
 
-- `UNKNOWN_SENDER` / `UNKNOWN_RECIPIENT`: register agents before send.
-- `ACK_FORBIDDEN`: only recipient may ack.
-- `MESSAGE_NOT_FOUND`: stale id or wrong message reference.
+- `UNKNOWN_SENDER` / `UNKNOWN_RECIPIENT`: register agent identities before sending.
+- `MESSAGE_NOT_FOUND`: incorrect message id or wrong inbox context.
+- `ACK_FORBIDDEN`: only the message recipient can acknowledge.
+
+## Local Workspace Repair Signals
+
+- `GIT_INDEX_LOCK_PRESENT`: stale git lock blocks writes.
+- Recovery:
+  - Confirm no active git process is still using the repo.
+  - Run `node skills/beadboard-driver/scripts/heal-common-issues.mjs --project-root <repo> --apply --fix-git-index-lock`.
 
 ## Policy Guardrails
 
 - Do not write `.beads/issues.jsonl` directly.
-- Do not close beads without verification evidence.
-- Do not bypass `BB_REPO` when it is set but invalid; fix it explicitly.
-
-## Local Environment Repair Signals
-
-- `GIT_INDEX_LOCK_PRESENT`: stale git lock can block local operations.
-  - Recovery:
-    - confirm no active git process is using the repository,
-    - run `node skills/beadboard-driver/scripts/heal-common-issues.mjs --project-root <repo> --apply --fix-git-index-lock`.
+- Do not close beads without fresh evidence.
+- Do not bypass invalid `BB_REPO` values; fix configuration first.
