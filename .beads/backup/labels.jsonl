@@ -867,8 +867,14 @@
 {"issue_id":"beadboard-jq5.1","label":"frontend"}
 {"issue_id":"beadboard-jq5.1","label":"project-scope"}
 {"issue_id":"beadboard-jq5.1","label":"ui"}
+{"issue_id":"beadboard-l4wy","label":"agent-ops"}
+{"issue_id":"beadboard-l4wy","label":"memory"}
+{"issue_id":"beadboard-l4wy","label":"process"}
 {"issue_id":"beadboard-lgs","label":"documentation"}
 {"issue_id":"beadboard-lgs","label":"installation"}
+{"issue_id":"beadboard-lzj","label":"bug"}
+{"issue_id":"beadboard-lzj","label":"p0"}
+{"issue_id":"beadboard-lzj","label":"reliability"}
 {"issue_id":"beadboard-maf","label":"agents"}
 {"issue_id":"beadboard-maf","label":"documentation"}
 {"issue_id":"beadboard-maf","label":"skills"}
