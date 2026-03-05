@@ -790,6 +790,8 @@
 {"issue_id":"beadboard-fld","label":"memory"}
 {"issue_id":"beadboard-fld","label":"memory-anchor"}
 {"issue_id":"beadboard-fld","label":"memory-ux"}
+{"issue_id":"beadboard-gsk","label":"gt:agent"}
+{"issue_id":"beadboard-gsk","label":"role:backend"}
 {"issue_id":"beadboard-hp4","label":"documentation"}
 {"issue_id":"beadboard-hp4","label":"skills"}
 {"issue_id":"beadboard-hyc","label":"skill"}
