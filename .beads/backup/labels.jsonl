@@ -1041,6 +1041,10 @@
 {"issue_id":"beadboard-v5a.9","label":"audit"}
 {"issue_id":"beadboard-v5a.9","label":"documentation"}
 {"issue_id":"beadboard-v5a.9","label":"handoff"}
+{"issue_id":"beadboard-v9s7","label":"mem-canonical"}
+{"issue_id":"beadboard-v9s7","label":"mem-hard"}
+{"issue_id":"beadboard-v9s7","label":"memory"}
+{"issue_id":"beadboard-v9s7","label":"memory-arch"}
 {"issue_id":"beadboard-vyt","label":"cli"}
 {"issue_id":"beadboard-vyt","label":"installation"}
 {"issue_id":"beadboard-vyt","label":"runtime"}
