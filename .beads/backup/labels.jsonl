@@ -950,6 +950,9 @@
 {"issue_id":"beadboard-om4","label":"mem-hard"}
 {"issue_id":"beadboard-om4","label":"memory"}
 {"issue_id":"beadboard-om4","label":"memory-reliability"}
+{"issue_id":"beadboard-pai7","label":"cleanup"}
+{"issue_id":"beadboard-pai7","label":"pr-ready"}
+{"issue_id":"beadboard-pai7","label":"runtime-artifacts"}
 {"issue_id":"beadboard-rc8","label":"cli"}
 {"issue_id":"beadboard-rc8","label":"diagnostics"}
 {"issue_id":"beadboard-rc8","label":"status"}
