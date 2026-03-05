@@ -639,6 +639,8 @@
 {"issue_id":"beadboard-1bg.8","label":"skills"}
 {"issue_id":"beadboard-1iy","label":"gt:agent"}
 {"issue_id":"beadboard-1iy","label":"role:ui"}
+{"issue_id":"beadboard-24uy","label":"gt:agent"}
+{"issue_id":"beadboard-24uy","label":"role:ui"}
 {"issue_id":"beadboard-27u","label":"installation"}
 {"issue_id":"beadboard-27u","label":"windows"}
 {"issue_id":"beadboard-2e6","label":"critique"}
@@ -659,6 +661,10 @@
 {"issue_id":"beadboard-3xu","label":"mem-hard"}
 {"issue_id":"beadboard-3xu","label":"memory"}
 {"issue_id":"beadboard-3xu","label":"memory-workflow"}
+{"issue_id":"beadboard-43oo","label":"pr15"}
+{"issue_id":"beadboard-43oo","label":"verification"}
+{"issue_id":"beadboard-44lu","label":"gt:agent"}
+{"issue_id":"beadboard-44lu","label":"role:infra"}
 {"issue_id":"beadboard-4k8","label":"frontend"}
 {"issue_id":"beadboard-4k8","label":"incident"}
 {"issue_id":"beadboard-4k8","label":"p0"}
@@ -706,6 +712,8 @@
 {"issue_id":"beadboard-8xd","label":"memory-workflow"}
 {"issue_id":"beadboard-9ha","label":"documentation"}
 {"issue_id":"beadboard-9ha","label":"skills"}
+{"issue_id":"beadboard-9rd0","label":"gt:agent"}
+{"issue_id":"beadboard-9rd0","label":"role:backend"}
 {"issue_id":"beadboard-9xb","label":"mem-canonical"}
 {"issue_id":"beadboard-9xb","label":"mem-soft"}
 {"issue_id":"beadboard-9xb","label":"memory"}
@@ -736,6 +744,8 @@
 {"issue_id":"beadboard-bgh","label":"frontend"}
 {"issue_id":"beadboard-bgh","label":"history"}
 {"issue_id":"beadboard-bgh","label":"innovation"}
+{"issue_id":"beadboard-bqa6","label":"gt:agent"}
+{"issue_id":"beadboard-bqa6","label":"role:infra"}
 {"issue_id":"beadboard-brp","label":"skill"}
 {"issue_id":"beadboard-brp","label":"usability"}
 {"issue_id":"beadboard-brq","label":"agent:coder"}
@@ -796,6 +806,8 @@
 {"issue_id":"beadboard-fld","label":"memory"}
 {"issue_id":"beadboard-fld","label":"memory-anchor"}
 {"issue_id":"beadboard-fld","label":"memory-ux"}
+{"issue_id":"beadboard-gl0b","label":"cleanup"}
+{"issue_id":"beadboard-gl0b","label":"security"}
 {"issue_id":"beadboard-gsk","label":"gt:agent"}
 {"issue_id":"beadboard-gsk","label":"role:backend"}
 {"issue_id":"beadboard-hp4","label":"documentation"}
@@ -808,6 +820,8 @@
 {"issue_id":"beadboard-i4c","label":"memory-provenance"}
 {"issue_id":"beadboard-i9z","label":"documentation"}
 {"issue_id":"beadboard-i9z","label":"skills"}
+{"issue_id":"beadboard-ie05","label":"cleanup"}
+{"issue_id":"beadboard-ie05","label":"git"}
 {"issue_id":"beadboard-ij8","label":"docs"}
 {"issue_id":"beadboard-ij8","label":"memory"}
 {"issue_id":"beadboard-ilu","label":"skills documentation"}
@@ -870,6 +884,8 @@
 {"issue_id":"beadboard-l4wy","label":"agent-ops"}
 {"issue_id":"beadboard-l4wy","label":"memory"}
 {"issue_id":"beadboard-l4wy","label":"process"}
+{"issue_id":"beadboard-l7a7","label":"cleanup"}
+{"issue_id":"beadboard-l7a7","label":"docs"}
 {"issue_id":"beadboard-lgs","label":"documentation"}
 {"issue_id":"beadboard-lgs","label":"installation"}
 {"issue_id":"beadboard-lzj","label":"bug"}
@@ -950,6 +966,8 @@
 {"issue_id":"beadboard-om4","label":"mem-hard"}
 {"issue_id":"beadboard-om4","label":"memory"}
 {"issue_id":"beadboard-om4","label":"memory-reliability"}
+{"issue_id":"beadboard-ox83","label":"pr"}
+{"issue_id":"beadboard-ox83","label":"verification"}
 {"issue_id":"beadboard-pai7","label":"cleanup"}
 {"issue_id":"beadboard-pai7","label":"pr-ready"}
 {"issue_id":"beadboard-pai7","label":"runtime-artifacts"}
@@ -959,6 +977,8 @@
 {"issue_id":"beadboard-rc8.1","label":"cli"}
 {"issue_id":"beadboard-rc8.1","label":"diagnostics"}
 {"issue_id":"beadboard-rc8.1","label":"status"}
+{"issue_id":"beadboard-skhx","label":"cleanup"}
+{"issue_id":"beadboard-skhx","label":"gitignore"}
 {"issue_id":"beadboard-tmj","label":"bug"}
 {"issue_id":"beadboard-tmj","label":"frontend"}
 {"issue_id":"beadboard-txj","label":"graph"}
@@ -1051,6 +1071,8 @@
 {"issue_id":"beadboard-vyt","label":"cli"}
 {"issue_id":"beadboard-vyt","label":"installation"}
 {"issue_id":"beadboard-vyt","label":"runtime"}
+{"issue_id":"beadboard-w73v","label":"gt:agent"}
+{"issue_id":"beadboard-w73v","label":"role:infra"}
 {"issue_id":"beadboard-wk8","label":"cli"}
 {"issue_id":"beadboard-wk8","label":"docs"}
 {"issue_id":"beadboard-wk8","label":"dolt"}
@@ -1064,9 +1086,13 @@
 {"issue_id":"beadboard-x6f","label":"mem-soft"}
 {"issue_id":"beadboard-x6f","label":"memory"}
 {"issue_id":"beadboard-x6f","label":"memory-workflow"}
+{"issue_id":"beadboard-xt3l","label":"gt:agent"}
+{"issue_id":"beadboard-xt3l","label":"role:orchestrator"}
 {"issue_id":"beadboard-xz5","label":"graph"}
 {"issue_id":"beadboard-xz5","label":"ui"}
 {"issue_id":"beadboard-yad","label":"agent:coder"}
+{"issue_id":"beadboard-ycr5","label":"bug"}
+{"issue_id":"beadboard-ycr5","label":"pr14"}
 {"issue_id":"beadboard-ydu","label":"decision"}
 {"issue_id":"beadboard-ydu","label":"installation"}
 {"issue_id":"beadboard-ydu","label":"skills"}
