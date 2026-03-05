@@ -1611,3 +1611,8 @@
 {"actor":"zenchantlive","comment":null,"created_at":"2026-03-04T14:59:07Z","event_type":"closed","id":1638,"issue_id":"beadboard-flg.4","new_value":"Portability guidance added - skill works from any project directory","old_value":""}
 {"actor":"zenchantlive","comment":null,"created_at":"2026-03-04T14:59:07Z","event_type":"closed","id":1639,"issue_id":"beadboard-flg","new_value":"all steps complete","old_value":""}
 {"actor":"zenchantlive","comment":null,"created_at":"2026-03-04T14:59:08Z","event_type":"closed","id":1640,"issue_id":"beadboard-flg","new_value":"all steps complete","old_value":""}
+{"actor":"zenchantlive","comment":null,"created_at":"2026-03-04T16:32:38Z","event_type":"created","id":1641,"issue_id":"beadboard-a14","new_value":"","old_value":""}
+{"actor":"zenchantlive","comment":"Added label: mem-canonical","created_at":"2026-03-04T16:32:38Z","event_type":"label_added","id":1642,"issue_id":"beadboard-a14","new_value":null,"old_value":null}
+{"actor":"zenchantlive","comment":"Added label: mem-hard","created_at":"2026-03-04T16:32:38Z","event_type":"label_added","id":1643,"issue_id":"beadboard-a14","new_value":null,"old_value":null}
+{"actor":"zenchantlive","comment":"Added label: memory","created_at":"2026-03-04T16:32:38Z","event_type":"label_added","id":1644,"issue_id":"beadboard-a14","new_value":null,"old_value":null}
+{"actor":"zenchantlive","comment":"Added label: memory-workflow","created_at":"2026-03-04T16:32:38Z","event_type":"label_added","id":1645,"issue_id":"beadboard-a14","new_value":null,"old_value":null}
