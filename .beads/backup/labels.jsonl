@@ -637,6 +637,8 @@
 {"issue_id":"beadboard-1bg.8","label":"documentation"}
 {"issue_id":"beadboard-1bg.8","label":"skill-md"}
 {"issue_id":"beadboard-1bg.8","label":"skills"}
+{"issue_id":"beadboard-1iy","label":"gt:agent"}
+{"issue_id":"beadboard-1iy","label":"role:ui"}
 {"issue_id":"beadboard-27u","label":"installation"}
 {"issue_id":"beadboard-27u","label":"windows"}
 {"issue_id":"beadboard-2e6","label":"critique"}
@@ -727,6 +729,8 @@
 {"issue_id":"beadboard-ay9","label":"graph"}
 {"issue_id":"beadboard-ay9","label":"ui"}
 {"issue_id":"beadboard-b7t","label":"agent:coder"}
+{"issue_id":"beadboard-bb2","label":"gt:agent"}
+{"issue_id":"beadboard-bb2","label":"role:backend"}
 {"issue_id":"beadboard-bgh","label":"brainstorm"}
 {"issue_id":"beadboard-bgh","label":"dolt"}
 {"issue_id":"beadboard-bgh","label":"frontend"}
@@ -744,6 +748,8 @@
 {"issue_id":"beadboard-btn.1","label":"skills"}
 {"issue_id":"beadboard-btt","label":"installation"}
 {"issue_id":"beadboard-btt","label":"skills"}
+{"issue_id":"beadboard-btu","label":"gt:agent"}
+{"issue_id":"beadboard-btu","label":"role:graph"}
 {"issue_id":"beadboard-bzc","label":"installation"}
 {"issue_id":"beadboard-bzc","label":"skills"}
 {"issue_id":"beadboard-c08","label":"agent:architect"}
@@ -929,6 +935,8 @@
 {"issue_id":"beadboard-nrb","label":"installation"}
 {"issue_id":"beadboard-nrb","label":"linux"}
 {"issue_id":"beadboard-nrb","label":"macos"}
+{"issue_id":"beadboard-o95","label":"gt:agent"}
+{"issue_id":"beadboard-o95","label":"role:backend"}
 {"issue_id":"beadboard-om4","label":"mem-canonical"}
 {"issue_id":"beadboard-om4","label":"mem-hard"}
 {"issue_id":"beadboard-om4","label":"memory"}
