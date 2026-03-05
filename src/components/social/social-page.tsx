@@ -184,38 +184,39 @@ export function SocialPage({
       return;
     }
 
-    const mailPairs = await Promise.all(
-      agentNames.map(async (agent) => {
-        const response = await fetch(`/api/agents/mail?agent=${encodeURIComponent(agent)}&limit=25`);
-        const payload = await response.json().catch(() => ({ ok: false }));
-        if (!response.ok || !payload.ok) {
-          return [agent, [] as CoordMessage[]] as const;
-        }
-        return [agent, (payload.data ?? []) as CoordMessage[]] as const;
-      }),
-    );
+    // Use batch endpoints to reduce API calls from 2N to 2
+    const agentsParam = agentNames.join(',');
 
-    const reservationsPairs = await Promise.all(
-      agentNames.map(async (agent) => {
-        const response = await fetch(`/api/agents/reservations?agent=${encodeURIComponent(agent)}`);
-        const payload = await response.json().catch(() => ({ ok: false }));
-        if (!response.ok || !payload.ok) {
-          return [agent, undefined] as const;
-        }
-        const first = (payload.data?.reservations ?? [])[0];
-        return [agent, first?.scope as string | undefined] as const;
-      }),
-    );
+    const [mailResponse, reservationsResponse] = await Promise.all([
+      fetch(`/api/agents/mail/batch?agents=${encodeURIComponent(agentsParam)}&limit=25`),
+      fetch(`/api/agents/reservations/batch?agents=${encodeURIComponent(agentsParam)}`),
+    ]);
+
+    const mailPayload = await mailResponse.json().catch(() => ({ ok: false, data: [] }));
+    const reservationsPayload = await reservationsResponse.json().catch(() => ({ ok: false, data: [] }));
 
     const nextMessages: Record<string, CoordMessage[]> = {};
     const nextUnread: Record<string, number> = {};
-    for (const [agent, messages] of mailPairs) {
-      nextMessages[agent] = messages;
-      nextUnread[agent] = messages.filter((m) => m.state === 'unread').length;
+    const nextReservations: Record<string, string | undefined> = {};
+
+    // Process mail results
+    if (mailPayload.ok && mailPayload.data) {
+      for (const entry of mailPayload.data) {
+        nextMessages[entry.agent] = entry.messages ?? [];
+        nextUnread[entry.agent] = (entry.messages ?? []).filter((m: CoordMessage) => m.state === 'unread').length;
+      }
     }
+
+    // Process reservations results
+    if (reservationsPayload.ok && reservationsPayload.data) {
+      for (const entry of reservationsPayload.data) {
+        nextReservations[entry.agent] = entry.scope;
+      }
+    }
+
     setAgentMessagesByName(nextMessages);
     setAgentUnreadByName(nextUnread);
-    setAgentReservationsByName(Object.fromEntries(reservationsPairs));
+    setAgentReservationsByName(nextReservations);
   }, [agentNames]);
 
   useEffect(() => {

@@ -24,6 +24,7 @@ interface IssueRow extends RowDataPacket {
   closed_at: Date | string | null;
   due_at: Date | string | null;
   labels_concat: string | null;
+  comments_count: number | null;
 }
 
 interface DepRow extends RowDataPacket {
@@ -60,6 +61,7 @@ function normalizeRow(row: IssueRow, deps: BeadDependency[]): BeadIssue {
     due_at: toIsoString(row.due_at),
     estimated_minutes: typeof row.estimated_minutes === 'number' ? row.estimated_minutes : null,
     external_ref: row.external_ref ?? null,
+    comments_count: (row.comments_count ?? 0) as number,
     metadata: row.metadata ?? {},
   };
 }
@@ -86,7 +88,9 @@ export async function readIssuesViaDolt(
   try {
     // Query 1: All issues with comma-separated labels (GROUP_CONCAT avoids N+1)
     const [issueRows] = await pool.execute<IssueRow[]>(
-      `SELECT i.*, GROUP_CONCAT(l.label SEPARATOR ',') AS labels_concat
+      `SELECT i.*, 
+              GROUP_CONCAT(l.label SEPARATOR ',') AS labels_concat,
+              (SELECT COUNT(*) FROM comments c WHERE c.issue_id = i.id) AS comments_count
        FROM issues i
        LEFT JOIN labels l ON l.issue_id = i.id
        GROUP BY i.id`

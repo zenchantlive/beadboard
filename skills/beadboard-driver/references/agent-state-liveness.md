@@ -44,7 +44,7 @@ Blocked condition:
 
 ```bash
 bd agent state bb-silver-scribe stuck
-bb agent send --from silver-scribe --to cobalt-ridge --bead beadboard-123 --category BLOCKED --subject "Waiting on schema" --body "Need migration direction before continuing."
+bd mail send --to cobalt-ridge --bead beadboard-123 --category BLOCKED --subject "Waiting on schema" --body "Need migration direction before continuing."
 ```
 
 Work completion:
@@ -74,14 +74,16 @@ Use `bd agent heartbeat <agent-bead-id>` to refresh `last_activity` without chan
 bd agent heartbeat bb-silver-scribe
 ```
 
-When to heartbeat:
-- At least once every 5-10 minutes during long-running work
+**Daemon agents (persistent processes):**
+- Normal work: every 5 minutes
+- High-risk long operations: every 2-3 minutes
 - Immediately before long test/build phases
 - Immediately after recovering from interruptions
 
-Recommended cadence:
-- Normal work: every 5 minutes
-- High-risk long operations: every 2-3 minutes
+**LLM agents (Claude Code, turn-based):**
+- At turn start (when picking up work)
+- Immediately before long-running commands
+- Inter-turn silence is expected and not a health signal
 
 ## Witness Death Timeout
 
@@ -94,6 +96,8 @@ Operational interpretation:
 
 Agent-side rule:
 - If you are alive and still executing, heartbeat before anyone has to guess.
+
+> **Current status:** The Witness enforcement layer is not yet running. Heartbeats are recorded in `last_activity` and visible in the BeadBoard dashboard but are not currently auto-enforced. Agents will not be auto-marked `dead`. Daemon implementation is a future epic.
 
 ## Slot Operations (Current Work Attachment)
 
@@ -125,7 +129,7 @@ Important slot constraints:
 
 When blocked:
 1. Set state to stuck (`bd agent state ... stuck`)
-2. Send explicit BLOCKED coordination event (`bb agent send --category BLOCKED ...`)
+2. Send explicit BLOCKED coordination event (`bd mail send --category BLOCKED ...`)
 3. Keep heartbeat active while waiting
 4. Resume with `running`/`working` once unblocked
 

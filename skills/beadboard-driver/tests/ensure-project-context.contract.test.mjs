@@ -21,7 +21,7 @@ test('ensure-project-context creates project.md when missing', async () => {
     const content = await fs.readFile(path.join(root, 'project.md'), 'utf8');
     assert.equal(result.ok, true);
     assert.equal(result.created, true);
-    assert.match(content, /Project Driver Template/);
+    assert.match(content, /Environment Status Cache/);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }

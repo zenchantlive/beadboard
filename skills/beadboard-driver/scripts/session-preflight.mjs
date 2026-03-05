@@ -40,6 +40,38 @@ function configureMailDelegate(bdPath, shimPath) {
   };
 }
 
+function validateMemorySystem(bdPath) {
+  try {
+    const result = spawnSync(bdPath, ['query', 'label=mem-canonical,status=closed', '--limit', '5'], {
+      stdio: 'pipe',
+      shell: false,
+    });
+    
+    if (result.status !== 0) {
+      return {
+        validated: false,
+        reason: 'Failed to query memory system',
+        memories_found: 0,
+      };
+    }
+    
+    const output = result.stdout?.toString() || '';
+    const memoryCount = (output.match(/beadboard-/g) || []).length;
+    
+    return {
+      validated: true,
+      memories_found: memoryCount,
+      note: 'Remember to read memory beads at session start: bd show beadboard-116 beadboard-60a beadboard-zas',
+    };
+  } catch (error) {
+    return {
+      validated: false,
+      reason: error instanceof Error ? error.message : String(error),
+      memories_found: 0,
+    };
+  }
+}
+
 async function main() {
   const shimPath = join(__dirname, 'bb-mail-shim.mjs');
 
@@ -54,13 +86,14 @@ async function main() {
             reason: 'Could not find bd in PATH.',
             remediation:
               process.platform === 'win32'
-                ? 'Primary: npm i -g beadboard. Fallback: powershell -ExecutionPolicy Bypass -File .\\install\\install.ps1. Then ensure bd is available in PATH.'
+                ? 'Primary: npm i -g beadboard. Fallback: powershell -ExecutionPolicy Bypass -File ./install/install.ps1. Then ensure bd is available in PATH.'
                 : 'Primary: npm i -g beadboard. Fallback: bash ./install/install.sh. Then ensure bd is available in PATH.',
             tools: {
               bd: { available: false, path: null },
             },
             bb: null,
             mail: null,
+            memory: null,
           },
           null,
           2,
@@ -86,6 +119,7 @@ async function main() {
               configured: false,
               reason: 'bb not available — mail delegate requires bb agent commands',
             },
+            memory: null,
           },
           null,
           2,
@@ -95,6 +129,7 @@ async function main() {
     }
 
     const mail = configureMailDelegate(bdPath, shimPath);
+    const memory = validateMemorySystem(bdPath);
 
     process.stdout.write(
       `${JSON.stringify(
@@ -106,6 +141,7 @@ async function main() {
           },
           bb,
           mail,
+          memory,
         },
         null,
         2,
@@ -124,6 +160,7 @@ async function main() {
           },
           bb: null,
           mail: null,
+          memory: null,
         },
         null,
         2,

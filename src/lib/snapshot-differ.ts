@@ -76,13 +76,22 @@ export function diffSnapshots(
       }));
     }
 
-    // 5. Collection Changes (Dependencies)
+    // 5. Collection Changes (Comments) - detect comment count changes
+    if (prev.comments_count !== curr.comments_count) {
+      events.push(createEvent('comment_added', curr, now, {
+        field: 'comments_count',
+        from: String(prev.comments_count),
+        to: String(curr.comments_count)
+      }));
+    }
+
+    // 6. Collection Changes (Dependencies)
     diffDependencies(prev.dependencies, curr.dependencies).forEach(kindAndTarget => {
       events.push(createEvent(kindAndTarget.kind, curr, now, { to: kindAndTarget.target, field: kindAndTarget.type }));
     });
   });
 
-  // 6. Detect Deleted Issues
+  // 7. Detect Deleted Issues
   if (previous) {
     const currMap = new Set(current.map(c => c.id));
     previous.forEach(prev => {

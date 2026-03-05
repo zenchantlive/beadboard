@@ -305,29 +305,24 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
         return;
       }
 
-      const mailResponses = await Promise.all(
-        agentRoster.map(async (agent) => {
-          const response = await fetch(`/api/agents/mail?agent=${encodeURIComponent(agent.name)}&limit=15`);
-          const payload = await response.json().catch(() => ({ ok: false }));
-          return [agent.name, response.ok && payload.ok ? (payload.data as CoordMessage[]) : []] as const;
-        }),
-      );
+      // Use batch endpoints to reduce API calls from 2N to 2
+      const agentNames = agentRoster.map(a => a.name).join(',');
 
-      const reservationResponses = await Promise.all(
-        agentRoster.map(async (agent) => {
-          const response = await fetch(`/api/agents/reservations?agent=${encodeURIComponent(agent.name)}`);
-          const payload = await response.json().catch(() => ({ ok: false }));
-          if (!response.ok || !payload.ok) {
-            return [agent.name, undefined] as const;
-          }
-          return [agent.name, payload.data?.reservations?.[0]?.scope as string | undefined] as const;
-        }),
-      );
+      const [mailResponse, reservationsResponse] = await Promise.all([
+        fetch(`/api/agents/mail/batch?agents=${encodeURIComponent(agentNames)}&limit=15`),
+        fetch(`/api/agents/reservations/batch?agents=${encodeURIComponent(agentNames)}`),
+      ]);
 
+      const mailPayload = await mailResponse.json().catch(() => ({ ok: false, data: [] }));
+      const reservationsPayload = await reservationsResponse.json().catch(() => ({ ok: false, data: [] }));
+
+      // Collect all messages from all agents
       const uniqueMessages = new Map<string, CoordMessage>();
-      for (const [, messages] of mailResponses) {
-        for (const message of messages) {
-          uniqueMessages.set(message.message_id, message);
+      if (mailPayload.ok && mailPayload.data) {
+        for (const entry of mailPayload.data) {
+          for (const message of (entry.messages ?? [])) {
+            uniqueMessages.set(message.message_id, message);
+          }
         }
       }
 
@@ -346,8 +341,16 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 25);
 
+      // Build reservation map
+      const reservationMap: Record<string, string | undefined> = {};
+      if (reservationsPayload.ok && reservationsPayload.data) {
+        for (const entry of reservationsPayload.data) {
+          reservationMap[entry.agent] = entry.scope;
+        }
+      }
+
       setCoordActivities(mapped);
-      setReservationByAgent(Object.fromEntries(reservationResponses));
+      setReservationByAgent(reservationMap);
     };
 
     void fetchCoordination();

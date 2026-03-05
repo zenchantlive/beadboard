@@ -8,8 +8,12 @@ Day-to-day runbooks use `bd mail` delegation rather than direct low-level agent 
 - `node skills/beadboard-driver/scripts/session-preflight.mjs`
 - `node skills/beadboard-driver/scripts/ensure-bb-mail-configured.mjs`
 - `bd create --title="Agent: <role-name>" --description="<agent scope>" --type=task --priority=0 --label="gt:agent,role:<orchestrator|ui|graph|backend|infra>"`
-- `bd agent state <agent-bead-id> spawning`
-- `bd agent state <agent-bead-id> running`
+- `bd agent state <agent-bead-id> spawning` — agent bead created, environment not yet verified
+- `bd agent state <agent-bead-id> running` — environment verified, ready to claim work
+- `bd agent state <agent-bead-id> working` — work bead claimed, actively executing
+- `bd agent state <agent-bead-id> stuck` — blocked, waiting on intervention or response
+- `bd agent state <agent-bead-id> done` — work bead closed, all deliverables complete
+- `bd agent state <agent-bead-id> stopped` — session ending cleanly
 - `bd agent heartbeat <agent-bead-id>`
 - `bd agent show <agent-bead-id>`
 
@@ -75,7 +79,7 @@ Delegate setup and validation:
 
 ## Environment and Repair Helpers
 
-- `node skills/beadboard-driver/scripts/resolve-bb.mjs`
-- `node skills/beadboard-driver/scripts/readiness-report.mjs --checks <json> --artifacts <json>`
-- `node skills/beadboard-driver/scripts/diagnose-env.mjs`
-- `node skills/beadboard-driver/scripts/heal-common-issues.mjs [--project-root <path>] [--apply] [--fix-git-index-lock]`
+- `node {baseDir}/scripts/setup-mail-delegate.mjs` — configure mail.delegate (self-resolves shim path)
+- `node {baseDir}/scripts/readiness-report.mjs --checks <json> --artifacts <json>`
+- `node {baseDir}/scripts/diagnose-env.mjs`
+- `node {baseDir}/scripts/heal-common-issues.mjs [--project-root <path>] [--apply] [--fix-git-index-lock]`

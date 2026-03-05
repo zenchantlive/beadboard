@@ -53,6 +53,7 @@ export interface BeadIssue {
   due_at: string | null;
   estimated_minutes: number | null;
   external_ref: string | null;
+  comments_count?: number;
   metadata: Record<string, unknown>;
 }
 

@@ -7,8 +7,7 @@ This runbook is the minimum lifecycle contract for agents using BeadBoard Driver
 1. Run preflight and discovery checks:
 
 ```bash
-node skills/beadboard-driver/scripts/session-preflight.mjs
-node skills/beadboard-driver/scripts/resolve-bb.mjs
+node {baseDir}/scripts/session-preflight.mjs
 ```
 
 2. Create or identify your agent bead first (required before claiming work):
@@ -27,7 +26,8 @@ bd agent state <agent-bead-id> running
 4. Query hard memory for your domain before claim:
 
 ```bash
-bd query "label=memory AND label=mem-canonical AND label=mem-hard AND status=closed"
+# Select domain: memory-arch | memory-workflow | memory-agent | memory-ux | memory-reliability
+bd query "label=memory AND label=mem-canonical AND label=<domain> AND status=closed" --sort updated --reverse
 ```
 
 ## 2) Discover Work and Read Epic Context
@@ -100,7 +100,7 @@ bd agent state <agent-bead-id> stuck
 2. Coordination signal:
 
 ```bash
-bb agent send --from <agent-name> --to <target-agent-or-role> --bead <bead-id> --category BLOCKED --subject "<blocker summary>" --body "<what is needed>"
+bd mail send --to <target-agent-or-role> --bead <bead-id> --category BLOCKED --subject "<blocker summary>" --body "<what is needed>"
 ```
 
 3. Keep heartbeat while waiting:

@@ -17,6 +17,7 @@ const tests = [
   path.join(__dirname, 'diagnose-env.contract.test.mjs'),
   path.join(__dirname, 'heal-common-issues.contract.test.mjs'),
   path.join(__dirname, 'ensure-project-context.contract.test.mjs'),
+  path.join(__dirname, 'setup-mail-delegate.contract.test.mjs'),
 ];
 
 const child = spawn(process.execPath, ['--test', ...tests], {

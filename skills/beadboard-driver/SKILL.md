@@ -315,6 +315,8 @@ Stop and correct if you are about to:
   Swarm composition, molecule operations, worker dispatch patterns.
 - `references/missions-realtime.md`:
   Real-time/watcher/event troubleshooting.
+- `references/creating-beads.md`:
+  Creating epics, tasks, subtasks with proper naming, dependencies, and workflow.
 
 ## Bottom Line
 

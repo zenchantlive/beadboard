@@ -19,3 +19,6 @@ artifacts/
 
 # beadboard runtime artifacts
 .beadboard/
+
+# Archived stashes for reference
+docs/references/stashes/

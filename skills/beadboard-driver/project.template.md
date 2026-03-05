@@ -1,7 +1,31 @@
-# Project Driver Template
+# project.md — BeadBoard Driver Session Cache
 
-Use this template to create `project.md` at the target repository root.
-The first agent in a repo should create this file; later agents must read and update it before work.
+This file is maintained by agents. A new agent reads this first.
+If the Environment Status table shows all `pass`, skip straight to Step 2 of the runbook.
+Only re-run a check if its row says `fail` or `unknown`, or if you hit an actual error.
+
+---
+
+## Environment Status Cache
+
+Last updated: YYYY-MM-DD by `<agent-bead-id>`
+
+| Component | Status | Version / Detail | Verified |
+|-----------|--------|-----------------|---------|
+| `bd` on PATH | `unknown` | | |
+| `bb` on PATH | `unknown` | | |
+| `.beads` db exists | `unknown` | | |
+| `mail.delegate` configured | `unknown` | | |
+| `session-preflight` | `unknown` | | |
+| `bb agent` registered | `unknown` | `BB_AGENT=` | |
+| Tests last run | `unknown` | | |
+
+**Status values:** `pass` · `fail` · `unknown` · `skip` (not applicable to this project)
+
+**Rule:** If every row is `pass` → skip Step 1 entirely and go straight to Step 2.
+If any row is `fail` or `unknown` → run only that check, update this table, continue.
+
+---
 
 ## Project Identity
 
@@ -10,68 +34,33 @@ The first agent in a repo should create this file; later agents must read and up
 - Primary language/runtime:
 - Primary package manager:
 
-## Tooling Baseline (Global Installs)
+## Tooling Baseline
 
-Record what is already installed on this machine so later agents do not re-check unnecessarily.
-
-- `bd` installed and on PATH: yes/no
-- `bb` or `beadboard` installed and on PATH: yes/no
-- Detection commands used (with date):
-- Notes on shell/platform quirks (WSL/Windows/macOS/Linux):
+- `bd` installed and on PATH: yes/no — version:
+- `bb` installed and on PATH: yes/no — version:
+- Detection commands used:
+- Shell/platform: (e.g. WSL2/bash, macOS/zsh, Windows/PowerShell)
 
 ## BeadBoard/Communication Setup
 
-- Mail delegate command configured:
-  - `bd config set mail.delegate "node <abs-path>/skills/beadboard-driver/scripts/bb-mail-shim.mjs"`
-- Agent identity env var policy:
-  - Preferred: `BB_AGENT=<agent-id>`
-  - Fallback: `BD_ACTOR=<agent-id>`
-- Delegate validation status:
-  - `node skills/beadboard-driver/scripts/ensure-bb-mail-configured.mjs` pass/fail
-- Session preflight status:
-  - `node skills/beadboard-driver/scripts/session-preflight.mjs` pass/fail
+- `.beads` database: exists/created on YYYY-MM-DD via `bd init`
+- Mail delegate: `bd config set mail.delegate "node <abs-path>/scripts/bb-mail-shim.mjs"` — configured YYYY-MM-DD
+- Agent identity policy: `export BB_AGENT=<role-name>` (set fresh each session in Step 2)
+- `session-preflight` last pass: YYYY-MM-DD
 
 ## Agent State + Heartbeat Policy
 
-- Agent bead naming convention for this repo:
-- Required state transitions (spawning -> running -> working -> stuck/done/stopped):
-- Heartbeat cadence during active work (recommended 30-120s):
-- Stuck escalation timeout before user ping:
-
-## Swarm / Formula Defaults
-
-- Primary epic/swarm pattern used by this repo:
-- Formula/proto id(s) commonly used (if any):
-- Preferred swarm command flow (`bd swarm validate/create/status` etc.):
+- Agent bead naming: `bb-<role-name>` (e.g. `bb-silver-scribe`)
+- Required state transitions: `spawning → running → working → stuck/done/stopped`
+- Heartbeat: LLM agents heartbeat at turn start + before long commands; daemon agents every 5 min
 
 ## Command Baseline
 
-- Install command:
-- Build command:
-- Typecheck command:
-- Lint command:
-- Test command:
-- Smoke command (optional):
-
-## Verification Policy Overrides
-
-- Required gates for this project:
-- Known slow gates and timeout guidance:
-- Evidence format expected in bead notes:
-
-## Scope and Safety
-
-- Forbidden commands/actions for this repo:
-- Paths requiring reservation before edits:
-- External systems requiring human approval:
-- Secret handling guidance:
-
-## Coordination Defaults
-
-- Default handoff style:
-- Blocker escalation policy:
-- ACK expectations for `HANDOFF`/`BLOCKED`:
-- Reservation conflict policy (`--takeover-stale` rules):
+- Install:
+- Build:
+- Typecheck:
+- Lint:
+- Test:
 
 ## Known Workarounds
 
@@ -80,24 +69,12 @@ Document only stable, repeatable workarounds.
 1. Trigger:
    - Symptom:
    - Workaround:
-   - Verification:
-   - Owner:
+   - Verified:
 
-2. Trigger:
-   - Symptom:
-   - Workaround:
-   - Verification:
-   - Owner:
+## Session Log (append-only)
 
-## Session Closeout Checklist
+Each agent appends one line when they update this file:
 
-- [ ] Bead status/assignee updated
-- [ ] Verification commands executed and recorded
-- [ ] Artifacts attached/linked
-- [ ] Memory review performed
-- [ ] Follow-up beads created (if needed)
-- [ ] `project.md` updated with any new environment facts
-
-## Change Log
-
-- YYYY-MM-DD: Initial `project.md` created from template.
+| Date | Agent | What changed |
+|------|-------|-------------|
+| YYYY-MM-DD | `<agent-bead-id>` | Initial project.md created |
