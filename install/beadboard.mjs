@@ -165,14 +165,26 @@ function openUrl(url) {
   if (process.env.BB_OPEN_NOOP === '1') return;
 
   if (process.platform === 'win32') {
-    spawn('cmd', ['/c', 'start', '', url], { stdio: 'ignore', detached: true }).unref();
+    const child = spawn('cmd', ['/c', 'start', '', url], { stdio: 'ignore', detached: true });
+    child.on('error', (err) => {
+      process.stderr.write(`Warning: Failed to open URL: ${err.message}\n`);
+    });
+    child.unref();
     return;
   }
   if (process.platform === 'darwin') {
-    spawn('open', [url], { stdio: 'ignore', detached: true }).unref();
+    const child = spawn('open', [url], { stdio: 'ignore', detached: true });
+    child.on('error', (err) => {
+      process.stderr.write(`Warning: Failed to open URL: ${err.message}\n`);
+    });
+    child.unref();
     return;
   }
-  spawn('xdg-open', [url], { stdio: 'ignore', detached: true }).unref();
+  const child = spawn('xdg-open', [url], { stdio: 'ignore', detached: true });
+  child.on('error', (err) => {
+    process.stderr.write(`Warning: Failed to open URL: ${err.message}\n`);
+  });
+  child.unref();
 }
 
 function startDoltInProject(cwd) {
@@ -229,6 +241,10 @@ async function main() {
       cwd: startRoot,
       stdio: 'inherit',
       shell: process.platform === 'win32',
+    });
+    child.on('error', (err) => {
+      process.stderr.write(`Error: Failed to start dev server: ${err.message}\n`);
+      process.exit(1);
     });
     child.on('exit', (code) => process.exit(code ?? 0));
     output(

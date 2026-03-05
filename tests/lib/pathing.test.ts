@@ -9,20 +9,20 @@ import {
 } from '../../src/lib/pathing';
 
 test('canonicalizeWindowsPath normalizes separators and drive casing', () => {
-  const input = 'c:/Users/Zenchant/codex/beadboard/';
+  const input = 'c:/Users/test/project/beadboard/';
   const result = canonicalizeWindowsPath(input);
-  assert.equal(result, 'C:\\Users\\Zenchant\\codex\\beadboard');
+  assert.equal(result, 'C:\\Users\\test\\project\\beadboard');
 });
 
 test('windowsPathKey is case-insensitive stable key', () => {
-  const a = windowsPathKey('C:/Users/Zenchant/codex/beadboard');
-  const b = windowsPathKey('c:\\users\\zenchant\\codex\\beadboard\\');
+  const a = windowsPathKey('C:/Users/test/project/beadboard');
+  const b = windowsPathKey('c:\\users\\test\\project\\beadboard\\');
   assert.equal(a, b);
 });
 
 test('toDisplayPath renders forward slashes for UI readability', () => {
-  const display = toDisplayPath('C:\\Users\\Zenchant\\codex\\beadboard');
-  assert.equal(display, 'C:/Users/Zenchant/codex/beadboard');
+  const display = toDisplayPath('C:\\Users\\test\\project\\beadboard');
+  assert.equal(display, 'C:/Users/test/project/beadboard');
 });
 
 test('sameWindowsPath handles case/separator differences', () => {

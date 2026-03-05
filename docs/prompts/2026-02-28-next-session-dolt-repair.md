@@ -1,6 +1,6 @@
 # Next Session Prompt: Dolt/Beads Database Recovery and Source-of-Truth Reconciliation
 
-You are continuing work in `/mnt/c/Users/Zenchant/codex/beadboard`.
+You are continuing work in `beadboard`.
 
 ## Problem snapshot (as of 2026-02-28)
 Bead state appears empty in `bd ready`, but `.beads/issues.jsonl` contains historical data.

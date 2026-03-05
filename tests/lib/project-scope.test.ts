@@ -10,22 +10,22 @@ const REGISTRY: ProjectScopeRegistryEntry[] = [
 
 test('resolveProjectScope defaults to local when query key is missing', () => {
   const scope = resolveProjectScope({
-    currentProjectRoot: 'C:/Users/Zenchant/codex/beadboard',
+    currentProjectRoot: 'C:/Users/test/project/beadboard',
     registryProjects: REGISTRY,
   });
 
   assert.equal(scope.mode, 'single');
   assert.equal(scope.selected.source, 'local');
-  assert.equal(scope.selected.root, 'C:\\Users\\Zenchant\\codex\\beadboard');
+  assert.equal(scope.selected.root, 'C:\\Users\\test\\project\\beadboard');
   assert.equal(scope.selected.key, 'local');
-  assert.deepEqual(scope.readRoots, ['C:\\Users\\Zenchant\\codex\\beadboard']);
+  assert.deepEqual(scope.readRoots, ['C:\\Users\\test\\project\\beadboard']);
   assert.equal(scope.options[0].key, 'local');
   assert.equal(scope.options.length, 3);
 });
 
 test('resolveProjectScope selects registry project when key matches', () => {
   const scope = resolveProjectScope({
-    currentProjectRoot: 'C:/Users/Zenchant/codex/beadboard',
+    currentProjectRoot: 'C:/Users/test/project/beadboard',
     registryProjects: REGISTRY,
     requestedProjectKey: 'd:\\repos\\beta',
   });
@@ -38,19 +38,19 @@ test('resolveProjectScope selects registry project when key matches', () => {
 
 test('resolveProjectScope falls back to local when query key is unknown', () => {
   const scope = resolveProjectScope({
-    currentProjectRoot: 'C:/Users/Zenchant/codex/beadboard',
+    currentProjectRoot: 'C:/Users/test/project/beadboard',
     registryProjects: REGISTRY,
     requestedProjectKey: 'd:\\repos\\missing',
   });
 
   assert.equal(scope.selected.source, 'local');
   assert.equal(scope.selected.key, 'local');
-  assert.deepEqual(scope.readRoots, ['C:\\Users\\Zenchant\\codex\\beadboard']);
+  assert.deepEqual(scope.readRoots, ['C:\\Users\\test\\project\\beadboard']);
 });
 
 test('resolveProjectScope deduplicates registry entries by normalized key', () => {
   const scope = resolveProjectScope({
-    currentProjectRoot: 'C:/Users/Zenchant/codex/beadboard',
+    currentProjectRoot: 'C:/Users/test/project/beadboard',
     registryProjects: [{ path: 'D:/Repos/Alpha/' }, { path: 'd:\\repos\\alpha' }],
   });
 
@@ -60,7 +60,7 @@ test('resolveProjectScope deduplicates registry entries by normalized key', () =
 
 test('resolveProjectScope supports aggregate mode and reads all roots', () => {
   const scope = resolveProjectScope({
-    currentProjectRoot: 'C:/Users/Zenchant/codex/beadboard',
+    currentProjectRoot: 'C:/Users/test/project/beadboard',
     registryProjects: REGISTRY,
     requestedProjectKey: 'd:\\repos\\alpha',
     requestedMode: 'aggregate',
@@ -69,7 +69,7 @@ test('resolveProjectScope supports aggregate mode and reads all roots', () => {
   assert.equal(scope.mode, 'aggregate');
   assert.equal(scope.selected.key, 'd:\\repos\\alpha');
   assert.deepEqual(scope.readRoots, [
-    'C:\\Users\\Zenchant\\codex\\beadboard',
+    'C:\\Users\\test\\project\\beadboard',
     'D:\\Repos\\Alpha',
     'D:\\Repos\\Beta',
   ]);
@@ -77,11 +77,11 @@ test('resolveProjectScope supports aggregate mode and reads all roots', () => {
 
 test('resolveProjectScope falls back to single mode for unknown mode values', () => {
   const scope = resolveProjectScope({
-    currentProjectRoot: 'C:/Users/Zenchant/codex/beadboard',
+    currentProjectRoot: 'C:/Users/test/project/beadboard',
     registryProjects: REGISTRY,
     requestedMode: 'invalid-mode',
   });
 
   assert.equal(scope.mode, 'single');
-  assert.deepEqual(scope.readRoots, ['C:\\Users\\Zenchant\\codex\\beadboard']);
+  assert.deepEqual(scope.readRoots, ['C:\\Users\\test\\project\\beadboard']);
 });

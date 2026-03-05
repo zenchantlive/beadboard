@@ -62,7 +62,7 @@ test('POST deduplicates and GET returns normalized path', async () => {
     const first = await POST(
       new Request('http://localhost/api/projects', {
         method: 'POST',
-        body: JSON.stringify({ path: 'c:/Users/Zenchant/codex/beadboard/' }),
+        body: JSON.stringify({ path: 'c:/Users/test/project/beadboard/' }),
         headers: { 'content-type': 'application/json' },
       }),
     );
@@ -71,7 +71,7 @@ test('POST deduplicates and GET returns normalized path', async () => {
     const dup = await POST(
       new Request('http://localhost/api/projects', {
         method: 'POST',
-        body: JSON.stringify({ path: 'C:\\users\\zenchant\\codex\\beadboard' }),
+        body: JSON.stringify({ path: 'C:\\users\\test\\project\\beadboard' }),
         headers: { 'content-type': 'application/json' },
       }),
     );
@@ -79,7 +79,7 @@ test('POST deduplicates and GET returns normalized path', async () => {
 
     const list = await GET();
     const body = (await readJson(list)) as { projects: Array<{ path: string }> };
-    assert.deepEqual(body.projects, [{ path: 'C:/Users/Zenchant/codex/beadboard' }]);
+    assert.deepEqual(body.projects, [{ path: 'C:/Users/test/project/beadboard' }]);
   });
 });
 

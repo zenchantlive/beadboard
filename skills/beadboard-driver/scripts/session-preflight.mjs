@@ -42,7 +42,7 @@ function configureMailDelegate(bdPath, shimPath) {
 
 function validateMemorySystem(bdPath) {
   try {
-    const result = spawnSync(bdPath, ['query', 'label=mem-canonical,status=closed', '--limit', '5'], {
+    const result = spawnSync(bdPath, ['query', 'label=mem-canonical AND status=closed', '--limit', '5'], {
       stdio: 'pipe',
       shell: false,
     });

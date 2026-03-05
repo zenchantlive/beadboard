@@ -338,8 +338,8 @@ When configuring `bd config set mail.delegate "node <path>/bb-mail-shim.mjs"`:
 
 | Environment | Path format example |
 |-------------|---------------------|
-| WSL2 | `node /mnt/c/Users/<you>/codex/beadboard/skills/beadboard-driver/scripts/bb-mail-shim.mjs` |
-| Windows native | `node C:\Users\<you>\codex\beadboard\skills\beadboard-driver\scripts\bb-mail-shim.mjs` |
+| WSL2 | `node /home/<you>/<project-path>/skills/beadboard-driver/scripts/bb-mail-shim.mjs` |
+| Windows native | `node C:\Users\<you>\<project-path>\skills\beadboard-driver\scripts\bb-mail-shim.mjs` |
 
 ### Binary Detection
 

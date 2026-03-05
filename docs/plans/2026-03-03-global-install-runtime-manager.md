@@ -16,14 +16,14 @@
 
 **Files:**
 - Modify: `beadboard/.beads/issues.jsonl` via `bd` commands only
-- Read: `/mnt/c/Users/Zenchant/codex/beadboard/AGENTS.md`
-- Read: `/mnt/c/Users/Zenchant/codex/beadboard/NEXT_SESSION_PROMPT.md`
+- Read: `beadboard/AGENTS.md`
+- Read: `beadboard/NEXT_SESSION_PROMPT.md`
 
 **Step 1: Claim/track implementation bead(s)**
 
 Run:
 ```bash
-cd /mnt/c/Users/Zenchant/codex/beadboard
+cd beadboard
 bd create --title="Global installer runtime manager implementation" --description="Implement npm-global-first runtime manager with migration from repo-path shims" --type=task --priority=1 --label="installation,cli,runtime"
 bd update <new-bead-id> --status in_progress --assignee <agent-bead-id>
 ```

@@ -8,7 +8,7 @@ import {
   executeMutation,
 } from '../../src/lib/mutations';
 
-const root = 'C:/Users/Zenchant/codex/beadboard';
+const root = 'C:/Users/test/project/beadboard';
 
 test('validateMutationPayload rejects invalid payloads', () => {
   assert.throws(

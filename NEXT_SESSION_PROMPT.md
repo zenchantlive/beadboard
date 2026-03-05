@@ -14,7 +14,7 @@ First priority is context fidelity:
 ## Start Commands
 
 ```bash
-cd /mnt/c/Users/Zenchant/codex/beadboard
+cd beadboard
 git status
 bd show beadboard-v5a
 bd ready

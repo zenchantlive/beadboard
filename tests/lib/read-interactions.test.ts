@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { deleteCommentViaDolt, updateCommentViaDolt } from '../../src/lib/read-interactions';
 
-const validRoot = 'C:/Users/Zenchant/codex/beadboard';
+const validRoot = 'C:/Users/test/project/beadboard';
 
 test('updateCommentViaDolt validates projectRoot', async () => {
   await assert.rejects(

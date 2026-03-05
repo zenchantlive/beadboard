@@ -123,7 +123,7 @@ Wildcards:
   "id": "proto_20260214_001",
   "version": "v1",
   "event_type": "HANDOFF",
-  "project_root": "C:/Users/Zenchant/codex/beadboard",
+  "project_root": "/path/to/project",
   "bead_id": "bb-u6f.6.3",
   "from_agent": "amber-otter",
   "to_agent": "cobalt-harbor",

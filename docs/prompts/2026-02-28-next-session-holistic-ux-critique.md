@@ -1,6 +1,6 @@
 # Next Session Prompt: Holistic UX Critique for Professional Multi-Agent Operations
 
-You are continuing work in `/mnt/c/Users/Zenchant/codex/beadboard`.
+You are continuing work in `beadboard`.
 
 ## Understanding Brief
 BeadBoard is intended to be a **professional multi-agent communication + work management system** where:
