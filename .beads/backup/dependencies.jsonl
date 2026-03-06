@@ -507,6 +507,7 @@
 {"created_at":"2026-03-05T14:42:49Z","created_by":"zenchantlive","depends_on_id":"beadboard-l7a7","issue_id":"beadboard-43oo","type":"blocks"}
 {"created_at":"2026-03-05T14:42:56Z","created_by":"zenchantlive","depends_on_id":"beadboard-pai7","issue_id":"beadboard-43oo","type":"relates-to"}
 {"created_at":"2026-03-05T14:42:48Z","created_by":"zenchantlive","depends_on_id":"beadboard-skhx","issue_id":"beadboard-43oo","type":"blocks"}
+{"created_at":"2026-03-05T15:52:33Z","created_by":"zenchantlive","depends_on_id":"beadboard-vaex","issue_id":"beadboard-43oo","type":"blocks"}
 {"created_at":"2026-03-05T14:42:50Z","created_by":"zenchantlive","depends_on_id":"beadboard-ycr5","issue_id":"beadboard-43oo","type":"blocks"}
 {"created_at":"2026-03-02T19:29:39Z","created_by":"ZenchantLive","depends_on_id":"beadboard-cyk","issue_id":"beadboard-4k8","type":"relates-to"}
 {"created_at":"2026-03-02T19:29:39Z","created_by":"ZenchantLive","depends_on_id":"beadboard-om4","issue_id":"beadboard-4k8","type":"relates-to"}
@@ -770,7 +771,6 @@
 {"created_at":"2026-03-02T19:29:28Z","created_by":"ZenchantLive","depends_on_id":"beadboard-cyk","issue_id":"beadboard-om4","type":"relates-to"}
 {"created_at":"2026-03-02T19:29:39Z","created_by":"ZenchantLive","depends_on_id":"beadboard-x1y","issue_id":"beadboard-om4","type":"relates-to"}
 {"created_at":"2026-03-02T19:29:28Z","created_by":"ZenchantLive","depends_on_id":"beadboard-x6f","issue_id":"beadboard-om4","type":"relates-to"}
-{"created_at":"2026-03-05T14:42:50Z","created_by":"zenchantlive","depends_on_id":"beadboard-43oo","issue_id":"beadboard-ox83","type":"blocks"}
 {"created_at":"2026-03-05T14:42:56Z","created_by":"zenchantlive","depends_on_id":"beadboard-pai7","issue_id":"beadboard-ox83","type":"relates-to"}
 {"created_at":"2026-03-05T14:42:56Z","created_by":"zenchantlive","depends_on_id":"beadboard-43oo","issue_id":"beadboard-pai7","type":"relates-to"}
 {"created_at":"2026-03-05T14:42:54Z","created_by":"zenchantlive","depends_on_id":"beadboard-gl0b","issue_id":"beadboard-pai7","type":"relates-to"}
