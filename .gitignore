@@ -22,3 +22,31 @@ artifacts/
 
 # Archived stashes for reference
 docs/references/stashes/
+
+# Build artifacts
+eslint-report.json
+tsconfig.tsbuildinfo
+out/
+
+# Temporary files
+tmp/
+test-*.mjs
+test-*.ts
+*.tmp
+*.temp
+
+# Root image files (screenshots belong in docs/)
+/image-*.png
+/image.png
+
+# Runtime artifacts
+.beads/
+.agents/
+.agent/
+.augment/
+.claude/
+.cline/
+.openhands/
+.qodo/
+.gemini/
+.kilocode/

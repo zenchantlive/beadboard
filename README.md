@@ -202,7 +202,7 @@ BeadBoard is an execution system for coordinating agents around shared Beads wor
 - **Global project scope switching** across single and aggregate workspaces
 - **Swarm orchestration** with archetypes/templates and assignment controls
 
-![BeadBoard Dashboard - Multi-agent coordination interface showing task graph, agent pool, and activity stream](image-9.png)
+![BeadBoard Dashboard - Multi-agent coordination interface showing task graph, agent pool, and activity stream](docs/screenshots/image-9.png)
 
 ---
 
@@ -231,7 +231,7 @@ Agent Pool Monitor with:
 - Pre-assigned queue for reserved tasks
 - Squad roster for active team members
 
-![Swarm Coordination Panel - Agent pool monitor showing archetypes, assignment queues, and squad roster](image-7.png)
+![Swarm Coordination Panel - Agent pool monitor showing archetypes, assignment queues, and squad roster](docs/screenshots/image-7.png)
 
 ### 3. Graph + Dependency Topology
 
@@ -241,7 +241,7 @@ DAG-oriented workspace for execution decisions:
 - Blocker/unblock context surfaced in task cards
 - Graph analysis support (cycle detection, blocked-chain identification)
 
-![Dependency Graph View - DAG visualization showing task dependencies and execution order](image-8.png)
+![Dependency Graph View - DAG visualization showing task dependencies and execution order](docs/screenshots/image-8.png)
 
 ### 4. Global Project Scope + Scanner
 
