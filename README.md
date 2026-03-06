@@ -1,7 +1,5 @@
 # BeadBoard
 
-[![npm version](https://img.shields.io/npm/v/beadboard.svg)](https://www.npmjs.com/package/beadboard)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/zenchantlive/beadboard/ci.yml?branch=main)](https://github.com/zenchantlive/beadboard/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub stars](https://img.shields.io/github/stars/zenchantlive/beadboard?style=social)](https://github.com/zenchantlive/beadboard/stargazers)
 
@@ -33,7 +31,7 @@ This one command installs the BeadBoard driver skill, enabling your AI agents to
 
 ### Install from Source
 
-BeadBoard is currently installed by cloning the repository and installing locally:
+BeadBoard is installed by cloning the repository and installing locally:
 
 ```bash
 # Clone the repository
@@ -47,6 +45,8 @@ npm install -g .
 This installs:
 - `beadboard` - Dashboard launcher
 - `bd` - Beads CLI for task management
+
+> **Note**: BeadBoard is not published to npm yet. We may publish it in the future if there's demand. For now, install from source as shown above.
 
 ### Verify Installation
 
@@ -130,7 +130,10 @@ This command installs the BeadBoard driver skill, enabling your AI agents to:
 ### For Human Users
 
 ```bash
-npm install -g beadboard
+# Clone and install from source
+git clone https://github.com/zenchantlive/beadboard.git
+cd beadboard
+npm install -g .
 beadboard start
 ```
 
@@ -269,33 +272,10 @@ DAG-oriented workspace for execution decisions:
 git clone https://github.com/zenchantlive/beadboard.git
 cd beadboard
 npm install
+npm install -g .
 ```
 
-### Global CLI Install
-
-```bash
-npm install -g beadboard
-```
-
-**Alternative: Platform-specific wrappers**
-
-POSIX (Linux/macOS):
-```bash
-bash ./install/install.sh
-```
-
-Windows (PowerShell):
-```powershell
-powershell -ExecutionPolicy Bypass -File .\install\install.ps1
-```
-
-Both wrappers install shims at:
-- `~/.beadboard/bin/bb`
-- `~/.beadboard/bin/beadboard`
-
-Runtime home:
-- `~/.beadboard/runtime/<version>`
-- `~/.beadboard/runtime/current.json`
+This makes `beadboard` and `bd` commands available globally.
 
 ### Development Setup
 
