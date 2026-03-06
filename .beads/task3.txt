@@ -1,3 +1,0 @@
-✓ Created issue: beadboard-txj.3 — Implement Graph Focus (Selection) Interactivity
-  Priority: P1
-  Status: open
