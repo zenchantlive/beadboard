@@ -1,3 +1,0 @@
-✓ Created issue: beadboard-txj — Epic: Enhanced Graph Edge Visualization
-  Priority: P0
-  Status: open

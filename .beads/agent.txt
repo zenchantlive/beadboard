@@ -1,3 +1,0 @@
-✓ Created issue: beadboard-8bs — Agent: Antigravity Graph Orchestrator
-  Priority: P0
-  Status: open

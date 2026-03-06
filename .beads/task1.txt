@@ -1,3 +1,0 @@
-✓ Created issue: beadboard-txj.1 — Implement graph transitive reduction algorithm
-  Priority: P0
-  Status: open
