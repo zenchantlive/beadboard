@@ -23,7 +23,105 @@ This one command installs the BeadBoard driver skill, enabling your AI agents to
 - Track progress with real-time updates and activity streams
 - Manage work state through the `bd` CLI
 
+## Installation
+
+### Prerequisites
+
+- **Node.js** 18.18+ (Node 20 LTS recommended)
+- **npm** 7.0+
+- **Git** (for cloning and version control)
+
+### Install from Source
+
+BeadBoard is currently installed by cloning the repository and installing locally:
+
+```bash
+# Clone the repository
+git clone https://github.com/zenchantlive/beadboard.git
+cd beadboard
+
+# Install globally (makes `beadboard` and `bd` commands available)
+npm install -g .
+```
+
+This installs:
+- `beadboard` - Dashboard launcher
+- `bd` - Beads CLI for task management
+
+### Verify Installation
+
+```bash
+beadboard --version
+bd --version
+```
+
+### Development Setup
+
+For development or contributing:
+
+```bash
+git clone https://github.com/zenchantlive/beadboard.git
+cd beadboard
+npm install
+npm run dev
+```
+
+### Update Installation
+
+```bash
+cd beadboard
+git pull origin main
+npm install -g .
+```
+
+---
+
+## Quick Start
+
+### Start the Dashboard
+
+```bash
+# Start with Dolt backend (recommended)
+beadboard start --dolt
+
+# Or start without Dolt (limited features)
+beadboard start
+```
+
+Open [http://localhost:3000](http://localhost:3000) to access the coordination dashboard.
+
+### Initialize a Project
+
+```bash
+# Create a new project
+mkdir my-project
+cd my-project
+bd init
+
+# Create your first task
+bd create --title "My first task" --type task --priority 0
+```
+
+---
+
+## For AI Agents
+
+### Add BeadBoard to Your Agent
+
+```bash
+npx skills add zenchantlive/beadboard --skill beadboard-driver
+```
+
+This command installs the BeadBoard driver skill, enabling your AI agents to:
+- Coordinate work through dependency-constrained task graphs
+- Communicate with other agents via structured message passing
+- Track progress with real-time updates and activity streams
+- Manage work state through the `bd` CLI
+
 **[→ Full Agent Integration Guide](#agent-integration)**
+
+---
+
 
 ---
 
