@@ -28,6 +28,7 @@ interface SocialCardProps {
   archetypes?: AgentArchetype[];
   swarmId?: string;
   onLaunchSwarm?: () => void;
+  onAskOrchestrator?: () => void;
   agentUnreadByName?: Record<string, number>;
   agentMessagesByName?: Record<string, Array<{
     message_id: string;
@@ -133,7 +134,6 @@ export function SocialCard({
   onClick,
   onJumpToGraph,
   onJumpToActivity,
-  onOpenThread,
   description,
   updatedLabel = 'just now',
   dependencyCount,
@@ -144,6 +144,7 @@ export function SocialCard({
   archetypes = [],
   swarmId,
   onLaunchSwarm,
+  onAskOrchestrator,
   agentUnreadByName = {},
   agentMessagesByName = {},
   agentReservationsByName = {},
@@ -350,6 +351,21 @@ export function SocialCard({
             >
               <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
+            {onAskOrchestrator ? (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onAskOrchestrator();
+                }}
+                className="inline-flex items-center gap-1 rounded-md border border-cyan-500/20 bg-cyan-500/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-cyan-200 transition-colors hover:bg-cyan-500/20"
+                aria-label="Ask orchestrator"
+                title="Ask Orchestrator"
+              >
+                <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
+                Ask
+              </button>
+            ) : null}
             {onLaunchSwarm ? (
               <button
                 type="button"

@@ -23,11 +23,12 @@ describe('useUrlState', () => {
         agentId: null,
         epicId: null,
         leftPanel: 'open',
+        leftSidebarMode: 'epics',
         rightPanel: 'open',
         blockedOnly: false,
         panel: 'open',
         drawer: 'closed',
-        graphTab: 'flow',
+        graphTab: 'overview',
       });
     });
 
@@ -54,6 +55,11 @@ describe('useUrlState', () => {
       assert.strictEqual(state.leftPanel, 'closed');
       assert.strictEqual(state.rightPanel, 'open');
       assert.strictEqual(state.panel, 'open');
+    });
+
+    it('parses left sidebar mode and falls back for invalid values', () => {
+      assert.strictEqual(parseUrlState(createMockSearchParams({ leftMode: 'orchestrator' })).leftSidebarMode, 'orchestrator');
+      assert.strictEqual(parseUrlState(createMockSearchParams({ leftMode: 'invalid' })).leftSidebarMode, 'epics');
     });
 
     it('uses legacy panel param when right is absent', () => {
@@ -84,7 +90,7 @@ describe('useUrlState', () => {
     it('falls back to default for invalid view and graph tab values', () => {
       const state = parseUrlState(createMockSearchParams({ view: 'invalid', graphTab: 'invalid' }));
       assert.strictEqual(state.view, 'social');
-      assert.strictEqual(state.graphTab, 'flow');
+      assert.strictEqual(state.graphTab, 'overview');
     });
   });
 
@@ -107,6 +113,11 @@ describe('useUrlState', () => {
     it('supports dual right/panel sync updates', () => {
       const url = buildUrlParams(createMockSearchParams({ view: 'social' }), { right: 'open', panel: 'open' });
       assert.strictEqual(url, '/?view=social&right=open&panel=open');
+    });
+
+    it('adds left sidebar mode to URLs', () => {
+      const url = buildUrlParams(createMockSearchParams({ view: 'social' }), { leftMode: 'orchestrator' });
+      assert.strictEqual(url, '/?view=social&leftMode=orchestrator');
     });
 
     it('returns root for empty params', () => {

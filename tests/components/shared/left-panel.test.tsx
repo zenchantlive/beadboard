@@ -63,4 +63,18 @@ describe('LeftPanel Scope Controls', () => {
       assert.fail(`LeftPanel should render scope section: ${err.message}`);
     }
   });
+
+  it('supports epics and orchestrator sidebar modes', async () => {
+    try {
+      const mod = await import('../../../src/components/shared/left-panel');
+      assert.ok(mod.LeftPanel, 'LeftPanel should exist');
+      const fs = await import('node:fs/promises');
+      const path = await import('node:path');
+      const raw = await fs.readFile(path.join(process.cwd(), 'src/components/shared/left-panel.tsx'), 'utf8');
+      assert.ok(raw.includes('Orchestrator'), 'LeftPanel should expose orchestrator mode');
+      assert.ok(raw.includes('sidebarMode'), 'LeftPanel should accept sidebarMode prop');
+    } catch (err: any) {
+      assert.fail(`LeftPanel should support dual modes: ${err.message}`);
+    }
+  });
 });

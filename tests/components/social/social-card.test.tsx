@@ -40,4 +40,14 @@ describe('SocialCard Component', () => {
     const mod = await import('../../../src/components/social/social-card');
     assert.ok(mod.SocialCard, 'SocialCard should render view-jump icons');
   });
+
+  it('supports explicit ask orchestrator action', async () => {
+    const mod = await import('../../../src/components/social/social-card');
+    assert.ok(mod.SocialCard, 'SocialCard should exist');
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const raw = await fs.readFile(path.join(process.cwd(), 'src/components/social/social-card.tsx'), 'utf8');
+    assert.ok(raw.includes('onAskOrchestrator'), 'SocialCard should accept ask orchestrator callback');
+    assert.ok(raw.includes('Ask Orchestrator') || raw.includes('Ask'), 'SocialCard should render ask orchestrator affordance');
+  });
 });

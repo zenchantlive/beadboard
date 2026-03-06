@@ -16,6 +16,13 @@ test('UnifiedShell - has assignMode state', async () => {
   assert.ok(fileContent.includes('assignMode'), 'Should have assignMode state');
 });
 
+test('UnifiedShell - wires orchestrator sidebar and runtime console scaffolding', async () => {
+  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
+  assert.ok(fileContent.includes('setLeftSidebarMode'), 'Should control left sidebar mode');
+  assert.ok(fileContent.includes('RuntimeConsole'), 'Should render runtime console');
+  assert.ok(fileContent.includes('handleAskOrchestrator'), 'Should support ask orchestrator launch flow');
+});
+
 // Test that UnifiedShell has selectedAssignIssue state
 test('UnifiedShell - has selectedAssignIssue state', async () => {
   const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');

@@ -7,6 +7,7 @@ export type ViewType = 'social' | 'graph' | 'activity';
 export type PanelState = 'open' | 'closed';
 export type DrawerState = 'open' | 'closed';
 export type GraphTabType = 'flow' | 'overview';
+export type LeftSidebarMode = 'epics' | 'orchestrator';
 
 export interface UrlState {
   view: ViewType;
@@ -22,6 +23,9 @@ export interface UrlState {
   leftPanel: PanelState;
   setLeftPanel: (state: PanelState) => void;
   toggleLeftPanel: () => void;
+  leftSidebarMode: LeftSidebarMode;
+  setLeftSidebarMode: (mode: LeftSidebarMode) => void;
+  toggleLeftSidebarMode: () => void;
   rightPanel: PanelState;
   setRightPanel: (state: PanelState) => void;
   toggleRightPanel: () => void;
@@ -42,11 +46,13 @@ const DEFAULT_LEFT_PANEL: PanelState = 'open';
 const DEFAULT_RIGHT_PANEL: PanelState = 'open';
 const DEFAULT_DRAWER: DrawerState = 'closed';
 const DEFAULT_GRAPH_TAB: GraphTabType = 'overview';
+const DEFAULT_LEFT_SIDEBAR_MODE: LeftSidebarMode = 'epics';
 
 const VALID_VIEWS: ViewType[] = ['social', 'graph', 'activity'];
 const VALID_PANELS: PanelState[] = ['open', 'closed'];
 const VALID_DRAWERS: DrawerState[] = ['open', 'closed'];
 const VALID_GRAPH_TABS: GraphTabType[] = ['flow', 'overview'];
+const VALID_LEFT_SIDEBAR_MODES: LeftSidebarMode[] = ['epics', 'orchestrator'];
 
 const PANEL_STORAGE_KEYS = {
   left: 'bb.ui.leftPanel',
@@ -78,6 +84,13 @@ function isBlockedEnabled(value: string | null): boolean {
   return value === '1' || value === 'true';
 }
 
+function parseLeftSidebarMode(value: string | null): LeftSidebarMode {
+  if (!value || !VALID_LEFT_SIDEBAR_MODES.includes(value as LeftSidebarMode)) {
+    return DEFAULT_LEFT_SIDEBAR_MODE;
+  }
+  return value as LeftSidebarMode;
+}
+
 export function parseUrlState(
   searchParams: URLSearchParams,
   defaults: PanelDefaults = {
@@ -91,6 +104,7 @@ export function parseUrlState(
   agentId: string | null;
   epicId: string | null;
   leftPanel: PanelState;
+  leftSidebarMode: LeftSidebarMode;
   rightPanel: PanelState;
   blockedOnly: boolean;
   panel: PanelState;
@@ -114,6 +128,7 @@ export function parseUrlState(
   const leftPanel = leftPanelFromUrl ?? defaults.leftPanel;
   const rightPanel = rightPanelFromUrl ?? legacyPanel ?? defaults.rightPanel;
   const panel = rightPanel;
+  const leftSidebarMode = parseLeftSidebarMode(searchParams.get('leftMode'));
 
   const blockedOnly = isBlockedEnabled(searchParams.get('blocked'));
 
@@ -127,7 +142,7 @@ export function parseUrlState(
     ? (graphTabParam as GraphTabType)
     : DEFAULT_GRAPH_TAB;
 
-  return { view, taskId, swarmId, agentId, epicId, leftPanel, rightPanel, blockedOnly, panel, drawer, graphTab };
+  return { view, taskId, swarmId, agentId, epicId, leftPanel, leftSidebarMode, rightPanel, blockedOnly, panel, drawer, graphTab };
 }
 
 export function buildUrlParams(
@@ -189,6 +204,14 @@ export function useUrlState(): UrlState {
   const toggleLeftPanel = useCallback(() => {
     setLeftPanel(state.leftPanel === 'open' ? 'closed' : 'open');
   }, [setLeftPanel, state.leftPanel]);
+
+  const setLeftSidebarMode = useCallback((mode: LeftSidebarMode) => {
+    updateUrl({ leftMode: mode });
+  }, [updateUrl]);
+
+  const toggleLeftSidebarMode = useCallback(() => {
+    setLeftSidebarMode(state.leftSidebarMode === 'epics' ? 'orchestrator' : 'epics');
+  }, [setLeftSidebarMode, state.leftSidebarMode]);
 
   const setRightPanel = useCallback((next: PanelState) => {
     // Keep legacy `panel` in sync while migrating to explicit `right`.
@@ -259,6 +282,9 @@ export function useUrlState(): UrlState {
     leftPanel: state.leftPanel,
     setLeftPanel,
     toggleLeftPanel,
+    leftSidebarMode: state.leftSidebarMode,
+    setLeftSidebarMode,
+    toggleLeftSidebarMode,
     rightPanel: state.rightPanel,
     setRightPanel,
     toggleRightPanel,

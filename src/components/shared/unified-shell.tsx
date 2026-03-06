@@ -5,12 +5,14 @@ import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
+import { buildLaunchRequest, createLaunchConsoleEvents, createOrchestratorInstance, type RuntimeConsoleEvent } from '../../lib/embedded-runtime';
 import { TopBar } from './top-bar';
 import { LeftPanel, type LeftPanelFilters } from './left-panel';
 import { RightPanel } from './right-panel';
 import { MobileNav } from './mobile-nav';
 import { ThreadDrawer } from './thread-drawer';
 import { ResizeHandle } from './resize-handle';
+import { RuntimeConsole } from './runtime-console';
 import { useUrlState } from '../../hooks/use-url-state';
 import { usePanelResize } from '../../hooks/use-panel-resize';
 import { SmartDag } from '../graph/smart-dag';
@@ -39,7 +41,7 @@ export function UnifiedShell({
   projectScopeOptions,
 }: UnifiedShellProps) {
   const router = useRouter();
-  const { view, taskId, setTaskId, swarmId, graphTab, panel, drawer, setDrawer, epicId, setEpicId, blockedOnly } = useUrlState();
+  const { view, taskId, setTaskId, swarmId, graphTab, drawer, setDrawer, epicId, setEpicId, blockedOnly, leftSidebarMode, setLeftSidebarMode } = useUrlState();
 
   // Subscribe to SSE for real-time updates on ALL views
   const { issues } = useBeadsSubscription(initialIssues, projectRoot);
@@ -66,6 +68,8 @@ export function UnifiedShell({
   }, []);
 
   const [customRightPanel, setCustomRightPanel] = useState<React.ReactNode | null>(null);
+  const [orchestrator, setOrchestrator] = useState(() => createOrchestratorInstance(projectRoot));
+  const [runtimeEvents, setRuntimeEvents] = useState<RuntimeConsoleEvent[]>([]);
 
   // Assign mode state for graph view
   const [assignMode, setAssignMode] = useState(false);
@@ -130,6 +134,85 @@ export function UnifiedShell({
     setTaskId(null);
     setAssignMode(true);
   }, [setTaskId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function bootstrapRuntime() {
+      try {
+        const [orchestratorResponse, eventsResponse] = await Promise.all([
+          fetch('/api/runtime/orchestrator', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ projectRoot }),
+          }),
+          fetch(`/api/runtime/events?projectRoot=${encodeURIComponent(projectRoot)}`),
+        ]);
+
+        const orchestratorPayload = await orchestratorResponse.json().catch(() => null);
+        const eventsPayload = await eventsResponse.json().catch(() => null);
+
+        if (cancelled) {
+          return;
+        }
+
+        if (orchestratorResponse.ok && orchestratorPayload?.ok && orchestratorPayload.data) {
+          setOrchestrator(orchestratorPayload.data);
+        }
+        if (eventsResponse.ok && eventsPayload?.ok && Array.isArray(eventsPayload.data)) {
+          setRuntimeEvents(eventsPayload.data.slice(0, 40));
+        }
+      } catch {
+        // Runtime bootstrap is best-effort during early integration.
+      }
+    }
+
+    void bootstrapRuntime();
+    return () => {
+      cancelled = true;
+    };
+  }, [projectRoot]);
+
+  const handleAskOrchestrator = useCallback(async (issueId: string) => {
+    const issue = issues.find((entry) => entry.id === issueId);
+    if (!issue) {
+      return;
+    }
+
+    const optimisticRequest = buildLaunchRequest({
+      issue,
+      origin: 'social',
+      projectRoot,
+      swarmId,
+    });
+    const optimisticEvents = createLaunchConsoleEvents(optimisticRequest);
+    setLeftSidebarMode('orchestrator');
+    setRuntimeEvents((current) => [...optimisticEvents, ...current].slice(0, 40));
+
+    try {
+      const response = await fetch('/api/runtime/launch', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          projectRoot,
+          taskId: issueId,
+          origin: 'social',
+          swarmId,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (response.ok && payload?.ok) {
+        if (payload.data?.orchestrator) {
+          setOrchestrator(payload.data.orchestrator);
+        }
+        if (Array.isArray(payload.data?.events)) {
+          setRuntimeEvents((current) => [...payload.data.events, ...current].slice(0, 40));
+        }
+      }
+    } catch {
+      // Keep optimistic console events visible; bridge hardening comes in later phases.
+    }
+  }, [issues, projectRoot, setLeftSidebarMode, swarmId]);
 
   // Minimize: restore last clicked thing (task or assign mode)
   const handleMinimize = useCallback(() => {
@@ -214,6 +297,7 @@ export function UnifiedShell({
           projectRoot={projectRoot}
           swarmId={swarmId ?? undefined}
           onRocketClick={handleSocialRocket}
+          onAskOrchestrator={handleAskOrchestrator}
         />
       );
     }
@@ -293,6 +377,10 @@ export function UnifiedShell({
             filters={filters}
             onFiltersChange={setFilters}
             onAssignMode={(epicId) => { setEpicId(epicId); setTaskId(null); setAssignMode(true); }}
+            sidebarMode={leftSidebarMode}
+            onSidebarModeChange={setLeftSidebarMode}
+            orchestrator={orchestrator}
+            orchestratorThread={runtimeEvents.filter((event) => event.actorLabel === orchestrator.label)}
           />
         </div>
 
@@ -343,6 +431,8 @@ export function UnifiedShell({
           </div>
         </div>
       ) : null}
+
+      <RuntimeConsole events={runtimeEvents} />
 
 {/* MOBILE NAV: Bottom tab bar */}
       <MobileNav />

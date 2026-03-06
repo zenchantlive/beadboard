@@ -28,6 +28,7 @@ describe('URL State Integration - bb-ui2.22', () => {
       assert.strictEqual(state.taskId, null);
       assert.strictEqual(state.swarmId, null);
       assert.strictEqual(state.panel, 'open');
+      assert.strictEqual(state.leftSidebarMode, 'epics');
     });
 
     it('/?view=social&task=bb-buff.1&panel=open - task selected, panel open', () => {
@@ -132,10 +133,11 @@ describe('URL State Integration - bb-ui2.22', () => {
       assert.strictEqual(state.view, 'social');
     });
 
-    it('/?view=graph&graphTab=invalid - invalid graphTab defaults to flow', () => {
-      const sp = createMockSearchParams({ view: 'graph', graphTab: 'invalid' });
+    it('/?view=graph&graphTab=invalid - invalid graphTab defaults to overview', () => {
+      const sp = createMockSearchParams({ view: 'graph', graphTab: 'invalid', leftMode: 'orchestrator' });
       const state = parseUrlState(sp);
       assert.strictEqual(state.graphTab, 'overview');
+      assert.strictEqual(state.leftSidebarMode, 'orchestrator');
     });
 
     it('/?panel=invalid - invalid panel defaults to open', () => {
