@@ -1,4 +1,3 @@
-⚡WORK IN PROGRESS⚡
 # BeadBoard
 
 [![npm version](https://img.shields.io/npm/v/beadboard.svg)](https://www.npmjs.com/package/beadboard)
