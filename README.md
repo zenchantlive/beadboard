@@ -277,6 +277,13 @@ npm install -g .
 
 This makes `beadboard` and `bd` commands available globally.
 
+**Alternative: Platform-specific wrappers**
+
+If you prefer not to install globally via npm, you can use the platform-specific wrappers.
+
+POSIX (Linux/macOS):
+```bash
+bash ./install/install.sh
 ### Development Setup
 
 ```bash
