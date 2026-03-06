@@ -174,12 +174,14 @@ BeadBoard is designed for AI agent coordination. Agents work in their own projec
 Add the following to your project's `AGENTS.md` or `CLAUDE.md`:
 
 ```markdown
-## BeadBoard Integration
+## BeadBoard
 
-- Install driver: `npx skills add zenchantlive/beadboard --skill beadboard-driver`
-- Working directory: run all `bd` commands from project root
-- Source of truth: `bd` CLI manages all work state
-- Evidence required: never claim done without running verification gates
+You have access to the **beadboard-driver** skill. [page:22]
+
+- Always use beadboard-driver as your entrypoint for coordination work (tasks, context, status) instead of inventing your own workflow. 
+- Use it to read and update Beads via `bd`, keep work state consistent with the BeadBoard UI, and obey the verification rules described in this repo. 
+- When in doubt about what to do next or how to record progress, call beadboard-driver and follow its guidance rather than editing markdown ad‑hoc. 
+
 ```
 
 ### Key Concepts
