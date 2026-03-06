@@ -19,7 +19,7 @@ class TestMemorySafetyEnforcement(unittest.TestCase):
             policy = MemoryPolicy(
                 project_root=project_root,
                 write_layers=["project_global"],
-                redaction_rules=["api_key"]
+                redaction_rules=["api_key"],
             )
             store = LayeredMemoryStore(policy=policy, agent_id="agent-1")
 
@@ -32,7 +32,7 @@ class TestMemorySafetyEnforcement(unittest.TestCase):
                     "entry_type": "fact",
                     "content": "My api_key: sk-12345",
                     "project_id": "rlm-mem",
-                    "tags": ["api_key:secret"]
+                    "tags": ["api_key:secret"],
                 },
             )
 
@@ -48,7 +48,7 @@ class TestMemorySafetyEnforcement(unittest.TestCase):
             policy = MemoryPolicy(
                 project_root=project_root,
                 write_layers=["user_global"],
-                allow_user_global_write=False
+                allow_user_global_write=False,
             )
             store = LayeredMemoryStore(policy=policy, agent_id="agent-1")
 
@@ -61,7 +61,7 @@ class TestMemorySafetyEnforcement(unittest.TestCase):
                         "scope": "user_global",
                         "entry_type": "fact",
                         "content": "Secret",
-                        "project_id": "rlm-mem"
+                        "project_id": "rlm-mem",
                     },
                 )
             self.assertIn("blocked by policy", str(cm.exception))
@@ -75,7 +75,7 @@ class TestMemorySafetyEnforcement(unittest.TestCase):
             policy = MemoryPolicy(
                 project_root=project_root,
                 write_layers=["user_global"],
-                allow_user_global_write=True
+                allow_user_global_write=True,
             )
             store = LayeredMemoryStore(policy=policy, agent_id="agent-1")
 
@@ -90,15 +90,16 @@ class TestMemorySafetyEnforcement(unittest.TestCase):
                         "scope": "user_global",
                         "entry_type": "fact",
                         "content": "Shared",
-                        "project_id": "rlm-mem"
+                        "project_id": "rlm-mem",
                     },
                 )
             except PermissionError as e:
                 self.fail(f"append_entry raised PermissionError unexpectedly: {e}")
-            except Exception:
-                # Other errors (like Path.home() access) are acceptable here 
-                # as long as it's not the policy block
+            except (OSError, IOError, FileNotFoundError):
+                # Other errors (like Path.home() access) are acceptable here
+                # as long as it's not a policy block
                 pass
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

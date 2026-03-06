@@ -12,6 +12,13 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
+  if (!body || typeof body !== 'object') {
+    return NextResponse.json(
+      { ok: false, error: { code: 'INVALID_BODY', message: 'Request body must be a valid object.' } },
+      { status: 400 },
+    );
+  }
+
   const parsed = body as { agent?: string; message?: string };
   const result = await ackAgentMessage({
     agent: parsed.agent ?? '',

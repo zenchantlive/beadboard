@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@26994186c0ac3ef5cae75ac16aa32e8153525f77
         with:
           name: ${{ github.ref_name || inputs.version }}
           tag_name: ${{ github.ref_name || inputs.version }}

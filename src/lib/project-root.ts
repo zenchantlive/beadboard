@@ -1,13 +1,18 @@
 import path from 'node:path';
+import { canonicalizeWindowsPath } from './pathing';
 
 function isWindowsAbsolute(input: string): boolean {
   return /^[A-Za-z]:[\\/]/.test(input);
 }
 
 function windowsToPosixMount(input: string): string {
-  const drive = input[0].toLowerCase();
-  const tail = input.slice(2).replace(/\\/g, '/').replace(/^\/+/, '');
-  return `/mnt/${drive}/${tail}`;
+  const normalized = canonicalizeWindowsPath(input);
+  const drive = normalized[0]?.toLowerCase() || '';
+  const tail = normalized.slice(2)?.replace(/\\/g, '/')?.replace(/^\/+/, '') || '';
+  if (drive && tail) {
+    return `/mnt/${drive}/${tail}`;
+  }
+  return normalized;
 }
 
 export function normalizeProjectRootForRuntime(input: string): string {

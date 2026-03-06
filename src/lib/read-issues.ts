@@ -25,6 +25,30 @@ export function resolveIssuesJsonlPath(projectRoot: string = process.cwd()): str
   return resolveIssuesJsonlPathCandidates(projectRoot)[0];
 }
 
+/**
+ * Write issues to disk using BD audit record when available.
+ * This ensures all writes go through the BD audit system for watcher/SSE parity.
+ */
+export async function writeIssuesToDisk(
+  issues: BeadIssueWithProject[],
+  options: ReadIssuesOptions = {}
+): Promise<void> {
+  const projectRoot = options.projectRoot ?? process.cwd();
+  const issuesJson = JSON.stringify(issues, null, 2);
+
+  try {
+    const { execFileSync } = await import('child_process');
+    execFileSync('bd', ['audit', 'record', '--stdin'], {
+      input: issuesJson,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+  } catch {
+    const issuesPath = resolveIssuesJsonlPath(projectRoot);
+    const { writeFile } = await import('node:fs/promises');
+    await writeFile(issuesPath, issuesJson, 'utf8');
+  }
+}
+
 export async function readIssuesFromDisk(options: ReadIssuesOptions = {}): Promise<BeadIssueWithProject[]> {
   const projectRoot = options.projectRoot ?? process.cwd();
   const project = buildProjectContext(projectRoot, {

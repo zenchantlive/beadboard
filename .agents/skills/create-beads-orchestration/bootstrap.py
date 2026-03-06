@@ -60,8 +60,8 @@ def infer_project_name(project_dir: Path) -> str:
             data = json.loads(package_json.read_text())
             if name := data.get("name"):
                 return name.replace("-", " ").replace("_", " ").title()
-        except (json.JSONDecodeError, KeyError):
-            pass
+            except (json.JSONDecodeError, KeyError, OSError):
+                pass
 
     # Try pyproject.toml (Python)
     if tomllib:
@@ -73,7 +73,7 @@ def infer_project_name(project_dir: Path) -> str:
                     return name.replace("-", " ").replace("_", " ").title()
                 if name := data.get("tool", {}).get("poetry", {}).get("name"):
                     return name.replace("-", " ").replace("_", " ").title()
-            except Exception:
+            except (tomllib.TOMLDecodeError, OSError, KeyError, AttributeError):
                 pass
 
         # Try Cargo.toml (Rust)
@@ -83,7 +83,7 @@ def infer_project_name(project_dir: Path) -> str:
                 data = tomllib.loads(cargo.read_text())
                 if name := data.get("package", {}).get("name"):
                     return name.replace("-", " ").replace("_", " ").title()
-            except Exception:
+            except (tomllib.TOMLDecodeError, OSError, KeyError, AttributeError):
                 pass
 
     # Try go.mod (Go)
@@ -96,7 +96,7 @@ def infer_project_name(project_dir: Path) -> str:
                     module_path = line.split()[1]
                     name = module_path.split("/")[-1]
                     return name.replace("-", " ").replace("_", " ").title()
-        except Exception:
+        except (OSError, ValueError, IndexError):
             pass
 
     # Fallback to directory name

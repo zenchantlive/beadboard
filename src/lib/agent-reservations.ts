@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { showAgent, deriveLiveness } from './agent-registry';
+import { canonicalizeWindowsPath } from './pathing';
 import type { AgentMessage } from './agent-mail';
 
 const MIN_TTL_MINUTES = 5;
@@ -102,28 +103,11 @@ function messageIndexDirectoryPath(): string {
 }
 
 /**
- * Normalizes a path according to the Operative Protocol v1:
- * 1. Resolve to absolute path.
- * 2. Normalize separators to /.
- * 3. On Windows, lowercase normalized path.
- * 4. Remove trailing slash except root.
+ * Normalizes a path using the canonicalization helpers from pathing module.
+ * Converts to forward slashes for stable case-insensitive comparison.
  */
 export function normalizePath(p: string): string {
-  let resolved = path.resolve(p);
-  // Normalize separators
-  resolved = resolved.replace(/\\/g, '/');
-
-  // Lowercase on Windows
-  if (process.platform === 'win32') {
-    resolved = resolved.toLowerCase();
-  }
-
-  // Remove trailing slash except root (e.g., C:/ or /)
-  if (resolved.length > 3 && resolved.endsWith('/')) {
-    resolved = resolved.slice(0, -1);
-  }
-
-  return resolved;
+  return canonicalizeWindowsPath(p).replace(/\\/g, '/');
 }
 
 export type OverlapClass = 'exact' | 'partial' | 'disjoint';

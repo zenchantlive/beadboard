@@ -26,13 +26,16 @@ interface CacheEntry<T> {
 const agentCache = new Map<string, CacheEntry<AgentRecord | null>>();
 const CACHE_TTL_MS = 30_000;
 
-function getCachedAgent(beadId: string): AgentRecord | null {
+function getCachedAgent(beadId: string): AgentRecord | null | undefined {
   const entry = agentCache.get(beadId);
-  if (entry && entry.expiresAt > Date.now()) {
-    return entry.data;
+  if (!entry) {
+    return undefined;  // Cache miss
   }
-  agentCache.delete(beadId);
-  return null;
+  if (entry.expiresAt > Date.now()) {
+    return entry.data;  // Valid cache hit (could be null or AgentRecord)
+  }
+  agentCache.delete(beadId);  // Expired entry
+  return null;  // Treat expired as miss
 }
 
 function setCachedAgent(beadId: string, data: AgentRecord | null): void {
@@ -82,7 +85,7 @@ function trimOrEmpty(value: unknown): string {
 async function callBdAgentShow(beadId: string, projectRoot: string): Promise<AgentRecord | null> {
   const cached = getCachedAgent(beadId);
   if (cached !== undefined) {
-    return cached;
+    return cached;  // Valid cache hit (could be null or AgentRecord)
   }
   
   const showResult = await runBdCommand({
