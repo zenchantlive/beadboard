@@ -964,6 +964,8 @@
 {"issue_id":"beadboard-nv3","label":"architecture"}
 {"issue_id":"beadboard-nv3","label":"backend"}
 {"issue_id":"beadboard-nv3","label":"refactoring"}
+{"issue_id":"beadboard-nzk3","label":"gt:agent"}
+{"issue_id":"beadboard-nzk3","label":"role:backend"}
 {"issue_id":"beadboard-o95","label":"gt:agent"}
 {"issue_id":"beadboard-o95","label":"role:backend"}
 {"issue_id":"beadboard-om4","label":"mem-canonical"}
