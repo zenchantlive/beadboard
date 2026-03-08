@@ -12,6 +12,7 @@ export interface WorkerSession {
   projectId: string;
   projectRoot: string;
   taskId: string;
+  beadId?: string;  // Bead ID the worker is assigned to
   status: WorkerStatus;
   session: any; // Pi SDK session
   createdAt: string;
@@ -82,6 +83,8 @@ export interface SpawnWorkerParams {
   archetype?: string;
   /** Agent type ID to spawn (e.g., "engineer", "architect") */
   agentType?: string;
+  /** Bead ID for the worker to claim and work on */
+  beadId?: string;
 }
 
 class WorkerSessionManagerImpl {
@@ -91,7 +94,7 @@ class WorkerSessionManagerImpl {
   async spawnWorker(params: SpawnWorkerParams): Promise<WorkerSession> {
     // Support both old and new param names
     const agentTypeId = params.agentType || params.archetype;
-    const { projectRoot, taskId, taskContext } = params;
+    const { projectRoot, taskId, taskContext, beadId } = params;
 
     // Generate worker ID
     const workerId = `worker-${Date.now()}-${this.nextWorkerId++}`;
@@ -142,6 +145,7 @@ class WorkerSessionManagerImpl {
       projectId,
       projectRoot,
       taskId,
+      beadId,
       status: 'spawning',
       session: null,
       createdAt: new Date().toISOString(),
@@ -172,7 +176,7 @@ class WorkerSessionManagerImpl {
     });
 
     // Spawn worker session asynchronously
-    this.createWorkerSession(worker, taskContext, agentType).catch((error) => {
+    this.createWorkerSession(worker, taskContext, agentType, beadId).catch((error) => {
       console.error(`[WorkerSessionManager] Failed to create worker session:`, error);
       worker.status = 'failed';
       worker.error = error instanceof Error ? error.message : String(error);
@@ -193,7 +197,8 @@ class WorkerSessionManagerImpl {
   private async createWorkerSession(
     worker: WorkerSession,
     taskContext: string,
-    agentType?: AgentType
+    agentType?: AgentType,
+    beadId?: string
   ): Promise<void> {
     const { projectRoot, taskId, id: workerId, displayName } = worker;
     const agentTypeId = worker.agentTypeId;
@@ -224,12 +229,13 @@ class WorkerSessionManagerImpl {
     const toolAccess = getToolsForCapabilities(capabilities);
 
     // Build worker-specific system prompt with agent type
-    const systemPrompt = this.buildWorkerPrompt(taskId, taskContext, agentType);
+    const systemPrompt = this.buildWorkerPrompt(taskId, taskContext, agentType, beadId, displayName);
 
     // Import worker-safe tools (no spawn tool for workers)
     const { createDoltReadTool } = await import('../tui/tools/bb-dolt-read');
     const { createMailboxTools } = await import('../tui/tools/bb-mailbox');
     const { createPresenceTools } = await import('../tui/tools/bb-presence');
+    const { createBeadCrudTools } = await import('../tui/tools/bb-bead-crud');
 
     // Build tools based on agent type capabilities
     const tools = [sdk.createReadTool(projectRoot)];
@@ -261,6 +267,7 @@ class WorkerSessionManagerImpl {
         { tool: createDoltReadTool(projectRoot) },
         ...createMailboxTools().map((tool) => ({ tool: tool as any })),
         ...createPresenceTools().map((tool) => ({ tool: tool as any })),
+        ...createBeadCrudTools(projectRoot).map((tool) => ({ tool: tool as any })),
       ],
     });
 
@@ -300,7 +307,13 @@ class WorkerSessionManagerImpl {
     }
   }
 
-  private buildWorkerPrompt(taskId: string, taskContext: string, agentType?: AgentType): string {
+  private buildWorkerPrompt(
+    taskId: string, 
+    taskContext: string, 
+    agentType?: AgentType, 
+    beadId?: string,
+    displayName?: string
+  ): string {
     const agentSection = agentType
       ? `## Your Role
 
@@ -309,23 +322,56 @@ ${agentType.systemPrompt}
 `
       : '';
 
+    const beadWorkflow = beadId ? `
+## IMPORTANT: Bead Workflow
+
+You are working on bead: ${beadId}
+Your display name: ${displayName || 'Worker'}
+
+**You MUST follow this workflow:**
+
+1. **Claim the bead** (first thing you do):
+   \`\`\`
+   bb_update(id="${beadId}", status="in_progress", assignee="${displayName || 'Worker'}")
+   \`\`\`
+
+2. **Update progress** (add notes as you work):
+   \`\`\`
+   bb_update(id="${beadId}", notes="Found the issue in auth.ts...")
+   \`\`\`
+
+3. **When blocked**, update status:
+   \`\`\`
+   bb_update(id="${beadId}", status="blocked", notes="Waiting for API key from infra team")
+   \`\`\`
+
+4. **When complete**, close the bead:
+   \`\`\`
+   bb_close(id="${beadId}", reason="Fixed by updating auth.ts line 42. Tests passing.")
+   \`\`\`
+
+**Never skip this workflow.** The bead tracks your work for coordination.
+
+` : '';
+
     return `You are a worker agent for BeadBoard. Your job is to execute a specific task.
 
 Task ID: ${taskId}
+${beadId ? `Bead ID: ${beadId}` : ''}
 
 Task Context:
 ${taskContext}
 
-${agentSection}## Instructions
+${agentSection}${beadWorkflow}## Instructions
 
 - Focus ONLY on this specific task
-- Report progress using the bb_presence tool
-- When complete, provide a clear summary of what you did
-- If you encounter blockers, explain what is blocking you
+- Report progress using the bb_update tool on your bead
+- When complete, close the bead with a clear summary
+- If you encounter blockers, set the bead status to "blocked" and explain what is blocking you
 - You CANNOT spawn more workers - execute this task yourself
 - Be thorough but efficient
 - If you need to read project files, use bb_dolt_read
-- If you need to send messages, use bb_mailbox_send`;
+- If you need to send messages to other agents, use bb_mailbox_send`;
   }
 
   private handleWorkerEvent(worker: WorkerSession, event: any): void {
