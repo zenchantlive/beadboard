@@ -25,7 +25,7 @@ export function createSpawnWorkerTool(projectRoot: string): CustomAgentTool {
 
 Examples:
 - "Review the authentication module for security issues"
-- "Fix the failing test in user-service.test.ts"  
+- "Fix the failing test in user-service.test.ts"
 - "Implement the password reset feature"
 - "Debug why the payment webhook is failing"
 
@@ -39,7 +39,7 @@ The agent will work independently and report results. Check the right panel (Age
       })),
       bead_id: Type.Optional(Type.String({ 
         description: 'Optional: existing bead ID to assign this agent to. If not provided, a new task will be created.' 
-      }),
+      })),
     }),
     async execute(_toolCallId: string, params: unknown): Promise<any> {
       const { description, agent_type, bead_id } = params as {
