@@ -1,7 +1,7 @@
 import { buildLaunchRequest, createLaunchConsoleEvents, createOrchestratorInstance, type LaunchSurface, type RuntimeConsoleEvent, type RuntimeInstance } from './embedded-runtime';
 import type { BeadIssue } from './types';
 
-interface ProjectRuntimeState {
+export interface ProjectRuntimeState {
   projectRoot: string;
   orchestrator: RuntimeInstance;
   events: RuntimeConsoleEvent[];
@@ -26,6 +26,7 @@ export interface HostDaemonStatus {
 
 export class EmbeddedPiDaemon {
   private readonly projects = new Map<string, ProjectRuntimeState>();
+  private readonly orchestratorBooted = new Set<string>();
 
   ensureProject(projectRoot: string): ProjectRuntimeState {
     const existing = this.projects.get(projectRoot);
@@ -46,18 +47,22 @@ export class EmbeddedPiDaemon {
 
   ensureOrchestrator(projectRoot: string): RuntimeInstance {
     const state = this.ensureProject(projectRoot);
-    if (state.events.length === 0) {
+    const projectId = state.orchestrator.projectId;
+
+    // Only add boot event once per project (track via Set)
+    if (!this.orchestratorBooted.has(projectId)) {
       state.events.unshift({
-        id: `${state.orchestrator.id}:boot`,
-        projectId: state.orchestrator.projectId,
+        id: `${projectId}:boot:${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        projectId,
         kind: 'launch.started',
         title: 'Host daemon attached project orchestrator',
-        detail: 'BeadBoard host bridge registered the project orchestrator.',
+        detail: 'BeadBoard host bridge registered project orchestrator.',
         timestamp: new Date().toISOString(),
         status: 'idle',
         actorLabel: state.orchestrator.label,
       });
       state.updatedAt = new Date().toISOString();
+      this.orchestratorBooted.add(projectId);
     }
     return state.orchestrator;
   }
@@ -92,6 +97,31 @@ export class EmbeddedPiDaemon {
     return [...(this.projects.get(projectRoot)?.events ?? [])];
   }
 
+  appendEvent(projectRoot: string, event: Omit<RuntimeConsoleEvent, 'id' | 'timestamp' | 'projectId'>): void {
+    const state = this.ensureProject(projectRoot);
+    const fullEvent: RuntimeConsoleEvent = {
+      ...event,
+      id: `evt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      projectId: state.orchestrator.projectId,
+      timestamp: new Date().toISOString(),
+    };
+    state.events.unshift(fullEvent);
+    state.updatedAt = new Date().toISOString();
+  }
+
+  appendWorkerEvent(projectRoot: string, workerId: string, event: {
+    kind: 'worker.spawned' | 'worker.updated' | 'worker.completed' | 'worker.failed';
+    title: string;
+    detail: string;
+    status?: RuntimeConsoleEvent['status'];
+    metadata?: Record<string, unknown>;
+  }): void {
+    this.appendEvent(projectRoot, {
+      ...event,
+      metadata: { workerId, ...(event.metadata || {}) },
+    });
+  }
+
   getStatus(): HostDaemonStatus {
     return {
       ok: true,
@@ -112,6 +142,7 @@ export class EmbeddedPiDaemon {
 
   resetForTests(): void {
     this.projects.clear();
+    this.orchestratorBooted.clear();
   }
 }
 

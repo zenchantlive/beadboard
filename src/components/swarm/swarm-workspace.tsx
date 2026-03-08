@@ -276,13 +276,13 @@ export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: 
                                             <div className="text-[10px] uppercase font-bold text-[var(--ui-text-muted)] tracking-wider mb-2">Team Composition</div>
                                             <div className="flex flex-wrap gap-2">
                                                 {tpl.team.map((member, idx) => {
-                                                    const arch = archetypes.find(a => a.id === member.archetypeId);
+                                                    const arch = archetypes.find(a => a.id === member.agentTypeId);
                                                     return (
                                                         <div key={idx} className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#0f1824] border border-[var(--ui-border-soft)]">
                                                             <div className="h-4 w-4 rounded text-[9px] flex items-center justify-center font-bold" style={{ backgroundColor: `${arch?.color || '#888'}20`, color: arch?.color || '#888' }}>
                                                                 {arch ? getArchetypeDisplayChar(arch) : '?'}
                                                             </div>
-                                                            <span className="text-[11px] text-[var(--ui-text-primary)] font-medium">{member.count}x {arch?.name || member.archetypeId}</span>
+                                                            <span className="text-[11px] text-[var(--ui-text-primary)] font-medium">{member.count}x {arch?.name || member.agentTypeId}</span>
                                                         </div>
                                                     );
                                                 })}

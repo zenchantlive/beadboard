@@ -1,0 +1,15 @@
+{
+  "id": "investigation",
+  "name": "Investigation Team",
+  "description": "Specialized team for research and analysis. Investigator researches, Tester validates findings.",
+  "team": [
+    { "archetypeId": "investigator", "count": 1 },
+    { "archetypeId": "tester", "count": 1 }
+  ],
+  "protoFormula": "Investigator researches and documents findings → Tester validates conclusions with experiments",
+  "color": "#8b5cf6",
+  "icon": "🔍",
+  "createdAt": "2026-02-25T00:00:00.000Z",
+  "updatedAt": "2026-02-25T00:00:00.000Z",
+  "isBuiltIn": true
+}

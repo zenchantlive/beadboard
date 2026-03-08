@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { AgentArchetype, SwarmTemplate } from '../types-swarm';
+import { AgentType, AgentArchetype, SwarmTemplate } from '../types-swarm';
 
-const ARCHE_DIR = path.join(process.cwd(), '.beads', 'archetypes');
+const AGENT_DIR = path.join(process.cwd(), '.beads', 'archetypes');
 const TEMPLATE_DIR = path.join(process.cwd(), '.beads', 'templates');
 
 export function slugify(name: string): string {
@@ -15,7 +15,7 @@ export function slugify(name: string): string {
         .replace(/^-|-$/g, '');
 }
 
-export type SaveArchetypeInput = Partial<AgentArchetype> & {
+export type SaveAgentTypeInput = Partial<AgentType> & {
     name: string;
     description: string;
     systemPrompt: string;
@@ -23,8 +23,11 @@ export type SaveArchetypeInput = Partial<AgentArchetype> & {
     color: string;
 };
 
-export async function saveArchetype(input: SaveArchetypeInput): Promise<AgentArchetype> {
-    await fs.mkdir(ARCHE_DIR, { recursive: true });
+/** @deprecated Use SaveAgentTypeInput instead */
+export type SaveArchetypeInput = SaveAgentTypeInput;
+
+export async function saveAgentType(input: SaveAgentTypeInput): Promise<AgentType> {
+    await fs.mkdir(AGENT_DIR, { recursive: true });
 
     const id = input.id || slugify(input.name);
     const now = new Date().toISOString();
@@ -33,7 +36,7 @@ export async function saveArchetype(input: SaveArchetypeInput): Promise<AgentArc
     let createdAt = input.createdAt || now;
 
     try {
-        const existingContent = await fs.readFile(path.join(ARCHE_DIR, `${id}.json`), 'utf-8');
+        const existingContent = await fs.readFile(path.join(AGENT_DIR, `${id}.json`), 'utf-8');
         const existing = JSON.parse(existingContent);
         if (existing.isBuiltIn) {
             isBuiltIn = true; // Protect built-in status
@@ -45,127 +48,246 @@ export async function saveArchetype(input: SaveArchetypeInput): Promise<AgentArc
         // File doesn't exist, which is fine
     }
 
-    const archetype: AgentArchetype = {
+    const agentType: AgentType = {
         id,
         name: input.name,
         description: input.description,
         systemPrompt: input.systemPrompt,
         capabilities: input.capabilities,
         color: input.color,
+        icon: input.icon,
         createdAt,
         updatedAt: now,
         isBuiltIn
     };
 
     await fs.writeFile(
-        path.join(ARCHE_DIR, `${id}.json`),
-        JSON.stringify(archetype, null, 2)
+        path.join(AGENT_DIR, `${id}.json`),
+        JSON.stringify(agentType, null, 2)
     );
 
-    return archetype;
+    return agentType;
 }
 
-export async function deleteArchetype(id: string): Promise<void> {
-    const filePath = path.join(ARCHE_DIR, `${id}.json`);
+/** @deprecated Use saveAgentType instead */
+export const saveArchetype = saveAgentType;
 
-    let archetype: AgentArchetype;
+export async function deleteAgentType(id: string): Promise<void> {
+    const filePath = path.join(AGENT_DIR, `${id}.json`);
+
+    let agentType: AgentType;
     try {
         const content = await fs.readFile(filePath, 'utf-8');
-        archetype = JSON.parse(content);
+        agentType = JSON.parse(content);
     } catch {
-        throw new Error(`Archetype not found: ${id}`);
+        throw new Error(`Agent type not found: ${id}`);
     }
 
-    if (archetype.isBuiltIn) {
-        throw new Error(`Cannot delete built-in archetype: ${id}`);
+    if (agentType.isBuiltIn) {
+        throw new Error(`Cannot delete built-in agent type: ${id}`);
     }
 
     await fs.unlink(filePath);
 }
 
-const SEED_ARCHETYPES: AgentArchetype[] = [
+/** @deprecated Use deleteAgentType instead */
+export const deleteArchetype = deleteAgentType;
+
+const SEED_AGENTS: AgentType[] = [
     {
         id: 'architect',
         name: 'System Architect',
-        description: 'Designs complex system structures and writes detailed implementation plans.',
-        systemPrompt: 'You are a staff-level software architect focused on high-level system design.',
-        capabilities: ['planning', 'design_docs', 'arch_review'],
+        description: 'Designs system structures, decomposes work into actionable tasks, and makes technical decisions.',
+        systemPrompt: 'You are a staff-level software architect focused on high-level system design. You create clear, actionable plans that other agents can execute.',
+        capabilities: ['system_design', 'work_decomposition', 'technical_decisions', 'risk_assessment', 'documentation'],
         color: '#3b82f6',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         isBuiltIn: true
     },
     {
-        id: 'coder',
+        id: 'engineer',
         name: 'Implementation Engineer',
-        description: 'Translates plans into precise, type-safe, and tested code.',
-        systemPrompt: 'You are a senior software engineer focused on execution and clean code.',
-        capabilities: ['coding', 'refactoring', 'testing'],
+        description: 'Translates plans into precise, type-safe, and tested code. Focuses on clean implementation and maintainability.',
+        systemPrompt: 'You are a senior software engineer focused on turning designs and plans into production-quality code. You implement features, fix bugs, and write tests.',
+        capabilities: ['coding', 'refactoring', 'testing', 'debugging', 'documentation'],
         color: '#10b981',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         isBuiltIn: true
-    }
-];
-
-export async function getArchetypes(): Promise<AgentArchetype[]> {
-    try {
-        await fs.mkdir(ARCHE_DIR, { recursive: true });
-        const files = await fs.readdir(ARCHE_DIR);
-
-        if (files.filter(f => f.endsWith('.json')).length === 0) {
-            // Seed defaults
-            for (const arch of SEED_ARCHETYPES) {
-                await fs.writeFile(path.join(ARCHE_DIR, `${arch.id}.json`), JSON.stringify(arch, null, 2));
-            }
-            return SEED_ARCHETYPES;
-        }
-
-        const archetypes: AgentArchetype[] = [];
-        for (const file of files) {
-            if (!file.endsWith('.json')) continue;
-            try {
-                const content = await fs.readFile(path.join(ARCHE_DIR, file), 'utf-8');
-                const parsed = JSON.parse(content);
-                archetypes.push({
-                    ...parsed,
-                    id: file.replace('.json', '')
-                });
-            } catch (err) {
-                console.error(`Failed to parse archetype file: ${file}`, err);
-            }
-        }
-
-        return archetypes;
-    } catch (e) {
-        console.error('Error in getArchetypes:', e);
-        return [];
-    }
-}
-
-const SEED_TEMPLATES: SwarmTemplate[] = [
+    },
     {
-        id: 'standard-app',
-        name: 'Standard Application Swarm',
-        description: 'A balanced team of an Architect and two Coders for standard feature development.',
-        team: [
-            { archetypeId: 'architect', count: 1 },
-            { archetypeId: 'coder', count: 2 }
-        ],
+        id: 'reviewer',
+        name: 'Code Reviewer',
+        description: 'Conducts rigorous technical code reviews with focus on correctness, performance, maintainability, and test quality.',
+        systemPrompt: 'You are a senior systems engineer conducting rigorous technical code reviews. Your analysis prioritizes technical correctness, performance, maintainability, and simplicity. Be direct about problems and constructive with solutions. You do NOT modify files.',
+        capabilities: ['code_review', 'quality_gates', 'test_evaluation', 'security_review', 'performance_analysis'],
+        color: '#f59e0b',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isBuiltIn: true
+    },
+    {
+        id: 'tester',
+        name: 'Test Engineer',
+        description: 'Designs and implements comprehensive test suites, discovers edge cases, and ensures code correctness through rigorous verification.',
+        systemPrompt: 'You are a senior test engineer focused on ensuring code correctness through comprehensive test design and implementation. You think adversarially about code, always looking for ways it could fail.',
+        capabilities: ['test_design', 'test_implementation', 'edge_case_discovery', 'coverage_analysis', 'quality_assurance'],
+        color: '#8b5cf6',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isBuiltIn: true
+    },
+    {
+        id: 'investigator',
+        name: 'Investigator',
+        description: 'Debugs complex issues, performs root cause analysis, and researches unknowns to unblock development.',
+        systemPrompt: 'You are a senior engineer specializing in debugging, root cause analysis, and technical research. You excel at unraveling complex problems. You do NOT modify files unless implementing a confirmed fix.',
+        capabilities: ['debugging', 'root_cause_analysis', 'research', 'documentation', 'problem_solving'],
+        color: '#ef4444',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isBuiltIn: true
+    },
+    {
+        id: 'shipper',
+        name: 'Shipper',
+        description: 'Manages CI/CD pipelines, deployments, and release processes. Ensures safe and reliable software delivery.',
+        systemPrompt: 'You are a senior DevOps/release engineer focused on safe, reliable software delivery. You manage CI/CD pipelines, deployment processes, and release coordination.',
+        capabilities: ['ci_cd', 'deployment', 'release_management', 'monitoring', 'incident_response'],
+        color: '#06b6d4',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         isBuiltIn: true
     }
 ];
 
-export async function getTemplates(): Promise<SwarmTemplate[]> {
+/** @deprecated Use SEED_AGENTS instead */
+const SEED_ARCHETYPES = SEED_AGENTS;
+
+export async function getAgentTypes(projectRoot: string = process.cwd()): Promise<AgentType[]> {
+    const agentDir = path.join(projectRoot, '.beads', 'archetypes');
     try {
-        await fs.mkdir(TEMPLATE_DIR, { recursive: true });
-        const files = await fs.readdir(TEMPLATE_DIR);
+        await fs.mkdir(agentDir, { recursive: true });
+        const files = await fs.readdir(agentDir);
+
+        if (files.filter(f => f.endsWith('.json')).length === 0) {
+            // Seed defaults
+            for (const agent of SEED_AGENTS) {
+                await fs.writeFile(path.join(agentDir, `${agent.id}.json`), JSON.stringify(agent, null, 2));
+            }
+            return SEED_AGENTS;
+        }
+
+        const agentTypes: AgentType[] = [];
+        for (const file of files) {
+            if (!file.endsWith('.json')) continue;
+            try {
+                const content = await fs.readFile(path.join(agentDir, file), 'utf-8');
+                const parsed = JSON.parse(content);
+                agentTypes.push({
+                    ...parsed,
+                    id: file.replace('.json', '')
+                });
+            } catch (err) {
+                console.error(`Failed to parse agent type file: ${file}`, err);
+            }
+        }
+
+        return agentTypes;
+    } catch (e) {
+        console.error('Error in getAgentTypes:', e);
+        return [];
+    }
+}
+
+/** @deprecated Use getAgentTypes instead */
+export const getArchetypes = getAgentTypes;
+
+const SEED_TEMPLATES: SwarmTemplate[] = [
+    {
+        id: 'standard-app',
+        name: 'Standard Application',
+        description: 'Classic balanced team for routine application development. One Architect for design, two Engineers for implementation.',
+        team: [{ agentTypeId: 'architect', count: 1 }, { agentTypeId: 'engineer', count: 2 }],
+        color: '#f59e0b', icon: '📦',
+        createdAt: '2026-02-21T03:22:04.089Z', updatedAt: '2026-02-25T00:00:00.000Z', isBuiltIn: true
+    },
+    {
+        id: 'feature-dev',
+        name: 'Feature Development',
+        description: 'Balanced team for implementing new features. Architect plans, Engineers build, Reviewer ensures quality, Tester verifies behavior.',
+        team: [{ agentTypeId: 'architect', count: 1 }, { agentTypeId: 'engineer', count: 2 }, { agentTypeId: 'reviewer', count: 1 }, { agentTypeId: 'tester', count: 1 }],
+        color: '#3b82f6', icon: '✨',
+        createdAt: '2026-02-25T00:00:00.000Z', updatedAt: '2026-02-25T00:00:00.000Z', isBuiltIn: true
+    },
+    {
+        id: 'bug-fix',
+        name: 'Bug Fix Squad',
+        description: 'Focused team for debugging and fixing issues. Investigator finds root cause, Engineer implements fix, Tester verifies resolution.',
+        team: [{ agentTypeId: 'investigator', count: 1 }, { agentTypeId: 'engineer', count: 1 }, { agentTypeId: 'tester', count: 1 }],
+        color: '#ef4444', icon: '🐛',
+        createdAt: '2026-02-25T00:00:00.000Z', updatedAt: '2026-02-25T00:00:00.000Z', isBuiltIn: true
+    },
+    {
+        id: 'code-review',
+        name: 'Code Review',
+        description: 'Lightweight team for reviewing and improving existing code. Reviewer analyzes, Engineer makes improvements.',
+        team: [{ agentTypeId: 'reviewer', count: 1 }, { agentTypeId: 'engineer', count: 1 }],
+        color: '#f59e0b', icon: '👁️',
+        createdAt: '2026-02-25T00:00:00.000Z', updatedAt: '2026-02-25T00:00:00.000Z', isBuiltIn: true
+    },
+    {
+        id: 'greenfield',
+        name: 'Greenfield Project',
+        description: 'Full team for starting new projects from scratch.',
+        team: [{ agentTypeId: 'architect', count: 1 }, { agentTypeId: 'engineer', count: 3 }, { agentTypeId: 'tester', count: 1 }, { agentTypeId: 'shipper', count: 1 }],
+        color: '#10b981', icon: '🌱',
+        createdAt: '2026-02-25T00:00:00.000Z', updatedAt: '2026-02-25T00:00:00.000Z', isBuiltIn: true
+    },
+    {
+        id: 'investigation',
+        name: 'Investigation Team',
+        description: 'Specialized team for research and analysis.',
+        team: [{ agentTypeId: 'investigator', count: 1 }, { agentTypeId: 'tester', count: 1 }],
+        color: '#8b5cf6', icon: '🔍',
+        createdAt: '2026-02-25T00:00:00.000Z', updatedAt: '2026-02-25T00:00:00.000Z', isBuiltIn: true
+    },
+    {
+        id: 'refactor',
+        name: 'Refactoring Team',
+        description: 'Team for improving existing code without changing behavior.',
+        team: [{ agentTypeId: 'architect', count: 1 }, { agentTypeId: 'engineer', count: 2 }, { agentTypeId: 'tester', count: 1 }],
+        color: '#64748b', icon: '🔧',
+        createdAt: '2026-02-25T00:00:00.000Z', updatedAt: '2026-02-25T00:00:00.000Z', isBuiltIn: true
+    },
+    {
+        id: 'release',
+        name: 'Release Team',
+        description: 'Team focused on safe deployments.',
+        team: [{ agentTypeId: 'tester', count: 1 }, { agentTypeId: 'reviewer', count: 1 }, { agentTypeId: 'shipper', count: 1 }],
+        color: '#06b6d4', icon: '🚀',
+        createdAt: '2026-02-25T00:00:00.000Z', updatedAt: '2026-02-25T00:00:00.000Z', isBuiltIn: true
+    },
+    {
+        id: 'full-squad',
+        name: 'Full Development Squad',
+        description: 'Complete team for complex projects requiring all capabilities.',
+        team: [{ agentTypeId: 'architect', count: 1 }, { agentTypeId: 'engineer', count: 2 }, { agentTypeId: 'reviewer', count: 1 }, { agentTypeId: 'tester', count: 1 }, { agentTypeId: 'investigator', count: 1 }, { agentTypeId: 'shipper', count: 1 }],
+        color: '#ec4899', icon: '🎯',
+        createdAt: '2026-02-25T00:00:00.000Z', updatedAt: '2026-02-25T00:00:00.000Z', isBuiltIn: true
+    }
+];
+
+export async function getTemplates(projectRoot: string = process.cwd()): Promise<SwarmTemplate[]> {
+    const templateDir = path.join(projectRoot, '.beads', 'templates');
+    try {
+        await fs.mkdir(templateDir, { recursive: true });
+        const files = await fs.readdir(templateDir);
 
         if (files.filter(f => f.endsWith('.json')).length === 0) {
             for (const tpl of SEED_TEMPLATES) {
-                await fs.writeFile(path.join(TEMPLATE_DIR, `${tpl.id}.json`), JSON.stringify(tpl, null, 2));
+                await fs.writeFile(path.join(templateDir, `${tpl.id}.json`), JSON.stringify(tpl, null, 2));
             }
             return SEED_TEMPLATES;
         }
@@ -174,8 +296,17 @@ export async function getTemplates(): Promise<SwarmTemplate[]> {
         for (const file of files) {
             if (!file.endsWith('.json')) continue;
             try {
-                const content = await fs.readFile(path.join(TEMPLATE_DIR, file), 'utf-8');
+                const content = await fs.readFile(path.join(templateDir, file), 'utf-8');
                 const parsed = JSON.parse(content);
+                
+                // Normalize legacy archetypeId → agentTypeId
+                if (parsed.team && Array.isArray(parsed.team)) {
+                    parsed.team = parsed.team.map((member: any) => ({
+                        agentTypeId: member.agentTypeId || member.archetypeId,
+                        count: member.count,
+                    }));
+                }
+                
                 templates.push({
                     ...parsed,
                     id: file.replace('.json', '')
@@ -192,21 +323,35 @@ export async function getTemplates(): Promise<SwarmTemplate[]> {
     }
 }
 
-export type SaveTemplateInput = Partial<SwarmTemplate> & {
+export type SaveTemplateInput = {
+    id?: string;
     name: string;
     description: string;
-    team: { archetypeId: string; count: number }[];
+    /** Team composition. Accepts both agentTypeId and archetypeId (for backward compat) */
+    team: { agentTypeId?: string; archetypeId?: string; count: number }[];
+    protoFormula?: string;
+    color?: string;
+    icon?: string;
+    isBuiltIn?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
 };
 
 export async function saveTemplate(input: SaveTemplateInput): Promise<SwarmTemplate> {
     await fs.mkdir(TEMPLATE_DIR, { recursive: true });
 
-    const archetypes = await getArchetypes();
-    const validArchetypeIds = new Set(archetypes.map(a => a.id));
+    const agentTypes = await getAgentTypes();
+    const validAgentTypeIds = new Set(agentTypes.map(a => a.id));
 
-    for (const member of input.team) {
-        if (!validArchetypeIds.has(member.archetypeId)) {
-            throw new Error(`Invalid archetype ID in team: ${member.archetypeId}`);
+    // Normalize team: support both agentTypeId and archetypeId
+    const normalizedTeam = input.team.map(member => ({
+        agentTypeId: member.agentTypeId || member.archetypeId || '',
+        count: member.count,
+    }));
+
+    for (const member of normalizedTeam) {
+        if (!validAgentTypeIds.has(member.agentTypeId)) {
+            throw new Error(`Invalid agent type ID in team: ${member.agentTypeId}`);
         }
     }
 
@@ -233,8 +378,10 @@ export async function saveTemplate(input: SaveTemplateInput): Promise<SwarmTempl
         id,
         name: input.name,
         description: input.description,
-        team: input.team,
+        team: normalizedTeam,
         protoFormula: input.protoFormula,
+        color: input.color,
+        icon: input.icon,
         createdAt,
         updatedAt: now,
         isBuiltIn
