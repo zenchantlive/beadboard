@@ -7,6 +7,7 @@ import { ActivityPanel } from './activity-panel';
 import { SwarmCommandFeed } from './swarm-command-feed';
 import { ThreadDrawer } from '../shared/thread-drawer';
 import { MissionInspector } from '../mission/mission-inspector';
+import { AgentStatusPanel } from '../agents/agent-status-panel';
 import { useSwarmList } from '../../hooks/use-swarm-list';
 import { useUrlState } from '../../hooks/use-url-state';
 
@@ -58,6 +59,10 @@ export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectR
                         </button>
                     </div>
                 )}
+                {/* Agent Status for active epic */}
+                <div className="shrink-0 border-b border-[var(--border-subtle)] p-3">
+                    <AgentStatusPanel projectRoot={projectRoot} />
+                </div>
                 <div className="min-h-0 flex-1 overflow-hidden">
                     <SwarmCommandFeed
                         epicId={epicId}
@@ -116,13 +121,21 @@ function SwarmIdBranch({ swarmId, projectRoot }: { swarmId: string; projectRoot:
     const assignedAgents = swarm?.agents ?? [];
 
     return (
-        <MissionInspector
-            missionId={swarmId}
-            missionTitle={missionTitle}
-            projectRoot={projectRoot}
-            assignedAgents={assignedAgents}
-            onClose={() => setSwarmId(null)}
-            onAssign={async () => {}}
-        />
+        <div className="flex h-full flex-col overflow-hidden">
+            {/* Agent Status for active swarm */}
+            <div className="shrink-0 border-b border-[var(--border-subtle)] p-3">
+                <AgentStatusPanel projectRoot={projectRoot} />
+            </div>
+            <div className="min-h-0 flex-1 overflow-hidden">
+                <MissionInspector
+                    missionId={swarmId}
+                    missionTitle={missionTitle}
+                    projectRoot={projectRoot}
+                    assignedAgents={assignedAgents}
+                    onClose={() => setSwarmId(null)}
+                    onAssign={async () => {}}
+                />
+            </div>
+        </div>
     );
 }

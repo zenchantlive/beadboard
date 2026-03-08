@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { workerSessionManager, type WorkerSession } from '../../../../../lib/worker-session-manager';
+import { workerSessionManager, type WorkerSession } from '../../../../lib/worker-session-manager';
 
 export const dynamic = 'force-dynamic';
 

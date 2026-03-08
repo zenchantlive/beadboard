@@ -13,6 +13,7 @@ import { createDeviationTool } from '../tui/tools/bb-deviation';
 import { createSpawnWorkerTool } from '../tui/tools/bb-spawn-worker';
 import { createSpawnTemplateTool } from '../tui/tools/bb-spawn-template';
 import { createWorkerStatusTool } from '../tui/tools/bb-worker-status';
+import { createAssignAgentTool } from '../tui/tools/bb-assign-agent';
 import { createListAgentsTool } from '../tui/tools/bb-list-agents';
 import { createCreateAgentTool } from '../tui/tools/bb-create-agent';
 import { createUpdateAgentTool } from '../tui/tools/bb-update-agent';
@@ -107,6 +108,7 @@ class InProcessPiDaemonAdapter implements PiDaemonAdapter {
         { tool: createSpawnWorkerTool(projectRoot) },
         { tool: createSpawnTemplateTool(projectRoot) },
         { tool: createWorkerStatusTool(projectRoot) },
+        { tool: createAssignAgentTool(projectRoot) },
         // Agent CRUD tools
         { tool: createListAgentsTool(projectRoot) },
         { tool: createCreateAgentTool(projectRoot) },

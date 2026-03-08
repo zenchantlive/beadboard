@@ -57,7 +57,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId, on
     const [showTemplateList, setShowTemplateList] = useState(false);
     const [quickAssignDropdown, setQuickAssignDropdown] = useState<string | null>(null);
 
-    const { selectedArchetype, setSelectedArchetype, isAssigning, assignSuccess, handleAssign } = useAgentPicker();
+    const { selectedArchetype, setSelectedArchetype, isAssigning, assignSuccess, handleAssign } = useArchetypePicker();
 
     const [needsAgentCollapsed, setNeedsAgentCollapsed] = useState(false);
     const [preAssignedCollapsed, setPreAssignedCollapsed] = useState(false);
