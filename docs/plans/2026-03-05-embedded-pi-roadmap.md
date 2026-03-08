@@ -1,7 +1,7 @@
 # BeadBoard Embedded Pi Roadmap
 
 **Date:** 2026-03-05
-**Last Updated:** 2026-03-06
+**Last Updated:** 2026-03-07
 **Companion PRD:** `docs/plans/2026-03-05-embedded-pi-prd.md`
 **Purpose:** Track what has already shipped for Embedded Pi in BeadBoard, what is partially complete, and what remains to reach the full PRD vision.
 
@@ -9,18 +9,26 @@
 
 ## Current status
 
-Embedded Pi is no longer PRD-only.
+**Phase 3 COMPLETE - Testing in progress.**
 
-We now have a working embedded orchestrator path inside BeadBoard with:
-- BeadBoard-managed Pi bootstrap/runtime plumbing
-- project orchestrator session creation
-- frontend prompt submission from the left panel
-- realtime runtime telemetry in the app
-- chat-style orchestrator transcript in the left panel
-- BeadBoard-aware tools usable by the orchestrator
-- working end-to-end proof that the orchestrator can read project state and execute tools
+We now have:
+- ✅ Working embedded orchestrator with BeadBoard tools
+- ✅ Worker spawning with numbered instances (Engineer 01, etc.)
+- ✅ Agent types (architect, engineer, reviewer, tester, investigator, shipper)
+- ✅ Template-based team spawning
+- ✅ **Bead-required workflow** - every worker task has a bead
+- ✅ **Async worker coordination** - non-blocking spawn, check status, read results
+- ✅ **File verification pattern** - orchestrator reads actual files to verify work
 
-The biggest remaining gap is still **worker-agent spawning and template-first orchestration**, not basic embedded-chat connectivity.
+**Currently testing:**
+- Worker claims bead, updates, closes correctly
+- Orchestrator can check worker status mid-task
+- Orchestrator can get results and verify via file reads
+
+**Biggest remaining gaps:**
+- Phase 4: Launch-anywhere UX (spawn from task cards, graph nodes)
+- Phase 5: Agent presence in social/graph views
+- Tests and verification
 
 ---
 
@@ -141,7 +149,7 @@ What is still missing:
 ---
 
 ## Phase 3 - Agent-based orchestration
-**Status:** ✅ DONE (2026-03-07)
+**Status:** ✅ DONE (2026-03-07) - **Testing in progress**
 **Plan:** `docs/plans/2026-03-07-phase-3-agent-orchestration.md`
 
 ### Shipped
@@ -154,6 +162,18 @@ What is still missing:
 - ✅ Auto-template selection from description keywords
 - ✅ Decision tree in orchestrator prompt
 - ✅ Agent assignment to beads (`bb_assign_agent`)
+
+### Additional (2026-03-07)
+- ✅ **Bead-required workflow** - every worker task has a bead
+  - `bb_create`, `bb_update`, `bb_close`, `bb_show`, `bb_ready` tools
+  - Workers must claim bead → update progress → close with summary
+- ✅ **Async worker coordination** - non-blocking spawn
+  - `bb_worker_results` tool - get results from completed workers
+  - Orchestrator can check status mid-task
+  - Continue conversation while workers run
+- ✅ **File verification pattern** - orchestrator reads actual files
+  - Not just result strings, but actual implementation
+  - Makes orchestrator a true reviewer
 
 ---
 
@@ -310,6 +330,14 @@ The skill documentation was written before Phase 1-3 decisions:
 - `src/tui/tools/bb-deviation.ts`
 - `src/tui/tools/bb-mailbox.ts`
 - `src/tui/tools/bb-presence.ts`
+- `src/tui/tools/bb-spawn-worker.ts`
+- `src/tui/tools/bb-spawn-template.ts`
+- `src/tui/tools/bb-worker-status.ts`
+- `src/tui/tools/bb-worker-results.ts`
+- `src/tui/tools/bb-bead-crud.ts`
+- `src/tui/tools/bb-list-agents.ts`
+- `src/tui/tools/bb-create-agent.ts`
+- `src/tui/tools/bb-assign-agent.ts`
 
 ### Frontend surfaces
 - `src/components/shared/orchestrator-panel.tsx`
@@ -322,18 +350,24 @@ The skill documentation was written before Phase 1-3 decisions:
 
 ## Summary
 
-Embedded Pi has crossed the line from concept to working substrate.
+**Phase 3 COMPLETE - Testing in progress.**
 
-What is proven now is:
-- embedded orchestrator runtime
-- frontend prompt path
-- realtime telemetry
-- basic left-panel orchestrator chat
-- BeadBoard-aware tool execution
+What is proven now:
+- ✅ Embedded orchestrator runtime
+- ✅ Frontend prompt path
+- ✅ Realtime telemetry
+- ✅ Left-panel orchestrator chat
+- ✅ BeadBoard-aware tool execution
+- ✅ Worker spawning with numbered instances
+- ✅ Agent types with capabilities
+- ✅ Template-based team spawning
+- ✅ Bead-required workflow
+- ✅ Async worker coordination
 
-What remains is the higher-order BeadBoard vision:
-- worker spawning
-- archetype-backed execution
-- template-first orchestration
-- multi-session / multi-surface execution UX
-- hardened persistence and tests
+What remains:
+- Phase 4: Launch-anywhere UX (spawn from task cards, graph nodes)
+- Phase 5: Agent presence in social/graph views
+- Phase 6: Runtime hardening
+- Phase 7: Tests and verification
+- Phase 8: Unified Settings
+- Phase 9: Holistic skill update
