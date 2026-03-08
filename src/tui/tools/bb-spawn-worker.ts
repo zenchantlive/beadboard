@@ -3,98 +3,110 @@ import type { CustomAgentTool } from '@mariozechner/pi-coding-agent';
 import { workerSessionManager } from '../../lib/worker-session-manager';
 import { embeddedPiDaemon } from '../../lib/embedded-daemon';
 
+/**
+ * Generate a task ID from natural language description.
+ */
+function generateTaskId(description: string): string {
+  const slug = description
+    .toLowerCase()
+    .slice(0, 40)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  
+  const ts = Date.now().toString(36).slice(-4);
+  return `${slug}-${ts}`;
+}
+
 export function createSpawnWorkerTool(projectRoot: string): CustomAgentTool {
   return {
     name: 'bb_spawn_worker',
     label: 'Spawn Worker Agent',
-    description: 'Spawn a worker agent to execute a specific task in parallel. The worker will work independently and report back results. Use this when you want to parallelize work or delegate a specific task to a focused agent.',
+    description: `Spawn an agent to work on a task. Just describe what you want done in natural language.
+
+Examples:
+- "Review the authentication module for security issues"
+- "Fix the failing test in user-service.test.ts"  
+- "Implement the password reset feature"
+- "Debug why the payment webhook is failing"
+
+The agent will work independently and report results. Check the right panel (Agent Status) to see active agents.`,
     parameters: Type.Object({
-      task_id: Type.String({ description: 'The ID of the task for the worker to work on (e.g., bead ID, issue ID)' }),
-      task_context: Type.String({ description: 'Detailed context/instructions for the worker. Include what needs to be done, any relevant file paths, constraints, and expected output.' }),
-      agent_type: Type.Optional(Type.String({ description: 'Agent type to spawn. Options: "architect" (system design), "engineer" (coding/implementation), "reviewer" (code review, read-only), "tester" (testing), "investigator" (debugging/research, read-only), "shipper" (deployments). Default: engineer.' })),
-      archetype: Type.Optional(Type.String({ description: 'DEPRECATED: Use agent_type instead' })),
+      description: Type.String({ 
+        description: 'What you want the agent to accomplish. Be specific about files, context, and expected outcome.' 
+      }),
+      agent_type: Type.Optional(Type.String({ 
+        description: 'Agent type: architect (design), engineer (code), reviewer (review), tester (tests), investigator (debug), shipper (deploy). Default: engineer.' 
+      })),
+      bead_id: Type.Optional(Type.String({ 
+        description: 'Optional: existing bead ID to assign this agent to. If not provided, a new task will be created.' 
+      }),
     }),
-    async execute(_toolCallId, params: any) {
+    async execute(_toolCallId: string, params: unknown): Promise<any> {
+      const { description, agent_type, bead_id } = params as {
+        description: string;
+        agent_type?: string;
+        bead_id?: string;
+      };
+
+      if (!description || typeof description !== 'string') {
+        return {
+          content: [{ type: 'text', text: 'Please describe what you want the agent to do.' }],
+          isError: true,
+        };
+      }
+
+      // Resolve task ID - prefer bead_id if provided, else generate from description
+      const taskId = bead_id || generateTaskId(description);
+
+      // Validate agent type
+      const validAgentTypes = ['architect', 'engineer', 'reviewer', 'tester', 'investigator', 'shipper'];
+      if (agent_type && !validAgentTypes.includes(agent_type)) {
+        return {
+          content: [{ type: 'text', text: `Unknown agent type "${agent_type}". Options: ${validAgentTypes.join(', ')}` }],
+          isError: true,
+        };
+      }
+
       try {
-        const { task_id, task_context, agent_type, archetype } = params;
-        // Support both old and new param names
-        const agentType = agent_type || archetype;
-
-        console.log(`[bb_spawn_worker] Spawning worker for task ${task_id}`);
-
-        // Validate required params
-        if (!task_id || typeof task_id !== 'string') {
-          return {
-            content: [{ type: 'text', text: 'Error: task_id is required and must be a string.' }],
-            isError: true,
-            details: {},
-          };
-        }
-
-        if (!task_context || typeof task_context !== 'string') {
-          return {
-            content: [{ type: 'text', text: 'Error: task_context is required and must be a string.' }],
-            isError: true,
-            details: {},
-          };
-        }
-
-        // Validate agent type if provided
-        const validAgentTypes = ['architect', 'engineer', 'reviewer', 'tester', 'investigator', 'shipper'];
-        if (agentType && !validAgentTypes.includes(agentType)) {
-          return {
-            content: [{ type: 'text', text: `Error: Invalid agent type "${agentType}". Valid options: ${validAgentTypes.join(', ')}` }],
-            isError: true,
-            details: {},
-          };
-        }
-
-        // Spawn the worker
         const worker = await workerSessionManager.spawnWorker({
           projectRoot,
-          taskId: task_id,
-          taskContext: task_context,
-          agentType: agentType,
+          taskId,
+          taskContext: description,
+          agentType: agent_type,
         });
 
-        const agentMsg = agentType ? ` with agent type "${agentType}"` : '';
-        const message = `Worker spawned successfully!
-
-Worker ID: ${worker.id}
-Display Name: ${worker.displayName || worker.id}
-Task: ${task_id}
-Status: ${worker.status}${agentMsg}
-
-The worker is now starting up. Use bb_worker_status to check its progress and get results when it completes.
-
-Events will appear in the runtime console showing the worker's progress.`;
-
+        const typeMsg = agent_type ? ` (${agent_type})` : '';
+        
         return {
-          content: [{ type: 'text', text: message }],
+          content: [{ 
+            type: 'text', 
+            text: `✓ Spawned ${worker.displayName}${typeMsg}
+
+"${description.slice(0, 80)}${description.length > 80 ? '...' : ''}"
+
+The agent is working on this. Watch the right panel for status, or results will appear here when done.` 
+          }],
           details: {
             workerId: worker.id,
-            taskId: task_id,
-            status: worker.status,
-            agentType: agentType || null,
             displayName: worker.displayName,
+            taskId,
+            agentType: agent_type || 'engineer',
+            beadId: bead_id || null,
           },
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error(`[bb_spawn_worker] Error:`, message);
-
-        // Emit failure event
+        
         embeddedPiDaemon.appendEvent(projectRoot, {
           kind: 'worker.failed',
-          title: 'Worker spawn failed',
+          title: 'Spawn failed',
           detail: message,
           status: 'failed',
         });
 
         return {
-          content: [{ type: 'text', text: `Failed to spawn worker: ${message}` }],
+          content: [{ type: 'text', text: `Failed to spawn agent: ${message}` }],
           isError: true,
-          details: { error: message },
         };
       }
     },
