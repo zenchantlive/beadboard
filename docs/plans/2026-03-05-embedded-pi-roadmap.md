@@ -128,29 +128,32 @@ What is still missing:
 ---
 
 ## Phase 2 - Archetypes as executable agent types
-**Status:** Partially designed, not implemented
+**Status:** ✅ DONE (2026-03-06)
+**Plan:** `docs/plans/2026-03-06-phase-2-archetype-configs.md`
 
-### Remaining work
-1. Map archetypes to real execution configs
-2. Support archetype-based worker creation
-3. Layer archetype prompt/tool/model overrides safely
-4. Distinguish agent type vs agent instance in runtime/UI state more explicitly
+### Shipped
+- ✅ Archetype CRUD tools (`bb_list_archetypes`, `bb_create_archetype`, etc.)
+- ✅ Template CRUD tools (`bb_list_templates`, `bb_create_template`, etc.)
+- ✅ Worker session manager loads archetype config
+- ✅ Capabilities mapped to tool access (full vs read-only)
+- ✅ System prompt injection per archetype
 
 ---
 
-## Phase 3 - Template-first orchestration
-**Status:** Foundation exists, orchestration behavior not done
+## Phase 3 - Agent-based orchestration
+**Status:** ✅ DONE (2026-03-07)
+**Plan:** `docs/plans/2026-03-07-phase-3-agent-orchestration.md`
 
-### Already done
-- templates are included in orchestrator prompt context
-- deviation recording tool exists
-
-### Remaining work
-1. Implement true template-first planning behavior
-2. Let orchestrator choose worker composition from templates
-3. Require explanation when deviating from templates
-4. Add major-deviation confirmation flow / approval UX
-5. Surface deviations consistently across timeline, sessions, and mission contexts
+### Shipped
+- ✅ Renamed "archetype" → "agent" everywhere user-facing
+- ✅ Agent instances with numbered display names (Engineer 01, etc.)
+- ✅ Agent status panel in right panel
+- ✅ Agent state persistence (`.beads/agents.jsonl`)
+- ✅ Template spawning tool (`bb_spawn_team`)
+- ✅ Natural language task descriptions (no task_id required)
+- ✅ Auto-template selection from description keywords
+- ✅ Decision tree in orchestrator prompt
+- ✅ Agent assignment to beads (`bb_assign_agent`)
 
 ---
 
@@ -214,6 +217,69 @@ Comprehensive settings for CLI and frontend: model selection, provider auth, UI 
 
 ### See
 `docs/plans/2026-03-05-embedded-pi-prd.md` Section 24 for full requirements.
+
+---
+
+## Phase 9 — Holistic Skill Update (After All Phases Complete)
+**Status:** Not started, depends on Phases 1-8
+
+### Goal
+Update `skills/beadboard-driver/` to reflect the new agent-based architecture.
+
+### Why This Is Needed
+The skill documentation was written before Phase 1-3 decisions:
+- Archetypes were renamed to Agents
+- Agent instances get numbered display names (Engineer 01, etc.)
+- Templates are how teams are composed
+- Workers spawn via `bb_spawn_worker(description)` not `bd create`
+- Natural language task descriptions, not task_id requirements
+
+### Files to Update
+
+**Core Skill:**
+- `skills/beadboard-driver/SKILL.md` - Main runbook
+
+**References:**
+- `skills/beadboard-driver/references/archetypes-templates-swarms.md` - Rename archetypes → agents
+- `skills/beadboard-driver/references/command-matrix.md` - Add new agent tools
+- `skills/beadboard-driver/references/agent-state-liveness.md` - Update for numbered instances
+- `skills/beadboard-driver/references/session-lifecycle.md` - Update worker spawn flow
+- `skills/beadboard-driver/references/coordination-system.md` - May need updates
+- `skills/beadboard-driver/references/creating-beads.md` - May need updates
+
+### Key Changes to Document
+
+1. **Agent Types (was Archetypes)**
+   - 6 built-in: architect, engineer, reviewer, tester, investigator, shipper
+   - CRUD tools: `bb_list_agents`, `bb_create_agent`, etc.
+   - Each has capabilities that determine tool access
+
+2. **Agent Instances**
+   - Numbered display names: "Engineer 01", "Engineer 02"
+   - Unique instance IDs: `{type}-{number}-{random}`
+   - Status panel shows active instances
+
+3. **Templates**
+   - Named compositions: feature-dev, bug-fix, etc.
+   - Spawn via `bb_spawn_team(description)` or `bb_spawn_team(description, template)`
+   - Auto-select template from description keywords
+
+4. **Worker Spawning**
+   - Natural language: `bb_spawn_worker(description: "Fix the login bug")`
+   - No task_id required - auto-generated from description
+   - Optional `bead_id` to assign to existing bead
+
+5. **Orchestrator Decision Tree**
+   - Small task → spawn 1 agent
+   - Medium task → spawn 2-3 agents
+   - Large task → use template
+
+### Scripts to Review
+- `scripts/generate-agent-name.mjs` - May need update for new naming
+- `scripts/session-preflight.mjs` - May reference old concepts
+
+### Effort
+~2-3 hours
 
 ---
 
