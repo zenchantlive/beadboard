@@ -23,6 +23,7 @@ import { createCreateTemplateTool } from '../tui/tools/bb-create-template';
 import { createUpdateTemplateTool } from '../tui/tools/bb-update-template';
 import { createDeleteTemplateTool } from '../tui/tools/bb-delete-template';
 import { createBeadCrudTools } from '../tui/tools/bb-bead-crud';
+import { createWorkerResultsTool } from '../tui/tools/bb-worker-results';
 
 export interface PiDaemonBinding {
   id: string;
@@ -122,6 +123,8 @@ class InProcessPiDaemonAdapter implements PiDaemonAdapter {
         { tool: createDeleteTemplateTool(projectRoot) },
         // Bead CRUD tools
         ...createBeadCrudTools(projectRoot).map((tool) => ({ tool: tool as any })),
+        // Worker results tool
+        { tool: createWorkerResultsTool(projectRoot) },
         ...createMailboxTools().map((tool) => ({ tool: tool as any })),
         ...createPresenceTools().map((tool) => ({ tool: tool as any })),
       ],

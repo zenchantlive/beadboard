@@ -421,6 +421,10 @@ ${agentSection}${beadWorkflow}## Instructions
     return [...this.workers.values()].filter((w) => w.projectRoot === projectRoot);
   }
 
+  getAllWorkers(): WorkerSession[] {
+    return [...this.workers.values()];
+  }
+
   async terminateWorker(workerId: string): Promise<void> {
     const worker = this.workers.get(workerId);
     if (!worker) return;
