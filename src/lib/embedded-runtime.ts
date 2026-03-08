@@ -1,5 +1,3 @@
-import path from 'node:path';
-
 import type { BeadIssue } from './types';
 
 export type RuntimeBackendId = 'pi';
@@ -105,7 +103,9 @@ function stableProjectId(projectRoot: string): string {
 }
 
 export function getProjectRuntimeId(projectRoot: string): string {
-  return stableProjectId(path.resolve(projectRoot));
+  // Client-safe path normalization (removes trailing slashes)
+  const normalizedRoot = projectRoot.replace(/[/\\]+$/, '') || projectRoot;
+  return stableProjectId(normalizedRoot);
 }
 
 export function getOrchestratorAgentType(): AgentTypeDefinition {

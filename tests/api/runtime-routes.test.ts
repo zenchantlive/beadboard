@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { embeddedPiDaemon } from '../../src/lib/embedded-daemon';
+import { bbDaemon } from '../../src/lib/bb-daemon';
 import { GET as getRuntimeStatus } from '../../src/app/api/runtime/status/route';
 import { POST as postOrchestrator } from '../../src/app/api/runtime/orchestrator/route';
 import { GET as getRuntimeEvents } from '../../src/app/api/runtime/events/route';
 import { handleRuntimeLaunchPost } from '../../src/app/api/runtime/launch/route';
-import type { BeadIssue } from '../../src/lib/types';
+import type { BeadIssue, BeadIssueWithProject } from '../../src/lib/types';
 
 function makeIssue(overrides: Partial<BeadIssue> = {}): BeadIssue {
   return {
@@ -39,8 +39,22 @@ async function readJson(response: Response): Promise<any> {
   return JSON.parse(await response.text());
 }
 
+function makeIssueWithProject(overrides: Partial<BeadIssue> = {}): BeadIssueWithProject {
+  return {
+    ...makeIssue(overrides),
+    project: {
+      key: 'project-a',
+      root: '/tmp/project-a',
+      displayPath: '/tmp/project-a',
+      name: 'project-a',
+      source: 'local',
+      addedAt: null,
+    },
+  };
+}
+
 test.beforeEach(() => {
-  embeddedPiDaemon.resetForTests();
+  bbDaemon.resetForTests();
 });
 
 test('GET /api/runtime/status returns daemon status payload', async () => {
@@ -50,6 +64,7 @@ test('GET /api/runtime/status returns daemon status payload', async () => {
   assert.equal(response.status, 200);
   assert.equal(body.ok, true);
   assert.equal(body.daemon.backend, 'pi');
+  assert.equal(body.lifecycle.status, 'stopped');
 });
 
 test('POST /api/runtime/orchestrator requires projectRoot', async () => {
@@ -66,7 +81,7 @@ test('POST /api/runtime/orchestrator requires projectRoot', async () => {
   assert.equal(body.ok, false);
 });
 
-test('POST /api/runtime/orchestrator creates project orchestrator', async () => {
+test('POST /api/runtime/orchestrator auto-starts daemon and creates project orchestrator', async () => {
   const response = await postOrchestrator(
     new Request('http://localhost/api/runtime/orchestrator', {
       method: 'POST',
@@ -78,6 +93,7 @@ test('POST /api/runtime/orchestrator creates project orchestrator', async () => 
 
   assert.equal(response.status, 200);
   assert.equal(body.ok, true);
+  assert.equal(body.lifecycle.status, 'running');
   assert.match(body.data.id, /orchestrator$/);
 });
 
@@ -95,7 +111,7 @@ test('POST /api/runtime/launch validates required fields', async () => {
   assert.equal(body.ok, false);
 });
 
-test('POST /api/runtime/launch launches from task context using issue loader', async () => {
+test('POST /api/runtime/launch launches from task context and returns daemon lifecycle metadata', async () => {
   const response = await handleRuntimeLaunchPost(
     new Request('http://localhost/api/runtime/launch', {
       method: 'POST',
@@ -107,18 +123,19 @@ test('POST /api/runtime/launch launches from task context using issue loader', a
       }),
     }),
     {
-      readIssues: async () => [makeIssue()],
+      readIssues: async () => [makeIssueWithProject()],
     },
   );
   const body = await readJson(response);
 
   assert.equal(response.status, 200);
   assert.equal(body.ok, true);
+  assert.equal(body.lifecycle.status, 'running');
   assert.equal(body.data.orchestrator.status, 'planning');
   assert.equal(body.data.events[0].kind, 'launch.requested');
 });
 
-test('GET /api/runtime/events returns project-scoped event history', async () => {
+test('GET /api/runtime/events returns project-scoped daemon-backed event history', async () => {
   await handleRuntimeLaunchPost(
     new Request('http://localhost/api/runtime/launch', {
       method: 'POST',
@@ -130,7 +147,7 @@ test('GET /api/runtime/events returns project-scoped event history', async () =>
       }),
     }),
     {
-      readIssues: async () => [makeIssue()],
+      readIssues: async () => [makeIssueWithProject()],
     },
   );
 
@@ -139,5 +156,6 @@ test('GET /api/runtime/events returns project-scoped event history', async () =>
 
   assert.equal(response.status, 200);
   assert.equal(body.ok, true);
-  assert.equal(body.data.length, 2);
+  assert.equal(body.lifecycle.status, 'running');
+  assert.equal(body.data.length, 3);
 });

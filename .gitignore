@@ -50,3 +50,7 @@ test-*.ts
 .qodo/
 .gemini/
 .kilocode/
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db

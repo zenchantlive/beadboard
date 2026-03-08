@@ -1,10 +1,11 @@
 # BeadBoard Embedded Pi PRD
 
 **Date:** 2026-03-05
-**Status:** Planning / PRD only
+**Status:** PRD + active implementation reference
 **Branch:** `docs/embedded-pi-prd`
 **Owner:** Pi
 **Scope:** Canonical planning document for embedded Pi in BeadBoard. This document supersedes ad hoc notes for this feature and should be treated as the single source of truth for implementation planning and review.
+**Implementation roadmap / shipped status:** `docs/plans/2026-03-05-embedded-pi-roadmap.md`
 
 ---
 
@@ -12,7 +13,7 @@
 
 BeadBoard already has a meaningful multi-agent coordination product surface:
 
-- a sessions hub
+- activity/timeline view (replaces deprecated sessions hub concept)
 - a mailbox model with categories like `HANDOFF`, `BLOCKED`, and `INFO`
 - an agent registry
 - reservations and liveness
@@ -25,7 +26,20 @@ What it does **not** yet do is let the user launch a real agent from the fronten
 
 This PRD defines how **Pi** should become BeadBoard's first embedded execution runtime.
 
-This is a **planning-only** document. It is not an implementation log. The goal of this session is to produce a holistic, actionable product and technical design that can later be implemented in dedicated engineering sessions.
+This document started as a planning-only PRD. It is still the canonical product/architecture target, but implementation has now begun.
+
+For shipped work and remaining gaps, see:
+- `docs/plans/2026-03-05-embedded-pi-roadmap.md`
+
+As of 2026-03-06, the project has already shipped a meaningful Embedded Pi foundation, including:
+- managed Pi bootstrap/runtime plumbing
+- embedded project orchestrator session creation
+- frontend prompt submission from the left panel
+- realtime runtime telemetry in the app
+- chat-style orchestrator transcript foundation in the left panel
+- BeadBoard-aware tool execution from the embedded orchestrator
+
+This PRD remains the canonical target state; the roadmap tracks what has already been done versus what still remains.
 
 ---
 
@@ -48,6 +62,8 @@ BeadBoard should ship with a **BeadBoard-owned embedded Pi system** that:
 
 Pi in BeadBoard should not feel like “an assistant tab.”
 It should feel like BeadBoard gained a native execution substrate.
+
+The BeadBoard frontend should ultimately act as a client of the host-resident `bb` daemon rather than the owner of runtime execution.
 
 ---
 
@@ -140,7 +156,7 @@ The design must work with the existing BeadBoard shell and interaction patterns,
 - left panel navigation
 - middle-panel views (`social`, `graph`, etc.)
 - right panel contextual inspection
-- sessions hub conversation model
+- activity/timeline conversation model
 - mission inspector and swarm controls
 - URL-state-driven app behavior
 - runtime-manager/global install strategy
@@ -288,7 +304,7 @@ If the deviation is large or materially changes the launch composition:
 ### 8.4 Canonical rendering surfaces for deviations
 One canonical structured record should feed:
 - timeline / activity surfaces
-- sessions hub / conversation surfaces
+- social/graph/activity conversation surfaces
 - mission/swarm inspectors
 - any future orchestration-specific views
 
@@ -352,7 +368,7 @@ That includes at minimum:
 - epic contexts
 - swarm/mission views
 - blocked/triage interactions
-- sessions hub contexts
+- activity view contexts
 
 ## 10.3 Left sidebar proposal
 The strongest current planning direction is:
@@ -720,7 +736,7 @@ This section enumerates what must be designed and built later. It is intentional
 
 ### Workstream G — Conversation UX
 - define orchestrator conversation surface in left sidebar
-- define worker conversation/focus behavior in sessions hub and contextual panels
+- define worker conversation/focus behavior in activity panel and contextual panels
 - define how conversations and runtime events interact
 
 ### Workstream H — Bottom runtime console
@@ -837,7 +853,7 @@ UI tests must cover the shell and critical interaction surfaces, including:
 - launch affordance visibility on task cards, graph nodes, swarm surfaces, and sessions surfaces
 - right panel remaining contextual while orchestrator lives elsewhere
 - bottom console showing runtime telemetry events in order
-- sessions hub reflecting running orchestrator/worker state
+- activity panel reflecting running orchestrator/worker state
 - approval-needed UI for major deviations
 - deep-link/URL-state restoration of relevant surfaces
 
@@ -866,7 +882,7 @@ The test suite must explicitly cover at least these failure modes:
 
 ### 21.4 Required cross-surface consistency assertions
 Tests must assert that a single runtime action is reflected consistently across multiple surfaces. At minimum:
-- launch from social card appears in bottom console, sessions hub, and relevant contextual detail
+- launch from social card appears in bottom console, activity panel, and relevant contextual detail
 - launch from graph node updates graph presence state, sessions state, and runtime console
 - deviation record appears identically in timeline/activity, sessions context, and mission/swarm context
 - worker completion/failure updates all subscribed surfaces consistently
@@ -917,7 +933,7 @@ A future implementation should not be considered complete unless all of the foll
 - orchestrator has a persistent native home in the shell
 - right panel remains useful for contextual detail
 - runtime telemetry is visible continuously in a bottom console or equivalent
-- sessions hub reflects real runtime-backed agent activity
+- activity panel reflects real runtime-backed agent activity
 
 ### Orchestration behavior
 - templates are used by default
@@ -943,6 +959,104 @@ These are real questions, but they do not block approval of this PRD.
 - exact guardrails for archetype-level Pi overrides
 
 These should be resolved in follow-on design/implementation planning, not by weakening the core architecture here.
+
+---
+
+## 24. Future: Unified Settings System (Phase 8+)
+
+**Status:** Not started, deferred to post-Phase 7
+
+### Overview
+
+A comprehensive settings system for both CLI and frontend that gives users full control over BeadBoard's behavior, model providers, authentication, and runtime configuration.
+
+### CLI Settings (`bb`)
+
+Currently supports:
+- `bb config set model <model-id>` - Set default model
+
+**Needed:**
+- Full settings file at `~/.beadboard/settings.json` or project-level `.beadboard/settings.json`
+- Settings for:
+  - Default provider (openai, anthropic, google, openrouter, etc.)
+  - Default model per provider
+  - API keys (or reference to auth.json)
+  - Default archetype for workers
+  - Default template preferences
+  - Worker limits (max concurrent workers)
+  - Timeout settings
+  - Logging verbosity
+  - Shell path (for Windows compatibility)
+  - Runtime version preferences
+- Commands:
+  - `bb config list` - Show all settings
+  - `bb config get <key>` - Get specific setting
+  - `bb config set <key> <value>` - Set setting
+  - `bb config unset <key>` - Reset to default
+  - `bb config import <file>` - Import settings
+  - `bb config export <file>` - Export settings
+
+### Frontend Settings
+
+**Needed:**
+- Settings panel accessible from UI (gear icon or dedicated view)
+- Sections:
+  - **Provider/Model Selection**
+    - Choose provider (OpenAI, Anthropic, Google, OpenRouter, etc.)
+    - Choose model from provider
+    - Set default for orchestrator vs workers
+  - **Authentication**
+    - Login/logout for each provider
+    - API key management (add/edit/delete keys)
+    - Secure storage (not in plaintext)
+  - **Orchestrator Settings**
+    - Default worker archetype
+    - Max concurrent workers
+    - Timeout preferences
+    - Auto-spawn behavior
+  - **UI Preferences**
+    - Theme (dark/light/custom)
+    - Default view (social/graph)
+    - Console minimization preference
+    - Notification settings
+  - **Project Settings**
+    - Project workspace path
+    - Default project on load
+    - Per-project overrides
+  - **Runtime Settings**
+    - Pi version
+    - Bootstrap behavior (auto/manual)
+    - Log level
+    - Debug mode
+
+### Settings Hierarchy
+
+Priority order (highest wins):
+1. Command-line flags (`--model`, `--provider`)
+2. Project-level settings (`.beadboard/settings.json`)
+3. User-level settings (`~/.beadboard/settings.json`)
+4. Default values
+
+### Security Considerations
+
+- API keys should never be stored in plaintext in settings files
+- Use system keychain where available (Keychain on macOS, Credential Manager on Windows, Secret Service on Linux)
+- Fallback to encrypted file storage if keychain unavailable
+- Frontend should never expose full API keys (show masked version)
+
+### Implementation Notes
+
+- Settings should be accessible from both CLI and frontend
+- Changes in frontend should reflect in CLI settings and vice versa
+- Settings API should be consistent between both surfaces
+- Consider using a schema-driven settings system for validation
+
+### Why This Matters
+
+- Users need to switch models/providers without editing config files manually
+- Multi-provider support requires per-provider authentication
+- Power users want fine-grained control over runtime behavior
+- Teams may want project-level settings for consistency
 
 ---
 

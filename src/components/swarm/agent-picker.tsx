@@ -5,7 +5,7 @@ import { X, Blocks, Check, Pencil, Plus } from 'lucide-react';
 import type { AgentArchetype } from '../../lib/types-swarm';
 import { getArchetypeDisplayChar } from '../../lib/utils';
 
-interface ArchetypePickerProps {
+interface AgentPickerProps {
     archetypes: AgentArchetype[];
     isOpen: boolean;
     onClose: () => void;
@@ -14,14 +14,14 @@ interface ArchetypePickerProps {
     onCreateNew: () => void;
 }
 
-export function ArchetypePicker({
+export function AgentPicker({
     archetypes,
     isOpen,
     onClose,
     onSelect,
     onEdit,
     onCreateNew
-}: ArchetypePickerProps) {
+}: AgentPickerProps) {
     if (!isOpen) return null;
 
     const handleBackdropClick = (e: React.MouseEvent) => {

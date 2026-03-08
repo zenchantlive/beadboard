@@ -5,9 +5,9 @@ import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
-import { buildLaunchRequest, createLaunchConsoleEvents, createOrchestratorInstance, type RuntimeConsoleEvent } from '../../lib/embedded-runtime';
+import { buildLaunchRequest, createLaunchConsoleEvents, createOrchestratorInstance, type RuntimeConsoleEvent, type RuntimeStatus } from '../../lib/embedded-runtime';
 import { TopBar } from './top-bar';
-import { LeftPanel, type LeftPanelFilters } from './left-panel';
+import { LeftPanel, type LeftPanelFilters } from './left-panel-new';
 import { RightPanel } from './right-panel';
 import { MobileNav } from './mobile-nav';
 import { ThreadDrawer } from './thread-drawer';
@@ -26,6 +26,7 @@ import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
 import { useBdHealth } from '../../hooks/use-bd-health';
 import { BlockedTriageModal } from './blocked-triage-modal';
 import { deriveBlockedIds } from '../../lib/kanban';
+import { projectOrchestratorChat } from '../../lib/orchestrator-chat';
 
 export interface UnifiedShellProps {
   issues: BeadIssue[];
@@ -33,6 +34,19 @@ export interface UnifiedShellProps {
   projectScopeKey: string;
   projectScopeOptions: ProjectScopeOption[];
   projectScopeMode: 'single' | 'aggregate';
+}
+
+function mergeUniqueRuntimeEvents(existing: RuntimeConsoleEvent[], incoming: RuntimeConsoleEvent[]): RuntimeConsoleEvent[] {
+  const seen = new Set<string>();
+  const merged: RuntimeConsoleEvent[] = [];
+
+  for (const event of [...incoming, ...existing]) {
+    if (seen.has(event.id)) continue;
+    seen.add(event.id);
+    merged.push(event);
+  }
+
+  return merged.slice(0, 40);
 }
 
 export function UnifiedShell({
@@ -70,6 +84,7 @@ export function UnifiedShell({
   const [customRightPanel, setCustomRightPanel] = useState<React.ReactNode | null>(null);
   const [orchestrator, setOrchestrator] = useState(() => createOrchestratorInstance(projectRoot));
   const [runtimeEvents, setRuntimeEvents] = useState<RuntimeConsoleEvent[]>([]);
+  const [daemonLifecycle, setDaemonLifecycle] = useState<{ status: RuntimeStatus | 'stopped' | 'starting' | 'stopping' | 'failed' } | null>(null);
 
   // Assign mode state for graph view
   const [assignMode, setAssignMode] = useState(false);
@@ -140,7 +155,8 @@ export function UnifiedShell({
 
     async function bootstrapRuntime() {
       try {
-        const [orchestratorResponse, eventsResponse] = await Promise.all([
+        const [statusResponse, orchestratorResponse, eventsResponse] = await Promise.all([
+          fetch('/api/runtime/status'),
           fetch('/api/runtime/orchestrator', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
@@ -149,6 +165,7 @@ export function UnifiedShell({
           fetch(`/api/runtime/events?projectRoot=${encodeURIComponent(projectRoot)}`),
         ]);
 
+        const statusPayload = await statusResponse.json().catch(() => null);
         const orchestratorPayload = await orchestratorResponse.json().catch(() => null);
         const eventsPayload = await eventsResponse.json().catch(() => null);
 
@@ -156,11 +173,17 @@ export function UnifiedShell({
           return;
         }
 
+        if (statusResponse.ok && statusPayload?.lifecycle) {
+          setDaemonLifecycle(statusPayload.lifecycle);
+        }
         if (orchestratorResponse.ok && orchestratorPayload?.ok && orchestratorPayload.data) {
           setOrchestrator(orchestratorPayload.data);
         }
+        if (orchestratorPayload?.lifecycle) {
+          setDaemonLifecycle(orchestratorPayload.lifecycle);
+        }
         if (eventsResponse.ok && eventsPayload?.ok && Array.isArray(eventsPayload.data)) {
-          setRuntimeEvents(eventsPayload.data.slice(0, 40));
+          setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, eventsPayload.data));
         }
       } catch {
         // Runtime bootstrap is best-effort during early integration.
@@ -170,6 +193,26 @@ export function UnifiedShell({
     void bootstrapRuntime();
     return () => {
       cancelled = true;
+    };
+  }, [projectRoot]);
+
+  useEffect(() => {
+    // daemon lifecycle and runtime events should come from the daemon stream, not local shell ownership
+    const source = new EventSource(`/api/runtime/stream?projectRoot=${encodeURIComponent(projectRoot)}`);
+    const onRuntime = (event: MessageEvent) => {
+      try {
+        const payload = JSON.parse(event.data) as RuntimeConsoleEvent;
+        setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, [payload]));
+      } catch {
+        // Ignore malformed runtime frames.
+      }
+    };
+
+    source.addEventListener('runtime', onRuntime as EventListener);
+
+    return () => {
+      source.removeEventListener('runtime', onRuntime as EventListener);
+      source.close();
     };
   }, [projectRoot]);
 
@@ -187,7 +230,7 @@ export function UnifiedShell({
     });
     const optimisticEvents = createLaunchConsoleEvents(optimisticRequest);
     setLeftSidebarMode('orchestrator');
-    setRuntimeEvents((current) => [...optimisticEvents, ...current].slice(0, 40));
+    setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, optimisticEvents));
 
     try {
       const response = await fetch('/api/runtime/launch', {
@@ -202,11 +245,14 @@ export function UnifiedShell({
       });
       const payload = await response.json().catch(() => null);
       if (response.ok && payload?.ok) {
+        if (payload.lifecycle) {
+          setDaemonLifecycle(payload.lifecycle);
+        }
         if (payload.data?.orchestrator) {
           setOrchestrator(payload.data.orchestrator);
         }
         if (Array.isArray(payload.data?.events)) {
-          setRuntimeEvents((current) => [...payload.data.events, ...current].slice(0, 40));
+          setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, payload.data.events));
         }
       }
     } catch {
@@ -380,7 +426,8 @@ export function UnifiedShell({
             sidebarMode={leftSidebarMode}
             onSidebarModeChange={setLeftSidebarMode}
             orchestrator={orchestrator}
-            orchestratorThread={runtimeEvents.filter((event) => event.actorLabel === orchestrator.label)}
+            orchestratorThread={projectOrchestratorChat(runtimeEvents)}
+            projectRoot={projectRoot}
           />
         </div>
 
@@ -432,7 +479,7 @@ export function UnifiedShell({
         </div>
       ) : null}
 
-      <RuntimeConsole events={runtimeEvents} />
+      <RuntimeConsole events={runtimeEvents} daemonStatus={daemonLifecycle?.status ?? null} />
 
 {/* MOBILE NAV: Bottom tab bar */}
       <MobileNav />

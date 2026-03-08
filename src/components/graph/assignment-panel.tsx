@@ -2,9 +2,9 @@
 
 import React, { useState, useMemo } from 'react';
 import { Zap, Users, FileCode2, Loader2, UserPlus, Clock, AlertCircle, ChevronDown, ChevronRight, Blocks, Layers } from 'lucide-react';
-import { ArchetypeInspector } from '../swarm/archetype-inspector';
+import { AgentInspector } from '../swarm/agent-inspector';
 import { TemplateInspector } from '../swarm/template-inspector';
-import { ArchetypePicker } from '../swarm/archetype-picker';
+import { AgentPicker } from '../swarm/agent-picker';
 import { TemplatePicker } from '../swarm/template-picker';
 import { useArchetypes } from '../../hooks/use-archetypes';
 import { useTemplates } from '../../hooks/use-templates';
@@ -57,7 +57,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId, on
     const [showTemplateList, setShowTemplateList] = useState(false);
     const [quickAssignDropdown, setQuickAssignDropdown] = useState<string | null>(null);
 
-    const { selectedArchetype, setSelectedArchetype, isAssigning, assignSuccess, handleAssign } = useArchetypePicker();
+    const { selectedArchetype, setSelectedArchetype, isAssigning, assignSuccess, handleAssign } = useAgentPicker();
 
     const [needsAgentCollapsed, setNeedsAgentCollapsed] = useState(false);
     const [preAssignedCollapsed, setPreAssignedCollapsed] = useState(false);
@@ -290,7 +290,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId, on
                 </button>
             </div>
 
-            <ArchetypePicker
+            <AgentPicker
                 archetypes={archetypes}
                 isOpen={showArchetypeList}
                 onClose={() => setShowArchetypeList(false)}
@@ -557,7 +557,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId, on
             </div>
 
             {inspectingArchetypeId !== null && (
-                <ArchetypeInspector
+                <AgentInspector
                     archetype={archetypes.find((a: AgentArchetype) => a.id === inspectingArchetypeId)}
                     onClose={() => setInspectingArchetypeId(null)}
                     onSave={saveArchetype}

@@ -33,6 +33,7 @@ export interface LeftPanelProps {
   onSidebarModeChange?: (mode: LeftSidebarMode) => void;
   orchestrator?: RuntimeInstance;
   orchestratorThread?: RuntimeConsoleEvent[];
+  projectRoot?: string;
 }
 
 interface EpicEntry {

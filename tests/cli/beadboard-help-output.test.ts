@@ -12,6 +12,7 @@ test('bb --help prints human-readable usage by default', async () => {
   assert.match(stdout, /Usage:/i);
   assert.match(stdout, /Runtime Commands:/i);
   assert.match(stdout, /start \[--dolt\]/i);
+  assert.match(stdout, /daemon <command>/i);
   assert.match(stdout, /Management Commands:/i);
   assert.doesNotMatch(stdout, /^\s*\{/);
 });

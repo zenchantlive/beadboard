@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { embeddedPiDaemon } from '../../../../lib/embedded-daemon';
+import { bbDaemon } from '../../../../lib/bb-daemon';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,5 +11,6 @@ export async function GET(request: Request): Promise<Response> {
     return NextResponse.json({ ok: false, error: 'projectRoot is required' }, { status: 400 });
   }
 
-  return NextResponse.json({ ok: true, data: embeddedPiDaemon.listEvents(projectRoot) });
+  await bbDaemon.ensureRunning();
+  return NextResponse.json({ ok: true, lifecycle: bbDaemon.getLifecycle(), data: bbDaemon.listEvents(projectRoot) });
 }

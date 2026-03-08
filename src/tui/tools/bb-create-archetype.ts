@@ -1,0 +1,88 @@
+import { Type } from '@sinclair/typebox';
+import type { CustomAgentTool } from '@mariozechner/pi-coding-agent';
+import { saveArchetype } from '../../lib/server/beads-fs';
+
+export function createCreateArchetypeTool(projectRoot: string): CustomAgentTool {
+  return {
+    name: 'bb_create_archetype',
+    label: 'Create Archetype',
+    description: 'Create a new archetype. Requires name, description, systemPrompt, and capabilities. The systemPrompt will be injected into workers spawned with this archetype.',
+    parameters: Type.Object({
+      name: Type.String({ description: 'Display name for the archetype (e.g., "Code Reviewer")' }),
+      description: Type.String({ description: 'What this archetype does (e.g., "Reviews code for quality and bugs")' }),
+      systemPrompt: Type.String({ description: 'System prompt injected into workers with this archetype. Define their focus and behavior.' }),
+      capabilities: Type.Array(Type.String(), { description: 'List of capabilities. Options: coding, implementation, planning, design_docs, review, arch_review, testing, research' }),
+      color: Type.Optional(Type.String({ description: 'Hex color for display (e.g., "#3b82f6"). Default: blue' })),
+    }),
+    async execute(_toolCallId, params: any) {
+      try {
+        const { name, description, systemPrompt, capabilities, color } = params;
+
+        // Validate required params
+        if (!name || typeof name !== 'string') {
+          return {
+            content: [{ type: 'text', text: 'Error: name is required and must be a string.' }],
+            isError: true,
+            details: {},
+          };
+        }
+
+        if (!description || typeof description !== 'string') {
+          return {
+            content: [{ type: 'text', text: 'Error: description is required.' }],
+            isError: true,
+            details: {},
+          };
+        }
+
+        if (!systemPrompt || typeof systemPrompt !== 'string') {
+          return {
+            content: [{ type: 'text', text: 'Error: systemPrompt is required.' }],
+            isError: true,
+            details: {},
+          };
+        }
+
+        if (!Array.isArray(capabilities)) {
+          return {
+            content: [{ type: 'text', text: 'Error: capabilities must be an array of strings.' }],
+            isError: true,
+            details: {},
+          };
+        }
+
+        const archetype = await saveArchetype({
+          name,
+          description,
+          systemPrompt,
+          capabilities,
+          color: color || '#3b82f6',
+          isBuiltIn: false,
+        });
+
+        return {
+          content: [{
+            type: 'text',
+            text: `Archetype created successfully!
+
+ID: ${archetype.id}
+Name: ${archetype.name}
+Description: ${archetype.description}
+Capabilities: ${archetype.capabilities.join(', ')}
+Color: ${archetype.color}
+
+Workers spawned with this archetype will receive the custom system prompt and tool access based on capabilities.`,
+          }],
+          details: { archetype },
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return {
+          content: [{ type: 'text', text: `Failed to create archetype: ${message}` }],
+          isError: true,
+          details: { error: message },
+        };
+      }
+    },
+  };
+}

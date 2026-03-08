@@ -6,11 +6,12 @@ const path = require('node:path');
 
 const cliPath = path.resolve(__dirname, '../src/cli/beadboard-cli.ts');
 const launcherPath = path.resolve(__dirname, '../install/beadboard.mjs');
+const tsxLoaderPath = path.resolve(__dirname, '../node_modules/tsx/dist/loader.mjs');
 const command = process.argv[2] || 'help';
 const launcherCommands = new Set(['start', 'open', 'status']);
 const targetArgs = launcherCommands.has(command)
   ? [launcherPath, ...process.argv.slice(2)]
-  : ['--import', 'tsx', cliPath, ...process.argv.slice(2)];
+  : ['--import', tsxLoaderPath, cliPath, ...process.argv.slice(2)];
 
 const result = spawnSync(process.execPath, targetArgs, {
   stdio: 'inherit',

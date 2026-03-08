@@ -29,7 +29,7 @@ const SUGGESTED_CAPABILITIES = [
     'frontend', 'backend', 'devops', 'qa', 'mentoring',
 ];
 
-interface ArchetypeInspectorProps {
+interface AgentInspectorProps {
     archetype?: AgentArchetype;
     onClose: () => void;
     onSave: (data: Partial<AgentArchetype>) => Promise<void>;
@@ -37,7 +37,7 @@ interface ArchetypeInspectorProps {
     onClone?: (archetype: AgentArchetype) => Promise<void>;
 }
 
-export function ArchetypeInspector({ archetype, onClose, onSave, onDelete, onClone }: ArchetypeInspectorProps) {
+export function AgentInspector({ archetype, onClose, onSave, onDelete, onClone }: AgentInspectorProps) {
     const isNew = !archetype;
 
     const [name, setName] = useState(archetype?.name || '');

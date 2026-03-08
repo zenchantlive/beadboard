@@ -8,7 +8,7 @@ import { cn, getArchetypeDisplayChar, getTemplateDisplayChar, getTemplateColor }
 import type { BeadIssue } from '../../lib/types';
 import { useArchetypes } from '../../hooks/use-archetypes';
 import { useTemplates } from '../../hooks/use-templates';
-import { ArchetypeInspector } from './archetype-inspector';
+import { AgentInspector } from './agent-inspector';
 import { TemplateInspector } from './template-inspector';
 
 export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: { selectedMissionId?: string, issues?: BeadIssue[], projectRoot: string }) {
@@ -350,7 +350,7 @@ export function SwarmWorkspace({ selectedMissionId, issues = [], projectRoot }: 
 
             {/* Popups */}
             {inspectingArchetypeId !== null && (
-                <ArchetypeInspector
+                <AgentInspector
                     archetype={archetypes.find(a => a.id === inspectingArchetypeId)}
                     onClose={() => setInspectingArchetypeId(null)}
                     onSave={saveArchetype}

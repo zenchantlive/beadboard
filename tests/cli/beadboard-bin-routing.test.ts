@@ -18,3 +18,11 @@ test('bin routes status --json to launcher runtime command', async () => {
     assert.equal(payload?.command, 'status');
   }
 });
+
+test('bin can run daemon help from outside the repo cwd', async () => {
+  const { stdout } = await execFileAsync(process.execPath, [binPath, 'daemon', '--help'], {
+    cwd: require('node:os').homedir(),
+  });
+  assert.match(stdout, /bootstrap-pi/i);
+  assert.match(stdout, /tui/i);
+});

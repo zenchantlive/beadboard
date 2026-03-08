@@ -26,3 +26,10 @@ test('agent list routes to coordination CLI surface', async () => {
   assert.equal(typeof out.command, 'string');
   assert.equal(out.command, 'agent list');
 });
+
+test('daemon status routes to daemon CLI surface', async () => {
+  const out = await runCli(['daemon', 'status', '--json']);
+  assert.equal(out.ok, true);
+  assert.equal(out.command, 'daemon status');
+  assert.ok(out.status);
+});

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { embeddedPiDaemon } from '../../../../lib/embedded-daemon';
+import { bbDaemon } from '../../../../lib/bb-daemon';
 import type { LaunchSurface } from '../../../../lib/embedded-runtime';
 import type { readIssuesFromDisk as ReadIssuesFromDisk } from '../../../../lib/read-issues';
 
@@ -33,14 +33,15 @@ export async function handleRuntimeLaunchPost(request: Request, deps: LaunchDeps
       return NextResponse.json({ ok: false, error: 'task not found' }, { status: 404 });
     }
 
-    const result = embeddedPiDaemon.launchFromIssue({
+    const lifecycle = await bbDaemon.ensureRunning();
+    const result = await bbDaemon.launchFromIssue({
       projectRoot,
       issue,
       origin,
       swarmId,
     });
 
-    return NextResponse.json({ ok: true, data: result });
+    return NextResponse.json({ ok: true, lifecycle, data: result });
   } catch (error) {
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : 'Invalid request' },
