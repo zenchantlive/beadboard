@@ -7,6 +7,7 @@ export interface AgentStatus {
   agentTypeId?: string;
   workerStatus: WorkerStatus;
   workerDisplayName?: string;
+  workerError?: string;
   isLoading: boolean;
 }
 
