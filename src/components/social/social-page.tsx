@@ -337,6 +337,7 @@ export function SocialPage({
                         blockedByDetails={toDependencyDetails(card.unblocks)}
                         unblocksDetails={toDependencyDetails(card.blocks)}
                         archetypes={archetypes}
+                        projectRoot={projectRoot}
                         swarmId={swarmId}
                         onLaunchSwarm={onRocketClick}
                         onAskOrchestrator={() => onAskOrchestrator?.(card.id)}

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import type { KeyboardEvent, MouseEventHandler } from 'react';
-import { Clock3, GitBranch, Link2, MessageCircle, MessageSquare, Rocket, UserPlus } from 'lucide-react';
+import { Clock3, GitBranch, Link2, MessageCircle, MessageSquare, UserPlus } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 import type { SocialCard as SocialCardData, AgentStatus } from '../../lib/social-cards';
 import { AgentAvatar } from '../shared/agent-avatar';
+import { AgentActionRow } from '../agents';
 import { useArchetypePicker } from '../../hooks/use-archetype-picker';
 import type { AgentArchetype } from '../../lib/types-swarm';
 
@@ -26,6 +27,7 @@ interface SocialCardProps {
   blockedByDetails?: Array<{ id: string; title: string; epic?: string }>;
   unblocksDetails?: Array<{ id: string; title: string; epic?: string }>;
   archetypes?: AgentArchetype[];
+  projectRoot?: string;
   swarmId?: string;
   onLaunchSwarm?: () => void;
   onAskOrchestrator?: () => void;
@@ -142,6 +144,7 @@ export function SocialCard({
   blockedByDetails = [],
   unblocksDetails = [],
   archetypes = [],
+  projectRoot,
   swarmId,
   onLaunchSwarm,
   onAskOrchestrator,
@@ -366,19 +369,15 @@ export function SocialCard({
                 Ask
               </button>
             ) : null}
-            {onLaunchSwarm ? (
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onLaunchSwarm();
-                }}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 transition-colors hover:bg-emerald-500/20"
-                aria-label="Launch Swarm"
-                title="Launch Swarm"
-              >
-                <Rocket className="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
+            {projectRoot && archetypes.length > 0 ? (
+              <AgentActionRow
+                beadId={data.id}
+                beadStatus={data.status}
+                agents={archetypes}
+                projectRoot={projectRoot}
+                currentAgentTypeId={data.agentTypeId}
+                size="sm"
+              />
             ) : null}
           </div>
         </div>
