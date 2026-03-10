@@ -588,3 +588,5 @@
 {"issue_id":"bb-zenchantlive","label":"role:architect"}
 {"issue_id":"bb-zzr","label":"gt:agent"}
 {"issue_id":"bb-zzr","label":"swarm:test-swarm-1"}
+{"issue_id":"beadboard-hk6","label":"gt:agent"}
+{"issue_id":"beadboard-hk6","label":"role:orchestrator"}

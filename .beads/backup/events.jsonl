@@ -313,3 +313,6 @@
 {"actor":"zenchantlive","comment":null,"created_at":"2026-03-09T18:00:30Z","event_type":"created","id":342,"issue_id":"bb-z6s","new_value":"","old_value":""}
 {"actor":"zenchantlive","comment":null,"created_at":"2026-03-09T18:00:30Z","event_type":"created","id":343,"issue_id":"bb-zenchantlive","new_value":"","old_value":""}
 {"actor":"zenchantlive","comment":null,"created_at":"2026-03-09T18:00:30Z","event_type":"created","id":344,"issue_id":"bb-zzr","new_value":"","old_value":""}
+{"actor":"zenchantlive","comment":null,"created_at":"2026-03-09T18:23:26Z","event_type":"created","id":345,"issue_id":"beadboard-hk6","new_value":"","old_value":""}
+{"actor":"zenchantlive","comment":"Added label: gt:agent","created_at":"2026-03-09T18:23:26Z","event_type":"label_added","id":346,"issue_id":"beadboard-hk6","new_value":null,"old_value":null}
+{"actor":"zenchantlive","comment":"Added label: role:orchestrator","created_at":"2026-03-09T18:23:26Z","event_type":"label_added","id":347,"issue_id":"beadboard-hk6","new_value":null,"old_value":null}
