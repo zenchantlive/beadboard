@@ -601,3 +601,5 @@
 {"issue_id":"beadboard-hk6","label":"role:orchestrator"}
 {"issue_id":"beadboard-i04","label":"area:generated-surfaces"}
 {"issue_id":"beadboard-i04","label":"project:agent-desktop"}
+{"issue_id":"beadboard-ihq","label":"gt:agent"}
+{"issue_id":"beadboard-ihq","label":"role:orchestrator"}
