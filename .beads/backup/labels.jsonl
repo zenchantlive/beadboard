@@ -590,5 +590,9 @@
 {"issue_id":"bb-zzr","label":"swarm:test-swarm-1"}
 {"issue_id":"beadboard-27d","label":"gt:agent"}
 {"issue_id":"beadboard-27d","label":"role:orchestrator"}
+{"issue_id":"beadboard-chm","label":"gt:agent"}
+{"issue_id":"beadboard-chm","label":"role:orchestrator"}
 {"issue_id":"beadboard-hk6","label":"gt:agent"}
 {"issue_id":"beadboard-hk6","label":"role:orchestrator"}
+{"issue_id":"beadboard-i04","label":"area:generated-surfaces"}
+{"issue_id":"beadboard-i04","label":"project:agent-desktop"}
