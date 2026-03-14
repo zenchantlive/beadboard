@@ -597,6 +597,10 @@
 {"issue_id":"beadboard-c4s","label":"studio"}
 {"issue_id":"beadboard-chm","label":"gt:agent"}
 {"issue_id":"beadboard-chm","label":"role:orchestrator"}
+{"issue_id":"beadboard-fee","label":"mem-canonical"}
+{"issue_id":"beadboard-fee","label":"mem-soft"}
+{"issue_id":"beadboard-fee","label":"memory"}
+{"issue_id":"beadboard-fee","label":"memory-agent-ops"}
 {"issue_id":"beadboard-hk6","label":"gt:agent"}
 {"issue_id":"beadboard-hk6","label":"role:orchestrator"}
 {"issue_id":"beadboard-i04","label":"area:generated-surfaces"}
