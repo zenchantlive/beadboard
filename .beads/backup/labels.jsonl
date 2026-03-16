@@ -597,6 +597,8 @@
 {"issue_id":"beadboard-c4s","label":"studio"}
 {"issue_id":"beadboard-chm","label":"gt:agent"}
 {"issue_id":"beadboard-chm","label":"role:orchestrator"}
+{"issue_id":"beadboard-dav","label":"gt:agent"}
+{"issue_id":"beadboard-dav","label":"role:orchestrator"}
 {"issue_id":"beadboard-fee","label":"mem-canonical"}
 {"issue_id":"beadboard-fee","label":"mem-soft"}
 {"issue_id":"beadboard-fee","label":"memory"}
