@@ -1,4 +1,7 @@
+import os from 'node:os';
 import path from 'node:path';
+
+const IS_WINDOWS = os.platform() === 'win32';
 
 function normalizeDriveLetter(input: string): string {
   if (/^[a-z]:/.test(input)) {
@@ -9,7 +12,11 @@ function normalizeDriveLetter(input: string): string {
 }
 
 function trimTrailingSeparator(input: string): string {
-  if (/^[A-Za-z]:\\$/.test(input)) {
+  if (IS_WINDOWS && /^[A-Za-z]:\\$/.test(input)) {
+    return input;
+  }
+
+  if (!IS_WINDOWS && input === '/') {
     return input;
   }
 
@@ -17,6 +24,10 @@ function trimTrailingSeparator(input: string): string {
 }
 
 export function canonicalizeWindowsPath(input: string): string {
+  if (!IS_WINDOWS) {
+    return trimTrailingSeparator(path.resolve(input));
+  }
+
   const withBackslashes = input.replaceAll('/', '\\');
   const normalized = path.win32.normalize(withBackslashes);
   const withDriveCase = normalizeDriveLetter(normalized);
@@ -24,10 +35,18 @@ export function canonicalizeWindowsPath(input: string): string {
 }
 
 export function windowsPathKey(input: string): string {
+  if (!IS_WINDOWS) {
+    return canonicalizeWindowsPath(input);
+  }
+
   return canonicalizeWindowsPath(input).toLowerCase();
 }
 
 export function toDisplayPath(input: string): string {
+  if (!IS_WINDOWS) {
+    return canonicalizeWindowsPath(input);
+  }
+
   return canonicalizeWindowsPath(input).replaceAll('\\', '/');
 }
 
