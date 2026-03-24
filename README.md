@@ -1,4 +1,4 @@
-## 🚧 Fixing issues as we speak! will be up and runnin again soon 🚧
+## 🚧 Fixing issues as we speak! Will be up and running again soon 🚧
 
 # BeadBoard
 
