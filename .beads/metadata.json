@@ -2,6 +2,6 @@
   "database": "dolt",
   "backend": "dolt",
   "dolt_mode": "server",
-  "dolt_server_port": 3307,
-  "dolt_database": "beadboard"
+  "dolt_database": "beadboard",
+  "project_id": "f4cfaa47-ce9f-4cf2-a269-78e46625e5ea"
 }
