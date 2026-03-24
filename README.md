@@ -1,3 +1,5 @@
+## 🚧 Fixing issues as we speak! will be up and runnin again soon 🚧
+
 # BeadBoard
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
