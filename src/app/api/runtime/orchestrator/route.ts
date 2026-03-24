@@ -1,0 +1,24 @@
+import { NextResponse } from 'next/server';
+import { bbDaemon } from '../../../../lib/bb-daemon';
+
+export const dynamic = 'force-dynamic';
+
+export async function POST(request: Request): Promise<Response> {
+  try {
+    const body = await request.json();
+    const projectRoot = typeof body?.projectRoot === 'string' ? body.projectRoot.trim() : '';
+
+    if (!projectRoot) {
+      return NextResponse.json({ ok: false, error: 'projectRoot is required' }, { status: 400 });
+    }
+
+    const lifecycle = await bbDaemon.ensureRunning();
+    const orchestrator = await bbDaemon.ensureOrchestrator(projectRoot);
+    return NextResponse.json({ ok: true, lifecycle, data: orchestrator });
+  } catch (error) {
+    return NextResponse.json(
+      { ok: false, error: error instanceof Error ? error.message : 'Invalid request' },
+      { status: 400 },
+    );
+  }
+}

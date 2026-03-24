@@ -34,7 +34,10 @@ export function TemplateInspector({ template, archetypes, onClose, onSave, onDel
 
     const [name, setName] = useState(template?.name || '');
     const [description, setDescription] = useState(template?.description || '');
-    const [team, setTeam] = useState<{ archetypeId: string; count: number }[]>(template?.team || []);
+    // Use agentTypeId internally, normalize from template.team
+    const [team, setTeam] = useState<{ agentTypeId: string; count: number }[]>(
+        template?.team?.map(m => ({ agentTypeId: m.agentTypeId, count: m.count })) || []
+    );
     const [protoFormula, setProtoFormula] = useState(template?.protoFormula || '');
     const [color, setColor] = useState(template?.color || '#f59e0b');
     const [icon, setIcon] = useState(template?.icon || '');
@@ -49,26 +52,26 @@ export function TemplateInspector({ template, archetypes, onClose, onSave, onDel
         if (template) {
             setName(template.name);
             setDescription(template.description);
-            setTeam(template.team);
+            setTeam(template.team?.map(m => ({ agentTypeId: m.agentTypeId, count: m.count })) || []);
             setProtoFormula(template.protoFormula || '');
             setColor(template.color || '#f59e0b');
             setIcon(template.icon || '');
         }
     }, [template]);
 
-    const updateTeamMember = (index: number, field: 'archetypeId' | 'count', value: string | number) => {
+    const updateTeamMember = (index: number, field: 'agentTypeId' | 'count', value: string | number) => {
         const newTeam = [...team];
         if (field === 'count') {
             newTeam[index] = { ...newTeam[index], count: Math.max(1, Number(value)) };
         } else {
-            newTeam[index] = { ...newTeam[index], archetypeId: value as string };
+            newTeam[index] = { ...newTeam[index], agentTypeId: value as string };
         }
         setTeam(newTeam);
     };
 
     const addTeamMember = () => {
-        const firstAvailableArchetype = archetypes[0]?.id || '';
-        setTeam([...team, { archetypeId: firstAvailableArchetype, count: 1 }]);
+        const firstAvailableAgentType = archetypes[0]?.id || '';
+        setTeam([...team, { agentTypeId: firstAvailableAgentType, count: 1 }]);
     };
 
     const removeTeamMember = (index: number) => {
@@ -328,8 +331,8 @@ export function TemplateInspector({ template, archetypes, onClose, onSave, onDel
                             {team.map((member, index) => (
                                 <div key={index} className="flex items-center gap-2">
                                     <select
-                                        value={member.archetypeId}
-                                        onChange={(e) => updateTeamMember(index, 'archetypeId', e.target.value)}
+                                        value={member.agentTypeId}
+                                        onChange={(e) => updateTeamMember(index, 'agentTypeId', e.target.value)}
                                         className="flex-1 bg-[#0a111a] border border-[var(--ui-border-soft)] rounded-md px-3 py-2 text-sm text-[var(--ui-text-primary)] focus:outline-none focus:border-[var(--ui-accent-info)]"
                                     >
                                         {archetypes.map(a => (
@@ -403,11 +406,11 @@ export function TemplateInspector({ template, archetypes, onClose, onSave, onDel
                                             key={idx}
                                             className="px-2 py-0.5 rounded-full text-[10px] font-medium"
                                             style={{ 
-                                                backgroundColor: `${getArchetypeColor(member.archetypeId)}20`, 
-                                                color: getArchetypeColor(member.archetypeId)
+                                                backgroundColor: `${getArchetypeColor(member.agentTypeId)}20`, 
+                                                color: getArchetypeColor(member.agentTypeId)
                                             }}
                                         >
-                                            {getArchetypeName(member.archetypeId)} ×{member.count}
+                                            {getArchetypeName(member.agentTypeId)} ×{member.count}
                                         </span>
                                     ))}
                                 </div>

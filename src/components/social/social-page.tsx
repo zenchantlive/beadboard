@@ -18,6 +18,7 @@ interface SocialPageProps {
   projectRoot: string;
   swarmId?: string;
   onRocketClick?: () => void;
+  onAskOrchestrator?: (issueId: string) => void;
 }
 
 interface CoordMessage {
@@ -81,6 +82,7 @@ export function SocialPage({
   projectRoot,
   swarmId,
   onRocketClick,
+  onAskOrchestrator,
 }: SocialPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -335,8 +337,10 @@ export function SocialPage({
                         blockedByDetails={toDependencyDetails(card.unblocks)}
                         unblocksDetails={toDependencyDetails(card.blocks)}
                         archetypes={archetypes}
+                        projectRoot={projectRoot}
                         swarmId={swarmId}
                         onLaunchSwarm={onRocketClick}
+                        onAskOrchestrator={() => onAskOrchestrator?.(card.id)}
                         agentUnreadByName={agentUnreadByName}
                         agentMessagesByName={agentMessagesByName}
                         agentReservationsByName={agentReservationsByName}

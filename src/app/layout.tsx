@@ -15,8 +15,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" data-theme="aurora">
-      <body className={notoSans.variable}>{children}</body>
+    <html lang="en" data-theme="aurora" suppressHydrationWarning>
+      <body className={notoSans.variable} suppressHydrationWarning>{children}</body>
     </html>
   );
 }

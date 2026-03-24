@@ -3,9 +3,11 @@
 import { useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, Folder, FolderOpen, Pencil, Rocket, Star } from 'lucide-react';
 
+import type { RuntimeConsoleEvent, RuntimeInstance } from '../../lib/embedded-runtime';
 import type { BeadIssue } from '../../lib/types';
 import { cn } from '../../lib/utils';
-import { useUrlState, type ViewType } from '../../hooks/use-url-state';
+import { useUrlState, type LeftSidebarMode, type ViewType } from '../../hooks/use-url-state';
+import { OrchestratorPanel } from './orchestrator-panel';
 
 export type LeftPanelStatusFilter = 'all' | 'ready' | 'in_progress' | 'blocked' | 'deferred' | 'done';
 export type LeftPanelPriorityFilter = 'all' | 'P0' | 'P1' | 'P2' | 'P3' | 'P4';
@@ -27,6 +29,11 @@ export interface LeftPanelProps {
   filters: LeftPanelFilters;
   onFiltersChange: (filters: LeftPanelFilters) => void;
   onAssignMode?: (epicId: string) => void;
+  sidebarMode?: LeftSidebarMode;
+  onSidebarModeChange?: (mode: LeftSidebarMode) => void;
+  orchestrator?: RuntimeInstance;
+  orchestratorThread?: RuntimeConsoleEvent[];
+  projectRoot?: string;
 }
 
 interface EpicEntry {
@@ -200,7 +207,19 @@ function isTaskMatch(task: BeadIssue, filters: LeftPanelFilters): boolean {
   return true;
 }
 
-export function LeftPanel({ issues, selectedEpicId, onEpicSelect, onEpicEdit, filters, onFiltersChange, onAssignMode }: LeftPanelProps) {
+export function LeftPanel({
+  issues,
+  selectedEpicId,
+  onEpicSelect,
+  onEpicEdit,
+  filters,
+  onFiltersChange,
+  onAssignMode,
+  sidebarMode = 'epics',
+  onSidebarModeChange,
+  orchestrator,
+  orchestratorThread = [],
+}: LeftPanelProps) {
   const { view, setView } = useUrlState();
   const entries = useMemo(() => buildEntries(issues), [issues]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -316,11 +335,40 @@ export function LeftPanel({ issues, selectedEpicId, onEpicSelect, onEpicEdit, fi
           </button>
         </div>
 
-        <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--text-tertiary)]">Navigation / Epics</p>
+        <div className="mt-2 flex items-center gap-1 rounded-xl bg-[var(--surface-tertiary)] p-1 border border-[var(--border-subtle)]">
+          {([
+            { id: 'epics', label: 'Epics' },
+            { id: 'orchestrator', label: 'Orchestrator' },
+          ] as Array<{ id: LeftSidebarMode; label: string }>).map((item) => {
+            const active = sidebarMode === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onSidebarModeChange?.(item.id)}
+                className={cn(
+                  'flex-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.11em] transition-colors border',
+                  active
+                    ? 'bg-[var(--accent-info)]/15 border-[var(--accent-info)]/40 text-[var(--accent-info)]'
+                    : 'bg-[var(--surface-quaternary)] border-[var(--border-subtle)] text-[var(--text-tertiary)]',
+                )}
+                aria-pressed={active}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--text-tertiary)]">
+          {sidebarMode === 'orchestrator' ? 'Project Orchestrator' : 'Navigation / Epics'}
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 py-3 custom-scrollbar">
-        {entries.map((entry) => {
+        {sidebarMode === 'orchestrator' ? (
+          orchestrator ? <OrchestratorPanel orchestrator={orchestrator} thread={orchestratorThread} /> : null
+        ) : entries.map((entry) => {
           const {
             epic,
             children,
