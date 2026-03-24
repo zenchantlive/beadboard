@@ -1,0 +1,16 @@
+{
+  "id": "refactor",
+  "name": "Refactoring Team",
+  "description": "Team for improving existing code without changing behavior. Architect plans changes, Engineer implements, Tester ensures nothing breaks.",
+  "team": [
+    { "archetypeId": "architect", "count": 1 },
+    { "archetypeId": "engineer", "count": 2 },
+    { "archetypeId": "tester", "count": 1 }
+  ],
+  "protoFormula": "Architect identifies improvement areas and creates plan → Engineer implements refactoring → Tester verifies behavior unchanged",
+  "color": "#64748b",
+  "icon": "🔧",
+  "createdAt": "2026-02-25T00:00:00.000Z",
+  "updatedAt": "2026-02-25T00:00:00.000Z",
+  "isBuiltIn": true
+}

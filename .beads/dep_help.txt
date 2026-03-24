@@ -1,0 +1,42 @@
+Manage dependencies between issues.
+
+When called with an issue ID and --blocks flag, creates a blocking dependency:
+  bd dep <blocker-id> --blocks <blocked-id>
+
+This is equivalent to:
+  bd dep add <blocked-id> <blocker-id>
+
+Examples:
+  bd dep bd-xyz --blocks bd-abc    # bd-xyz blocks bd-abc
+  bd dep add bd-abc bd-xyz         # Same as above (bd-abc depends on bd-xyz)
+
+Usage:
+  bd dep [issue-id] [flags]
+  bd dep [command]
+
+Available Commands:
+  add         Add a dependency
+  cycles      Detect dependency cycles
+  list        List dependencies or dependents of an issue
+  relate      Create a bidirectional relates_to link between issues
+  remove      Remove a dependency
+  tree        Show dependency tree
+  unrelate    Remove a relates_to link between issues
+
+Flags:
+  -b, --blocks string   Issue ID that this issue blocks (shorthand for: bd dep add <blocked> <blocker>)
+  -h, --help            help for dep
+
+Global Flags:
+      --actor string              Actor name for audit trail (default: $BD_ACTOR, git user.name, $USER)
+      --allow-stale               Allow operations on potentially stale data (skip staleness check)
+      --db string                 Database path (default: auto-discover .beads/*.db)
+      --dolt-auto-commit string   Dolt auto-commit policy (off|on|batch). 'on': commit after each write. 'batch': defer commits to bd sync / bd dolt commit; uncommitted changes persist in the working set until then. SIGTERM/SIGHUP flush pending batch commits. Default: off. Override via config key dolt.auto-commit
+      --json                      Output in JSON format
+      --profile                   Generate CPU profile for performance analysis
+  -q, --quiet                     Suppress non-essential output (errors only)
+      --readonly                  Read-only mode: block write operations (for worker sandboxes)
+      --sandbox                   Sandbox mode: disables auto-sync
+  -v, --verbose                   Enable verbose/debug output
+
+Use "bd dep [command] --help" for more information about a command.
