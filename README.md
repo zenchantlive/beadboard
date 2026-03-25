@@ -31,7 +31,7 @@ This installs the [beadboard-driver](skills/beadboard-driver/SKILL.md) skill —
 
 Or just tell your agent:
 
-> Install the beadboard-driver skill from https://github.com/zenchantlive/beadboard and use it to coordinate your work. Run `npx skills add zenchantlive/beadboard --skill beadboard-driver` then follow the SKILL.md runbook.
+> Install  Beadboard, and the beadboard-driver skill from https://github.com/zenchantlive/beadboard and use it to coordinate your work. Run `npx skills add zenchantlive/beadboard --skill beadboard-driver` then follow the SKILL.md runbook.
 
 Then add to your project's `AGENTS.md` or `CLAUDE.md`:
 
