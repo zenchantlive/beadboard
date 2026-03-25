@@ -1,5 +1,7 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import { parseIssuesJsonl } from './parser';
 import { buildProjectContext } from './project-context';
 import { readIssuesViaDolt } from './read-issues-dolt';
 import type { BeadIssueWithProject, ProjectSource } from './types';
@@ -56,12 +58,25 @@ export async function readIssuesFromDisk(options: ReadIssuesOptions = {}): Promi
     addedAt: options.projectAddedAt ?? null,
   });
 
-  // Dolt-only: throw if unreachable
+  // Try Dolt first
   const viaDolt = await readIssuesViaDolt(projectRoot, options);
   if (viaDolt !== null) {
     return viaDolt.map((issue) => ({ ...issue, project }));
   }
 
-  // No fallback - fail fast to indicate Dolt is not running
-  throw new Error('Dolt unreachable - ensure Dolt is running: bd dolt start');
+  // Fall back to JSONL on disk when Dolt is unavailable
+  for (const candidate of resolveIssuesJsonlPathCandidates(projectRoot)) {
+    try {
+      const text = await fs.readFile(candidate, 'utf8');
+      const issues = parseIssuesJsonl(text, {
+        includeTombstones: options.includeTombstones,
+        skipAgentFilter: options.skipAgentFilter,
+      });
+      return issues.map((issue) => ({ ...issue, project }));
+    } catch {
+      continue;
+    }
+  }
+
+  return [];
 }
