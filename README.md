@@ -1,4 +1,4 @@
-## 🚧 Orchestrator is working but new — use your own coding agent for now (unless you want to help!) 🚧
+## 🚧 The bb-pi orchestrator is under construction — [help us build it!](CONTRIBUTING.md) Use your own coding agent alongside BeadBoard for now. 🚧
 
 # BeadBoard
 
@@ -348,15 +348,16 @@ npm run test         # Full test suite
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Run quality gates before submitting:
+We welcome contributions from humans and AI agents. See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full guide.
 
-```bash
-npm run typecheck && npm run lint && npm run test
-```
+Quick version:
+1. Find work: check [GitHub Issues](https://github.com/zenchantlive/beadboard/issues) or run `bd list --label contrib:open`
+2. Small PRs preferred (under ~100 lines). For larger changes, open an issue first.
+3. Run the gates: `npm run typecheck && npm run lint && npm run test`
+4. PR against `main`
 
-4. Submit a pull request against `main`
+<!-- TODO: replace with actual Discord invite link -->
+**[Join the Discord](https://discord.gg/YOUR_INVITE)** to discuss contributions, get help, or coordinate on larger work.
 
 ---
 

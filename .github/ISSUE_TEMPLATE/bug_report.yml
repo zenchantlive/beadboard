@@ -1,0 +1,75 @@
+name: Bug Report
+description: Something is broken
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! A maintainer will create a corresponding bead to track this.
+
+  - type: input
+    id: summary
+    attributes:
+      label: What happened?
+      description: One sentence.
+      placeholder: "Dashboard crashes when opening graph view with no Dolt running"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What did you do to hit this?
+      placeholder: |
+        1. Clone repo, npm install
+        2. Run `beadboard start` (no Dolt)
+        3. Click Graph tab
+        4. See error in console
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead? Include error messages if any.
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: OS and version
+      placeholder: "macOS 15.3 / Windows 11 / Ubuntu 24.04"
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: "Output of: node -v, bd --version, beadboard --version"
+      placeholder: "Node 20.11, bd 0.61.0, beadboard 0.1.0"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: dolt
+    attributes:
+      label: Dolt installed?
+      options:
+        - "Yes, running"
+        - "Yes, not running"
+        - "No"
+    validations:
+      required: true
