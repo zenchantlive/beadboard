@@ -356,8 +356,7 @@ Quick version:
 3. Run the gates: `npm run typecheck && npm run lint && npm run test`
 4. PR against `main`
 
-<!-- TODO: replace with actual Discord invite link -->
-**[Join the Discord](https://discord.gg/YOUR_INVITE)** to discuss contributions, get help, or coordinate on larger work.
+**[Join the Discussion](https://github.com/zenchantlive/beadboard/discussions)** to coordinate on contributions, get help, or discuss ideas.
 
 ---
 

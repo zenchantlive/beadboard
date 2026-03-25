@@ -2,8 +2,7 @@
 
 We welcome contributions — from humans, AI agents, or both working together. This guide covers how to contribute well regardless of how you write your code.
 
-<!-- TODO: replace with actual Discord invite link -->
-**[Join the Discord](https://discord.gg/YOUR_INVITE)** if you want to discuss ideas, coordinate on larger work, or just say hi.
+**[Join the Discussion](https://github.com/zenchantlive/beadboard/discussions)** if you want to discuss ideas, coordinate on larger work, or just say hi.
 
 ---
 
@@ -104,7 +103,7 @@ You can paste this into your agent's context:
 - Your agent should be able to run the quality gates and fix failures autonomously
 - If your agent creates a PR, you (the human) are responsible for it — check that it makes sense before submitting
 - Agent PRs follow the same size guidelines as human PRs
-- If you want your agent to take on larger work, join the Discord and coordinate with us first
+- If you want your agent to take on larger work, start a Discussion and coordinate with us first
 
 ---
 
@@ -161,7 +160,7 @@ This is an open source project maintained by volunteers. That means:
 - Respond to review feedback. If a maintainer asks you to change something, change it or explain why not.
 - Don't argue with rejections. If your PR is closed, it's not personal.
 - Don't open the same PR twice after it's been closed.
-- If you're stuck or unsure, ask in the Discord before submitting.
+- If you're stuck or unsure, ask in [Discussions](https://github.com/zenchantlive/beadboard/discussions) before submitting.
 
 ---
 
