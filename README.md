@@ -48,7 +48,9 @@ You have access to the **beadboard-driver** skill.
   follow its guidance rather than editing markdown ad hoc.
 ```
 
+
 See [skills/beadboard-driver/SKILL.md](skills/beadboard-driver/SKILL.md) for the complete agent runbook.
+
 
 ---
 
