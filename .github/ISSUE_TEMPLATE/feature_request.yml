@@ -1,0 +1,56 @@
+name: Feature Request
+description: Suggest something new
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Got an idea? Describe it below. If it's approved, we'll create a bead and tag it `contrib:open` if it's available for community work.
+
+  - type: input
+    id: summary
+    attributes:
+      label: What do you want?
+      description: One sentence.
+      placeholder: "A public 'contribute' view in the dashboard showing contrib:open beads"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Why do you need this? What's the pain without it?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: How should it work?
+      description: Describe the behavior you're imagining. Doesn't need to be detailed — just enough to understand the idea.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Dashboard (UI/views)
+        - CLI (bb/beadboard)
+        - Orchestrator (bb-pi)
+        - Agent communication (mail/reservations)
+        - Beads integration (bd)
+        - beadboard-driver skill
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Would you like to work on this?
+      options:
+        - label: "I'd like to implement this myself (or have my agent do it)"

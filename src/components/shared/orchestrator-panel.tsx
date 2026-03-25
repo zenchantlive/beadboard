@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Send } from 'lucide-react';
+import { Construction, Send } from 'lucide-react';
 import type { RuntimeInstance } from '../../lib/embedded-runtime';
 import type { OrchestratorChatMessage } from '../../lib/orchestrator-chat';
 
@@ -55,6 +55,13 @@ export function OrchestratorPanel({ orchestrator, thread, projectRoot }: Orchest
   return (
     <div className="flex h-full min-h-0 flex-col" data-testid="orchestrator-panel">
       <div className="border-b border-[var(--border-subtle)] px-4 py-3">
+        <div className="mb-2 flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2">
+          <Construction size={14} className="shrink-0 text-amber-400" />
+          <p className="text-xs text-amber-200">
+            Under construction — orchestrator has known issues being actively fixed.
+            <a href="https://github.com/zenchantlive/beadboard" target="_blank" rel="noopener noreferrer" className="ml-1 underline hover:text-amber-100">Track progress</a>
+          </p>
+        </div>
         <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--text-tertiary)]">Main Orchestrator</p>
         <div className="mt-2 flex items-center justify-between gap-2">
           <div>

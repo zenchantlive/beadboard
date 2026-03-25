@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Discussions
+    url: https://github.com/zenchantlive/beadboard/discussions
+    about: Chat with the community, coordinate on contributions, get help
+  - name: Available work
+    url: https://github.com/zenchantlive/beadboard/issues?q=is%3Aissue+is%3Aopen+label%3Acontrib%3Aopen
+    about: Browse issues tagged for community contribution
