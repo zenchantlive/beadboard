@@ -29,17 +29,17 @@ export function registryFilePath(): string {
   return path.join(userProfileRoot(), '.beadboard', 'projects.json');
 }
 
-function ensureWindowsAbsolutePath(input: string): string {
-  const normalized = canonicalizeWindowsPath(input.trim());
-  if (!/^[A-Za-z]:\\/.test(normalized)) {
-    throw new RegistryValidationError('Project path must be a Windows absolute path (e.g. C:\\Repos\\Project).');
+function ensureAbsolutePath(input: string): string {
+  const trimmed = input.trim();
+  if (!path.isAbsolute(trimmed)) {
+    throw new RegistryValidationError(`Project path must be absolute: ${input}`);
   }
 
-  return normalized;
+  return canonicalizeWindowsPath(trimmed);
 }
 
 function normalizeProject(input: string): RegistryProject {
-  const normalized = ensureWindowsAbsolutePath(input);
+  const normalized = ensureAbsolutePath(input);
   return {
     path: toDisplayPath(normalized),
     key: windowsPathKey(normalized),
