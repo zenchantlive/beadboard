@@ -1,92 +1,173 @@
+## 🚧 Orchestrator is working but new — use your own coding agent for now (unless you want to help!) 🚧
+
 # BeadBoard
 
-**A live operations console for multi-agent work. See what every agent is doing, what's blocked, and where to intervene.**
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/zenchantlive/beadboard?style=social)](https://github.com/zenchantlive/beadboard/stargazers)
 [![Built on Beads](https://img.shields.io/badge/built%20on-Beads-blue)](https://github.com/steveyegge/beads)
 
-![BeadBoard social view — grouped task cards with agent context and dependency chains](docs/screenshots/image-9.png)
+**Multi-agent orchestration and communication system built on [Beads](https://github.com/steveyegge/beads).**
+
+Agents claim tasks, send structured mail to each other, track dependencies, and close work with evidence. BeadBoard is the coordination layer — a dashboard that shows it all happening live, a CLI (`bb`) that hosts the orchestrator and manages agent communication, and a built-in execution runtime ([bb-pi](#-bb-pi-orchestrator)) that can spawn and manage agent workers directly.
+
+Built on [Beads](https://github.com/steveyegge/beads) and inspired by [Gastown](https://github.com/steveyegge/gastown).
+
+![BeadBoard Dashboard](docs/screenshots/image-9.png)
 
 ---
 
-Your agents are doing work. Who's watching?
+## 🚀 Add BeadBoard to Your Agent
 
-BeadBoard gives you eyes on multi-agent swarms: which tasks are in flight, which are blocked and why, what the dependency topology looks like, and where you need to step in. It reads [Beads](https://github.com/steveyegge/beads) issue files from your repos and renders them as a unified shell — Social, Graph, and Activity lenses — that updates in realtime as agents work.
+```bash
+npx skills add zenchantlive/beadboard --skill beadboard-driver
+```
 
-It's designed agents-first. Agents use the `bd` CLI to claim tasks, post progress, and send structured mail to each other. You watch from the dashboard and intervene when needed.
+This installs the [beadboard-driver](skills/beadboard-driver/SKILL.md) skill — a 9-step operating contract that gives your agent:
+- 📋 Task coordination through dependency-constrained graphs
+- 💬 Structured agent-to-agent messaging (`HANDOFF`, `BLOCKED`, `DECISION`, `INFO`)
+- 🔒 Scope-based work reservations with liveness-aware conflict resolution
+- 📡 Realtime progress tracking via heartbeats and activity streams
+- ✅ Evidence-required workflow — agents can't close work without verification gates
+
+Or just tell your agent:
+
+> Install the beadboard-driver skill from https://github.com/zenchantlive/beadboard and use it to coordinate your work. Run `npx skills add zenchantlive/beadboard --skill beadboard-driver` then follow the SKILL.md runbook.
+
+Then add to your project's `AGENTS.md` or `CLAUDE.md`:
+
+```markdown
+## BeadBoard
+
+You have access to the **beadboard-driver** skill.
+
+- Always use beadboard-driver as your entrypoint for coordination work (tasks, context, status)
+  instead of inventing your own workflow.
+- Use it to read and update Beads via `bd`, keep work state consistent with the BeadBoard UI,
+  and obey the verification rules described in this repo.
+- When in doubt about what to do next or how to record progress, call beadboard-driver and
+  follow its guidance rather than editing markdown ad hoc.
+```
+
+See [skills/beadboard-driver/SKILL.md](skills/beadboard-driver/SKILL.md) for the complete agent runbook.
 
 ---
 
-## Quick Start
+## 📦 Installation
 
-**Prerequisites:** Node.js 20 LTS, npm 7+
+### Prerequisites
+
+- **Node.js** 18.18+ (Node 20 LTS recommended)
+- **npm** 7.0+
+- **[Dolt](https://github.com/dolthub/dolt)** (recommended — see [Dolt section](#-dolt))
+
+### Install from Source
 
 ```bash
 git clone https://github.com/zenchantlive/beadboard.git
 cd beadboard
 npm install
 npm install -g .
+```
+
+This installs:
+- `beadboard` / `bb` — BeadBoard CLI: dashboard, orchestrator host, agent communication commands
+- `bd` — Beads CLI for task management (also available standalone: `npm install -g @beads/bd`)
+
+```bash
+beadboard --version
+bd --version
+```
+
+**Alternative:** POSIX install script (Linux/macOS):
+```bash
+bash ./install/install.sh    # installs bb + beadboard shims to ~/.beadboard/bin
+```
+
+---
+
+## ⚡ Quick Start
+
+```bash
 cd ~/my-project
-bd init
-beadboard start
+bd init                        # initialize Beads in your project
+beadboard start --dolt         # start the dashboard with Dolt (recommended)
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
+```bash
+bd create --title "My first task" --type task --priority 0
+```
+
 ---
 
-## Dolt (recommended)
+## 🗄️ Dolt
 
-BeadBoard works with [Dolt](https://github.com/dolthub/dolt) for version-controlled issue history, SQL queries across projects, and reliable multi-agent sync. It's the right backend for real work.
+BeadBoard uses [Dolt](https://github.com/dolthub/dolt) — a version-controlled SQL database — as its primary backend. Dolt gives you:
+- Full version history of every issue state change
+- SQL queries across all your issues and projects
+- `bd dolt pull` / `bd dolt push` for multi-agent sync across machines
+- Branch-based workflows
 
 ```bash
 # macOS
 brew install dolt
 
 # Linux / Windows
-go install github.com/dolthub/dolt/go/cmd/dolt@latest
-# or: curl -L https://github.com/dolthub/dolt/releases/latest/download/install.sh | bash
+curl -L https://github.com/dolthub/dolt/releases/latest/download/install.sh | bash
 ```
 
-Then start the dashboard with Dolt:
-
-```bash
-beadboard start --dolt
-# or manage Dolt separately:
-bd dolt start
-```
-
-Without Dolt, BeadBoard reads `.beads/issues.jsonl` directly — enough to explore, but you'll want Dolt for anything serious.
+Without Dolt, BeadBoard falls back to reading `.beads/issues.jsonl` directly. This is enough to poke around, but you'll want Dolt for real work.
 
 ---
 
-## Features
+## 🔧 What BeadBoard Does
 
-### Social View — your swarm at a glance
+BeadBoard is three things:
 
-Task cards organized by status, with dependency chains, thread context, and agent assignments surfaced inline. Built for scanning active work across many agents without losing the thread.
+### The Dashboard
+A live operations console with Social, Graph, and Activity views — updating in realtime via SSE as agents work.
 
-![Social view showing grouped task cards with agent threads and dependency context](docs/screenshots/image-9.png)
+### The CLI (`bb`)
+A full agent command center — not just a dashboard launcher:
 
-### Graph View — see the blockers before they block you
+```bash
+# Agent lifecycle
+bb agent register --name <id> --role <role>
+bb agent list
+bb agent activity-lease --agent <id>
 
-DAG visualization of your task graph using XYFlow and Dagre layout. Blocked chains are highlighted. Assignees appear on nodes. Use topology to drive assignment decisions, not gut feel.
+# Agent-to-agent communication
+bb agent send --from <id> --to <id> --bead <id> --category HANDOFF --subject "..."
+bb agent inbox --agent <id>
+bb agent ack --agent <id> --message <msg-id>
 
-![Dependency graph showing task DAG with blocker highlighting](docs/screenshots/image-8.png)
+# Work reservations
+bb agent reserve --agent <id> --scope <scope> --bead <id>
+bb agent release --agent <id> --scope <scope>
 
-### Activity View — realtime operations feed
+# Orchestrator runtime
+bb daemon start
+bb daemon tui                    # interactive orchestrator REPL
+bb daemon bootstrap              # install Pi runtime
+```
 
-Live stream of session events, state transitions, and agent mail. Updates via file watchers and Server-Sent Events — no polling, no manual refresh.
+### The Orchestrator ([bb-pi](#-bb-pi-orchestrator))
+A built-in execution runtime that spawns and manages typed worker agents.
 
-### Swarm Coordination — agent pools and assignment queues
+---
 
-Monitor your agent pool with archetypes and a squad roster. "Needs Agent" and pre-assigned queues let you drive work assignment from the dashboard.
+## 🧩 Core Features
 
-![Swarm coordination panel showing agent pool, archetypes, and assignment queues](docs/screenshots/image-7.png)
+### 💬 Agent Communication System
 
-### Agent Mail — structured inter-agent messaging
+Structured message lifecycle for inter-agent coordination:
 
-`HANDOFF`, `BLOCKED`, `DECISION`, `INFO` categories. High-signal categories require explicit acknowledgment. Per-task threads merge activity events, agent mail, and manual notes.
+- **Message categories**: `HANDOFF`, `BLOCKED`, `DECISION`, `INFO`
+- **Required acknowledgment** for high-signal categories (`HANDOFF`, `BLOCKED`)
+- **Broadcast & role-based routing** — send to all agents or by role (`role:tester`)
+- **Per-task threads** combining activity events, agent mail, and local interactions
+- **Message states**: `unread` → `read` → `acked`
 
 ```bash
 bd mail inbox
@@ -94,28 +175,63 @@ bd mail send --to <agent> --bead <id> --category HANDOFF --subject "Ready for re
 bd mail ack <message-id>
 ```
 
-### Multi-Project Scope
+### 🔒 Work Reservations
 
-Scanner-backed project registry. Switch between single-project and aggregate views at runtime without leaving the workspace.
+Agents can lock scopes (file paths, task regions) to prevent conflicting work:
+- TTL-based reservations (default 120 min)
+- Liveness-aware conflict resolution — stale agents (15min no heartbeat) can be taken over
+- File-based mutex prevents race conditions
+
+### 📊 DAG Graph Visualization
+
+DAG-oriented workspace for execution decisions:
+
+- Task and dependency tab modes for different planning lenses
+- Blocked chains highlighted, assignees on nodes
+- Cycle detection and blocked-chain identification
+
+![Dependency Graph View](docs/screenshots/image-8.png)
+
+### 👥 Swarm Coordination
+
+Agent pool monitor with:
+
+- **Archetypes** — typed agent roles (architect, engineer, reviewer, tester, investigator, shipper)
+- **Templates** — preset team compositions (`feature-dev`, `bug-fix`, `full-squad`, `greenfield`, `research-and-discovery`)
+- "Needs Agent" queue for unassigned work
+- Pre-assigned queue and squad roster
+
+![Swarm Coordination Panel](docs/screenshots/image-7.png)
+
+### 📡 Realtime Operations
+
+- Live updates via Chokidar file watchers + Server-Sent Events
+- Activity stream with session/task context
+- Agent heartbeat and liveness tracking (active → stale → evicted)
+
+### 🌐 Multi-Project Scope
+
+- Project registry with scanner-backed discovery
+- Single-project and aggregate modes
+- Runtime scope switching without leaving the workspace
 
 ---
 
-## bb-pi Orchestrator
+## 🤖 bb-pi Orchestrator
 
-> **Under active construction.** The orchestrator works, but it's new and has rough edges. For now: run your own coding agent alongside BeadBoard and use the dashboard to coordinate. Help improving it is welcome.
+> 🚧 **Under active construction.** The orchestrator works but has known issues being fixed. Use your own coding agent alongside BeadBoard for now, or help us improve it!
 
-BeadBoard doesn't just watch your agents — it can run them.
-
-`bb-pi` is BeadBoard's embedded execution runtime, built on [Pi](https://github.com/badlogic/pi-mono). It exposes a long-lived orchestrator per project that spawns typed worker agents, tracks their bead claims, and streams a live transcript into the left panel.
+bb-pi is BeadBoard's embedded execution runtime, built on [Pi](https://github.com/badlogic/pi-mono) ([@mariozechner/pi-coding-agent](https://www.npmjs.com/package/@mariozechner/pi-coding-agent)). It runs a long-lived orchestrator per project that spawns typed worker agents, tracks their bead claims, and streams a live transcript.
 
 **Working today (Phases 1-3):**
-- Embedded orchestrator with BeadBoard-aware tools (`bb_spawn_worker`, `bb_worker_status`, `bb_create`, `bb_close`, and more)
+- Embedded orchestrator with BeadBoard-aware tools (`bb_spawn_worker`, `bb_worker_status`, `bb_create`, `bb_close`, etc.)
 - Worker spawning with numbered display names (Engineer 01, Engineer 02...)
-- Capability-gated agent types: architect, engineer, reviewer, tester, investigator, shipper
-- Template-based team spawning (`bb_spawn_team`)
-- Bead-required workflow — every worker task claims a bead, posts progress, closes with evidence
+- **Capability-gated agent types** — architects/reviewers get read-only tools, engineers/testers get full code edit/write/bash
+- **Template-based team spawning** via `bb_spawn_team` — spin up a full squad from a preset
+- Bead-required workflow — every worker claims a bead, posts progress, closes with evidence
 - Async coordination — non-blocking spawn with status polling and result reads
 - Chat-style orchestrator transcript with realtime telemetry
+- Interactive orchestrator REPL via `bb daemon tui`
 
 **Known issues being fixed:**
 - Double-reply rendering in orchestrator chat
@@ -126,123 +242,128 @@ BeadBoard doesn't just watch your agents — it can run them.
 
 ---
 
-## For AI Agents
-
-BeadBoard is designed to be operated by agents, not just watched by humans. Give your agent the operating contract:
-
-```bash
-npx skills add zenchantlive/beadboard --skill beadboard-driver
-```
-
-Then add to your project's `AGENTS.md` or `CLAUDE.md`:
-
-```markdown
-## BeadBoard
-
-You have access to the **beadboard-driver** skill.
-
-Use it as your entrypoint for all coordination work: claiming tasks, posting progress,
-reading context, and following verification rules. When in doubt about what to do next
-or how to record state, call beadboard-driver rather than editing markdown ad hoc.
-```
-
-Full operating manual: [AGENTS.md](AGENTS.md). Skill runbook: [skills/beadboard-driver/SKILL.md](skills/beadboard-driver/SKILL.md).
-
-| Command | Role |
-|---------|------|
-| `bd` | Beads CLI — task and dependency management. Also: `npm install -g @beads/bd` |
-| `bb` / `beadboard` | BeadBoard CLI — dashboard launcher and orchestrator interface |
-
----
-
-## Architecture
+## 🏗️ Architecture
 
 ```
-.beads/issues.jsonl  <--  bd CLI (sole write interface)
-        |
-        +-- Chokidar watcher (JSONL + WAL + .last_touched)
-        |         |
-        |    IssuesEventBus
-        |         |
-        |     SSE /api/events  -->  browser (live)
-        |
-        +-- Aggregate read  -->  Dolt SQL (primary, if running)
-                                 issues.jsonl (fallback)
+┌─────────────────────────────────────────────────────────────┐
+│                      BeadBoard UI                           │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
+│  │  Social  │  │  Graph   │  │ Activity │  │  Swarm   │    │
+│  │  View    │  │  View    │  │  View    │  │  Panel   │    │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘    │
+└─────────────────────────────────────────────────────────────┘
+         │              │              │              │
+    ┌────▼──────────────▼──────────────▼──────────────▼────┐
+    │                  bb CLI / bb-pi runtime               │
+    │  agent register · agent send · daemon tui · spawn     │
+    └──────────────────────────┬───────────────────────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              │                │                │
+        ┌─────▼─────┐  ┌──────▼──────┐  ┌──────▼──────┐
+        │    SSE     │  │    Dolt     │  │  Chokidar   │
+        │   Events   │  │  (SQL DB)   │  │  Watchers   │
+        └───────────┘  └─────────────┘  └─────────────┘
+              │                │                │
+              └────────────────┼────────────────┘
+                               │
+                        ┌──────▼──────┐
+                        │     bd      │
+                        │ (Beads CLI) │
+                        └─────────────┘
 ```
 
-All views live at `/` with query-param switching (`?view=social|graph|activity`). The `bd` CLI is the only write path — BeadBoard never writes to `.beads/issues.jsonl` directly.
+### Tech Stack
 
 | Layer | Technologies |
 |-------|-------------|
 | Frontend | Next.js 15 (App Router), React 19, TypeScript (strict) |
 | Styling | Tailwind CSS, Radix UI, Framer Motion |
 | Graph | @xyflow/react, Dagre |
-| Realtime | Chokidar, Server-Sent Events |
-| Database | Dolt (recommended, version-controlled SQL) |
-| Agent runtime | @mariozechner/pi-coding-agent (bb-pi, under construction) |
+| Database | Dolt (version-controlled SQL) |
+| Realtime | Chokidar watchers, Server-Sent Events |
+| Agent Runtime | @mariozechner/pi-coding-agent (bb-pi) |
+
+### Data Flow
+
+1. **Write path**: `bd` commands write to `.beads/issues.jsonl` and Dolt DB
+2. **Read path**: UI queries Dolt SQL (falls back to JSONL when Dolt is unavailable)
+3. **Realtime**: `bd` touches `.beads/last-touched` → Chokidar fires → SSE event → UI update
+
+### Key Concepts
+
+| Component | Purpose |
+|-----------|---------|
+| `bd` | Beads CLI — task and dependency management |
+| `bb` / `beadboard` | BeadBoard CLI — dashboard, orchestrator host, agent commands |
+| `bb-pi` | Embedded Pi execution runtime (under construction) |
+| `beadboard-driver` | Agent skill — operating contract for coordination |
 
 ---
 
-## CLI Reference
-
-### bd (Beads CLI)
-
-```bash
-bd init                                          # initialize Beads in a project
-bd create --title "Task title" --type task -p 1  # create a task bead
-bd ready                                         # list unblocked work
-bd show <id>                                     # show bead detail
-bd update <id> --status in_progress              # update a bead
-bd close <id> --reason "Done"                    # close a bead
-bd dep relate <parent> <child> --type parent-child
-bd mail inbox
-bd mail send --to <agent> --bead <id> --category HANDOFF --subject "..."
-bd dolt start
-bd dolt pull && bd dolt push
-```
-
-### bb / beadboard (Dashboard CLI)
-
-```bash
-beadboard start          # start the dashboard
-beadboard start --dolt   # start with Dolt backend
-beadboard open           # open in browser
-beadboard status         # check runtime status
-```
-
-### Development
-
-```bash
-npm run dev              # Next.js dev server (localhost:3000)
-npm run build            # production build
-npm run typecheck        # tsc --noEmit
-npm run lint             # eslint
-npm run test             # full test suite
-```
-
----
-
-## Platform Support
+## 🌍 Platform Support
 
 Runs on macOS, Linux, and Windows.
 
-- **macOS / Linux:** Use `install/install.sh` to install `beadboard` and `bb` shims to `~/.beadboard/bin`.
-- **Windows:** Path handling canonicalizes drive letter casing and backslash normalization. Mixed WSL2 + Windows setups require mirrored networking — see [AGENTS.md](AGENTS.md).
+- **macOS / Linux**: `bash ./install/install.sh` installs shims to `~/.beadboard/bin`
+- **Windows**: Path handling canonicalizes drive letter casing and backslash normalization. Mixed WSL2 + Windows setups require mirrored networking.
 
 ---
 
-## Contributing
+## 📁 Project Structure
+
+```text
+beadboard/
+├── src/
+│   ├── app/                    # Next.js App Router pages + API routes
+│   ├── components/             # UI: shared, graph, social, swarm, agents, sessions
+│   ├── hooks/                  # React hooks (subscriptions, URL state, etc.)
+│   ├── lib/                    # Core domain logic (parser, types, mail, registry, etc.)
+│   └── tui/                    # Orchestrator TUI + agent tools
+├── skills/
+│   └── beadboard-driver/       # Agent skill package (runbook + scripts + tests)
+├── install/                    # Platform install scripts
+├── docs/                       # PRDs, roadmaps, ADRs, screenshots
+└── tests/                      # Test suite (explicitly enumerated in package.json)
+```
+
+---
+
+## 🛠️ Scripts
+
+```bash
+npm run dev          # Development server (localhost:3000)
+npm run build        # Production build
+npm run start        # Production server
+npm run typecheck    # TypeScript validation (tsc --noEmit)
+npm run lint         # ESLint
+npm run test         # Full test suite
+```
+
+> New test files must be added to the `test` script in `package.json` — the suite is explicitly enumerated, not auto-discovered.
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Run quality gates before submitting:
 
 ```bash
 npm run typecheck && npm run lint && npm run test
 ```
 
-Run that before submitting. Keep new features in `src/lib`, `src/components`, and `src/hooks` — not in `src/app` unless it's a route. New test files must be registered in the `test` script in `package.json` (the suite is explicit, not auto-discovered). PR against `main`.
+4. Submit a pull request against `main`
 
 ---
 
-## License
+## 📄 License
 
 [MIT](LICENSE)
 
-Built on [Beads](https://github.com/steveyegge/beads) by [Steve Yegge](https://github.com/steveyegge), inspired by [Gastown](https://github.com/steveyegge/gastown). Embedded execution runtime uses [@mariozechner](https://github.com/mariozechner)'s [Pi SDK](https://github.com/badlogic/pi-mono).
+---
+
+## 🙏 Acknowledgments
+
+Built on [Beads](https://github.com/steveyegge/beads) by [Steve Yegge](https://github.com/steveyegge), inspired by [Gastown](https://github.com/steveyegge/gastown). The bb-pi execution runtime uses [Pi](https://github.com/badlogic/pi-mono) by [@mariozechner](https://github.com/mariozechner).
