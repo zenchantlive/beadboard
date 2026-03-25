@@ -1,0 +1,16 @@
+{
+  "id": "bug-fix",
+  "name": "Bug Fix Squad",
+  "description": "Focused team for debugging and fixing issues. Investigator finds root cause, Engineer implements fix, Tester verifies resolution.",
+  "team": [
+    { "archetypeId": "investigator", "count": 1 },
+    { "archetypeId": "engineer", "count": 1 },
+    { "archetypeId": "tester", "count": 1 }
+  ],
+  "protoFormula": "Investigator reproduces and isolates → Engineer implements fix → Tester verifies fix and adds regression tests",
+  "color": "#ef4444",
+  "icon": "🐛",
+  "createdAt": "2026-02-25T00:00:00.000Z",
+  "updatedAt": "2026-02-25T00:00:00.000Z",
+  "isBuiltIn": true
+}

@@ -1,0 +1,5 @@
+sync:
+    mode: dolt-native
+
+dolt:
+    auto-start: true

@@ -54,6 +54,10 @@ export interface BeadIssue {
   estimated_minutes: number | null;
   external_ref: string | null;
   comments_count?: number;
+  /** Which agent type should work on this bead */
+  agentTypeId?: string;
+  /** Which specific agent instance is assigned (if running) */
+  agentInstanceId?: string;
   metadata: Record<string, unknown>;
 }
 

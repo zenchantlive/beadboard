@@ -40,7 +40,7 @@ test-*.ts
 /image.png
 
 # Runtime artifacts
-.beads/
+
 .agents/
 .agent/
 .augment/
@@ -50,3 +50,7 @@ test-*.ts
 .qodo/
 .gemini/
 .kilocode/
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db

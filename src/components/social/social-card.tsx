@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import type { KeyboardEvent, MouseEventHandler } from 'react';
-import { Clock3, GitBranch, Link2, MessageCircle, MessageSquare, Rocket, UserPlus } from 'lucide-react';
+import { Clock3, GitBranch, Link2, MessageCircle, MessageSquare, UserPlus } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 import type { SocialCard as SocialCardData, AgentStatus } from '../../lib/social-cards';
 import { AgentAvatar } from '../shared/agent-avatar';
+import { AgentActionRow } from '../agents';
 import { useArchetypePicker } from '../../hooks/use-archetype-picker';
 import type { AgentArchetype } from '../../lib/types-swarm';
 
@@ -26,8 +27,10 @@ interface SocialCardProps {
   blockedByDetails?: Array<{ id: string; title: string; epic?: string }>;
   unblocksDetails?: Array<{ id: string; title: string; epic?: string }>;
   archetypes?: AgentArchetype[];
+  projectRoot?: string;
   swarmId?: string;
   onLaunchSwarm?: () => void;
+  onAskOrchestrator?: () => void;
   agentUnreadByName?: Record<string, number>;
   agentMessagesByName?: Record<string, Array<{
     message_id: string;
@@ -133,7 +136,6 @@ export function SocialCard({
   onClick,
   onJumpToGraph,
   onJumpToActivity,
-  onOpenThread,
   description,
   updatedLabel = 'just now',
   dependencyCount,
@@ -142,8 +144,10 @@ export function SocialCard({
   blockedByDetails = [],
   unblocksDetails = [],
   archetypes = [],
+  projectRoot,
   swarmId,
   onLaunchSwarm,
+  onAskOrchestrator,
   agentUnreadByName = {},
   agentMessagesByName = {},
   agentReservationsByName = {},
@@ -350,19 +354,30 @@ export function SocialCard({
             >
               <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
-            {onLaunchSwarm ? (
+            {onAskOrchestrator ? (
               <button
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
-                  onLaunchSwarm();
+                  onAskOrchestrator();
                 }}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 transition-colors hover:bg-emerald-500/20"
-                aria-label="Launch Swarm"
-                title="Launch Swarm"
+                className="inline-flex items-center gap-1 rounded-md border border-cyan-500/20 bg-cyan-500/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-cyan-200 transition-colors hover:bg-cyan-500/20"
+                aria-label="Ask orchestrator"
+                title="Ask Orchestrator"
               >
-                <Rocket className="h-3.5 w-3.5" aria-hidden="true" />
+                <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
+                Ask
               </button>
+            ) : null}
+            {projectRoot && archetypes.length > 0 ? (
+              <AgentActionRow
+                beadId={data.id}
+                beadStatus={data.status}
+                agents={archetypes}
+                projectRoot={projectRoot}
+                currentAgentTypeId={data.agentTypeId}
+                size="sm"
+              />
             ) : null}
           </div>
         </div>

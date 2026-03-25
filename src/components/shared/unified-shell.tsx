@@ -5,13 +5,15 @@ import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
+import { buildLaunchRequest, createLaunchConsoleEvents, createOrchestratorInstance, type RuntimeConsoleEvent, type RuntimeStatus } from '../../lib/embedded-runtime';
 import { TopBar } from './top-bar';
-import { LeftPanel, type LeftPanelFilters } from './left-panel';
+import { LeftPanel, type LeftPanelFilters } from './left-panel-new';
 import { RightPanel } from './right-panel';
 import { MobileNav } from './mobile-nav';
 import { ThreadDrawer } from './thread-drawer';
 import { ResizeHandle } from './resize-handle';
-import { useUrlState } from '../../hooks/use-url-state';
+import { RuntimeConsole } from './runtime-console';
+import { useUrlState, type LeftSidebarMode } from '../../hooks/use-url-state';
 import { usePanelResize } from '../../hooks/use-panel-resize';
 import { SmartDag } from '../graph/smart-dag';
 import { SocialPage } from '../social/social-page';
@@ -24,6 +26,7 @@ import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
 import { useBdHealth } from '../../hooks/use-bd-health';
 import { BlockedTriageModal } from './blocked-triage-modal';
 import { deriveBlockedIds } from '../../lib/kanban';
+import { projectOrchestratorChat } from '../../lib/orchestrator-chat';
 
 export interface UnifiedShellProps {
   issues: BeadIssue[];
@@ -33,13 +36,27 @@ export interface UnifiedShellProps {
   projectScopeMode: 'single' | 'aggregate';
 }
 
+function mergeUniqueRuntimeEvents(existing: RuntimeConsoleEvent[], incoming: RuntimeConsoleEvent[]): RuntimeConsoleEvent[] {
+  const seen = new Set<string>();
+  const merged: RuntimeConsoleEvent[] = [];
+
+  for (const event of [...incoming, ...existing]) {
+    if (seen.has(event.id)) continue;
+    seen.add(event.id);
+    merged.push(event);
+  }
+
+  return merged.slice(0, 40);
+}
+
 export function UnifiedShell({
   issues: initialIssues,
   projectRoot,
   projectScopeOptions,
 }: UnifiedShellProps) {
   const router = useRouter();
-  const { view, taskId, setTaskId, swarmId, graphTab, panel, drawer, setDrawer, epicId, setEpicId, blockedOnly } = useUrlState();
+  const { view, taskId, setTaskId, swarmId, graphTab, drawer, setDrawer, epicId, setEpicId, blockedOnly } = useUrlState();
+  const [leftSidebarMode, setLeftSidebarMode] = useState<LeftSidebarMode>('epics');
 
   // Subscribe to SSE for real-time updates on ALL views
   const { issues } = useBeadsSubscription(initialIssues, projectRoot);
@@ -66,6 +83,9 @@ export function UnifiedShell({
   }, []);
 
   const [customRightPanel, setCustomRightPanel] = useState<React.ReactNode | null>(null);
+  const [orchestrator, setOrchestrator] = useState(() => createOrchestratorInstance(projectRoot));
+  const [runtimeEvents, setRuntimeEvents] = useState<RuntimeConsoleEvent[]>([]);
+  const [daemonLifecycle, setDaemonLifecycle] = useState<{ status: RuntimeStatus | 'stopped' | 'starting' | 'stopping' | 'failed' } | null>(null);
 
   // Assign mode state for graph view
   const [assignMode, setAssignMode] = useState(false);
@@ -130,6 +150,116 @@ export function UnifiedShell({
     setTaskId(null);
     setAssignMode(true);
   }, [setTaskId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function bootstrapRuntime() {
+      try {
+        const [statusResponse, orchestratorResponse, eventsResponse] = await Promise.all([
+          fetch('/api/runtime/status'),
+          fetch('/api/runtime/orchestrator', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ projectRoot }),
+          }),
+          fetch(`/api/runtime/events?projectRoot=${encodeURIComponent(projectRoot)}`),
+        ]);
+
+        const statusPayload = await statusResponse.json().catch(() => null);
+        const orchestratorPayload = await orchestratorResponse.json().catch(() => null);
+        const eventsPayload = await eventsResponse.json().catch(() => null);
+
+        if (cancelled) {
+          return;
+        }
+
+        if (statusResponse.ok && statusPayload?.lifecycle) {
+          setDaemonLifecycle(statusPayload.lifecycle);
+        }
+        if (orchestratorResponse.ok && orchestratorPayload?.ok && orchestratorPayload.data) {
+          setOrchestrator(orchestratorPayload.data);
+        }
+        if (orchestratorPayload?.lifecycle) {
+          setDaemonLifecycle(orchestratorPayload.lifecycle);
+        }
+        if (eventsResponse.ok && eventsPayload?.ok && Array.isArray(eventsPayload.data)) {
+          setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, eventsPayload.data));
+        }
+      } catch {
+        // Runtime bootstrap is best-effort during early integration.
+      }
+    }
+
+    void bootstrapRuntime();
+    return () => {
+      cancelled = true;
+    };
+  }, [projectRoot]);
+
+  useEffect(() => {
+    // daemon lifecycle and runtime events should come from the daemon stream, not local shell ownership
+    const source = new EventSource(`/api/runtime/stream?projectRoot=${encodeURIComponent(projectRoot)}`);
+    const onRuntime = (event: MessageEvent) => {
+      try {
+        const payload = JSON.parse(event.data) as RuntimeConsoleEvent;
+        setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, [payload]));
+      } catch {
+        // Ignore malformed runtime frames.
+      }
+    };
+
+    source.addEventListener('runtime', onRuntime as EventListener);
+
+    return () => {
+      source.removeEventListener('runtime', onRuntime as EventListener);
+      source.close();
+    };
+  }, [projectRoot]);
+
+  const handleAskOrchestrator = useCallback(async (issueId: string) => {
+    const issue = issues.find((entry) => entry.id === issueId);
+    if (!issue) {
+      return;
+    }
+
+    const optimisticRequest = buildLaunchRequest({
+      issue,
+      origin: 'social',
+      projectRoot,
+      swarmId,
+    });
+    const optimisticEvents = createLaunchConsoleEvents(optimisticRequest);
+    setLeftSidebarMode('orchestrator');
+    setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, optimisticEvents));
+
+    try {
+      const response = await fetch('/api/runtime/launch', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          projectRoot,
+          taskId: issueId,
+          origin: 'social',
+          swarmId,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (response.ok && payload?.ok) {
+        if (payload.lifecycle) {
+          setDaemonLifecycle(payload.lifecycle);
+        }
+        if (payload.data?.orchestrator) {
+          setOrchestrator(payload.data.orchestrator);
+        }
+        if (Array.isArray(payload.data?.events)) {
+          setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, payload.data.events));
+        }
+      }
+    } catch {
+      // Keep optimistic console events visible; bridge hardening comes in later phases.
+    }
+  }, [issues, projectRoot, setLeftSidebarMode, swarmId]);
 
   // Minimize: restore last clicked thing (task or assign mode)
   const handleMinimize = useCallback(() => {
@@ -214,6 +344,7 @@ export function UnifiedShell({
           projectRoot={projectRoot}
           swarmId={swarmId ?? undefined}
           onRocketClick={handleSocialRocket}
+          onAskOrchestrator={handleAskOrchestrator}
         />
       );
     }
@@ -293,6 +424,11 @@ export function UnifiedShell({
             filters={filters}
             onFiltersChange={setFilters}
             onAssignMode={(epicId) => { setEpicId(epicId); setTaskId(null); setAssignMode(true); }}
+            sidebarMode={leftSidebarMode}
+            onSidebarModeChange={setLeftSidebarMode}
+            orchestrator={orchestrator}
+            orchestratorThread={projectOrchestratorChat(runtimeEvents)}
+            projectRoot={projectRoot}
           />
         </div>
 
@@ -343,6 +479,8 @@ export function UnifiedShell({
           </div>
         </div>
       ) : null}
+
+      <RuntimeConsole events={runtimeEvents} daemonStatus={daemonLifecycle?.status ?? null} />
 
 {/* MOBILE NAV: Bottom tab bar */}
       <MobileNav />

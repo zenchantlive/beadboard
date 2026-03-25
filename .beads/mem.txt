@@ -1,0 +1,123 @@
+✓ beadboard-116 · [MEMORY][WORKFLOW][HARD] Evidence before completion claims   [● P1 · CLOSED]
+Owner: ZenchantLive · Type: decision
+Created: 2026-03-02 · Updated: 2026-03-02
+Close reason: Ratified canonical memory
+
+DESCRIPTION
+Scope: All new implementation tasks that change behavior or data flow.
+Out of Scope: Purely informational discussions without code or workflow changes.
+Rule: Start from explicit verification evidence and update work state in bd before claiming progress complete.
+Rationale: Prevents status drift and false completion claims.
+Failure Mode: Unverified completion claims lead to regressions and mistrust.
+
+
+NOTES
+Provenance linked: bb-92d.6, beadboard-jgy, beadboard-yz6
+
+ACCEPTANCE CRITERIA
+Given an implementation task, when work begins and ends, then bd state transitions and verification command evidence are recorded.
+Verification command(s): bd show <task-id>; npm run typecheck; npm run lint; npm run test
+
+LABELS: mem-canonical, mem-hard, memory, memory-workflow
+
+METADATA
+  domain: memory-workflow
+  effective_date: 2026-03-02
+  evidence_ids: bb-92d.6,beadboard-jgy,beadboard-yz6
+  memory_strength: hard
+  memory_version: 1
+  owner: team
+  plan_refs: docs/plans/2026-03-01-beads-native-memory.md,docs/plans/2026-03-02-bd-memory-fabric-design.md
+  superseded_by: null
+  supersedes: null
+
+RELATED
+  ↔ ✓ bb-92d.6: Add guardrail test preventing direct writes to .beads/issues.jsonl ● P0
+  ↔ ✓ beadboard-jgy: Document memory workflow in help/memory and AGENTS manuals ● P1
+  ↔ ○ beadboard-nq9: (EPIC) [MEMORY-ANCHOR] Workflow Protocol ● P1
+  ↔ ✓ beadboard-yz6: Bootstrap Phase 1 Memory Fabric (anchors + canonical nodes) ● P1
+
+
+────────────────────────────────────────────────────────────
+
+✓ beadboard-60a · [MEMORY][ARCH][HARD] Dependencies model execution order, not visual order   [● P1 · CLOSED]
+Owner: ZenchantLive · Type: decision
+Created: 2026-03-02 · Updated: 2026-03-02
+Close reason: Ratified canonical memory
+
+DESCRIPTION
+Scope: Dependency graph design and updates.
+Out of Scope: Visual layout decisions that do not alter execution semantics.
+Rule: Dependencies encode execution order and blocking semantics, never visual grouping.
+Rationale: Keeps ready/blocked states truthful and machine-reliable.
+Failure Mode: Incorrect dependency direction causes false blocking or unsafe parallelism.
+
+
+NOTES
+Provenance linked: bb-bvn, beadboard-r1i, beadboard-68k
+
+ACCEPTANCE CRITERIA
+Given a dependency update, when graph state is queried, then blocked/ready outcomes match intended execution order.
+Verification command(s): bd dep tree <issue-id>; bd blocked; bd ready
+
+LABELS: mem-canonical, mem-hard, memory, memory-arch
+
+METADATA
+  domain: memory-arch
+  effective_date: 2026-03-02
+  evidence_ids: bb-bvn,beadboard-r1i,beadboard-68k
+  memory_strength: hard
+  memory_version: 1
+  owner: team
+  plan_refs: docs/plans/2026-02-22-dag-views-ux-design.md
+  superseded_by: null
+  supersedes: null
+
+RELATED
+  ↔ ✓ bb-bvn: Dependency Graph (React Flow) ● P0
+  ↔ ✓ beadboard-68k: Phase 0: UX Wiring Fixes ● P0
+  ↔ ○ beadboard-76p: (EPIC) [MEMORY-ANCHOR] Architecture ● P1
+  ↔ ✓ beadboard-r1i: Phase 1: Contextual Right Panel ● P0
+
+
+────────────────────────────────────────────────────────────
+
+✓ beadboard-zas · [MEMORY][ARCH][HARD] Shared logic for cross-view behavior   [● P1 · CLOSED]
+Owner: ZenchantLive · Type: decision
+Created: 2026-03-02 · Updated: 2026-03-02
+Close reason: Ratified canonical memory
+
+DESCRIPTION
+Scope: Repeated logic used by multiple views or pages.
+Out of Scope: One-off prototypes and disposable experiments.
+Rule: Reuse shared paths/components for cross-view behavior; avoid one-off logic drift.
+Rationale: Prevents silent divergence between Kanban, Graph, and API views.
+Failure Mode: Patching one surface only creates inconsistent user behavior.
+
+
+NOTES
+Provenance linked: beadboard-68k.4, beadboard-68k.5, beadboard-r1i.1
+
+ACCEPTANCE CRITERIA
+Given a behavior change touching multiple views, when implementation lands, then shared logic path is reused and covered by tests.
+Verification command(s): rg "<shared-function-or-hook>" src tests; npm run test
+
+LABELS: mem-canonical, mem-hard, memory, memory-arch
+
+METADATA
+  domain: memory-arch
+  effective_date: 2026-03-02
+  evidence_ids: beadboard-68k.4,beadboard-68k.5,beadboard-r1i.1
+  memory_strength: hard
+  memory_version: 1
+  owner: team
+  plan_refs: docs/plans/2026-02-22-dag-views-ux-design.md,docs/plans/2026-02-15-unified-ux-prd.md
+  superseded_by: null
+  supersedes: null
+
+RELATED
+  ↔ ✓ beadboard-68k.4: Fix thread drawer status badge (hardcoded 'In Progress') ● P0
+  ↔ ✓ beadboard-68k.5: Wire TopBar metric tiles from live issue data ● P0
+  ↔ ○ beadboard-76p: (EPIC) [MEMORY-ANCHOR] Architecture ● P1
+  ↔ ✓ beadboard-r1i.1: Extend ContextualRightPanel props and thread taskId/swarmId from shell ● P0
+

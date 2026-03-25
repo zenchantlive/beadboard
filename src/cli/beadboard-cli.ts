@@ -25,6 +25,10 @@ import {
   statusAgentReservations,
   type ReservationCommandResponse,
 } from '../lib/agent-reservations';
+import { bbDaemon } from '../lib/bb-daemon';
+import { bootstrapManagedPi } from '../lib/bb-pi-bootstrap';
+import { renderDaemonTuiText } from '../tui/bb-daemon-tui';
+import { runBbAgentTui } from '../tui/bb-agent-tui';
 
 export type CliResult = {
   ok: boolean;
@@ -276,6 +280,102 @@ async function runAgentCli(argv: string[], asJson: boolean): Promise<CliResult> 
   }
 }
 
+function renderDaemonHelpText(): string {
+  return [
+    'Usage: bb daemon <command> [options]',
+    '',
+    'Commands:',
+    '  start        Start the BeadBoard daemon lifecycle',
+    '  status       Show daemon lifecycle and project status',
+    '  stop         Stop the BeadBoard daemon lifecycle',
+    '  bootstrap    Install the BeadBoard agent runtime',
+    '  tui          Open the interactive BeadBoard agent TUI',
+    '',
+    'TUI options:',
+    '  --project-root <path>   Run the bb agent in an explicit external project workspace',
+    '  --project-key <key>     Run the bb agent in a registered BeadBoard project workspace',
+  ].join('\n');
+}
+
+async function runDaemonCli(argv: string[], asJson: boolean): Promise<CliResult> {
+  const subcommand = argv[0];
+  const projectRootFlagIndex = argv.indexOf('--project-root');
+  const projectKeyFlagIndex = argv.indexOf('--project-key');
+  const projectRoot = projectRootFlagIndex >= 0 ? argv[projectRootFlagIndex + 1] : undefined;
+  const projectKey = projectKeyFlagIndex >= 0 ? argv[projectKeyFlagIndex + 1] : undefined;
+  if (!subcommand || subcommand === '--help' || subcommand === '-h' || subcommand === 'help') {
+    return { ok: true, command: 'daemon help', text: renderDaemonHelpText() };
+  }
+
+  if (subcommand === 'start') {
+    const lifecycle = await bbDaemon.start();
+    const status = bbDaemon.getStatus();
+    const runtimeMode = status.piRuntime ? `${status.piRuntime.mode} / ${status.piRuntime.installState}` : 'unknown';
+    return {
+      ok: true,
+      command: 'daemon start',
+      text: `✓ BeadBoard daemon started (${lifecycle.status}) using ${runtimeMode}`,
+      lifecycle,
+      status,
+    };
+  }
+
+  if (subcommand === 'status') {
+    const status = bbDaemon.getStatus();
+    const runtimeMode = status.piRuntime ? `${status.piRuntime.mode} / ${status.piRuntime.installState}` : 'unknown';
+    return {
+      ok: true,
+      command: 'daemon status',
+      text: `Daemon: ${status.lifecycle.status} (${status.daemon.projectCount} projects) · Agent runtime: ${runtimeMode}`,
+      status,
+    };
+  }
+
+  if (subcommand === 'stop') {
+    const lifecycle = await bbDaemon.stop();
+    return {
+      ok: true,
+      command: 'daemon stop',
+      text: `✓ BeadBoard daemon stopped (${lifecycle.status})`,
+      lifecycle,
+      status: bbDaemon.getStatus(),
+    };
+  }
+
+  if (subcommand === 'bootstrap' || subcommand === 'bootstrap-pi') {
+    const result = await bootstrapManagedPi();
+    return {
+      ok: true,
+      command: 'daemon bootstrap',
+      text: result.alreadyInstalled
+        ? `✓ BeadBoard agent runtime ready at ${result.managedRoot}`
+        : `✓ BeadBoard agent runtime installed at ${result.managedRoot}`,
+      bootstrap: result,
+    };
+  }
+
+  if (subcommand === 'tui') {
+    await bbDaemon.ensureRunning();
+    return {
+      ok: true,
+      command: 'daemon tui',
+      text: 'Starting interactive BeadBoard agent TUI...',
+      preview: renderDaemonTuiText(),
+      status: bbDaemon.getStatus(),
+      planned: false,
+      interactive: true,
+      projectRoot: projectRoot ?? null,
+      projectKey: projectKey ?? null,
+    };
+  }
+
+  const error = { code: 'CLI_ERROR', message: `Unknown daemon command: ${subcommand}` };
+  if (asJson) {
+    return { ok: false, command: `daemon ${subcommand}`, error };
+  }
+  return { ok: false, command: `daemon ${subcommand}`, text: `Error: ${error.message}`, error };
+}
+
 function parseVersion(env: NodeJS.ProcessEnv): string {
   const raw = (env.BB_RUNTIME_VERSION || env.npm_package_version || '0.1.0').trim();
   return raw.startsWith('v') ? raw.slice(1) : raw;
@@ -295,6 +395,11 @@ export async function runCli(argv: string[], env: NodeJS.ProcessEnv = process.en
   if (command === 'agent') {
     const subArgs = commandIndex >= 0 ? args.slice(commandIndex + 1) : [];
     return runAgentCli(subArgs, asJson);
+  }
+
+  if (command === 'daemon') {
+    const subArgs = commandIndex >= 0 ? args.slice(commandIndex + 1) : [];
+    return runDaemonCli(subArgs, asJson);
   }
 
   if (command === 'doctor') {
@@ -343,7 +448,8 @@ export async function runCli(argv: string[], env: NodeJS.ProcessEnv = process.en
   return {
     ok: true,
     command: 'help',
-    usage: 'beadboard <doctor|self-update|uninstall> [--json] [--yes]',
+    usage: 'beadboard <agent|daemon|doctor|self-update|uninstall> [--json] [--yes]',
+    text: renderHelpText(),
   };
 }
 
@@ -356,6 +462,7 @@ function renderHelpText(): string {
     '  beadboard start [--dolt]     Start BeadBoard runtime (optionally start Dolt first)',
     '  beadboard open               Open BeadBoard in browser',
     '  beadboard status [--json]    Show runtime + bd diagnostics',
+    '  beadboard daemon <command>   Control the BeadBoard daemon lifecycle',
     '  beadboard agent <command>    Run coordination commands (register/send/inbox/ack/reserve/...)',
     '',
     'Management Commands:',
@@ -371,6 +478,24 @@ function renderHelpText(): string {
 async function main() {
   const argv = process.argv.slice(2);
   const asJson = argv.includes('--json');
+  const isDaemonTui = argv[0] === 'daemon' && argv[1] === 'tui' && !asJson;
+
+  if (isDaemonTui) {
+    const projectRootFlagIndex = argv.indexOf('--project-root');
+    const projectKeyFlagIndex = argv.indexOf('--project-key');
+    const projectRoot = projectRootFlagIndex >= 0 ? argv[projectRootFlagIndex + 1] : undefined;
+    const projectKey = projectKeyFlagIndex >= 0 ? argv[projectKeyFlagIndex + 1] : undefined;
+
+    await bbDaemon.ensureRunning();
+    await runBbAgentTui({
+      cwd: process.cwd(),
+      projectRoot,
+      projectKey,
+      testMode: process.env.BB_TUI_TEST_MODE === '1',
+    });
+    return;
+  }
+
   const result = await runCli(argv);
   if (!asJson && result.command === 'help') {
     process.stdout.write(`${renderHelpText()}\n`);

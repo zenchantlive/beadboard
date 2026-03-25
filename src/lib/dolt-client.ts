@@ -35,12 +35,40 @@ async function readDoltMetadata(projectRoot: string): Promise<DoltMetadata> {
     throw new DoltConnectionError(`Invalid JSON in ${metadataPath}`, err);
   }
 
-  const port = parsed.dolt_server_port;
   const database = parsed.dolt_database;
-  if (typeof port !== 'number' || typeof database !== 'string') {
+  if (typeof database !== 'string') {
     throw new DoltConnectionError(
-      `${metadataPath} is missing required fields: dolt_server_port (number) and dolt_database (string)`
+      `${metadataPath} is missing required field: dolt_database (string)`
     );
+  }
+
+  // Try port file first (preferred by bd), fall back to metadata.json
+  let port: number;
+  try {
+    const portPath = path.join(projectRoot, '.beads', 'dolt-server.port');
+    const portRaw = await fs.readFile(portPath, 'utf-8');
+    const portNum = parseInt(portRaw.trim(), 10);
+    if (!isNaN(portNum) && portNum > 0) {
+      port = portNum;
+    } else {
+      // Fall back to metadata.json port
+      const metadataPort = parsed.dolt_server_port;
+      if (typeof metadataPort !== 'number') {
+        throw new DoltConnectionError(
+          `${metadataPath} is missing valid port and .beads/dolt-server.port is missing or invalid`
+        );
+      }
+      port = metadataPort;
+    }
+  } catch {
+    // Fall back to metadata.json port
+    const metadataPort = parsed.dolt_server_port;
+    if (typeof metadataPort !== 'number') {
+      throw new DoltConnectionError(
+        `${metadataPath} is missing required field: dolt_server_port (number) and .beads/dolt-server.port is missing`
+      );
+    }
+    port = metadataPort;
   }
 
   return {

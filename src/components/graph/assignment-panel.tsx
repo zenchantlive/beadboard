@@ -2,9 +2,9 @@
 
 import React, { useState, useMemo } from 'react';
 import { Zap, Users, FileCode2, Loader2, UserPlus, Clock, AlertCircle, ChevronDown, ChevronRight, Blocks, Layers } from 'lucide-react';
-import { ArchetypeInspector } from '../swarm/archetype-inspector';
+import { AgentInspector } from '../swarm/agent-inspector';
 import { TemplateInspector } from '../swarm/template-inspector';
-import { ArchetypePicker } from '../swarm/archetype-picker';
+import { AgentPicker } from '../swarm/agent-picker';
 import { TemplatePicker } from '../swarm/template-picker';
 import { useArchetypes } from '../../hooks/use-archetypes';
 import { useTemplates } from '../../hooks/use-templates';
@@ -219,8 +219,8 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId, on
         });
     };
 
-    const getArchetypeCountInTeam = (template: SwarmTemplate, archetypeId: string): number => {
-        return template.team.filter(member => member.archetypeId === archetypeId).length;
+    const getArchetypeCountInTeam = (template: SwarmTemplate, agentTypeId: string): number => {
+        return template.team.filter(member => member.agentTypeId === agentTypeId).length;
     };
 
     const renderTaskItem = (issue: BeadIssue, showAssignButton: boolean = false, archetypeBadges: AgentArchetype[] = []) => (
@@ -290,7 +290,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId, on
                 </button>
             </div>
 
-            <ArchetypePicker
+            <AgentPicker
                 archetypes={archetypes}
                 isOpen={showArchetypeList}
                 onClose={() => setShowArchetypeList(false)}
@@ -361,12 +361,12 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId, on
                                     <div>
                                         <div className="text-[10px] font-mono text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Team Roster</div>
                                         <div className="space-y-1">
-                                            {Array.from(new Set(epicTemplate.team.map(m => m.archetypeId))).map(archetypeId => {
-                                                const archetype = archetypes.find((a: AgentArchetype) => a.id === archetypeId);
-                                                const count = getArchetypeCountInTeam(epicTemplate, archetypeId);
+                                            {Array.from(new Set(epicTemplate.team.map(m => m.agentTypeId))).map(agentTypeId => {
+                                                const archetype = archetypes.find((a: AgentArchetype) => a.id === agentTypeId);
+                                                const count = getArchetypeCountInTeam(epicTemplate, agentTypeId);
                                                 if (!archetype) return null;
                                                 return (
-                                                    <div key={archetypeId} className="flex items-center gap-2 text-xs">
+                                                    <div key={agentTypeId} className="flex items-center gap-2 text-xs">
                                                         <div
                                                             className="h-4 w-4 rounded flex items-center justify-center text-[10px] font-bold"
                                                             style={{
@@ -557,7 +557,7 @@ export function AssignmentPanel({ selectedIssue, projectRoot, issues, epicId, on
             </div>
 
             {inspectingArchetypeId !== null && (
-                <ArchetypeInspector
+                <AgentInspector
                     archetype={archetypes.find((a: AgentArchetype) => a.id === inspectingArchetypeId)}
                     onClose={() => setInspectingArchetypeId(null)}
                     onSave={saveArchetype}

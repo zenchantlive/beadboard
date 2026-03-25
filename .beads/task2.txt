@@ -1,0 +1,3 @@
+✓ Created issue: beadboard-txj.2 — Apply Status Colors and Transitive Context to Graph Edges
+  Priority: P0
+  Status: open

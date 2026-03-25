@@ -21,6 +21,7 @@ export interface SocialCard {
   agents: AgentInfo[];
   lastActivity: Date;
   priority: SocialCardPriority;
+  agentTypeId?: string;  // Assigned agent type for spawn button
 }
 
 function mapStatus(status: BeadIssue['status']): SocialCardStatus {
@@ -61,6 +62,12 @@ function extractAgentName(bead: BeadIssue): string | null {
   if (agentLabel) return agentLabel.replace('agent:', '');
   
   return null;
+}
+
+function extractAgentTypeId(labels: string[] | undefined): string | undefined {
+  if (!labels) return undefined;
+  const agentLabel = labels.find(l => l.startsWith('agent:'));
+  return agentLabel ? agentLabel.replace('agent:', '') : undefined;
 }
 
 function extractAgents(bead: BeadIssue): AgentInfo[] {
@@ -141,6 +148,7 @@ export function buildSocialCards(beads: BeadIssue[]): SocialCard[] {
       agents: extractAgents(bead),
       lastActivity: new Date(bead.updated_at),
       priority: mapPriority(bead.priority),
+      agentTypeId: bead.agentTypeId || extractAgentTypeId(bead.labels),
     };
   });
 }

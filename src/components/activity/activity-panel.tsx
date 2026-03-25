@@ -51,6 +51,21 @@ interface ActivityPanelProps {
 
 const AGENT_LABEL = 'gt:agent';
 
+function mergeUniqueActivities(existing: ActivityEvent[], incoming: ActivityEvent[]): ActivityEvent[] {
+  const seen = new Set<string>();
+  const merged: ActivityEvent[] = [];
+
+  for (const event of [...incoming, ...existing]) {
+    if (seen.has(event.id)) continue;
+    seen.add(event.id);
+    merged.push(event);
+  }
+
+  return merged
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 50);
+}
+
 // Determine agent status based on last activity
 function deriveAgentStatus(lastSeenAt: string | null): AgentStatus {
   if (!lastSeenAt) return 'dead';
@@ -285,7 +300,7 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
         const response = await fetch('/api/activity');
         if (response.ok) {
           const data = await response.json();
-          setActivities(data.slice(0, 50)); // Limit to 50 events
+          setActivities((prev) => mergeUniqueActivities(prev, data));
         }
       } catch (error) {
         console.error('[ActivityPanel] Failed to fetch activity:', error);
@@ -371,7 +386,7 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
         console.log('[ActivityPanel] Received activity event:', data);
         // data IS the activity event directly (not wrapped in { event: ... })
         if (data?.beadId) {
-          setActivities(prev => [data, ...prev].slice(0, 50));
+          setActivities(prev => mergeUniqueActivities(prev, [data]));
         }
       } catch (e) {
         // Ignore parse errors
@@ -389,9 +404,7 @@ export function ActivityPanel({ issues, collapsed = false, projectRoot }: Activi
 
   const activeAgents = agentRoster.filter(a => a.status === 'active').length;
   const mergedActivities = useMemo(
-    () => [...coordActivities, ...activities]
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, 50),
+    () => mergeUniqueActivities(coordActivities, activities),
     [activities, coordActivities],
   );
   if (collapsed) {
