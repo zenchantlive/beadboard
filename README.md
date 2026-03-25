@@ -1,4 +1,4 @@
-## 🚧 Fixing issues as we speak! Will be up and running again soon 🚧
+## 🚧 Orchastrator is wokring, but new, use your own coding agent for now (unless you want to help :) ) 🚧
 
 # BeadBoard
 
