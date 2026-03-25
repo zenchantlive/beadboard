@@ -46,6 +46,7 @@ npm install -g .
 
 This installs:
 - `beadboard` - Dashboard launcher
+- `beadboard/bb(alias)` - CLI for ORchastrator (built in agent built on [Pi](https://github.com/badlogic/pi-mono)
 - `bd` - Beads CLI for task management
 
 > **Note**: BeadBoard is not published to npm yet. We may publish it in the future if there's demand. For now, install from source as shown above.
