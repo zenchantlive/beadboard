@@ -1,6 +1,9 @@
 import { Type } from '@sinclair/typebox';
 import type { ToolDefinition } from '@mariozechner/pi-coding-agent';
-import { execFileSync } from 'child_process';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+
+const execFileAsync = promisify(execFile);
 
 /**
  * Bead CRUD tools that wrap the `bd` CLI.
@@ -72,7 +75,7 @@ Examples:
             args.push('--parent', parent);
           }
 
-          const output = execFileSync('bd', args, {
+          const { stdout: output } = await execFileAsync('bd', args, {
             cwd: projectRoot,
             encoding: 'utf-8',
             timeout: 10000,
@@ -169,7 +172,7 @@ Examples:
             args.push('--description', description);
           }
 
-          execFileSync('bd', args, {
+          await execFileAsync('bd', args, {
             cwd: projectRoot,
             encoding: 'utf-8',
             timeout: 10000,
@@ -220,7 +223,7 @@ Examples:
         }
 
         try {
-          execFileSync('bd', ['close', id, '--reason', reason], {
+          await execFileAsync('bd', ['close', id, '--reason', reason], {
             cwd: projectRoot,
             encoding: 'utf-8',
             timeout: 10000,
@@ -262,7 +265,7 @@ Examples:
         }
 
         try {
-          const output = execFileSync('bd', ['show', id], {
+          const { stdout: output } = await execFileAsync('bd', ['show', id], {
             cwd: projectRoot,
             encoding: 'utf-8',
             timeout: 10000,
@@ -290,7 +293,7 @@ Examples:
       parameters: Type.Object({}),
       async execute(_toolCallId, _params: unknown): Promise<any> {
         try {
-          const output = execFileSync('bd', ['ready'], {
+          const { stdout: output } = await execFileAsync('bd', ['ready'], {
             cwd: projectRoot,
             encoding: 'utf-8',
             timeout: 10000,

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export type ViewType = 'social' | 'graph';
+export type ViewType = 'social' | 'graph' | 'activity';
 export type PanelState = 'open' | 'closed';
 export type DrawerState = 'open' | 'closed';
 export type GraphTabType = 'flow' | 'overview';
@@ -50,7 +50,7 @@ const DEFAULT_DRAWER: DrawerState = 'closed';
 const DEFAULT_GRAPH_TAB: GraphTabType = 'overview';
 const DEFAULT_LEFT_SIDEBAR_MODE: LeftSidebarMode = 'epics';
 
-const VALID_VIEWS: ViewType[] = ['social', 'graph'];
+const VALID_VIEWS: ViewType[] = ['social', 'graph', 'activity'];
 const VALID_PANELS: PanelState[] = ['open', 'closed'];
 const VALID_DRAWERS: DrawerState[] = ['open', 'closed'];
 const VALID_GRAPH_TABS: GraphTabType[] = ['flow', 'overview'];

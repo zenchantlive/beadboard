@@ -10,6 +10,10 @@ function toRuntimeSseFrame(event: unknown): string {
   return `event: runtime\ndata: ${JSON.stringify(event)}\n\n`;
 }
 
+function toTurnsSseFrame(turns: unknown): string {
+  return `event: turns\ndata: ${JSON.stringify(turns)}\n\n`;
+}
+
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
   const projectRoot = searchParams.get('projectRoot');
@@ -30,6 +34,7 @@ export async function GET(request: Request): Promise<Response> {
 
       write(': connected\n\n');
 
+      // Seed runtime events
       const seenIds = new Set<string>();
       const seed = bbDaemon.listEvents(projectRoot);
       for (const event of seed) {
@@ -37,12 +42,34 @@ export async function GET(request: Request): Promise<Response> {
         write(toRuntimeSseFrame(event));
       }
 
+      // Seed conversation turns
+      let lastTurnCount = 0;
+      let lastTurnSnapshot = '';
+      const seedTurns = bbDaemon.listTurns(projectRoot);
+      if (seedTurns.length > 0) {
+        lastTurnCount = seedTurns.length;
+        lastTurnSnapshot = JSON.stringify(seedTurns[seedTurns.length - 1]);
+        write(toTurnsSseFrame(seedTurns));
+      }
+
       const poll = setInterval(() => {
+        // Poll runtime events
         const current = bbDaemon.listEvents(projectRoot);
         const unseen = current.filter((event) => !seenIds.has(event.id));
         for (const event of unseen.reverse()) {
           seenIds.add(event.id);
           write(toRuntimeSseFrame(event));
+        }
+
+        // Poll conversation turns: push full snapshot whenever count changes or
+        // the last turn (streaming) changes text.
+        const turns = bbDaemon.listTurns(projectRoot);
+        const lastTurn = turns[turns.length - 1];
+        const currentSnapshot = lastTurn ? JSON.stringify(lastTurn) : '';
+        if (turns.length !== lastTurnCount || currentSnapshot !== lastTurnSnapshot) {
+          lastTurnCount = turns.length;
+          lastTurnSnapshot = currentSnapshot;
+          write(toTurnsSseFrame(turns));
         }
       }, POLL_MS);
 

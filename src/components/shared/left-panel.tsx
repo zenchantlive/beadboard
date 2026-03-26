@@ -3,7 +3,8 @@
 import { useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, Folder, FolderOpen, Pencil, Rocket, Star } from 'lucide-react';
 
-import type { RuntimeConsoleEvent, RuntimeInstance } from '../../lib/embedded-runtime';
+import type { RuntimeInstance } from '../../lib/embedded-runtime';
+import type { ConversationTurn } from '../../lib/orchestrator-chat';
 import type { BeadIssue } from '../../lib/types';
 import { cn } from '../../lib/utils';
 import { useUrlState, type LeftSidebarMode, type ViewType } from '../../hooks/use-url-state';
@@ -32,7 +33,7 @@ export interface LeftPanelProps {
   sidebarMode?: LeftSidebarMode;
   onSidebarModeChange?: (mode: LeftSidebarMode) => void;
   orchestrator?: RuntimeInstance;
-  orchestratorThread?: RuntimeConsoleEvent[];
+  orchestratorThread?: ConversationTurn[];
   projectRoot?: string;
 }
 

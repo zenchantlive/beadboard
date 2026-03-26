@@ -1,5 +1,6 @@
 import { embeddedPiDaemon } from './embedded-daemon';
 import type { LaunchSurface, RuntimeConsoleEvent, RuntimeInstance } from './embedded-runtime';
+import { makeTurnId } from './orchestrator-chat';
 import type { BeadIssue } from './types';
 import { detectPiRuntimeStrategy } from './pi-runtime-detection';
 import { ensureManagedPiSettings, bootstrapManagedPi } from './bb-pi-bootstrap';
@@ -38,6 +39,7 @@ export interface PiDaemonBinding {
 export interface PiDaemonAdapter {
   ensureProjectOrchestrator(projectRoot: string): Promise<PiDaemonBinding>;
   listEvents(projectRoot: string): RuntimeConsoleEvent[];
+  listTurns(projectRoot: string): import('./orchestrator-chat').ConversationTurn[];
   launchFromIssue(params: {
     projectRoot: string;
     issue: BeadIssue;
@@ -153,7 +155,7 @@ class InProcessPiDaemonAdapter implements PiDaemonAdapter {
     session.subscribe((event: any) => {
       console.log('[Pi SDK Event]', event.type, event);
 
-      // Map PI SDK events to BeadBoard runtime console events
+      // --- Runtime console events (unchanged) ---
       if (event.type === 'message_start' && event.message.role === 'assistant') {
         emitEvent('orchestrator.message', 'Orchestrator Responding', 'Processing request...', 'working');
       }
@@ -166,24 +168,59 @@ class InProcessPiDaemonAdapter implements PiDaemonAdapter {
         emitEvent('orchestrator.message', `Tool Complete: ${event.toolName}`, `Finished ${event.toolName}`, 'completed');
       }
 
+      // --- Conversation turn store (first-class, no string-matching) ---
+
+      if (event.type === 'message_start' && event.message.role === 'assistant') {
+        // Create a new streaming assistant turn
+        embeddedPiDaemon.appendTurn(projectRoot, {
+          id: makeTurnId('asst'),
+          role: 'assistant',
+          text: '',
+          timestamp: new Date().toISOString(),
+          status: 'streaming',
+        });
+      }
+
       if (event.type === 'message_update') {
         const ame = event.assistantMessageEvent;
+
         if (ame.type === 'error') {
+          // Emit runtime event for console
           emitEvent('orchestrator.message', 'Error', ame.error.errorMessage, 'failed');
+          // Mark current turn as error
+          embeddedPiDaemon.updateCurrentTurn(projectRoot, (turn) => ({
+            ...turn,
+            text: ame.error.errorMessage || 'An error occurred.',
+            status: 'error',
+            timestamp: new Date().toISOString(),
+          }));
         } else if (ame.type === 'thinking_delta') {
+          // Thinking deltas go only to the runtime console, not to chat turns
           const delta = ame.delta || '';
           if (delta) {
             emitEvent('orchestrator.message', 'Orchestrator Thinking', delta, 'working');
           }
         } else if (ame.type === 'text_delta') {
+          // Append delta to the current streaming turn
           const delta = ame.delta || '';
           if (delta) {
-            emitEvent('orchestrator.message', 'Orchestrator Reply', delta, 'completed');
+            embeddedPiDaemon.updateCurrentTurn(projectRoot, (turn) => ({
+              ...turn,
+              text: turn.text + delta,
+              timestamp: new Date().toISOString(),
+            }));
           }
         } else if (ame.type === 'text_done') {
+          // Mark the current turn complete with the final, authoritative text.
+          // Do NOT create a second turn — this is the fix for the double-reply bug.
           const text = ame.text || '';
           if (text) {
-            emitEvent('orchestrator.message', 'Orchestrator Reply', text, 'completed');
+            embeddedPiDaemon.updateCurrentTurn(projectRoot, (turn) => ({
+              ...turn,
+              text,
+              status: 'complete',
+              timestamp: new Date().toISOString(),
+            }));
           }
         }
       }
@@ -193,9 +230,29 @@ class InProcessPiDaemonAdapter implements PiDaemonAdapter {
         if (lastMsg?.role === 'assistant') {
           if (lastMsg.stopReason === 'error' && lastMsg.errorMessage) {
             emitEvent('orchestrator.message', 'Execution Failed', lastMsg.errorMessage, 'failed');
+            embeddedPiDaemon.updateCurrentTurn(projectRoot, (turn) => ({
+              ...turn,
+              text: turn.status === 'streaming' && !turn.text
+                ? lastMsg.errorMessage
+                : turn.text,
+              status: 'error',
+              timestamp: new Date().toISOString(),
+            }));
           } else {
-            const txt = lastMsg.content?.filter((c: any) => c.type === 'text').map((c: any) => c.text).join('\n') || 'Completed.';
-            emitEvent('orchestrator.message', 'Orchestrator Reply', txt.substring(0, 500), 'completed');
+            // Mark current turn complete if still streaming (fallback if text_done was missed)
+            embeddedPiDaemon.updateCurrentTurn(projectRoot, (turn) => {
+              if (turn.status !== 'streaming') return turn;
+              const fallbackText = lastMsg.content
+                ?.filter((c: any) => c.type === 'text')
+                .map((c: any) => c.text)
+                .join('\n') || turn.text || 'Completed.';
+              return {
+                ...turn,
+                text: fallbackText,
+                status: 'complete',
+                timestamp: new Date().toISOString(),
+              };
+            });
           }
         }
       }
@@ -225,6 +282,10 @@ class InProcessPiDaemonAdapter implements PiDaemonAdapter {
     return embeddedPiDaemon.listEvents(projectRoot);
   }
 
+  listTurns(projectRoot: string): import('./orchestrator-chat').ConversationTurn[] {
+    return embeddedPiDaemon.listTurns(projectRoot);
+  }
+
   async launchFromIssue(params: {
     projectRoot: string;
     issue: BeadIssue;
@@ -241,13 +302,22 @@ class InProcessPiDaemonAdapter implements PiDaemonAdapter {
   async prompt(projectRoot: string, text: string): Promise<void> {
     console.log('[Pi Daemon] Prompt called for projectRoot:', projectRoot, 'text:', text);
 
-    // Emit user message immediately so UI shows it
+    // Emit user message to runtime console for operator visibility
     embeddedPiDaemon.appendEvent(projectRoot, {
       kind: 'orchestrator.message',
       title: 'User Prompt',
       detail: text,
       actorLabel: 'human',
       status: 'idle',
+    });
+
+    // Directly append a user turn to the conversation store
+    embeddedPiDaemon.appendTurn(projectRoot, {
+      id: makeTurnId('user'),
+      role: 'user',
+      text,
+      timestamp: new Date().toISOString(),
+      status: 'complete',
     });
 
     // Fire-and-forget the session prompt - SDK subscription handles real-time event emission

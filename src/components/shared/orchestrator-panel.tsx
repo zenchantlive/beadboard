@@ -3,18 +3,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Construction, Send } from 'lucide-react';
 import type { RuntimeInstance } from '../../lib/embedded-runtime';
-import type { OrchestratorChatMessage } from '../../lib/orchestrator-chat';
+import type { ConversationTurn } from '../../lib/orchestrator-chat';
 
 export interface OrchestratorPanelProps {
   orchestrator: RuntimeInstance;
-  thread: OrchestratorChatMessage[];
+  thread: ConversationTurn[];
   projectRoot?: string;
 }
 
 export function OrchestratorPanel({ orchestrator, thread, projectRoot }: OrchestratorPanelProps) {
   const [input, setInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [optimisticMessages, setOptimisticMessages] = useState<OrchestratorChatMessage[]>([]);
+  const [optimisticMessages, setOptimisticMessages] = useState<ConversationTurn[]>([]);
 
   useEffect(() => {
     setOptimisticMessages((current) =>

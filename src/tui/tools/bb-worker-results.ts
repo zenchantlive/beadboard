@@ -1,7 +1,10 @@
 import { Type } from '@sinclair/typebox';
 import type { ToolDefinition } from '@mariozechner/pi-coding-agent';
 import { workerSessionManager } from '../../lib/worker-session-manager';
-import { execFileSync } from 'child_process';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+
+const execFileAsync = promisify(execFile);
 
 /**
  * Get results from completed workers.
@@ -59,7 +62,7 @@ The bead summary is high-level; the files show the real implementation.`,
           let beadSummary = '';
           if (worker.beadId) {
             try {
-              const beadOutput = execFileSync('bd', ['show', worker.beadId], {
+              const { stdout: beadOutput } = await execFileAsync('bd', ['show', worker.beadId], {
                 cwd: projectRoot,
                 encoding: 'utf-8',
                 timeout: 5000,

@@ -33,7 +33,7 @@ export interface LeftPanelProps {
   sidebarMode?: LeftSidebarMode;
   onSidebarModeChange?: (mode: LeftSidebarMode) => void;
   orchestrator?: RuntimeInstance;
-  orchestratorThread?: import('../../lib/orchestrator-chat').OrchestratorChatMessage[];
+  orchestratorThread?: import('../../lib/orchestrator-chat').ConversationTurn[];
   projectRoot?: string;
 }
 

@@ -1,5 +1,6 @@
 import { embeddedPiDaemon, type HostDaemonStatus } from './embedded-daemon';
 import type { LaunchSurface, RuntimeConsoleEvent, RuntimeInstance } from './embedded-runtime';
+import type { ConversationTurn } from './orchestrator-chat';
 import { createPiDaemonAdapter, type PiDaemonAdapter } from './pi-daemon-adapter';
 import { detectPiRuntimeStrategy, type PiRuntimeResolution } from './pi-runtime-detection';
 import type { BeadIssue } from './types';
@@ -32,6 +33,7 @@ export interface BbDaemon {
   ensureProject(projectRoot: string): { projectRoot: string; orchestratorId: string };
   ensureOrchestrator(projectRoot: string): Promise<RuntimeInstance>;
   listEvents(projectRoot: string): RuntimeConsoleEvent[];
+  listTurns(projectRoot: string): ConversationTurn[];
   subscribeRuntimeEvents(listener: (event: RuntimeConsoleEvent) => void, options?: RuntimeEventSubscriptionOptions): () => void;
   launchFromIssue(params: {
     projectRoot: string;
@@ -147,6 +149,10 @@ class InProcessBbDaemon implements BbDaemon {
 
   listEvents(projectRoot: string): RuntimeConsoleEvent[] {
     return this.adapter.listEvents(projectRoot);
+  }
+
+  listTurns(projectRoot: string): ConversationTurn[] {
+    return this.adapter.listTurns(projectRoot);
   }
 
   subscribeRuntimeEvents(listener: (event: RuntimeConsoleEvent) => void, options: RuntimeEventSubscriptionOptions = {}): () => void {

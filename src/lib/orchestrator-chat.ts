@@ -1,159 +1,69 @@
-import type { RuntimeConsoleEvent } from './embedded-runtime';
+/**
+ * orchestrator-chat.ts
+ *
+ * First-class conversation turn store for the orchestrator chat panel.
+ * Turns are the source of truth; they are NOT projected from runtime events.
+ *
+ * Runtime events continue to flow to the runtime console — events and turns
+ * are separate concerns.
+ */
 
-export interface OrchestratorChatMessage {
+export interface ConversationTurn {
   id: string;
   role: 'user' | 'assistant';
   text: string;
   timestamp: string;
+  status?: 'streaming' | 'complete' | 'error';
 }
 
-export function projectOrchestratorChat(events: RuntimeConsoleEvent[]): OrchestratorChatMessage[] {
-  const ordered = [...events]
-    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+/**
+ * OrchestratorChatMessage is kept as a type alias for ConversationTurn so that
+ * existing component prop types continue to compile without changes.
+ */
+export type OrchestratorChatMessage = ConversationTurn;
 
-  const messages: OrchestratorChatMessage[] = [];
-  let currentAssistantIndex: number | null = null;
+/**
+ * In-memory conversation turn store for a single project.
+ * Manages the ordered list of turns and provides streaming-update helpers.
+ */
+export class ConversationTurnStore {
+  private turns: ConversationTurn[] = [];
 
-  for (const event of ordered) {
-    if (event.actorLabel === 'human' && event.detail.trim()) {
-      messages.push({
-        id: `chat-${event.id}`,
-        role: 'user',
-        text: event.detail,
-        timestamp: event.timestamp,
-      });
-      currentAssistantIndex = null;
-      continue;
-    }
-
-    if (event.title === 'Orchestrator Responding') {
-      if (currentAssistantIndex === null) {
-        messages.push({
-          id: `chat-${event.id}`,
-          role: 'assistant',
-          text: '…',
-          timestamp: event.timestamp,
-        });
-        currentAssistantIndex = messages.length - 1;
-      }
-      continue;
-    }
-
-    if (event.title === 'Orchestrator Thinking' && event.detail.trim()) {
-      if (currentAssistantIndex === null) {
-        messages.push({
-          id: `chat-${event.id}`,
-          role: 'assistant',
-          text: event.detail,
-          timestamp: event.timestamp,
-        });
-        currentAssistantIndex = messages.length - 1;
-      } else {
-        const last = messages[currentAssistantIndex];
-        messages[currentAssistantIndex] = {
-          ...last,
-          text: `${last.text === '…' ? '' : last.text}${event.detail}`,
-          timestamp: event.timestamp,
-        };
-      }
-      continue;
-    }
-
-    if (event.title === 'Orchestrator Reply' && event.detail.trim()) {
-      if (currentAssistantIndex !== null && messages[currentAssistantIndex]?.role === 'assistant') {
-        const last = messages[currentAssistantIndex];
-        const nextText = event.detail;
-        const mergedText = nextText.startsWith(last.text) || nextText.length >= last.text.length
-          ? nextText
-          : `${last.text === '…' ? '' : last.text}${nextText}`;
-        messages[currentAssistantIndex] = {
-          ...last,
-          text: mergedText,
-          timestamp: event.timestamp,
-        };
-      } else {
-        messages.push({
-          id: `chat-${event.id}`,
-          role: 'assistant',
-          text: event.detail,
-          timestamp: event.timestamp,
-        });
-        currentAssistantIndex = messages.length - 1;
-      }
-      continue;
-    }
-
-    if (event.title === 'Session Error') {
-      currentAssistantIndex = null;
-      continue;
-    }
-
-    // Worker events - when worker completes, orchestrator should report it
-    if (event.kind === 'worker.spawned') {
-      if (currentAssistantIndex === null) {
-        messages.push({
-          id: `chat-${event.id}`,
-          role: 'assistant',
-          text: `Spawning worker${event.metadata?.taskId ? ` for task ${event.metadata.taskId}` : ''}...`,
-          timestamp: event.timestamp,
-        });
-        currentAssistantIndex = messages.length - 1;
-      }
-      continue;
-    }
-
-    if (event.kind === 'worker.updated') {
-      if (currentAssistantIndex !== null && messages[currentAssistantIndex]?.role === 'assistant') {
-        const last = messages[currentAssistantIndex];
-        messages[currentAssistantIndex] = {
-          ...last,
-          text: `${last.text === '…' ? '' : last.text}Worker is now working${event.metadata?.taskId ? ` on task ${event.metadata.taskId}` : ''}.`,
-          timestamp: event.timestamp,
-        };
-      }
-      continue;
-    }
-
-    if (event.kind === 'worker.completed') {
-      if (currentAssistantIndex === null) {
-        messages.push({
-          id: `chat-${event.id}`,
-          role: 'assistant',
-          text: `Worker${event.metadata?.workerId ? ` ${event.metadata.workerId}` : ''} completed${event.metadata?.taskId ? ` task ${event.metadata.taskId}` : ''}.`,
-          timestamp: event.timestamp,
-        });
-        currentAssistantIndex = messages.length - 1;
-      } else if (currentAssistantIndex !== null && messages[currentAssistantIndex]?.role === 'assistant') {
-        const last = messages[currentAssistantIndex];
-        messages[currentAssistantIndex] = {
-          ...last,
-          text: `${last.text === '…' ? '' : last.text}Worker${event.metadata?.workerId ? ` ${event.metadata.workerId}` : ''} completed${event.metadata?.taskId ? ` task ${event.metadata.taskId}` : ''}.`,
-          timestamp: event.timestamp,
-        };
-      }
-      continue;
-    }
-
-    if (event.kind === 'worker.failed') {
-      if (currentAssistantIndex === null) {
-        messages.push({
-          id: `chat-${event.id}`,
-          role: 'assistant',
-          text: `Worker${event.metadata?.workerId ? ` ${event.metadata.workerId}` : ''} failed${event.metadata?.taskId ? ` task ${event.metadata.taskId}` : ''}${event.detail ? `: ${event.detail}` : ''}.`,
-          timestamp: event.timestamp,
-        });
-        currentAssistantIndex = messages.length - 1;
-      } else if (currentAssistantIndex !== null && messages[currentAssistantIndex]?.role === 'assistant') {
-        const last = messages[currentAssistantIndex];
-        messages[currentAssistantIndex] = {
-          ...last,
-          text: `${last.text === '…' ? '' : last.text}Worker${event.metadata?.workerId ? ` ${event.metadata.workerId}` : ''} failed${event.metadata?.taskId ? ` task ${event.metadata.taskId}` : ''}${event.detail ? `: ${event.detail}` : ''}.`,
-          timestamp: event.timestamp,
-        };
-      }
-      continue;
-    }
+  /**
+   * Append a fully-formed turn (used for user messages and completed assistant turns).
+   */
+  appendTurn(turn: ConversationTurn): void {
+    this.turns.push(turn);
   }
 
-  return messages;
+  /**
+   * Apply an updater function to the last turn in the store.
+   * Used to stream text deltas into an in-progress assistant turn without
+   * creating a second turn.
+   */
+  updateLastTurn(updater: (turn: ConversationTurn) => ConversationTurn): void {
+    if (this.turns.length === 0) return;
+    const last = this.turns[this.turns.length - 1];
+    this.turns[this.turns.length - 1] = updater(last);
+  }
+
+  /**
+   * Return a shallow copy of all turns in chronological order.
+   * No artificial cap is applied.
+   */
+  listTurns(): ConversationTurn[] {
+    return [...this.turns];
+  }
+
+  /** Reset the store (used in tests). */
+  reset(): void {
+    this.turns = [];
+  }
+}
+
+/**
+ * Generate a stable, unique turn ID.
+ */
+export function makeTurnId(prefix: 'user' | 'asst'): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }

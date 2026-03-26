@@ -2,7 +2,10 @@ import { Type } from '@sinclair/typebox';
 import type { ToolDefinition } from '@mariozechner/pi-coding-agent';
 import { workerSessionManager } from '../../lib/worker-session-manager';
 import { embeddedPiDaemon } from '../../lib/embedded-daemon';
-import { execFileSync } from 'child_process';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+
+const execFileAsync = promisify(execFile);
 
 /**
  * Generate a task ID from natural language description.
@@ -22,8 +25,8 @@ function generateTaskId(description: string): string {
  * Create a bead for the worker to work on.
  * Returns the bead ID.
  */
-function createBeadForTask(projectRoot: string, title: string, description: string): string {
-  const output = execFileSync('bd', [
+async function createBeadForTask(projectRoot: string, title: string, description: string): Promise<string> {
+  const { stdout: output } = await execFileAsync('bd', [
     'create',
     title,
     '--description', description,
@@ -107,7 +110,7 @@ Check the right panel (Agent Status) to see active agents.`,
             ? description.slice(0, 57) + '...'
             : description;
           
-          beadId = createBeadForTask(projectRoot, title, description);
+          beadId = await createBeadForTask(projectRoot, title, description);
           
           embeddedPiDaemon.appendEvent(projectRoot, {
             kind: 'worker.spawned',
@@ -120,10 +123,10 @@ Check the right panel (Agent Status) to see active agents.`,
         // Step 2: Spawn the worker
         const worker = await workerSessionManager.spawnWorker({
           projectRoot,
-          taskId: beadId, // Use bead ID as task ID
+          taskId: beadId!, // Use bead ID as task ID
           taskContext: description,
           agentType: agent_type,
-          beadId, // Pass bead ID to worker
+          beadId: beadId!, // Pass bead ID to worker
         });
 
         const typeMsg = agent_type ? ` (${agent_type})` : '';

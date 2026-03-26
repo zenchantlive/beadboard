@@ -2,6 +2,7 @@ import { detectPiRuntimeStrategy } from './pi-runtime-detection';
 import { ensureManagedPiSettings } from './bb-pi-bootstrap';
 import { embeddedPiDaemon } from './embedded-daemon';
 import { getAgentTypes } from './server/beads-fs';
+import { readJsonl, writeJsonl } from './runtime-persistence';
 import type { AgentType } from './types-swarm';
 import path from 'node:path';
 
@@ -87,9 +88,73 @@ export interface SpawnWorkerParams {
   beadId?: string;
 }
 
+/**
+ * Serializable representation of a WorkerSession (Pi SDK `session` field stripped).
+ */
+export type SerializedWorker = Omit<WorkerSession, 'session'>;
+
+/**
+ * Strip the non-serializable Pi SDK session object from a WorkerSession.
+ */
+function serializeWorker(worker: WorkerSession): SerializedWorker {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { session: _session, ...rest } = worker;
+  return rest;
+}
+
 class WorkerSessionManagerImpl {
   private workers = new Map<string, WorkerSession>();
   private nextWorkerId = 1;
+
+  /**
+   * Persist all current worker states to .beadboard/runtime/workers.jsonl.
+   * Called after any status-changing operation. Best-effort — does not throw.
+   */
+  private persistWorkers(projectRoot: string): void {
+    try {
+      const all = [...this.workers.values()]
+        .filter((w) => w.projectRoot === projectRoot)
+        .map(serializeWorker);
+      writeJsonl(projectRoot, 'workers.jsonl', all);
+    } catch {
+      // Best-effort: directory may not exist in test environments
+    }
+  }
+
+  /**
+   * Restore worker sessions from disk on startup.
+   * Pi SDK sessions are gone; in-progress workers are marked failed.
+   */
+  restoreWorkers(projectRoot: string): void {
+    const serialized = readJsonl<SerializedWorker>(projectRoot, 'workers.jsonl');
+    for (const record of serialized) {
+      const status: WorkerStatus =
+        record.status === 'spawning' || record.status === 'working'
+          ? 'failed'
+          : record.status;
+
+      const worker: WorkerSession = {
+        ...record,
+        status,
+        session: null,
+        error:
+          status === 'failed' && record.status !== 'failed'
+            ? 'Server restarted'
+            : record.error,
+        completedAt:
+          status === 'failed' && !record.completedAt
+            ? new Date().toISOString()
+            : record.completedAt,
+      };
+      this.workers.set(worker.id, worker);
+
+      // Advance nextWorkerId past any restored IDs to avoid collisions
+      const numericPart = parseInt(worker.id.replace('worker-', '').split('-')[0], 10);
+      if (!isNaN(numericPart) && numericPart >= this.nextWorkerId) {
+        this.nextWorkerId = numericPart + 1;
+      }
+    }
+  }
 
   async spawnWorker(params: SpawnWorkerParams): Promise<WorkerSession> {
     // Support both old and new param names
@@ -159,6 +224,7 @@ class WorkerSessionManagerImpl {
     };
 
     this.workers.set(workerId, worker);
+    this.persistWorkers(projectRoot);
 
     // Emit spawning event with agent instance info
     embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
@@ -181,6 +247,7 @@ class WorkerSessionManagerImpl {
       worker.status = 'failed';
       worker.error = error instanceof Error ? error.message : String(error);
       worker.completedAt = new Date().toISOString();
+      this.persistWorkers(projectRoot);
 
       embeddedPiDaemon.appendEvent(projectRoot, {
         kind: 'worker.failed',
@@ -274,6 +341,7 @@ class WorkerSessionManagerImpl {
     const session = res.session;
     worker.session = session;
     worker.status = 'working';
+    this.persistWorkers(projectRoot);
 
     // Subscribe to worker events
     session.subscribe((event: any) => {
@@ -297,6 +365,7 @@ class WorkerSessionManagerImpl {
       worker.status = 'failed';
       worker.error = error instanceof Error ? error.message : String(error);
       worker.completedAt = new Date().toISOString();
+      this.persistWorkers(projectRoot);
 
       embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
         kind: 'worker.failed',
@@ -387,6 +456,7 @@ ${agentSection}${beadWorkflow}## Instructions
         if (lastMsg.stopReason === 'error' && lastMsg.errorMessage) {
           worker.status = 'failed';
           worker.error = lastMsg.errorMessage;
+          this.persistWorkers(projectRoot);
 
           embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
             kind: 'worker.failed',
@@ -401,6 +471,7 @@ ${agentSection}${beadWorkflow}## Instructions
             .map((c: any) => c.text)
             .join('\n') || 'Completed';
           worker.result = text.substring(0, 1000);
+          this.persistWorkers(projectRoot);
 
           embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
             kind: 'worker.completed',
@@ -440,6 +511,7 @@ ${agentSection}${beadWorkflow}## Instructions
     worker.status = 'failed';
     worker.error = 'Terminated by user';
     worker.completedAt = new Date().toISOString();
+    this.persistWorkers(worker.projectRoot);
 
     embeddedPiDaemon.appendEvent(worker.projectRoot, {
       kind: 'worker.failed',

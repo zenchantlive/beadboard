@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
 import { buildLaunchRequest, createLaunchConsoleEvents, createOrchestratorInstance, type RuntimeConsoleEvent, type RuntimeStatus } from '../../lib/embedded-runtime';
+import type { ConversationTurn } from '../../lib/orchestrator-chat';
 import { TopBar } from './top-bar';
 import { LeftPanel, type LeftPanelFilters } from './left-panel-new';
 import { RightPanel } from './right-panel';
@@ -26,7 +27,6 @@ import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
 import { useBdHealth } from '../../hooks/use-bd-health';
 import { BlockedTriageModal } from './blocked-triage-modal';
 import { deriveBlockedIds } from '../../lib/kanban';
-import { projectOrchestratorChat } from '../../lib/orchestrator-chat';
 
 export interface UnifiedShellProps {
   issues: BeadIssue[];
@@ -85,6 +85,7 @@ export function UnifiedShell({
   const [customRightPanel, setCustomRightPanel] = useState<React.ReactNode | null>(null);
   const [orchestrator, setOrchestrator] = useState(() => createOrchestratorInstance(projectRoot));
   const [runtimeEvents, setRuntimeEvents] = useState<RuntimeConsoleEvent[]>([]);
+  const [orchestratorTurns, setOrchestratorTurns] = useState<ConversationTurn[]>([]);
   const [daemonLifecycle, setDaemonLifecycle] = useState<{ status: RuntimeStatus | 'stopped' | 'starting' | 'stopping' | 'failed' } | null>(null);
 
   // Assign mode state for graph view
@@ -156,7 +157,7 @@ export function UnifiedShell({
 
     async function bootstrapRuntime() {
       try {
-        const [statusResponse, orchestratorResponse, eventsResponse] = await Promise.all([
+        const [statusResponse, orchestratorResponse, eventsResponse, turnsResponse] = await Promise.all([
           fetch('/api/runtime/status'),
           fetch('/api/runtime/orchestrator', {
             method: 'POST',
@@ -164,11 +165,13 @@ export function UnifiedShell({
             body: JSON.stringify({ projectRoot }),
           }),
           fetch(`/api/runtime/events?projectRoot=${encodeURIComponent(projectRoot)}`),
+          fetch(`/api/runtime/turns?projectRoot=${encodeURIComponent(projectRoot)}`),
         ]);
 
         const statusPayload = await statusResponse.json().catch(() => null);
         const orchestratorPayload = await orchestratorResponse.json().catch(() => null);
         const eventsPayload = await eventsResponse.json().catch(() => null);
+        const turnsPayload = await turnsResponse.json().catch(() => null);
 
         if (cancelled) {
           return;
@@ -186,6 +189,9 @@ export function UnifiedShell({
         if (eventsResponse.ok && eventsPayload?.ok && Array.isArray(eventsPayload.data)) {
           setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, eventsPayload.data));
         }
+        if (turnsResponse.ok && turnsPayload?.ok && Array.isArray(turnsPayload.data)) {
+          setOrchestratorTurns(turnsPayload.data);
+        }
       } catch {
         // Runtime bootstrap is best-effort during early integration.
       }
@@ -200,6 +206,7 @@ export function UnifiedShell({
   useEffect(() => {
     // daemon lifecycle and runtime events should come from the daemon stream, not local shell ownership
     const source = new EventSource(`/api/runtime/stream?projectRoot=${encodeURIComponent(projectRoot)}`);
+
     const onRuntime = (event: MessageEvent) => {
       try {
         const payload = JSON.parse(event.data) as RuntimeConsoleEvent;
@@ -209,10 +216,23 @@ export function UnifiedShell({
       }
     };
 
+    const onTurns = (event: MessageEvent) => {
+      try {
+        const payload = JSON.parse(event.data) as ConversationTurn[];
+        if (Array.isArray(payload)) {
+          setOrchestratorTurns(payload);
+        }
+      } catch {
+        // Ignore malformed turn frames.
+      }
+    };
+
     source.addEventListener('runtime', onRuntime as EventListener);
+    source.addEventListener('turns', onTurns as EventListener);
 
     return () => {
       source.removeEventListener('runtime', onRuntime as EventListener);
+      source.removeEventListener('turns', onTurns as EventListener);
       source.close();
     };
   }, [projectRoot]);
@@ -427,7 +447,7 @@ export function UnifiedShell({
             sidebarMode={leftSidebarMode}
             onSidebarModeChange={setLeftSidebarMode}
             orchestrator={orchestrator}
-            orchestratorThread={projectOrchestratorChat(runtimeEvents)}
+            orchestratorThread={orchestratorTurns}
             projectRoot={projectRoot}
           />
         </div>

@@ -1,10 +1,13 @@
 import { buildLaunchRequest, createLaunchConsoleEvents, createOrchestratorInstance, type LaunchSurface, type RuntimeConsoleEvent, type RuntimeInstance } from './embedded-runtime';
+import { ConversationTurnStore, type ConversationTurn } from './orchestrator-chat';
+import { appendJsonl, readJsonl, writeJsonl } from './runtime-persistence';
 import type { BeadIssue } from './types';
 
 export interface ProjectRuntimeState {
   projectRoot: string;
   orchestrator: RuntimeInstance;
   events: RuntimeConsoleEvent[];
+  turns: ConversationTurnStore;
   updatedAt: string;
 }
 
@@ -35,10 +38,22 @@ export class EmbeddedPiDaemon {
     }
 
     const orchestrator = createOrchestratorInstance(projectRoot);
+
+    // Restore events from disk if present
+    const persistedEvents = readJsonl<RuntimeConsoleEvent>(projectRoot, 'events.jsonl');
+
+    // Restore turns from disk if present
+    const turnStore = new ConversationTurnStore();
+    const persistedTurns = readJsonl<ConversationTurn>(projectRoot, 'turns.jsonl');
+    for (const turn of persistedTurns) {
+      turnStore.appendTurn(turn);
+    }
+
     const state: ProjectRuntimeState = {
       projectRoot,
       orchestrator,
-      events: [],
+      events: persistedEvents,
+      turns: turnStore,
       updatedAt: new Date().toISOString(),
     };
     this.projects.set(projectRoot, state);
@@ -107,6 +122,11 @@ export class EmbeddedPiDaemon {
     };
     state.events.unshift(fullEvent);
     state.updatedAt = new Date().toISOString();
+    try {
+      appendJsonl(projectRoot, 'events.jsonl', fullEvent);
+    } catch {
+      // Best-effort: directory may not exist in test environments
+    }
   }
 
   appendWorkerEvent(projectRoot: string, workerId: string, event: {
@@ -120,6 +140,34 @@ export class EmbeddedPiDaemon {
       ...event,
       metadata: { workerId, ...(event.metadata || {}) },
     });
+  }
+
+  // --- Conversation turn store methods ---
+
+  appendTurn(projectRoot: string, turn: ConversationTurn): void {
+    const state = this.ensureProject(projectRoot);
+    state.turns.appendTurn(turn);
+    state.updatedAt = new Date().toISOString();
+    try {
+      appendJsonl(projectRoot, 'turns.jsonl', turn);
+    } catch {
+      // Best-effort: directory may not exist in test environments
+    }
+  }
+
+  updateCurrentTurn(projectRoot: string, updater: (turn: ConversationTurn) => ConversationTurn): void {
+    const state = this.ensureProject(projectRoot);
+    state.turns.updateLastTurn(updater);
+    state.updatedAt = new Date().toISOString();
+    try {
+      writeJsonl(projectRoot, 'turns.jsonl', state.turns.listTurns());
+    } catch {
+      // Best-effort: directory may not exist in test environments
+    }
+  }
+
+  listTurns(projectRoot: string): ConversationTurn[] {
+    return this.projects.get(projectRoot)?.turns.listTurns() ?? [];
   }
 
   getStatus(): HostDaemonStatus {
@@ -144,6 +192,7 @@ export class EmbeddedPiDaemon {
     this.projects.clear();
     this.orchestratorBooted.clear();
   }
+
 }
 
 const globalRegistry = globalThis as typeof globalThis & {
