@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
-import { buildLaunchRequest, createLaunchConsoleEvents, createOrchestratorInstance, type RuntimeConsoleEvent, type RuntimeStatus } from '../../lib/embedded-runtime';
+import { buildLaunchRequest, createLaunchConsoleEvents, createOrchestratorInstance, createRuntimeConsoleEvent, getProjectRuntimeId, type RuntimeConsoleEvent, type RuntimeStatus } from '../../lib/embedded-runtime';
 import type { ConversationTurn } from '../../lib/orchestrator-chat';
 import { TopBar } from './top-bar';
 import { LeftPanel, type LeftPanelFilters } from './left-panel-new';
@@ -225,8 +225,22 @@ export function UnifiedShell({
         if (turnsResponse.ok && turnsPayload?.ok && Array.isArray(turnsPayload.data)) {
           setOrchestratorTurns(turnsPayload.data);
         }
-      } catch {
-        // Runtime bootstrap is best-effort during early integration.
+      } catch (err) {
+        if (!cancelled) {
+          const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+          setRuntimeEvents((current) =>
+            mergeUniqueRuntimeEvents(current, [
+              createRuntimeConsoleEvent({
+                projectId: getProjectRuntimeId(projectRoot),
+                kind: 'worker.failed',
+                title: 'Runtime bootstrap failed',
+                detail: `Could not connect to the runtime API: ${errorMsg}`,
+                status: 'failed',
+                actorLabel: 'BeadBoard',
+              }),
+            ])
+          );
+        }
       }
     }
 
@@ -309,8 +323,19 @@ export function UnifiedShell({
           setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, payload.data.events));
         }
       }
-    } catch {
-      // Keep optimistic console events visible; bridge hardening comes in later phases.
+    } catch (err) {
+      // Keep optimistic console events visible and surface the failure as a chat turn.
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      setOrchestratorTurns((current) => [
+        ...current,
+        {
+          id: `asst-err-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          role: 'assistant',
+          text: `Failed to launch task ${issueId}: ${errorMsg}. Check the runtime console for details.`,
+          timestamp: new Date().toISOString(),
+          status: 'error',
+        },
+      ]);
     }
   }, [issues, projectRoot, setLeftSidebarMode, swarmId]);
 

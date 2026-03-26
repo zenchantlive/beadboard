@@ -23,6 +23,7 @@ const SUGGESTED_PROMPTS: { icon: string; label: string; text: string }[] = [
 export function OrchestratorPanel({ orchestrator, thread, projectRoot, onRestarted }: OrchestratorPanelProps) {
   const [input, setInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [optimisticMessages, setOptimisticMessages] = useState<ConversationTurn[]>([]);
   const [restarting, setRestarting] = useState(false);
   const [confirmRestart, setConfirmRestart] = useState(false);
@@ -38,6 +39,7 @@ export function OrchestratorPanel({ orchestrator, thread, projectRoot, onRestart
   const sendMessage = async (text: string) => {
     if (!text.trim() || submitting || !projectRoot) return;
 
+    setSendError(null);
     setSubmitting(true);
     setInput('');
     setOptimisticMessages((current) => [
@@ -51,11 +53,18 @@ export function OrchestratorPanel({ orchestrator, thread, projectRoot, onRestart
     ]);
 
     try {
-      await fetch('/api/runtime/prompt', {
+      const response = await fetch('/api/runtime/prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ projectRoot, text })
       });
+      if (!response.ok) {
+        const errText = await response.text().catch(() => response.statusText);
+        setSendError(`Send failed (${response.status}): ${errText}`);
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      setSendError(`Could not reach the orchestrator: ${errorMsg}`);
     } finally {
       setSubmitting(false);
     }
@@ -181,9 +190,12 @@ export function OrchestratorPanel({ orchestrator, thread, projectRoot, onRestart
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={message.role === 'user'
-                    ? 'max-w-[85%] rounded-2xl rounded-br-md bg-cyan-500/15 px-3 py-2 text-sm text-cyan-50 border border-cyan-500/25'
-                    : 'max-w-[85%] rounded-2xl rounded-bl-md bg-[var(--surface-quaternary)] px-3 py-2 text-sm text-[var(--text-primary)] border border-[var(--border-subtle)]'
+                  className={
+                    message.status === 'error'
+                      ? 'max-w-[85%] rounded-2xl rounded-bl-md bg-red-500/10 px-3 py-2 text-sm text-red-300 border border-red-500/30'
+                      : message.role === 'user'
+                        ? 'max-w-[85%] rounded-2xl rounded-br-md bg-cyan-500/15 px-3 py-2 text-sm text-cyan-50 border border-cyan-500/25'
+                        : 'max-w-[85%] rounded-2xl rounded-bl-md bg-[var(--surface-quaternary)] px-3 py-2 text-sm text-[var(--text-primary)] border border-[var(--border-subtle)]'
                   }
                 >
                   <p className="whitespace-pre-wrap leading-relaxed">{message.text}</p>
@@ -213,6 +225,9 @@ export function OrchestratorPanel({ orchestrator, thread, projectRoot, onRestart
               <Send size={16} />
             </button>
           </form>
+          {sendError && (
+            <p className="mt-1.5 text-[11px] text-red-400">{sendError}</p>
+          )}
         </div>
       )}
     </div>

@@ -52,21 +52,18 @@ export interface PiDaemonAdapter {
 
 class InProcessPiDaemonAdapter implements PiDaemonAdapter {
   private activeSessions = new Map<string, any>(); // Map<projectRoot, AgentSession>
+  private sessionCreationPromises = new Map<string, Promise<any>>(); // In-flight creation locks
   private recentEventKeys = new Set<string>(); // Deduplicate events within same second
 
-  private async getOrCreateSession(projectRoot: string): Promise<any> {
-    if (this.activeSessions.has(projectRoot)) {
-      return this.activeSessions.get(projectRoot);
-    }
-
+  private async _createSession(projectRoot: string): Promise<any> {
     let resolution = await detectPiRuntimeStrategy();
-    
+
     // Auto-bootstrap if Pi not installed
     if (!resolution.sdkPath || resolution.installState === 'bootstrap-required') {
       console.log('[Agent] SDK not found, auto-bootstrapping...');
       const bootstrapResult = await bootstrapManagedPi();
       console.log('[Agent] Bootstrap complete:', bootstrapResult.managedRoot);
-      
+
       // Re-detect after bootstrap
       resolution = await detectPiRuntimeStrategy();
       if (!resolution.sdkPath) {
@@ -261,6 +258,26 @@ class InProcessPiDaemonAdapter implements PiDaemonAdapter {
 
     this.activeSessions.set(projectRoot, session);
     return session;
+  }
+
+  private async getOrCreateSession(projectRoot: string): Promise<any> {
+    // Return existing session if already established
+    const existing = this.activeSessions.get(projectRoot);
+    if (existing) return existing;
+
+    // Return in-flight creation promise to prevent concurrent duplicate sessions
+    const inFlight = this.sessionCreationPromises.get(projectRoot);
+    if (inFlight) return inFlight;
+
+    // Create new session with a per-project lock
+    const promise = this._createSession(projectRoot);
+    this.sessionCreationPromises.set(projectRoot, promise);
+    try {
+      const session = await promise;
+      return session;
+    } finally {
+      this.sessionCreationPromises.delete(projectRoot);
+    }
   }
 
   async ensureProjectOrchestrator(projectRoot: string): Promise<PiDaemonBinding> {
