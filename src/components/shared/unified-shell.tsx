@@ -101,34 +101,14 @@ export function UnifiedShell({
   const handleOpenBlockedTriage = useCallback(() => setBlockedTriageOpen(true), []);
   const handleCloseBlockedTriage = useCallback(() => setBlockedTriageOpen(false), []);
 
-  // Runtime BLOCKED event count — polled from /api/runtime/blocked
-  const [blockedEventCount, setBlockedEventCount] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const pollBlockedCount = async () => {
-      try {
-        const response = await fetch(`/api/runtime/blocked?projectRoot=${encodeURIComponent(projectRoot)}`);
-        if (!cancelled && response.ok) {
-          const payload = await response.json().catch(() => null);
-          if (payload?.ok && typeof payload.data?.count === 'number') {
-            setBlockedEventCount(payload.data.count);
-          }
-        }
-      } catch {
-        // Best-effort polling
-      }
-    };
-
-    void pollBlockedCount();
-    const interval = setInterval(() => { void pollBlockedCount(); }, 5000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [projectRoot]);
+  // Runtime BLOCKED event count — derived from runtimeEvents (pushed via SSE, no polling needed)
+  const blockedEventCount = useMemo(
+    () =>
+      runtimeEvents.filter(
+        (e) => e.status === 'blocked' || e.kind === 'worker.blocked' || e.kind === 'orchestrator.blocked'
+      ).length,
+    [runtimeEvents]
+  );
 
   const handleBlockedIndicatorClick = useCallback(() => {
     setLeftSidebarMode('orchestrator');

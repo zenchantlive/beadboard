@@ -1,21 +1,16 @@
 import { NextResponse } from 'next/server';
 import { bbDaemon } from '../../../../lib/bb-daemon';
+import { validateProjectRoot } from '../../../../lib/validate-project-root';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request): Promise<Response> {
   try {
     const body = await request.json();
-    const projectRoot = typeof body?.projectRoot === 'string' ? body.projectRoot.trim() : '';
+    const result = validateProjectRoot(typeof body?.projectRoot === 'string' ? body.projectRoot.trim() : '');
+    if (!result.valid) return result.error;
 
-    if (!projectRoot) {
-      return NextResponse.json(
-        { ok: false, error: 'projectRoot is required' },
-        { status: 400 },
-      );
-    }
-
-    await bbDaemon.restartOrchestrator(projectRoot);
+    await bbDaemon.restartOrchestrator(result.projectRoot);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -331,11 +331,8 @@ class InProcessPiDaemonAdapter implements PiDaemonAdapter {
     // Remove the session so next prompt creates a fresh one
     this.activeSessions.delete(projectRoot);
 
-    // Clear in-memory events and turns so the UI resets to clean state
-    const state = embeddedPiDaemon.ensureProject(projectRoot);
-    state.events = [];
-    state.turns.reset();
-    state.updatedAt = new Date().toISOString();
+    // Clear in-memory state and persisted disk files
+    embeddedPiDaemon.resetProject(projectRoot);
 
     // Emit a restart event so the console shows it happened
     embeddedPiDaemon.appendEvent(projectRoot, {

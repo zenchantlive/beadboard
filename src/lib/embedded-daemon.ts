@@ -1,6 +1,6 @@
 import { buildLaunchRequest, createLaunchConsoleEvents, createOrchestratorInstance, type LaunchSurface, type RuntimeConsoleEvent, type RuntimeInstance } from './embedded-runtime';
 import { ConversationTurnStore, type ConversationTurn } from './orchestrator-chat';
-import { appendJsonl, readJsonl, writeJsonl } from './runtime-persistence';
+import { appendJsonl, readJsonl, writeJsonl, writeJsonlAtomic } from './runtime-persistence';
 import type { BeadIssue } from './types';
 
 /** Maximum runtime console events kept in memory per project */
@@ -43,8 +43,9 @@ export class EmbeddedPiDaemon {
 
     const orchestrator = createOrchestratorInstance(projectRoot);
 
-    // Restore events from disk if present
-    const persistedEvents = readJsonl<RuntimeConsoleEvent>(projectRoot, 'events.jsonl');
+    // Restore events from disk if present, capped to MAX_EVENTS
+    const persistedEvents = readJsonl<RuntimeConsoleEvent>(projectRoot, 'events.jsonl')
+      .slice(0, MAX_EVENTS);
 
     // Restore turns from disk if present
     const turnStore = new ConversationTurnStore();
@@ -126,7 +127,7 @@ export class EmbeddedPiDaemon {
       timestamp: new Date().toISOString(),
     };
     state.events.unshift(fullEvent);
-    if (state.events.length > 1000) state.events.length = 1000;
+    if (state.events.length > MAX_EVENTS) state.events.length = MAX_EVENTS;
     state.updatedAt = new Date().toISOString();
     try {
       appendJsonl(projectRoot, 'events.jsonl', fullEvent);
@@ -165,10 +166,16 @@ export class EmbeddedPiDaemon {
     const state = this.ensureProject(projectRoot);
     state.turns.updateLastTurn(updater);
     state.updatedAt = new Date().toISOString();
-    try {
-      writeJsonl(projectRoot, 'turns.jsonl', state.turns.listTurns());
-    } catch {
-      // Best-effort: directory may not exist in test environments
+    // Only flush to disk when a turn reaches a terminal state (complete/error).
+    // Streaming deltas update in-memory only — SSE reads from memory, not disk.
+    const turns = state.turns.listTurns();
+    const lastTurn = turns[turns.length - 1];
+    if (lastTurn && (lastTurn.status === 'complete' || lastTurn.status === 'error')) {
+      try {
+        writeJsonlAtomic(projectRoot, 'turns.jsonl', turns);
+      } catch {
+        // Best-effort: directory may not exist in test environments
+      }
     }
   }
 
@@ -183,7 +190,7 @@ export class EmbeddedPiDaemon {
     if (!state) return 0;
     return state.events.filter(
       (e) =>
-        (e.status === 'blocked' || e.kind.toLowerCase().includes('blocked')) &&
+        (e.status === 'blocked' || e.kind === 'worker.blocked' || e.kind === 'orchestrator.blocked') &&
         !state.dismissedBlockedIds.has(e.id)
     ).length;
   }
@@ -200,7 +207,7 @@ export class EmbeddedPiDaemon {
     if (!state) return [];
     return state.events.filter(
       (e) =>
-        (e.status === 'blocked' || e.kind.toLowerCase().includes('blocked')) &&
+        (e.status === 'blocked' || e.kind === 'worker.blocked' || e.kind === 'orchestrator.blocked') &&
         !state.dismissedBlockedIds.has(e.id)
     );
   }
@@ -221,6 +228,22 @@ export class EmbeddedPiDaemon {
         updatedAt: state.updatedAt,
       })),
     };
+  }
+
+  resetProject(projectRoot: string): void {
+    const state = this.projects.get(projectRoot);
+    if (!state) return;
+    state.events = [];
+    state.turns.reset();
+    state.dismissedBlockedIds.clear();
+    state.updatedAt = new Date().toISOString();
+    // Clear persisted state on disk
+    try {
+      writeJsonl(projectRoot, 'events.jsonl', []);
+      writeJsonl(projectRoot, 'turns.jsonl', []);
+    } catch {
+      // Best-effort
+    }
   }
 
   resetForTests(): void {

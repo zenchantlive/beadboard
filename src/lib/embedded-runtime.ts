@@ -5,6 +5,7 @@ export type AgentInstanceKind = 'orchestrator' | 'worker';
 export type LaunchSurface = 'social' | 'graph' | 'swarm' | 'sessions' | 'activity' | 'task';
 export type RuntimeEventKind =
   | 'orchestrator.message'
+  | 'orchestrator.blocked'
   | 'launch.requested'
   | 'launch.planned'
   | 'launch.started'
@@ -12,6 +13,7 @@ export type RuntimeEventKind =
   | 'worker.updated'
   | 'worker.completed'
   | 'worker.failed'
+  | 'worker.blocked'
   | 'deviation.proposed'
   | 'deviation.approved'
   | 'deviation.rejected';

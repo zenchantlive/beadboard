@@ -43,14 +43,34 @@ export function writeJsonl(projectRoot: string, filename: string, records: unkno
 /**
  * Read: load all records from a JSONL file.
  * Returns an empty array if the file does not exist.
+ * Silently skips corrupt lines (e.g. from crash during mid-write).
  */
 export function readJsonl<T>(projectRoot: string, filename: string): T[] {
   const filePath = path.join(projectRoot, RUNTIME_DIR, filename);
   if (!fs.existsSync(filePath)) return [];
   const content = fs.readFileSync(filePath, 'utf-8');
-  return content
-    .trim()
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => JSON.parse(line) as T);
+  const results: T[] = [];
+  for (const line of content.trim().split('\n')) {
+    if (!line) continue;
+    try {
+      results.push(JSON.parse(line) as T);
+    } catch {
+      // Skip corrupt lines — can happen if process crashed mid-write
+    }
+  }
+  return results;
+}
+
+/**
+ * Write-through: atomically overwrite a file via temp + rename.
+ * Prevents partial reads if process crashes during write.
+ */
+export function writeJsonlAtomic(projectRoot: string, filename: string, records: unknown[]): void {
+  const dir = ensureDir(projectRoot);
+  const filePath = path.join(dir, filename);
+  const tmpPath = filePath + '.tmp';
+  const content =
+    records.map((r) => JSON.stringify(r)).join('\n') + (records.length ? '\n' : '');
+  fs.writeFileSync(tmpPath, content);
+  fs.renameSync(tmpPath, filePath);
 }

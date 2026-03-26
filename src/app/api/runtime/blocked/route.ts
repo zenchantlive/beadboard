@@ -1,35 +1,30 @@
+import { NextResponse } from 'next/server';
 import { bbDaemon } from '../../../../lib/bb-daemon';
+import { validateProjectRoot } from '../../../../lib/validate-project-root';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
-  const projectRoot = searchParams.get('projectRoot');
+  const result = validateProjectRoot(searchParams.get('projectRoot'));
+  if (!result.valid) return result.error;
 
-  if (!projectRoot) {
-    return Response.json({ ok: false, error: 'projectRoot is required' }, { status: 400 });
-  }
+  const count = bbDaemon.getBlockedCount(result.projectRoot);
+  const events = bbDaemon.listBlockedEvents(result.projectRoot);
 
-  const count = bbDaemon.getBlockedCount(projectRoot);
-  const events = bbDaemon.listBlockedEvents(projectRoot);
-
-  return Response.json({ ok: true, data: { count, events } });
+  return NextResponse.json({ ok: true, data: { count, events } });
 }
 
 export async function DELETE(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
-  const projectRoot = searchParams.get('projectRoot');
+  const result = validateProjectRoot(searchParams.get('projectRoot'));
+  if (!result.valid) return result.error;
+
   const eventId = searchParams.get('eventId');
-
-  if (!projectRoot) {
-    return Response.json({ ok: false, error: 'projectRoot is required' }, { status: 400 });
-  }
-
   if (!eventId) {
-    return Response.json({ ok: false, error: 'eventId is required' }, { status: 400 });
+    return NextResponse.json({ ok: false, error: 'eventId is required' }, { status: 400 });
   }
 
-  bbDaemon.dismissBlocked(projectRoot, eventId);
-
-  return Response.json({ ok: true });
+  bbDaemon.dismissBlocked(result.projectRoot, eventId);
+  return NextResponse.json({ ok: true });
 }
