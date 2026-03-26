@@ -42,6 +42,10 @@ export interface BbDaemon {
     swarmId?: string | null;
   }): Promise<{ orchestrator: RuntimeInstance; events: RuntimeConsoleEvent[] }>;
   prompt(projectRoot: string, text: string): Promise<void>;
+  restartOrchestrator(projectRoot: string): Promise<void>;
+  getBlockedCount(projectRoot: string): number;
+  listBlockedEvents(projectRoot: string): RuntimeConsoleEvent[];
+  dismissBlocked(projectRoot: string, eventId: string): void;
   resetForTests(): void;
 }
 
@@ -200,6 +204,24 @@ class InProcessBbDaemon implements BbDaemon {
         console.error('[BbDaemon] Adapter prompt error:', e);
       });
     }
+  }
+
+  async restartOrchestrator(projectRoot: string): Promise<void> {
+    if (typeof this.adapter.restartSession === 'function') {
+      await this.adapter.restartSession(projectRoot);
+    }
+  }
+
+  getBlockedCount(projectRoot: string): number {
+    return embeddedPiDaemon.getBlockedCount(projectRoot);
+  }
+
+  listBlockedEvents(projectRoot: string): RuntimeConsoleEvent[] {
+    return embeddedPiDaemon.listBlockedEvents(projectRoot);
+  }
+
+  dismissBlocked(projectRoot: string, eventId: string): void {
+    embeddedPiDaemon.dismissBlocked(projectRoot, eventId);
   }
 
   resetForTests(): void {

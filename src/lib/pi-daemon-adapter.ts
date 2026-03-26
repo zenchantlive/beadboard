@@ -47,6 +47,7 @@ export interface PiDaemonAdapter {
     swarmId?: string | null;
   }): Promise<{ orchestrator: RuntimeInstance; events: RuntimeConsoleEvent[] }>;
   prompt?(projectRoot: string, text: string): Promise<void>;
+  restartSession?(projectRoot: string): Promise<void>;
 }
 
 class InProcessPiDaemonAdapter implements PiDaemonAdapter {
@@ -297,6 +298,35 @@ class InProcessPiDaemonAdapter implements PiDaemonAdapter {
     const text = `I am launching a task from the UI.\n\nTask: ${params.issue.title}\nID: ${params.issue.id}\n\nPlease read the current state of the project using your tools and proceed with the necessary steps to orchestrate this task.`;
     this.prompt(params.projectRoot, text).catch(() => {});
     return result;
+  }
+
+  async restartSession(projectRoot: string): Promise<void> {
+    // Stop the existing session if one is active
+    const existing = this.activeSessions.get(projectRoot);
+    if (existing && typeof existing.stop === 'function') {
+      try {
+        await existing.stop();
+      } catch (error) {
+        console.error('[Pi Daemon] Error stopping session during restart:', error);
+      }
+    }
+
+    // Remove the session so next prompt creates a fresh one
+    this.activeSessions.delete(projectRoot);
+
+    // Clear in-memory events and turns so the UI resets to clean state
+    const state = embeddedPiDaemon.ensureProject(projectRoot);
+    state.events = [];
+    state.turns.reset();
+    state.updatedAt = new Date().toISOString();
+
+    // Emit a restart event so the console shows it happened
+    embeddedPiDaemon.appendEvent(projectRoot, {
+      kind: 'launch.started',
+      title: 'Orchestrator Restarted',
+      detail: 'Session was cleared by user. Send a message to start a fresh session.',
+      status: 'idle',
+    });
   }
 
   async prompt(projectRoot: string, text: string): Promise<void> {

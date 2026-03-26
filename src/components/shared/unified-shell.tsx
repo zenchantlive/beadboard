@@ -101,6 +101,39 @@ export function UnifiedShell({
   const handleOpenBlockedTriage = useCallback(() => setBlockedTriageOpen(true), []);
   const handleCloseBlockedTriage = useCallback(() => setBlockedTriageOpen(false), []);
 
+  // Runtime BLOCKED event count — polled from /api/runtime/blocked
+  const [blockedEventCount, setBlockedEventCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const pollBlockedCount = async () => {
+      try {
+        const response = await fetch(`/api/runtime/blocked?projectRoot=${encodeURIComponent(projectRoot)}`);
+        if (!cancelled && response.ok) {
+          const payload = await response.json().catch(() => null);
+          if (payload?.ok && typeof payload.data?.count === 'number') {
+            setBlockedEventCount(payload.data.count);
+          }
+        }
+      } catch {
+        // Best-effort polling
+      }
+    };
+
+    void pollBlockedCount();
+    const interval = setInterval(() => { void pollBlockedCount(); }, 5000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [projectRoot]);
+
+  const handleBlockedIndicatorClick = useCallback(() => {
+    setLeftSidebarMode('orchestrator');
+  }, [setLeftSidebarMode]);
+
   const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
   const blockedIds = useMemo(() => deriveBlockedIds(issues), [issues]);
   const blockedCount = useMemo(() => {
@@ -422,6 +455,8 @@ export function UnifiedShell({
         onActorChange={handleActorChange}
         onLaunchSwarm={() => { setTaskId(null); setAssignMode(true); }}
         onOpenBlockedTriage={handleOpenBlockedTriage}
+        blockedEventCount={blockedEventCount}
+        onBlockedIndicatorClick={handleBlockedIndicatorClick}
       />
       {!bdHealth.loading && !bdHealth.healthy ? (
         <div className="border-b border-amber-500/35 bg-amber-500/12 px-4 py-2 text-xs text-amber-100">
@@ -500,7 +535,7 @@ export function UnifiedShell({
         </div>
       ) : null}
 
-      <RuntimeConsole events={runtimeEvents} daemonStatus={daemonLifecycle?.status ?? null} />
+      <RuntimeConsole events={runtimeEvents} daemonStatus={daemonLifecycle?.status ?? null} projectRoot={projectRoot} />
 
 {/* MOBILE NAV: Bottom tab bar */}
       <MobileNav />

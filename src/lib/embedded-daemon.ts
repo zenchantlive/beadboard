@@ -3,12 +3,16 @@ import { ConversationTurnStore, type ConversationTurn } from './orchestrator-cha
 import { appendJsonl, readJsonl, writeJsonl } from './runtime-persistence';
 import type { BeadIssue } from './types';
 
+/** Maximum runtime console events kept in memory per project */
+const MAX_EVENTS = 1000;
+
 export interface ProjectRuntimeState {
   projectRoot: string;
   orchestrator: RuntimeInstance;
   events: RuntimeConsoleEvent[];
   turns: ConversationTurnStore;
   updatedAt: string;
+  dismissedBlockedIds: Set<string>;
 }
 
 export interface HostDaemonStatus {
@@ -55,6 +59,7 @@ export class EmbeddedPiDaemon {
       events: persistedEvents,
       turns: turnStore,
       updatedAt: new Date().toISOString(),
+      dismissedBlockedIds: new Set<string>(),
     };
     this.projects.set(projectRoot, state);
     return state;
@@ -121,6 +126,7 @@ export class EmbeddedPiDaemon {
       timestamp: new Date().toISOString(),
     };
     state.events.unshift(fullEvent);
+    if (state.events.length > 1000) state.events.length = 1000;
     state.updatedAt = new Date().toISOString();
     try {
       appendJsonl(projectRoot, 'events.jsonl', fullEvent);
@@ -168,6 +174,35 @@ export class EmbeddedPiDaemon {
 
   listTurns(projectRoot: string): ConversationTurn[] {
     return this.projects.get(projectRoot)?.turns.listTurns() ?? [];
+  }
+
+  // --- Blocked event methods ---
+
+  getBlockedCount(projectRoot: string): number {
+    const state = this.projects.get(projectRoot);
+    if (!state) return 0;
+    return state.events.filter(
+      (e) =>
+        (e.status === 'blocked' || e.kind.toLowerCase().includes('blocked')) &&
+        !state.dismissedBlockedIds.has(e.id)
+    ).length;
+  }
+
+  dismissBlocked(projectRoot: string, eventId: string): void {
+    const state = this.projects.get(projectRoot);
+    if (!state) return;
+    state.dismissedBlockedIds.add(eventId);
+    state.updatedAt = new Date().toISOString();
+  }
+
+  listBlockedEvents(projectRoot: string): RuntimeConsoleEvent[] {
+    const state = this.projects.get(projectRoot);
+    if (!state) return [];
+    return state.events.filter(
+      (e) =>
+        (e.status === 'blocked' || e.kind.toLowerCase().includes('blocked')) &&
+        !state.dismissedBlockedIds.has(e.id)
+    );
   }
 
   getStatus(): HostDaemonStatus {

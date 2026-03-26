@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
-import { LayoutGrid, Lock, Plus, Rocket, Sidebar, SidebarClose } from 'lucide-react';
+import { AlertTriangle, LayoutGrid, Lock, Plus, Rocket, Sidebar, SidebarClose } from 'lucide-react';
 import { useUrlState } from '../../hooks/use-url-state';
 import { useResponsive } from '../../hooks/use-responsive';
 import { ThemeToggle } from './theme-toggle';
@@ -19,6 +19,8 @@ export interface TopBarProps {
   onActorChange?: (name: string) => void;
   onLaunchSwarm?: () => void;
   onOpenBlockedTriage?: () => void;
+  blockedEventCount?: number;
+  onBlockedIndicatorClick?: () => void;
 }
 
 interface MetricTileProps {
@@ -89,6 +91,8 @@ export function TopBar({
   onActorChange,
   onLaunchSwarm,
   onOpenBlockedTriage,
+  blockedEventCount = 0,
+  onBlockedIndicatorClick,
 }: TopBarProps) {
   const { leftPanel, toggleLeftPanel, rightPanel, toggleRightPanel, blockedOnly, toggleBlockedOnly } = useUrlState();
   const { isDesktop } = useResponsive();
@@ -126,6 +130,25 @@ export function TopBar({
       </div>
 
       <div className="mr-3 flex items-center gap-2">
+        {blockedEventCount > 0 && (
+          <button
+            type="button"
+            onClick={onBlockedIndicatorClick}
+            title={`${blockedEventCount} agent${blockedEventCount === 1 ? '' : 's'} blocked — click to view`}
+            className="relative inline-flex items-center gap-1.5 rounded-lg border border-amber-500/50 bg-amber-500/15 px-2.5 py-1.5 text-xs font-semibold text-amber-300 transition-colors hover:bg-amber-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+            data-testid="blocked-event-indicator"
+            aria-label={`${blockedEventCount} agent${blockedEventCount === 1 ? '' : 's'} blocked — click to view`}
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+            </span>
+            <AlertTriangle className="h-3 w-3" aria-hidden="true" />
+            <span className="hidden sm:inline">{blockedEventCount} Blocked</span>
+            <span className="sm:hidden">{blockedEventCount}</span>
+          </button>
+        )}
+
         {children ?? (
           <>
 <button

@@ -47,7 +47,7 @@ export async function detectPiRuntimeStrategy(params: {
   const cwd = params.cwd ?? process.cwd();
   const version = params.version ?? '0.1.0';
   const home = params.home ?? os.homedir();
-  const globalPiRoot = params.globalPiRoot ?? '/home/clawdbot/npm-global/lib/node_modules/@mariozechner/pi-coding-agent';
+  const globalPiRoot = params.globalPiRoot ?? path.join(home, 'npm-global', 'lib', 'node_modules', '@mariozechner', 'pi-coding-agent');
   const allowLinkedPi = params.allowLinkedPi ?? false;
 
   const localSdkPath = path.join(cwd, 'node_modules', '@mariozechner', 'pi-coding-agent', 'dist', 'index.js');
