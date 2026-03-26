@@ -1,7 +1,7 @@
 # BeadBoard Embedded Pi Roadmap
 
 **Date:** 2026-03-05
-**Last Updated:** 2026-03-07
+**Last Updated:** 2026-03-26
 **Companion PRD:** `docs/plans/2026-03-05-embedded-pi-prd.md`
 **Purpose:** Track what has already shipped for Embedded Pi in BeadBoard, what is partially complete, and what remains to reach the full PRD vision.
 
@@ -9,7 +9,7 @@
 
 ## Current status
 
-**Phase 3 COMPLETE - Testing in progress.**
+**Phase 3 COMPLETE. Epic 0cf (Core Reliability) P0 COMPLETE (2026-03-26).**
 
 We now have:
 - ✅ Working embedded orchestrator with BeadBoard tools
@@ -19,16 +19,16 @@ We now have:
 - ✅ **Bead-required workflow** - every worker task has a bead
 - ✅ **Async worker coordination** - non-blocking spawn, check status, read results
 - ✅ **File verification pattern** - orchestrator reads actual files to verify work
-
-**Currently testing:**
-- Worker claims bead, updates, closes correctly
-- Orchestrator can check worker status mid-task
-- Orchestrator can get results and verify via file reads
+- ✅ **First-class conversation turns** - ConversationTurnStore replaces event string-matching (no double-reply, no 40-event cap)
+- ✅ **State persistence** - events, turns, workers persist to `.beadboard/runtime/` JSONL, survive refresh
+- ✅ **Async tool handlers** - all execFileSync in src/tui/tools/ replaced with async execFile
+- ✅ **27 new tests** - orchestrator-chat (14) + runtime-persistence (13)
 
 **Biggest remaining gaps:**
 - Phase 4: Launch-anywhere UX (spawn from task cards, graph nodes)
 - Phase 5: Agent presence in social/graph views
-- Tests and verification
+- Epic 1zb: Orchestrator UX (onboarding, BLOCKED notifications, stop/restart)
+- Epic 7gx: Agent Visibility
 
 ---
 
@@ -69,8 +69,14 @@ We now have:
 - Left panel supports orchestrator mode
 - Left panel now renders chat-style bubbles instead of raw telemetry cards
 - User prompts can appear immediately in chat
-- Assistant replies are projected from Pi session/runtime events
+- ~~Assistant replies are projected from Pi session/runtime events~~ → Replaced by ConversationTurnStore (2026-03-26)
 - Session/runtime errors are kept out of the main chat transcript surface
+
+### Done: Epic 0cf Core Reliability (2026-03-26)
+- **beadboard-0cf.1:** ConversationTurnStore replaces event-based chat projection — no string-matching, no double-reply, no 40-event cap. New SSE `/api/runtime/turns` and `/api/runtime/stream` endpoints.
+- **beadboard-0cf.2:** State persistence to `.beadboard/runtime/` JSONL files (events.jsonl, turns.jsonl, workers.jsonl). Write-through on every mutation, restore on server startup.
+- **beadboard-0cf.3:** All `execFileSync` in `src/tui/tools/` replaced with async `execFile`. Zero blocking subprocess calls.
+- 27 new tests (14 orchestrator-chat + 13 runtime-persistence)
 
 ### Done: Realtime / event-ingestion hardening
 - Duplicate runtime-event ingestion was debugged and deduped in the app shell
@@ -205,27 +211,36 @@ What is still missing:
 ---
 
 ## Phase 6 - Runtime hardening and persistence
-**Status:** Partially done
+**Status:** Partially done — persistence shipped (Epic 0cf.2), async tool handlers shipped (0cf.3)
+
+### Shipped (2026-03-26)
+- ✅ State persistence to `.beadboard/runtime/` JSONL (events, turns, workers)
+- ✅ Write-through on every mutation, restore on startup
+- ✅ All execFileSync replaced with async execFile in tool handlers
+- ✅ Worker state restored on restart (in-progress → failed with "Server restarted")
 
 ### Remaining work
 1. Reduce drift between TUI Pi loader path and embedded Pi loader path
 2. Harden reconnect/restart behavior for embedded sessions
 3. Improve stuck/hung agent diagnostics
 4. Clarify true host-daemon vs in-process lifecycle direction
-5. Strengthen project-scoped persistence and restoration guarantees
 
 ---
 
 ## Phase 7 — Tests and verification
-**Status:** Mostly not done
+**Status:** Partially done — 27 new tests shipped (Epic 0cf)
+
+### Shipped (2026-03-26)
+- ✅ ConversationTurnStore unit tests (8 tests)
+- ✅ EmbeddedPiDaemon turns integration tests (6 tests)
+- ✅ Runtime persistence tests (13 tests — appendJsonl, readJsonl, writeJsonl, restore)
 
 ### Remaining work
-1. Unit coverage for runtime path resolution / event projection / chat projection
-2. Contract tests for adapter and runtime event schemas
-3. Integration tests for orchestrator session creation + prompt flow
-4. UI tests for left-panel orchestrator chat behavior
-5. End-to-end tests for prompt → tool → reply flow
-6. Failure-path tests for runtime import/session/tool errors
+1. Contract tests for adapter and runtime event schemas
+2. Integration tests for orchestrator session creation + prompt flow
+3. UI tests for left-panel orchestrator chat behavior
+4. End-to-end tests for prompt → tool → reply flow
+5. Failure-path tests for runtime import/session/tool errors
 
 ---
 
@@ -350,24 +365,28 @@ The skill documentation was written before Phase 1-3 decisions:
 
 ## Summary
 
-**Phase 3 COMPLETE - Testing in progress.**
+**Phase 3 COMPLETE. Epic 0cf Core Reliability P0 COMPLETE.**
 
 What is proven now:
 - ✅ Embedded orchestrator runtime
 - ✅ Frontend prompt path
 - ✅ Realtime telemetry
-- ✅ Left-panel orchestrator chat
-- ✅ BeadBoard-aware tool execution
+- ✅ Left-panel orchestrator chat (ConversationTurnStore — no string-matching)
+- ✅ BeadBoard-aware tool execution (async, non-blocking)
 - ✅ Worker spawning with numbered instances
 - ✅ Agent types with capabilities
 - ✅ Template-based team spawning
 - ✅ Bead-required workflow
 - ✅ Async worker coordination
+- ✅ State persistence (survives refresh)
+- ✅ 27 new tests
 
 What remains:
+- Epic 1zb: Orchestrator UX (onboarding, BLOCKED notifications, stop/restart)
+- Epic 7gx: Agent Visibility
 - Phase 4: Launch-anywhere UX (spawn from task cards, graph nodes)
 - Phase 5: Agent presence in social/graph views
-- Phase 6: Runtime hardening
-- Phase 7: Tests and verification
+- Phase 6: Remaining runtime hardening (reconnect, diagnostics)
+- Phase 7: Remaining tests (contract, integration, e2e)
 - Phase 8: Unified Settings
 - Phase 9: Holistic skill update
