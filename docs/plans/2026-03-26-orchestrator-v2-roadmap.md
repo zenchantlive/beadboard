@@ -180,45 +180,68 @@ The critique identified that the original phasing mixed prerequisites with featu
 
 ### Phase 1: Agent Identity Contract
 **Effort**: Medium — this is architecture, not UI
-**Unblocks**: Phases 2, 3, 4, 5
+**Unblocks**: Phases 2a, 2b, 3, 4, 5
 **Regression risk**: LOW — new code, no existing behavior changed
 
-**Work:**
+This phase has two explicit parts. Part A (data model) must be proven by tests before Part B (shell consumers) begins. This prevents the phase from sprawling into ad hoc wiring.
+
+**Part A — Data model + hook:**
 1. Define `AgentState` interface: `{ id, displayName, agentTypeId, taskId, beadId, status, lastHeartbeat }`
 2. Build `useAgentState()` hook that derives live state from SSE runtime events
 3. Persist and restore from `workers.jsonl` (already exists) for refresh survival
-4. Expose at UnifiedShell level: `agents`, `agentsByTask`, `busyCount`, `idleCount`, `blockedAgentCount`
-5. Wire TopBar metrics to real counts (replacing hardcoded 0s)
+4. Expose: `agents`, `agentsByTask`, `busyCount`, `idleCount`, `blockedAgentCount`
 
-**Required tests:**
+**Part A tests (must pass before Part B starts):**
 - Hook unit tests: derives correct agent states from event sequences
 - Refresh survival: restored workers populate initial state
 - Count accuracy: busy/idle/blocked counts match expected given known events
+- SSE resubscribe after restart/reconnect does not duplicate agents or inflate counts
 
-**Exit criteria**: `useAgentState()` works, TopBar shows real agent counts, tests pass.
+**Part A exit criteria**: `useAgentState()` works in isolation with tests. No shell wiring yet.
 
-### Phase 2: Right Panel Context + Blocked Triage
-**Effort**: Medium-Large
-**Unblocks**: Flows 3, 7
-**Depends on**: Phase 1 (agent data for `?agent=X` and triage assignment)
+**Part B — Shell consumers:**
+5. Mount `useAgentState()` at UnifiedShell level
+6. Wire TopBar metrics to real counts (replacing hardcoded 0s)
 
-Blocked triage is promoted to this phase because the release narrative positions blocked visibility as core. A release that detects blocked status but gives no triage workflow is incomplete.
+**Part B exit criteria**: TopBar shows real agent counts derived from Part A hook.
+
+### Phase 2a: Right Panel Context Routing
+**Effort**: Medium
+**Unblocks**: Flows 7, and Phase 2b + Phase 4 (both need a right panel destination)
+**Depends on**: Phase 1 Part A (agent data for `?agent=X` branch)
 
 **Work:**
 1. Extend ContextualRightPanel to accept and branch on `taskId`, `agentId`, `swarmId`
 2. `?task=X` → task thread + assigned agent (from Phase 1 data) + reassign affordance
 3. `?swarm=X` → MissionInspector (already exists, just wire it)
 4. `?agent=X` → agent details + current task + status from `useAgentState()`
-5. Build BlockedTriageModal: list of blocked tasks, blocker chain via `buildBlockedByTree`, inline agent assignment using Phase 1 data
-6. Wire TopBar blocked indicator to open BlockedTriageModal
 
 **Required tests:**
 - Right panel renders correct content for each URL context
 - Selection changes update right panel without full re-render
+- Deselection returns to ActivityPanel default (Phase 0)
+
+**Exit criteria**: Clicking any entity shows its detail in the right panel.
+
+### Phase 2b: Blocked Triage Workflow
+**Effort**: Medium
+**Unblocks**: Flow 3
+**Depends on**: Phase 1 (agent data for assignment), Phase 2a (right panel routing for drill-down)
+
+Separated from 2a because this is a standalone modal + assignment workflow, not panel routing. Both land before v0.2.0 but they are independently shippable and testable.
+
+**Work:**
+1. Build BlockedTriageModal: list of blocked tasks, blocker chain via `buildBlockedByTree`
+2. Inline agent assignment using Phase 1 data
+3. Wire TopBar blocked indicator to open BlockedTriageModal (currently navigates to orchestrator)
+4. Drill-down from triage modal to `?task=X` right panel (Phase 2a)
+
+**Required tests:**
 - BlockedTriageModal shows correct blocker chains
 - Agent assignment from triage modal updates bead state
+- Triage modal → task drill-down navigates correctly
 
-**Exit criteria**: Clicking any entity shows its detail in the right panel. Blocked button opens triage modal. Agent assignment works inline.
+**Exit criteria**: Blocked button opens triage modal. Blocker chains visible. Agent assignment works inline.
 
 ### Phase 3: Agent Presence
 **Effort**: Medium-Large — the most impactful visual change
@@ -248,7 +271,7 @@ Blocked triage is promoted to this phase because the release narrative positions
 ### Phase 4: Completion Notifications + Minimal Review Surface
 **Effort**: Medium
 **Unblocks**: Flows 2, 5, 6
-**Depends on**: Phase 2 (right panel context gives notifications a destination)
+**Depends on**: Phase 2a (right panel context gives notifications a destination)
 
 Notifications are sequenced after right panel context so they have somewhere to land. A "task completed" notification that opens the right panel to show what changed is useful. A notification with no destination is noise.
 
@@ -257,13 +280,16 @@ Notifications are sequenced after right panel context so they have somewhere to 
 2. Add green "completed" badge to TopBar (count of recently completed, clears on view)
 3. Auto-append completion summary as assistant turn in orchestrator chat
 4. Clicking notification navigates to `?task=X` → right panel shows task thread with completion evidence
-5. Minimal review surface in right panel: files changed list (from bead notes), accept (close bead) or reopen button
+5. Minimal review surface in right panel: files changed list + accept (close bead) or reopen button
+
+**Review evidence source: bead notes only.** The accept/reopen path uses `bd show <id>` notes field as the review evidence. This is not a diff view — it shows whatever the agent recorded as evidence (commands run, files changed, test output). The agent is responsible for writing good notes; the review surface just displays them. Full diff-quality review (Dolt-based) is Phase 6/v0.3.0.
 
 **Required tests:**
 - Completion badge appears when worker finishes
 - Badge count decrements after user clicks through
 - Right panel shows completion evidence for finished task
 - Accept/reopen buttons update bead status
+- SSE resubscribe after restart does not re-emit already-seen completions
 
 **Exit criteria**: When an agent finishes, the user sees it without asking, can click through to see what was done, and can accept or reopen.
 
@@ -309,6 +335,7 @@ Full diff view, Dolt-based session replay, cost visibility. Not blocking v0.2.0 
 - [ ] Right panel content updates on selection change without full page re-render
 - [ ] No stale state visible after orchestrator restart (memory and disk cleared)
 - [ ] Conversations with 100+ turns render without visible lag
+- [ ] Restart/reconnect does not duplicate completion or blocked notifications after SSE resubscribe
 
 ### Quality
 - [ ] 0 typecheck errors (done)
