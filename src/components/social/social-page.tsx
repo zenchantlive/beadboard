@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
+import type { SocialCard as SocialCardData } from '../../lib/social-cards';
 import { buildSocialCards } from '../../lib/social-cards';
 import { SocialCard } from './social-card';
 import { useArchetypes } from '../../hooks/use-archetypes';
@@ -33,6 +34,10 @@ interface CoordMessage {
 }
 
 type SectionKey = 'ready' | 'in_progress' | 'blocked' | 'deferred' | 'done';
+
+export function filterSocialCardsByBlockedOnly(cards: SocialCardData[], blockedOnly = false): SocialCardData[] {
+  return blockedOnly ? cards.filter((card) => card.status === 'blocked') : cards;
+}
 
 const SECTION_LABEL: Record<SectionKey, string> = {
   ready: 'Ready',
@@ -131,7 +136,7 @@ export function SocialPage({
   );
 
   const visibleCards = useMemo(
-    () => (blockedOnly ? orderedCards.filter((card) => card.status === 'blocked') : orderedCards),
+    () => filterSocialCardsByBlockedOnly(orderedCards, blockedOnly),
     [blockedOnly, orderedCards],
   );
 
@@ -315,14 +320,6 @@ export function SocialPage({
                             graphTab: 'flow',
                             task: id,
                             swarm: null,
-                            right: 'open',
-                            panel: 'open',
-                            drawer: 'closed',
-                          })
-                        }
-                        onJumpToActivity={(id) =>
-                          navigateWithParams({
-                            task: id,
                             right: 'open',
                             panel: 'open',
                             drawer: 'closed',

@@ -10,6 +10,7 @@ import { MissionInspector } from '../mission/mission-inspector';
 import { AgentStatusPanel } from '../agents/agent-status-panel';
 import { useSwarmList } from '../../hooks/use-swarm-list';
 import { useUrlState } from '../../hooks/use-url-state';
+import { resolveContextualRightPanelVariant, type ContextualRightPanelVariant } from './contextual-right-panel-utils';
 
 export interface ContextualRightPanelProps {
     epicId?: string | null;
@@ -24,8 +25,10 @@ export interface ContextualRightPanelProps {
 export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectRoot, actor, onMinimize }: ContextualRightPanelProps) {
     const { setTaskId } = useUrlState();
 
+    const variant: ContextualRightPanelVariant = resolveContextualRightPanelVariant({ epicId, taskId, swarmId });
+
     // Task conversation takes priority — user explicitly clicked the conversation icon
-    if (taskId) {
+    if (variant === 'task' && taskId) {
         const selectedIssue = issues.find(i => i.id === taskId) ?? null;
         return (
             <ThreadDrawer
@@ -42,7 +45,7 @@ export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectR
         );
     }
 
-    if (epicId) {
+    if (variant === 'epic' && epicId) {
         return (
             <div className="flex h-full flex-col overflow-hidden bg-[var(--surface-primary)]">
                 {onMinimize && (
@@ -74,7 +77,7 @@ export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectR
         );
     }
 
-    if (swarmId) {
+    if (variant === 'swarm' && swarmId) {
         return (
             <SwarmIdBranch
                 swarmId={swarmId}

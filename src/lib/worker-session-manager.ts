@@ -1,8 +1,17 @@
 import { detectPiRuntimeStrategy } from './pi-runtime-detection';
 import { ensureManagedPiSettings } from './bb-pi-bootstrap';
 import { embeddedPiDaemon } from './embedded-daemon';
+import { getProjectRuntimeId } from './embedded-runtime';
 import { getAgentTypes } from './server/beads-fs';
 import { readJsonl, writeJsonl } from './runtime-persistence';
+import {
+  bootstrapAgentStatesFromWorkers,
+  createAgentStateFromWorkerSnapshot,
+  reduceAgentState,
+  type AgentState,
+  type AgentStateBootstrapWorkerSnapshot,
+  type AgentStateEvent,
+} from './agent/state';
 import type { AgentType } from './types-swarm';
 import path from 'node:path';
 
@@ -104,6 +113,8 @@ function serializeWorker(worker: WorkerSession): SerializedWorker {
 
 class WorkerSessionManagerImpl {
   private workers = new Map<string, WorkerSession>();
+  private agentStates = new Map<string, AgentState>();
+  private bootstrappedProjects = new Set<string>();
   private nextWorkerId = 1;
 
   /**
@@ -121,12 +132,83 @@ class WorkerSessionManagerImpl {
     }
   }
 
+  private toBootstrapWorkerSnapshot(worker: SerializedWorker): AgentStateBootstrapWorkerSnapshot {
+    return {
+      id: worker.id,
+      projectId: worker.projectId,
+      agentTypeId: worker.agentTypeId ?? worker.archetypeId ?? null,
+      agentInstanceId: worker.agentInstanceId ?? null,
+      displayName: worker.displayName ?? null,
+      taskId: worker.taskId ?? null,
+      status: worker.status,
+      result: worker.result,
+      error: worker.error,
+      createdAt: worker.createdAt,
+      completedAt: worker.completedAt,
+    };
+  }
+
+  private ensureProjectBootstrapped(projectRoot: string): void {
+    if (this.bootstrappedProjects.has(projectRoot)) {
+      return;
+    }
+
+    embeddedPiDaemon.ensureProject(projectRoot);
+    this.restoreWorkers(projectRoot);
+    this.bootstrappedProjects.add(projectRoot);
+  }
+
+  private bootstrapAgentStates(projectRoot: string, workers: readonly SerializedWorker[]): void {
+    const workerStates = bootstrapAgentStatesFromWorkers(
+      workers.map((worker) => this.toBootstrapWorkerSnapshot(worker)),
+      embeddedPiDaemon.listEvents(projectRoot).filter((event) =>
+        event.kind === 'worker.spawned' ||
+        event.kind === 'worker.updated' ||
+        event.kind === 'worker.blocked' ||
+        event.kind === 'worker.completed' ||
+        event.kind === 'worker.failed'
+      ) as AgentStateEvent[],
+    );
+
+    workers.forEach((worker, index) => {
+      const state = workerStates[index];
+      if (state) {
+        this.agentStates.set(worker.id, state);
+      }
+    });
+  }
+
+  private recordAgentEvent(worker: WorkerSession, event: AgentStateEvent): void {
+    const stateKey = worker.id;
+    const existing = this.agentStates.get(stateKey);
+    const seed =
+      existing ??
+      createAgentStateFromWorkerSnapshot({
+        id: worker.id,
+        projectId: worker.projectId,
+        agentTypeId: worker.agentTypeId ?? worker.archetypeId ?? null,
+        agentInstanceId: worker.agentInstanceId ?? null,
+        displayName: worker.displayName ?? null,
+        taskId: worker.taskId ?? null,
+        status: worker.status,
+        result: worker.result,
+        error: worker.error,
+        createdAt: worker.createdAt,
+        completedAt: worker.completedAt,
+      });
+
+    this.agentStates.set(stateKey, reduceAgentState(seed, event));
+  }
+
   /**
    * Restore worker sessions from disk on startup.
    * Pi SDK sessions are gone; in-progress workers are marked failed.
    */
   restoreWorkers(projectRoot: string): void {
+    embeddedPiDaemon.ensureProject(projectRoot);
     const serialized = readJsonl<SerializedWorker>(projectRoot, 'workers.jsonl');
+    this.bootstrapAgentStates(projectRoot, serialized);
+
     for (const record of serialized) {
       const status: WorkerStatus =
         record.status === 'spawning' || record.status === 'working'
@@ -227,7 +309,7 @@ class WorkerSessionManagerImpl {
     this.persistWorkers(projectRoot);
 
     // Emit spawning event with agent instance info
-    embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
+    const spawnedEvent = embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
       kind: 'worker.spawned',
       title: displayName ? `${displayName} spawned` : `Worker spawned for ${taskId}`,
       detail: `Agent starting. Type: ${agentTypeId || 'default'}`,
@@ -240,6 +322,18 @@ class WorkerSessionManagerImpl {
         taskId,
       },
     });
+    this.recordAgentEvent(worker, {
+      id: spawnedEvent.id,
+      kind: spawnedEvent.kind,
+      projectId: spawnedEvent.projectId,
+      timestamp: spawnedEvent.timestamp,
+      status: spawnedEvent.status,
+      taskId: spawnedEvent.taskId ?? worker.taskId,
+      swarmId: spawnedEvent.swarmId ?? null,
+      actorLabel: spawnedEvent.actorLabel ?? displayName,
+      metadata: spawnedEvent.metadata ?? {},
+      detail: spawnedEvent.detail,
+    });
 
     // Spawn worker session asynchronously
     this.createWorkerSession(worker, taskContext, agentType, beadId).catch((error) => {
@@ -249,12 +343,24 @@ class WorkerSessionManagerImpl {
       worker.completedAt = new Date().toISOString();
       this.persistWorkers(projectRoot);
 
-      embeddedPiDaemon.appendEvent(projectRoot, {
+      const failedEvent = embeddedPiDaemon.appendEvent(projectRoot, {
         kind: 'worker.failed',
         title: displayName ? `${displayName} failed` : `Worker ${workerId} failed`,
         detail: worker.error,
         status: 'failed',
         metadata: { workerId, agentInstanceId, taskId },
+      });
+      this.recordAgentEvent(worker, {
+        id: failedEvent.id,
+        kind: failedEvent.kind,
+        projectId: failedEvent.projectId,
+        timestamp: failedEvent.timestamp,
+        status: failedEvent.status,
+        taskId: failedEvent.taskId ?? worker.taskId,
+        swarmId: failedEvent.swarmId ?? null,
+        actorLabel: failedEvent.actorLabel ?? displayName,
+        metadata: failedEvent.metadata ?? {},
+        detail: failedEvent.detail,
       });
     });
 
@@ -349,12 +455,24 @@ class WorkerSessionManagerImpl {
     });
 
     // Emit working event
-    embeddedPiDaemon.appendEvent(projectRoot, {
+    const workingEvent = embeddedPiDaemon.appendEvent(projectRoot, {
       kind: 'worker.updated',
       title: displayName ? `${displayName} started` : `Worker ${workerId} started`,
       detail: `Agent is now executing task ${taskId}`,
       status: 'working',
       metadata: { workerId, agentInstanceId: worker.agentInstanceId, taskId },
+    });
+    this.recordAgentEvent(worker, {
+      id: workingEvent.id,
+      kind: workingEvent.kind,
+      projectId: workingEvent.projectId,
+      timestamp: workingEvent.timestamp,
+      status: workingEvent.status,
+      taskId: workingEvent.taskId ?? worker.taskId,
+      swarmId: workingEvent.swarmId ?? null,
+      actorLabel: workingEvent.actorLabel ?? displayName,
+      metadata: workingEvent.metadata ?? {},
+      detail: workingEvent.detail,
     });
 
     // Send the task as initial prompt
@@ -367,11 +485,23 @@ class WorkerSessionManagerImpl {
       worker.completedAt = new Date().toISOString();
       this.persistWorkers(projectRoot);
 
-      embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
+      const failedEvent = embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
         kind: 'worker.failed',
         title: displayName ? `${displayName} failed` : `Worker ${workerId} failed`,
         detail: worker.error,
         status: 'failed',
+      });
+      this.recordAgentEvent(worker, {
+        id: failedEvent.id,
+        kind: failedEvent.kind,
+        projectId: failedEvent.projectId,
+        timestamp: failedEvent.timestamp,
+        status: failedEvent.status,
+        taskId: failedEvent.taskId ?? worker.taskId,
+        swarmId: failedEvent.swarmId ?? null,
+        actorLabel: failedEvent.actorLabel ?? displayName,
+        metadata: failedEvent.metadata ?? {},
+        detail: failedEvent.detail,
       });
     }
   }
@@ -458,11 +588,23 @@ ${agentSection}${beadWorkflow}## Instructions
           worker.error = lastMsg.errorMessage;
           this.persistWorkers(projectRoot);
 
-          embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
+          const failedEvent = embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
             kind: 'worker.failed',
             title: displayName ? `${displayName} failed` : `Worker ${workerId} failed`,
             detail: worker.error || 'Unknown error',
             status: 'failed',
+          });
+          this.recordAgentEvent(worker, {
+            id: failedEvent.id,
+            kind: failedEvent.kind,
+            projectId: failedEvent.projectId,
+            timestamp: failedEvent.timestamp,
+            status: failedEvent.status,
+            taskId: failedEvent.taskId ?? worker.taskId,
+            swarmId: failedEvent.swarmId ?? null,
+            actorLabel: failedEvent.actorLabel ?? displayName,
+            metadata: failedEvent.metadata ?? {},
+            detail: failedEvent.detail,
           });
         } else {
           // Extract result text
@@ -473,11 +615,23 @@ ${agentSection}${beadWorkflow}## Instructions
           worker.result = text.substring(0, 1000);
           this.persistWorkers(projectRoot);
 
-          embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
+          const completedEvent = embeddedPiDaemon.appendWorkerEvent(projectRoot, workerId, {
             kind: 'worker.completed',
             title: displayName ? `${displayName} completed` : `Worker ${workerId} completed`,
             detail: (worker.result || 'Completed').substring(0, 200),
             status: 'completed',
+          });
+          this.recordAgentEvent(worker, {
+            id: completedEvent.id,
+            kind: completedEvent.kind,
+            projectId: completedEvent.projectId,
+            timestamp: completedEvent.timestamp,
+            status: completedEvent.status,
+            taskId: completedEvent.taskId ?? worker.taskId,
+            swarmId: completedEvent.swarmId ?? null,
+            actorLabel: completedEvent.actorLabel ?? displayName,
+            metadata: completedEvent.metadata ?? {},
+            detail: completedEvent.detail,
           });
         }
       }
@@ -489,11 +643,18 @@ ${agentSection}${beadWorkflow}## Instructions
   }
 
   listWorkers(projectRoot: string): WorkerSession[] {
+    this.ensureProjectBootstrapped(projectRoot);
     return [...this.workers.values()].filter((w) => w.projectRoot === projectRoot);
   }
 
   getAllWorkers(): WorkerSession[] {
     return [...this.workers.values()];
+  }
+
+  listAgentStates(projectRoot: string): AgentState[] {
+    this.ensureProjectBootstrapped(projectRoot);
+    const projectId = getProjectRuntimeId(projectRoot);
+    return [...this.agentStates.values()].filter((state) => state.projectId === projectId);
   }
 
   async terminateWorker(workerId: string): Promise<void> {
@@ -513,12 +674,24 @@ ${agentSection}${beadWorkflow}## Instructions
     worker.completedAt = new Date().toISOString();
     this.persistWorkers(worker.projectRoot);
 
-    embeddedPiDaemon.appendEvent(worker.projectRoot, {
+    const failedEvent = embeddedPiDaemon.appendEvent(worker.projectRoot, {
       kind: 'worker.failed',
       title: worker.displayName ? `${worker.displayName} terminated` : `Worker ${workerId} terminated`,
       detail: 'Worker was manually terminated',
       status: 'failed',
       metadata: { workerId, agentInstanceId: worker.agentInstanceId, taskId: worker.taskId },
+    });
+    this.recordAgentEvent(worker, {
+      id: failedEvent.id,
+      kind: failedEvent.kind,
+      projectId: failedEvent.projectId,
+      timestamp: failedEvent.timestamp,
+      status: failedEvent.status,
+      taskId: failedEvent.taskId ?? worker.taskId,
+      swarmId: failedEvent.swarmId ?? null,
+      actorLabel: failedEvent.actorLabel ?? worker.displayName ?? worker.id,
+      metadata: failedEvent.metadata ?? {},
+      detail: failedEvent.detail,
     });
   }
 
@@ -562,6 +735,8 @@ ${agentSection}${beadWorkflow}## Instructions
   // For testing
   reset(): void {
     this.workers.clear();
+    this.agentStates.clear();
+    this.bootstrappedProjects.clear();
     this.nextWorkerId = 1;
   }
 }

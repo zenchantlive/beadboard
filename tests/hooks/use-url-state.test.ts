@@ -23,11 +23,12 @@ describe('useUrlState', () => {
         agentId: null,
         epicId: null,
         leftPanel: 'open',
+        leftSidebarMode: 'epics',
         rightPanel: 'open',
         blockedOnly: false,
         panel: 'open',
         drawer: 'closed',
-        graphTab: 'flow',
+        graphTab: 'overview',
       });
     });
 
@@ -84,7 +85,7 @@ describe('useUrlState', () => {
     it('falls back to default for invalid view and graph tab values', () => {
       const state = parseUrlState(createMockSearchParams({ view: 'invalid', graphTab: 'invalid' }));
       assert.strictEqual(state.view, 'social');
-      assert.strictEqual(state.graphTab, 'flow');
+      assert.strictEqual(state.graphTab, 'overview');
     });
   });
 

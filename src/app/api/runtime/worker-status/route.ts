@@ -6,13 +6,16 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const beadId = searchParams.get('beadId');
+    const projectRoot = searchParams.get('projectRoot');
 
     if (!beadId) {
       return NextResponse.json({ ok: false, error: 'beadId required' }, { status: 400 });
     }
 
     // Find worker for this bead
-    const workers = workerSessionManager.getAllWorkers();
+    const workers = projectRoot
+      ? workerSessionManager.listWorkers(projectRoot)
+      : workerSessionManager.getAllWorkers();
     const worker = workers.find(w => w.beadId === beadId);
 
     if (!worker) {

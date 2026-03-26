@@ -118,7 +118,7 @@ export class EmbeddedPiDaemon {
     return [...(this.projects.get(projectRoot)?.events ?? [])];
   }
 
-  appendEvent(projectRoot: string, event: Omit<RuntimeConsoleEvent, 'id' | 'timestamp' | 'projectId'>): void {
+  appendEvent(projectRoot: string, event: Omit<RuntimeConsoleEvent, 'id' | 'timestamp' | 'projectId'>): RuntimeConsoleEvent {
     const state = this.ensureProject(projectRoot);
     const fullEvent: RuntimeConsoleEvent = {
       ...event,
@@ -134,6 +134,7 @@ export class EmbeddedPiDaemon {
     } catch {
       // Best-effort: directory may not exist in test environments
     }
+    return fullEvent;
   }
 
   appendWorkerEvent(projectRoot: string, workerId: string, event: {
@@ -142,8 +143,8 @@ export class EmbeddedPiDaemon {
     detail: string;
     status?: RuntimeConsoleEvent['status'];
     metadata?: Record<string, unknown>;
-  }): void {
-    this.appendEvent(projectRoot, {
+  }): RuntimeConsoleEvent {
+    return this.appendEvent(projectRoot, {
       ...event,
       metadata: { workerId, ...(event.metadata || {}) },
     });

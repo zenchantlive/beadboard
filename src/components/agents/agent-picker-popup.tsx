@@ -1,6 +1,7 @@
 // src/components/agents/agent-picker-popup.tsx
 'use client';
 
+import React from 'react';
 import { useEffect, useRef } from 'react';
 import { Rocket, Brain, Wrench, Search, CheckCircle, FlaskConical, Upload } from 'lucide-react';
 import type { AgentArchetype } from '../../lib/types-swarm';

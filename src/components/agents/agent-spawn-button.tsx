@@ -1,6 +1,7 @@
 // src/components/agents/agent-spawn-button.tsx
 'use client';
 
+import React from 'react';
 import { Rocket, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import type { WorkerStatus } from './hooks/use-agent-status';
 

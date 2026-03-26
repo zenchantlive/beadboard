@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { isAgentStateEventKind, reduceAgentStates, summarizeAgentStates, type AgentState, type AgentStateEvent } from '../../lib/agent';
 import type { BeadIssue } from '../../lib/types';
 import type { ProjectScopeOption } from '../../lib/project-scope';
 import { buildLaunchRequest, createLaunchConsoleEvents, createOrchestratorInstance, createRuntimeConsoleEvent, getProjectRuntimeId, type RuntimeConsoleEvent, type RuntimeStatus } from '../../lib/embedded-runtime';
@@ -85,6 +86,7 @@ export function UnifiedShell({
   const [customRightPanel, setCustomRightPanel] = useState<React.ReactNode | null>(null);
   const [orchestrator, setOrchestrator] = useState(() => createOrchestratorInstance(projectRoot));
   const [runtimeEvents, setRuntimeEvents] = useState<RuntimeConsoleEvent[]>([]);
+  const [agentStates, setAgentStates] = useState<AgentState[]>([]);
   const [orchestratorTurns, setOrchestratorTurns] = useState<ConversationTurn[]>([]);
   const [daemonLifecycle, setDaemonLifecycle] = useState<{ status: RuntimeStatus | 'stopped' | 'starting' | 'stopping' | 'failed' } | null>(null);
 
@@ -116,6 +118,7 @@ export function UnifiedShell({
 
   const socialCards = useMemo(() => buildSocialCards(issues), [issues]);
   const blockedIds = useMemo(() => deriveBlockedIds(issues), [issues]);
+  const agentSummary = useMemo(() => summarizeAgentStates(agentStates), [agentStates]);
   const blockedCount = useMemo(() => {
     return issues.filter(i => i.status === 'blocked' || blockedIds.has(i.id)).length;
   }, [issues, blockedIds]);
@@ -170,19 +173,21 @@ export function UnifiedShell({
 
     async function bootstrapRuntime() {
       try {
-        const [statusResponse, orchestratorResponse, eventsResponse, turnsResponse] = await Promise.all([
+        const [statusResponse, orchestratorResponse, agentsResponse, eventsResponse, turnsResponse] = await Promise.all([
           fetch('/api/runtime/status'),
           fetch('/api/runtime/orchestrator', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ projectRoot }),
           }),
+          fetch(`/api/runtime/agents?projectRoot=${encodeURIComponent(projectRoot)}`),
           fetch(`/api/runtime/events?projectRoot=${encodeURIComponent(projectRoot)}`),
           fetch(`/api/runtime/turns?projectRoot=${encodeURIComponent(projectRoot)}`),
         ]);
 
         const statusPayload = await statusResponse.json().catch(() => null);
         const orchestratorPayload = await orchestratorResponse.json().catch(() => null);
+        const agentsPayload = await agentsResponse.json().catch(() => null);
         const eventsPayload = await eventsResponse.json().catch(() => null);
         const turnsPayload = await turnsResponse.json().catch(() => null);
 
@@ -198,6 +203,9 @@ export function UnifiedShell({
         }
         if (orchestratorPayload?.lifecycle) {
           setDaemonLifecycle(orchestratorPayload.lifecycle);
+        }
+        if (agentsResponse.ok && agentsPayload?.ok && Array.isArray(agentsPayload.agentStates)) {
+          setAgentStates(agentsPayload.agentStates);
         }
         if (eventsResponse.ok && eventsPayload?.ok && Array.isArray(eventsPayload.data)) {
           setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, eventsPayload.data));
@@ -238,6 +246,9 @@ export function UnifiedShell({
       try {
         const payload = JSON.parse(event.data) as RuntimeConsoleEvent;
         setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, [payload]));
+        if (isAgentStateEventKind(payload.kind)) {
+          setAgentStates((current) => reduceAgentStates(current, payload as AgentStateEvent));
+        }
       } catch {
         // Ignore malformed runtime frames.
       }
@@ -451,11 +462,12 @@ export function UnifiedShell({
   return (
     <div className="flex flex-col h-screen bg-[var(--surface-backdrop)]" data-testid="unified-shell">
       {/* TOP BAR: 3rem fixed */}
-<TopBar
+      <TopBar
         totalTasks={issues.filter(i => i.issue_type !== 'epic').length}
         criticalAlerts={blockedCount}
-        busyCount={issues.filter(i => i.status === 'in_progress').length}
-        idleCount={0}
+        blockedAgentCount={agentSummary.blockedCount}
+        busyCount={agentSummary.busyCount}
+        idleCount={agentSummary.idleCount}
         actor={actor}
         onActorChange={handleActorChange}
         onLaunchSwarm={() => { setTaskId(null); setAssignMode(true); }}

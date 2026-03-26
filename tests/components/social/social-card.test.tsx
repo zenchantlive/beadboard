@@ -1,5 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 describe('SocialCard Component', () => {
   it('exports SocialCard component', async () => {
@@ -39,5 +41,21 @@ describe('SocialCard Component', () => {
   it('renders view-jump icons', async () => {
     const mod = await import('../../../src/components/social/social-card');
     assert.ok(mod.SocialCard, 'SocialCard should render view-jump icons');
+  });
+
+  it('does not expose the deprecated activity jump action', async () => {
+    const fileContent = await fs.readFile(
+      path.join(process.cwd(), 'src/components/social/social-card.tsx'),
+      'utf-8',
+    );
+
+    assert.ok(
+      !fileContent.includes('onJumpToActivity'),
+      'SocialCard should not expose a deprecated activity jump handler',
+    );
+    assert.ok(
+      !fileContent.includes('aria-label="View details"'),
+      'SocialCard should not render the deprecated View details button',
+    );
   });
 });

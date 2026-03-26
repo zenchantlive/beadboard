@@ -13,6 +13,7 @@ export interface TopBarProps {
   children?: ReactNode;
   totalTasks?: number;
   criticalAlerts?: number;
+  blockedAgentCount?: number;
   idleCount?: number;
   busyCount?: number;
   actor?: string;
@@ -85,6 +86,7 @@ export function TopBar({
   children,
   totalTasks = 0,
   criticalAlerts = 0,
+  blockedAgentCount = 0,
   idleCount = 0,
   busyCount = 0,
   actor = '',
@@ -123,7 +125,7 @@ export function TopBar({
 
         <div className="hidden items-center gap-2 pl-2 md:flex">
           <MetricTile label="Total" value={totalTasks} accent="ready" />
-          <MetricTile label="Blocked" value={criticalAlerts} accent="blocked" />
+          <MetricTile label="Blocked" value={blockedAgentCount} accent="blocked" />
           <MetricTile label="Busy" value={busyCount} accent="warning" />
           <MetricTile label="Idle" value={idleCount} accent="info" />
         </div>

@@ -64,3 +64,19 @@ test('UnifiedShell - does not import SwarmMissionPicker', async () => {
   const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
   assert.ok(!fileContent.includes('SwarmMissionPicker'), 'Should NOT import SwarmMissionPicker (deprecated)');
 });
+
+test('UnifiedShell - mounts shared AgentState shell path', async () => {
+  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
+  assert.ok(fileContent.includes('const [agentStates, setAgentStates] = useState<AgentState[]>([])'), 'Should own agentStates at shell level');
+  assert.ok(fileContent.includes("fetch(`/api/runtime/agents?projectRoot=${encodeURIComponent(projectRoot)}`)"), 'Should bootstrap shared agent state from runtime agents route');
+  assert.ok(fileContent.includes('reduceAgentStates'), 'Should update shared agent state through canonical reducer');
+  assert.ok(fileContent.includes('summarizeAgentStates(agentStates)'), 'Should derive shared shell summary from agentStates');
+});
+
+test('UnifiedShell - no longer derives TopBar agent counts from issues or hardcoded idle zero', async () => {
+  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
+  assert.ok(!fileContent.includes("busyCount={issues.filter(i => i.status === 'in_progress').length}"), 'Should not derive busy agent count from issue status');
+  assert.ok(!fileContent.includes('idleCount={0}'), 'Should not hardcode idleCount to zero');
+  assert.ok(fileContent.includes('busyCount={agentSummary.busyCount}'), 'Should pass busy count from agent summary');
+  assert.ok(fileContent.includes('idleCount={agentSummary.idleCount}'), 'Should pass idle count from agent summary');
+});

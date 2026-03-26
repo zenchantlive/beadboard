@@ -17,7 +17,6 @@ interface SocialCardProps {
   selected?: boolean;
   onClick?: MouseEventHandler<HTMLDivElement>;
   onJumpToGraph?: (id: string) => void;
-  onJumpToActivity?: (id: string) => void;
   onOpenThread?: () => void;
   description?: string;
   updatedLabel?: string;
@@ -135,7 +134,6 @@ export function SocialCard({
   selected = false,
   onClick,
   onJumpToGraph,
-  onJumpToActivity,
   description,
   updatedLabel = 'just now',
   dependencyCount,
@@ -341,18 +339,6 @@ export function SocialCard({
               title="View dependency graph"
             >
               <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onJumpToActivity?.(data.id);
-              }}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--surface-tertiary)] text-[var(--accent-success)] transition-colors hover:bg-[var(--alpha-white-low)]"
-              aria-label="View details"
-              title="View details"
-            >
-              <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
             {onAskOrchestrator ? (
               <button

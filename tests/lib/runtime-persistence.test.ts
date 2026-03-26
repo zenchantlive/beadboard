@@ -5,15 +5,18 @@
  * EmbeddedPiDaemon's restore-from-disk behaviour in ensureProject.
  */
 
-import { describe, it, before, after, beforeEach } from 'node:test';
+import { describe, it, before, after, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { appendJsonl, readJsonl, writeJsonl } from '../../src/lib/runtime-persistence.js';
 import { EmbeddedPiDaemon } from '../../src/lib/embedded-daemon.js';
+import { embeddedPiDaemon } from '../../src/lib/embedded-daemon.js';
+import { workerSessionManager } from '../../src/lib/worker-session-manager.js';
 import type { ConversationTurn } from '../../src/lib/orchestrator-chat.js';
-import type { RuntimeConsoleEvent } from '../../src/lib/embedded-runtime.js';
+import { getProjectRuntimeId, type RuntimeConsoleEvent } from '../../src/lib/embedded-runtime.js';
+import { summarizeAgentStates } from '../../src/lib/agent/state.js';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -222,5 +225,157 @@ describe('EmbeddedPiDaemon restores turns from disk on ensureProject', () => {
     const events = daemon2.listEvents(dir);
     assert.equal(events.length, 1);
     assert.equal(events[0].title, 'Persist event');
+  });
+});
+
+describe('WorkerSessionManager bootstraps agent state from persisted workers before live events', () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = makeTempDir();
+    workerSessionManager.reset();
+    embeddedPiDaemon.resetForTests();
+  });
+
+  afterEach(() => {
+    workerSessionManager.reset();
+    embeddedPiDaemon.resetForTests();
+    removeTempDir(dir);
+  });
+
+  it('restores workers and seeds blocked agent state from persisted runtime events', () => {
+    const projectId = getProjectRuntimeId(dir);
+
+    writeJsonl(dir, 'workers.jsonl', [
+      {
+        id: 'worker-123',
+        projectId,
+        projectRoot: dir,
+        taskId: 'task-1',
+        beadId: 'bead-1',
+        status: 'working',
+        createdAt: '2026-03-26T00:00:00.000Z',
+        completedAt: null,
+        result: null,
+        error: null,
+        archetypeId: 'engineer',
+        agentTypeId: 'engineer',
+        agentInstanceId: 'engineer-01-abc123',
+        displayName: 'Engineer 01',
+      },
+    ]);
+
+    appendJsonl(dir, 'events.jsonl', {
+      id: 'evt-blocked-1',
+      projectId,
+      kind: 'worker.blocked',
+      title: 'Engineer 01 blocked',
+      detail: 'Waiting on approval',
+      timestamp: '2026-03-26T00:00:01.000Z',
+      status: 'blocked',
+      actorLabel: 'Engineer 01',
+      taskId: 'task-1',
+      swarmId: null,
+      metadata: {
+        workerId: 'worker-123',
+        agentInstanceId: 'engineer-01-abc123',
+        agentTypeId: 'engineer',
+        displayName: 'Engineer 01',
+        taskId: 'task-1',
+      },
+    } satisfies RuntimeConsoleEvent);
+
+    const workers = workerSessionManager.listWorkers(dir);
+    const agentStates = workerSessionManager.listAgentStates(dir);
+
+    assert.equal(workers.length, 1);
+    assert.equal(workers[0].status, 'failed');
+    assert.equal(workers[0].error, 'Server restarted');
+
+    assert.equal(agentStates.length, 1);
+    assert.equal(agentStates[0].status, 'blocked');
+    assert.equal(agentStates[0].blocker, 'Waiting on approval');
+    assert.equal(agentStates[0].lastEventKind, 'worker.blocked');
+    assert.equal(agentStates[0].taskId, 'task-1');
+  });
+
+  it('keeps one logical agent through restore plus live replay and preserves counts', () => {
+    const projectId = getProjectRuntimeId(dir);
+
+    writeJsonl(dir, 'workers.jsonl', [
+      {
+        id: 'worker-123',
+        projectId,
+        projectRoot: dir,
+        taskId: 'task-1',
+        beadId: 'bead-1',
+        status: 'working',
+        createdAt: '2026-03-26T00:00:00.000Z',
+        completedAt: null,
+        result: null,
+        error: null,
+        archetypeId: 'engineer',
+        agentTypeId: 'engineer',
+        agentInstanceId: 'engineer-01-abc123',
+        displayName: 'Engineer 01',
+      },
+    ]);
+
+    const restored = workerSessionManager.listAgentStates(dir);
+    const manager = workerSessionManager as unknown as {
+      recordAgentEvent: (worker: any, event: RuntimeConsoleEvent) => void;
+    };
+
+    manager.recordAgentEvent(
+      {
+        id: 'worker-123',
+        projectId,
+        projectRoot: dir,
+        taskId: 'task-1',
+        beadId: 'bead-1',
+        status: 'working',
+        session: null,
+        createdAt: '2026-03-26T00:00:00.000Z',
+        completedAt: null,
+        result: null,
+        error: null,
+        archetypeId: 'engineer',
+        agentTypeId: 'engineer',
+        agentInstanceId: 'engineer-01-abc123',
+        displayName: 'Engineer 01',
+      },
+      {
+        id: 'evt-blocked-live',
+        projectId,
+        kind: 'worker.blocked',
+        title: 'Engineer 01 blocked again',
+        detail: 'Waiting on approval after reconnect',
+        timestamp: '2026-03-26T00:00:02.000Z',
+        status: 'blocked',
+        actorLabel: 'Engineer 01',
+        taskId: 'task-1',
+        swarmId: null,
+        metadata: {
+          workerId: 'worker-123',
+          agentInstanceId: 'engineer-01-abc123',
+          agentTypeId: 'engineer',
+          displayName: 'Engineer 01',
+          taskId: 'task-1',
+        },
+      },
+    );
+
+    const agentStates = workerSessionManager.listAgentStates(dir);
+    const summary = summarizeAgentStates(agentStates);
+
+    assert.equal(restored.length, 1);
+    assert.equal(agentStates.length, 1);
+    assert.equal(agentStates[0].status, 'blocked');
+    assert.equal(agentStates[0].blocker, 'Waiting on approval after reconnect');
+    assert.deepEqual(agentStates[0].seenEventIds, ['worker-123:bootstrap', 'evt-blocked-live']);
+    assert.equal(summary.totalCount, 1);
+    assert.equal(summary.busyCount, 0);
+    assert.equal(summary.blockedCount, 1);
+    assert.equal(summary.idleCount, 0);
   });
 });

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'fs/promises';
 import path from 'path';
+import { resolveContextualRightPanelVariant } from '../../../src/components/activity/contextual-right-panel-utils';
 
 const NODE_CARD = path.join(process.cwd(), 'src/components/graph/graph-node-card.tsx');
 const RIGHT_PANEL = path.join(process.cwd(), 'src/components/activity/contextual-right-panel.tsx');
@@ -89,6 +90,40 @@ test('ContextualRightPanel - task branch onClose clears taskId', async () => {
   );
 });
 
+test('ContextualRightPanel - variant resolver falls back to activity when no selection exists', async () => {
+  assert.equal(
+    resolveContextualRightPanelVariant({ epicId: null, taskId: null, swarmId: null }),
+    'activity',
+    'No selection should render the default ActivityPanel branch',
+  );
+});
+
+test('ContextualRightPanel - task selection wins over epic and swarm selection', async () => {
+  assert.equal(
+    resolveContextualRightPanelVariant({ epicId: 'bb-epic', taskId: 'bb-task', swarmId: 'bb-swarm' }),
+    'task',
+    'Task conversation should stay highest priority when selection is cleared and re-applied',
+  );
+});
+
+test('ContextualRightPanel - epic and swarm selection resolve to their dedicated branches', async () => {
+  assert.equal(
+    resolveContextualRightPanelVariant({ epicId: 'bb-epic', taskId: null, swarmId: 'bb-swarm' }),
+    'epic',
+    'Epic selection should show the epic command feed when no task is selected',
+  );
+  assert.equal(
+    resolveContextualRightPanelVariant({ epicId: null, taskId: null, swarmId: 'bb-swarm' }),
+    'swarm',
+    'Swarm selection should show the mission inspector when epic and task selections are cleared',
+  );
+  assert.equal(
+    resolveContextualRightPanelVariant({ epicId: null, taskId: null, swarmId: null }),
+    'activity',
+    'Clearing the selection should return the right panel to the default ActivityPanel branch',
+  );
+});
+
 test('ContextualRightPanel - swarm branch onClose clears swarmId', async () => {
   const src = await fs.readFile(RIGHT_PANEL, 'utf-8');
   assert.ok(
@@ -97,16 +132,25 @@ test('ContextualRightPanel - swarm branch onClose clears swarmId', async () => {
   );
 });
 
-test('ContextualRightPanel - taskId if-branch appears before epicId if-branch', async () => {
+test('ThreadDrawer - uses shared StatusBadge for issue status rendering', async () => {
+  const src = await fs.readFile(path.join(process.cwd(), 'src/components/shared/thread-drawer.tsx'), 'utf-8');
+  assert.ok(src.includes("import { StatusBadge } from './status-badge';"), 'ThreadDrawer should reuse StatusBadge');
+  assert.ok(src.includes('<StatusBadge status={issue.status} size="sm" />'), 'Task summary should render the shared status badge');
+  assert.ok(src.includes('issue?.status ? <StatusBadge status={issue.status} size="sm" />'), 'Header status should render the shared status badge when issue data exists');
+});
+
+test('ContextualRightPanel - variant resolver is used to prioritize task over epic and swarm', async () => {
   const src = await fs.readFile(RIGHT_PANEL, 'utf-8');
-  const taskIfIdx = src.indexOf('if (taskId)');
-  const epicIfIdx = src.indexOf('if (epicId)');
-  assert.ok(taskIfIdx !== -1, 'must have an if (taskId) branch');
-  assert.ok(epicIfIdx !== -1, 'must have an if (epicId) branch');
-  assert.ok(
-    taskIfIdx < epicIfIdx,
-    'if (taskId) check must come before if (epicId) check — task conversation takes priority over epic feed when user clicks conversation icon in graph'
-  );
+  const resolverIdx = src.indexOf('resolveContextualRightPanelVariant');
+  const taskVariantIdx = src.indexOf("variant === 'task'");
+  const epicVariantIdx = src.indexOf("variant === 'epic'");
+  const swarmVariantIdx = src.indexOf("variant === 'swarm'");
+  assert.ok(resolverIdx !== -1, 'must use the shared variant resolver');
+  assert.ok(taskVariantIdx !== -1, 'must check for the task variant');
+  assert.ok(epicVariantIdx !== -1, 'must check for the epic variant');
+  assert.ok(swarmVariantIdx !== -1, 'must check for the swarm variant');
+  assert.ok(taskVariantIdx < epicVariantIdx, 'task variant must stay higher priority than epic');
+  assert.ok(epicVariantIdx < swarmVariantIdx, 'epic variant must stay higher priority than swarm');
 });
 
 // ── UnifiedShell: right panel always visible ─────────────────────────────────

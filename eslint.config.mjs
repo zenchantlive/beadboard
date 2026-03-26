@@ -13,6 +13,7 @@ const eslintConfig = [
       'nul',
       '.next/**',
       '.agents/**',
+      '.auto-claude/**',
       'skills/**',
       'reference/**',
       'next-env.d.ts',

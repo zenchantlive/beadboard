@@ -80,6 +80,26 @@ These are the actual things a human does with BeadBoard. Everything we build sho
 
 ---
 
+## Pi Runtime Boundary
+
+BeadBoard is not implementing an agent runtime from scratch. It is building an orchestration product on top of Pi session, tool-calling, and event-streaming primitives, then persisting and projecting that runtime state into BeadBoard-specific UI surfaces.
+
+**Pi-backed concerns:**
+- Session creation and lifecycle (`createAgentSession`, provider/model selection, runtime bootstrapping)
+- Assistant and tool event streaming
+- Worker session execution and completion/failure signaling
+- Transport/reconnect behavior that affects SSE delivery and deduplication
+
+**BeadBoard-owned concerns:**
+- Runtime console projections and persisted JSONL snapshots
+- Orchestrator chat turn store and right-panel destinations
+- Social/Graph presence rendering
+- Blocked triage, swarm launch UX, and review flows
+
+**Planning implication:** Phases 1, 3, and 4 are not pure shell work. They depend on correct Pi session/event behavior and should be verified against the Pi runtime boundary, not only against UI state.
+
+---
+
 ## What We Don't Have (Gaps)
 
 ### Gap 1: Agent Identity Data Contract (Shared Prerequisite)
@@ -99,6 +119,7 @@ Agent presence, busy/idle counts, agent details in the right panel, swarm launch
 - Survives page refresh (persisted worker state provides initial snapshot, SSE provides live updates)
 
 This contract must be defined and implemented before any UI feature that shows agent data.
+This is a BeadBoard projection layer over Pi worker/session events, not a replacement for Pi runtime state.
 
 ### Gap 2: Agent Presence (Biggest Visual Gap)
 **Blocks**: Flows 1, 5, 7
@@ -158,6 +179,8 @@ These are not trivial — they change how `UnifiedShell` routes state to child c
 
 The critique identified that the original phasing mixed prerequisites with feature work, sequenced notifications before they had a destination, and placed blocked triage too late for a release that calls blocked visibility core. This revision addresses all of those.
 
+**Critical path**: Phase 0 -> Phase 1 Part A -> Phase 1 Part B -> Phase 2a -> Phase 2b + Phase 3 -> Phase 4 -> Phase 5
+
 ### Phase 0: Shell Stabilization + Regression Tests
 **Effort**: Small-Medium (the fixes are small; the test coverage is not)
 **Unblocks**: Everything else
@@ -182,6 +205,7 @@ The critique identified that the original phasing mixed prerequisites with featu
 **Effort**: Medium — this is architecture, not UI
 **Unblocks**: Phases 2a, 2b, 3, 4, 5
 **Regression risk**: LOW — new code, no existing behavior changed
+**Pi touchpoint**: HIGH — this phase depends on Pi worker/session events and persisted worker restore semantics being interpreted correctly
 
 This phase has two explicit parts. Part A (data model) must be proven by tests before Part B (shell consumers) begins. This prevents the phase from sprawling into ad hoc wiring.
 
@@ -247,6 +271,7 @@ Separated from 2a because this is a standalone modal + assignment workflow, not 
 **Effort**: Medium-Large — the most impactful visual change
 **Unblocks**: Flows 1, 5
 **Depends on**: Phase 1 (AgentStateProvider)
+**Pi touchpoint**: MEDIUM — presence rendering is UI work, but its correctness depends on Pi-backed agent/session state being reduced correctly
 
 **Work:**
 1. SocialCard: render agent avatar + liveness dot using `agentsByTask` from Phase 1
@@ -272,6 +297,7 @@ Separated from 2a because this is a standalone modal + assignment workflow, not 
 **Effort**: Medium
 **Unblocks**: Flows 2, 5, 6
 **Depends on**: Phase 2a (right panel context gives notifications a destination)
+**Pi touchpoint**: HIGH — completion and reconnect behavior depend on Pi worker lifecycle events and transport semantics, not just TopBar/UI wiring
 
 Notifications are sequenced after right panel context so they have somewhere to land. A "task completed" notification that opens the right panel to show what changed is useful. A notification with no destination is noise.
 
@@ -296,7 +322,7 @@ Notifications are sequenced after right panel context so they have somewhere to 
 ### Phase 5: Swarm Launch UI
 **Effort**: Medium
 **Unblocks**: Flow 4
-**Depends on**: Phase 1 (agent types for template selection)
+**Depends on**: Phase 1 (agent types for template selection), Phase 2a (`?swarm=X` right-panel destination)
 
 **Work:**
 1. Add "Launch Swarm" button to epic rows in left panel
@@ -318,9 +344,9 @@ Full diff view, Dolt-based session replay, cost visibility. Not blocking v0.2.0 
 
 ### Functional
 - [ ] Agent presence visible on social cards and graph nodes (Phase 3)
-- [ ] Right panel responds to task/swarm/agent selection (Phase 2)
+- [ ] Right panel responds to task/swarm/agent selection (Phase 2a)
 - [ ] Blocked filter works end-to-end: TopBar toggle → SocialPage filters (Phase 0)
-- [ ] Blocked triage modal shows blocker chains with inline assignment (Phase 2)
+- [ ] Blocked triage modal shows blocker chains with inline assignment (Phase 2b)
 - [ ] Completion notifications with click-through to results (Phase 4)
 - [ ] Orchestrator chat is reliable — no double-replies, no lost messages (done)
 - [ ] State survives refresh — events, turns, workers persist (done)
@@ -354,6 +380,12 @@ Full diff view, Dolt-based session replay, cost visibility. Not blocking v0.2.0 
 - `src/lib/runtime-persistence.ts` — JSONL read/write/atomic
 - `src/lib/worker-session-manager.ts` — worker lifecycle
 - `src/lib/validate-project-root.ts` — path traversal protection
+
+### Pi upstream reference (source of runtime behavior)
+- `/Users/jordanhindo/agent-desktop/pi-mono/packages/agent/src/agent.ts` — Pi agent session lifecycle and event streaming
+- `/Users/jordanhindo/agent-desktop/pi-mono/packages/agent/src/types.ts` — Pi agent state and event contracts
+- `/Users/jordanhindo/agent-desktop/pi-mono/packages/ai/README.md` — provider/model/transport layer used underneath Pi sessions
+- `/Users/jordanhindo/agent-desktop/pi-mono/packages/web-ui/src/` — Pi UI/runtime interface patterns and browser-facing runtime surfaces
 
 ### UI (needs Phase 0-5 work)
 - `src/components/shared/unified-shell.tsx` — root layout, state hub, will host AgentStateProvider

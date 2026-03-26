@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     // 2. Add Labels (gt:agent, role:X)
     const updateRes = await runBdCommand({
       projectRoot,
-      args: ['update', agentId, '--add-label', `gt:agent,role:${role}`, '--json'],
+      args: ['update', agentId, '--add-label', 'gt:agent', '--add-label', `role:${role}`, '--json'],
     });
 
     if (!updateRes.success) {

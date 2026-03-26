@@ -12,6 +12,7 @@ import { buildEditableIssueDraft, buildIssueUpdatePayload, validateEditableIssue
 import type { UpdateMutationPayload } from '../../lib/mutations';
 import type { BeadIssue } from '../../lib/types';
 import { ThreadView, type ThreadItem } from './thread-view';
+import { StatusBadge } from './status-badge';
 import { useResponsive } from '../../hooks/use-responsive';
 
 interface ThreadDrawerProps {
@@ -279,7 +280,7 @@ export function ThreadDrawer({
           <p className="font-semibold text-[var(--ui-text-primary)]">{issue.title}</p>
           <p className="text-[var(--ui-text-muted)]">{issue.description ?? 'No description provided.'}</p>
           <div className="flex flex-wrap gap-2">
-            <Badge className="rounded-full border border-[var(--ui-accent-info)]/40 bg-[var(--ui-accent-info)]/20 text-[#d9f5ff]">{issue.status}</Badge>
+            <StatusBadge status={issue.status} size="sm" />
             <Badge className="rounded-full border border-[var(--ui-border-soft)] bg-[var(--ui-bg-panel)] text-[var(--ui-text-muted)]">P{issue.priority}</Badge>
             <Badge className="rounded-full border border-[var(--ui-border-soft)] bg-[var(--ui-bg-panel)] text-[var(--ui-text-muted)]">{issue.issue_type}</Badge>
             {issue.assignee ? <Badge className="rounded-full border border-[var(--ui-border-soft)] bg-[var(--ui-bg-panel)] text-[var(--ui-text-muted)]">@{issue.assignee}</Badge> : null}
@@ -414,12 +415,10 @@ export function ThreadDrawer({
         <header className="border-b border-[var(--ui-border-soft)] bg-[var(--ui-bg-shell)] px-4 py-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="mb-1 flex items-center gap-2">
-                <p className="font-mono text-xs font-semibold text-[var(--ui-accent-info)]">#{id}</p>
-                <span className="rounded-full border border-[var(--ui-accent-ready)]/45 bg-[var(--ui-accent-ready)]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#d8ffe8]">
-                  {issue?.status?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) ?? 'Unknown'}
-                </span>
-              </div>
+            <div className="mb-1 flex items-center gap-2">
+              <p className="font-mono text-xs font-semibold text-[var(--ui-accent-info)]">#{id}</p>
+              {issue?.status ? <StatusBadge status={issue.status} size="sm" /> : <span className="rounded-full border border-[var(--ui-accent-ready)]/45 bg-[var(--ui-accent-ready)]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#d8ffe8]">Unknown</span>}
+            </div>
               <h2 className="truncate text-[40px] font-semibold leading-[1.12] tracking-[-0.02em] text-[var(--ui-text-primary)]" title={title}>{title}</h2>
               <p className="mt-1 text-xs text-[var(--ui-text-muted)]">{threadItems.length} events</p>
             </div>

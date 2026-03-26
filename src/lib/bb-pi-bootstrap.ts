@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { getManagedPiPaths } from './pi-runtime-detection';
@@ -29,7 +30,7 @@ function getManagedShellPath(): string | null {
   }
 
   const candidates = ['/bin/sh', '/usr/bin/sh', '/bin/bash', '/usr/bin/bash'];
-  return candidates.find((candidate) => require('node:fs').existsSync(candidate)) ?? null;
+  return candidates.find((candidate) => existsSync(candidate)) ?? null;
 }
 
 export async function ensureManagedPiSettings(agentDir: string): Promise<void> {

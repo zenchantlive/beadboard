@@ -13,8 +13,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
+import { GET as getRuntimeAgents } from '../../src/app/api/runtime/agents/route.js';
+import { embeddedPiDaemon } from '../../src/lib/embedded-daemon.js';
+import { getProjectRuntimeId, type RuntimeConsoleEvent } from '../../src/lib/embedded-runtime.js';
 import { validateProjectRoot } from '../../src/lib/validate-project-root.js';
-import { readJsonl, writeJsonlAtomic, RUNTIME_DIR } from '../../src/lib/runtime-persistence.js';
+import { appendJsonl, readJsonl, writeJsonl, writeJsonlAtomic, RUNTIME_DIR } from '../../src/lib/runtime-persistence.js';
+import { workerSessionManager } from '../../src/lib/worker-session-manager.js';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -206,5 +210,80 @@ describe('writeJsonlAtomic', () => {
     const result = readJsonl<{ v: number }>(dir, 'overwrite-atomic.jsonl');
     assert.equal(result.length, 1);
     assert.equal(result[0].v, 99);
+  });
+});
+
+describe('GET /api/runtime/agents', () => {
+  let dir: string;
+
+  before(() => {
+    dir = makeTempDir();
+  });
+
+  after(() => {
+    workerSessionManager.reset();
+    embeddedPiDaemon.resetForTests();
+    removeTempDir(dir);
+  });
+
+  it('returns canonical AgentState summary and instances from the shared runtime contract', async () => {
+    workerSessionManager.reset();
+    embeddedPiDaemon.resetForTests();
+
+    const projectId = getProjectRuntimeId(dir);
+
+    writeJsonl(dir, 'workers.jsonl', [
+      {
+        id: 'worker-123',
+        projectId,
+        projectRoot: dir,
+        taskId: 'task-1',
+        beadId: 'bead-1',
+        status: 'working',
+        createdAt: '2026-03-26T00:00:00.000Z',
+        completedAt: null,
+        result: null,
+        error: null,
+        archetypeId: 'engineer',
+        agentTypeId: 'engineer',
+        agentInstanceId: 'engineer-01-abc123',
+        displayName: 'Engineer 01',
+      },
+    ]);
+
+    appendJsonl(dir, 'events.jsonl', {
+      id: 'evt-blocked-1',
+      projectId,
+      kind: 'worker.blocked',
+      title: 'Engineer 01 blocked',
+      detail: 'Waiting on approval',
+      timestamp: '2026-03-26T00:00:01.000Z',
+      status: 'blocked',
+      actorLabel: 'Engineer 01',
+      taskId: 'task-1',
+      swarmId: null,
+      metadata: {
+        workerId: 'worker-123',
+        agentInstanceId: 'engineer-01-abc123',
+        agentTypeId: 'engineer',
+        displayName: 'Engineer 01',
+        taskId: 'task-1',
+      },
+    } satisfies RuntimeConsoleEvent);
+
+    const response = await getRuntimeAgents(new Request(`http://localhost/api/runtime/agents?projectRoot=${encodeURIComponent(dir)}`));
+    const payload = await response.json();
+
+    assert.equal(payload.ok, true);
+    assert.equal(payload.summary.totalCount, 1);
+    assert.equal(payload.summary.busyCount, 0);
+    assert.equal(payload.summary.blockedCount, 1);
+    assert.equal(payload.status.totalActive, 1);
+    assert.equal(payload.status.instances.length, 1);
+    assert.equal(payload.status.instances[0].id, 'worker-123');
+    assert.equal(payload.status.instances[0].status, 'blocked');
+    assert.equal(payload.status.instances[0].currentBeadId, 'task-1');
+    assert.equal(payload.agentStates.length, 1);
+    assert.equal(payload.agentStates[0].status, 'blocked');
   });
 });

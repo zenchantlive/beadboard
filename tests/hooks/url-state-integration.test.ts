@@ -43,6 +43,13 @@ describe('URL State Integration - bb-ui2.22', () => {
       const state = parseUrlState(sp);
       assert.strictEqual(state.taskId, 'bb-ui2.22');
     });
+
+    it('/?view=social&blocked=1 - blocked-only social feed', () => {
+      const sp = createMockSearchParams({ view: 'social', blocked: '1' });
+      const state = parseUrlState(sp);
+      assert.strictEqual(state.view, 'social');
+      assert.strictEqual(state.blockedOnly, true);
+    });
   });
 
   describe('Valid URL Patterns - Graph View', () => {
@@ -132,7 +139,7 @@ describe('URL State Integration - bb-ui2.22', () => {
       assert.strictEqual(state.view, 'social');
     });
 
-    it('/?view=graph&graphTab=invalid - invalid graphTab defaults to flow', () => {
+    it('/?view=graph&graphTab=invalid - invalid graphTab defaults to overview', () => {
       const sp = createMockSearchParams({ view: 'graph', graphTab: 'invalid' });
       const state = parseUrlState(sp);
       assert.strictEqual(state.graphTab, 'overview');
@@ -156,6 +163,16 @@ describe('URL State Integration - bb-ui2.22', () => {
       const sp = createMockSearchParams({});
       const url = buildUrlParams(sp, { view: 'social' });
       assert.strictEqual(url, '/?view=social');
+    });
+
+    it('preserves blocked-only state when navigating back to social', () => {
+      const sp = createMockSearchParams({ view: 'graph', task: 'bb-buff.1', blocked: '1' });
+      const url = buildUrlParams(sp, { view: 'social' });
+      const parsed = parseUrlState(new URLSearchParams(url.replace(/^\//, '').replace(/^\?/, '')));
+
+      assert.strictEqual(parsed.view, 'social');
+      assert.strictEqual(parsed.blockedOnly, true);
+      assert.strictEqual(parsed.taskId, 'bb-buff.1');
     });
 
     it('builds graph view with task URL', () => {

@@ -25,21 +25,35 @@ interface CacheEntry<T> {
 
 const agentCache = new Map<string, CacheEntry<AgentRecord | null>>();
 const CACHE_TTL_MS = 30_000;
+type BdRunner = typeof runBdCommand;
 
-function getCachedAgent(beadId: string): AgentRecord | null | undefined {
-  const entry = agentCache.get(beadId);
+type AgentRegistryDeps = Partial<RegisterAgentDeps> & {
+  runBd?: BdRunner;
+};
+
+function getAgentCacheKey(projectRoot: string, beadId: string): string {
+  return `${projectRoot}::${beadId}`;
+}
+
+function getCachedAgent(projectRoot: string, beadId: string): AgentRecord | null | undefined {
+  const cacheKey = getAgentCacheKey(projectRoot, beadId);
+  const entry = agentCache.get(cacheKey);
   if (!entry) {
     return undefined;  // Cache miss
   }
   if (entry.expiresAt > Date.now()) {
     return entry.data;  // Valid cache hit (could be null or AgentRecord)
   }
-  agentCache.delete(beadId);  // Expired entry
+  agentCache.delete(cacheKey);  // Expired entry
   return null;  // Treat expired as miss
 }
 
-function setCachedAgent(beadId: string, data: AgentRecord | null): void {
-  agentCache.set(beadId, { data, expiresAt: Date.now() + CACHE_TTL_MS });
+function setCachedAgent(projectRoot: string, beadId: string, data: AgentRecord | null): void {
+  agentCache.set(getAgentCacheKey(projectRoot, beadId), { data, expiresAt: Date.now() + CACHE_TTL_MS });
+}
+
+function invalidateCachedAgent(projectRoot: string, beadId: string): void {
+  agentCache.delete(getAgentCacheKey(projectRoot, beadId));
 }
 
 function toBeadId(name: string): string {
@@ -82,28 +96,44 @@ function trimOrEmpty(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-async function callBdAgentShow(beadId: string, projectRoot: string): Promise<AgentRecord | null> {
-  const cached = getCachedAgent(beadId);
+async function readAgentBeadEntries(projectRoot: string, runBd: BdRunner): Promise<any[]> {
+  const listResult = await runBd({
+    projectRoot,
+    args: ['list', '--label', 'gt:agent', '--json'],
+    timeoutMs: 120_000,
+  });
+
+  if (!listResult.success) {
+    throw new Error(`Failed to list agents from bd: ${listResult.error}`);
+  }
+
+  return extractJsonArray(listResult.stdout);
+}
+
+async function callBdAgentShow(
+  beadId: string,
+  projectRoot: string,
+  runBd: BdRunner,
+  options: { refresh?: boolean } = {},
+): Promise<AgentRecord | null> {
+  if (options.refresh) {
+    invalidateCachedAgent(projectRoot, beadId);
+  }
+
+  const cached = getCachedAgent(projectRoot, beadId);
   if (cached !== undefined) {
     return cached;  // Valid cache hit (could be null or AgentRecord)
   }
-  
-  const showResult = await runBdCommand({
-    projectRoot,
-    args: ['agent', 'show', beadId, '--json'],
-  });
 
   let record: AgentRecord | null = null;
-  if (showResult.success) {
-    try {
-      const bdAgent = extractJson(showResult.stdout);
-      record = mapBdAgentToRecord(bdAgent);
-    } catch {
-      record = null;
-    }
+  try {
+    const beadRecord = (await readAgentBeadEntries(projectRoot, runBd)).find((entry) => entry.id === beadId) ?? null;
+    record = beadRecord ? mapBdAgentToRecord(beadRecord) : null;
+  } catch {
+    record = null;
   }
-  
-  setCachedAgent(beadId, record);
+
+  setCachedAgent(projectRoot, beadId, record);
   return record;
 }
 
@@ -193,13 +223,14 @@ function mapBdAgentToRecord(bdAgent: any): AgentRecord {
 
 export async function registerAgent(
   input: RegisterAgentInput,
-  deps: Partial<RegisterAgentDeps> = {},
+  deps: AgentRegistryDeps = {},
 ): Promise<AgentCommandResponse<AgentRecord>> {
   const command: AgentCommandName = 'agent register';
   const name = trimOrEmpty(input.name);
   const role = trimOrEmpty(input.role);
   const display = trimOrEmpty(input.display) || name;
   const projectRoot = deps.projectRoot || process.cwd();
+  const runBd = deps.runBd ?? runBdCommand;
 
   const agentIdError = validateAgentId(name);
   if (agentIdError) {
@@ -213,8 +244,8 @@ export async function registerAgent(
 
   try {
     const beadId = toBeadId(name);
-    
-    const showResult = await runBdCommand({
+
+    const showResult = await runBd({
       projectRoot,
       args: ['agent', 'show', beadId, '--json'],
     });
@@ -223,7 +254,7 @@ export async function registerAgent(
       return invalid(command, 'DUPLICATE_AGENT_ID', 'Agent is already registered. Use --force-update to change display/role.');
     }
 
-    const stateResult = await runBdCommand({
+    const stateResult = await runBd({
       projectRoot,
       args: ['agent', 'state', beadId, 'idle', '--json'],
     });
@@ -232,7 +263,16 @@ export async function registerAgent(
       return invalid(command, 'INTERNAL_ERROR', `Failed to set agent state: ${stateResult.error}`);
     }
 
-    const labels = ['gt:agent'];
+    const existingAgent = showResult.success
+      ? (await readAgentBeadEntries(projectRoot, runBd)).find((entry) => entry.id === beadId) ?? null
+      : null;
+    const existingLabels = Array.isArray(existingAgent?.labels)
+      ? existingAgent.labels.filter((label: unknown): label is string => typeof label === 'string')
+      : [];
+    const labels = existingLabels.filter(
+      (label: string) => label !== 'gt:agent' && !label.startsWith('role:') && !label.startsWith('rig:'),
+    );
+    labels.unshift('gt:agent');
     if (role) {
       labels.push(`role:${role}`);
     }
@@ -240,9 +280,12 @@ export async function registerAgent(
       labels.push(`rig:${input.rig}`);
     }
 
-    const updateArgs = ['update', beadId, '--title', `Agent: ${display}`, '--add-label', labels.join(',')];
+    const updateArgs = ['update', beadId, '--title', `Agent: ${display}`];
+    for (const label of labels) {
+      updateArgs.push('--set-labels', label);
+    }
 
-    const updateResult = await runBdCommand({
+    const updateResult = await runBd({
       projectRoot,
       args: [...updateArgs, '--json'],
     });
@@ -252,7 +295,7 @@ export async function registerAgent(
       return invalid(command, 'INTERNAL_ERROR', `Failed to update agent details: ${updateResult.error}`);
     }
 
-    const flushResult = await runBdCommand({
+    const flushResult = await runBd({
       projectRoot,
       args: ['admin', 'flush'],
     });
@@ -260,7 +303,7 @@ export async function registerAgent(
       console.error('Flush failed:', flushResult.error, flushResult.stdout, flushResult.stderr);
     }
 
-    const record = await callBdAgentShow(beadId, projectRoot);
+    const record = await callBdAgentShow(beadId, projectRoot, runBd, { refresh: true });
     if (!record) {
       return invalid(command, 'INTERNAL_ERROR', 'Failed to retrieve final agent state.');
     }
@@ -273,38 +316,23 @@ export async function registerAgent(
 
 export async function listAgents(
   input: ListAgentsInput,
-  deps: Partial<RegisterAgentDeps> = {},
+  deps: AgentRegistryDeps = {},
 ): Promise<AgentCommandResponse<AgentRecord[]>> {
   const command: AgentCommandName = 'agent list';
   const role = trimOrEmpty(input.role);
   const status = trimOrEmpty(input.status);
   const projectRoot = deps.projectRoot || process.cwd();
+  const runBd = deps.runBd ?? runBdCommand;
 
   try {
-    const listResult = await runBdCommand({
-      projectRoot,
-      args: ['list', '--label', 'gt:agent', '--json'],
-    });
-
-    if (!listResult.success) {
-      return invalid(command, 'INTERNAL_ERROR', `Failed to list agents from bd: ${listResult.error}`);
-    }
-
-    const rawList = extractJsonArray(listResult.stdout);
+    const rawList = await readAgentBeadEntries(projectRoot, runBd);
     if (rawList.length === 0) {
       return success(command, []);
     }
 
-    const agents: AgentRecord[] = [];
-    for (const item of rawList) {
-      const record = await callBdAgentShow(item.id, projectRoot);
-      if (record) {
-        if (role && record.role !== role) continue;
-        if (status && record.status !== status) continue;
-        
-        agents.push(record);
-      }
-    }
+    const agents = rawList
+      .map((item) => mapBdAgentToRecord(item))
+      .filter((record) => (!role || record.role === role) && (!status || record.status === status));
 
     return success(command, agents.sort((a, b) => a.agent_id.localeCompare(b.agent_id)));
   } catch (error) {
@@ -314,11 +342,12 @@ export async function listAgents(
 
 export async function showAgent(
   input: ShowAgentInput,
-  deps: Partial<RegisterAgentDeps> = {},
+  deps: AgentRegistryDeps = {},
 ): Promise<AgentCommandResponse<AgentRecord>> {
   const command: AgentCommandName = 'agent show';
   const name = trimOrEmpty(input.agent);
   const projectRoot = deps.projectRoot || process.cwd();
+  const runBd = deps.runBd ?? runBdCommand;
 
   const agentIdError = validateAgentId(name);
   if (agentIdError) {
@@ -327,7 +356,7 @@ export async function showAgent(
 
   try {
     const beadId = toBeadId(name);
-    const record = await callBdAgentShow(beadId, projectRoot);
+    const record = await callBdAgentShow(beadId, projectRoot, runBd);
 
     if (!record) {
       return invalid(command, 'AGENT_NOT_FOUND', 'Agent is not registered.');
@@ -341,12 +370,13 @@ export async function showAgent(
 
 export async function setAgentState(
   input: { agent: string; state: AgentZfcState },
-  deps: Partial<RegisterAgentDeps> = {},
+  deps: AgentRegistryDeps = {},
 ): Promise<AgentCommandResponse<AgentRecord>> {
   const command: AgentCommandName = 'agent state';
   const name = trimOrEmpty(input.agent);
   const state = input.state;
   const projectRoot = deps.projectRoot || process.cwd();
+  const runBd = deps.runBd ?? runBdCommand;
 
   const agentIdError = validateAgentId(name);
   if (agentIdError) {
@@ -356,7 +386,7 @@ export async function setAgentState(
   try {
     const beadId = toBeadId(name);
     
-    const stateResult = await runBdCommand({
+    const stateResult = await runBd({
       projectRoot,
       args: ['agent', 'state', beadId, state, '--json'],
     });
@@ -365,7 +395,7 @@ export async function setAgentState(
       return invalid(command, 'AGENT_NOT_FOUND', 'Agent is not registered.');
     }
 
-    const record = await callBdAgentShow(beadId, projectRoot);
+    const record = await callBdAgentShow(beadId, projectRoot, runBd, { refresh: true });
     if (!record) {
       return invalid(command, 'INTERNAL_ERROR', 'Failed to retrieve agent state after update.');
     }
@@ -395,11 +425,12 @@ export function deriveLiveness(lastSeenAt: string, now: Date = new Date(), stale
 
 export async function extendActivityLease(
   input: ActivityLeaseInput,
-  deps: Partial<RegisterAgentDeps> = {},
+  deps: AgentRegistryDeps = {},
 ): Promise<AgentCommandResponse<AgentRecord | null>> {
   const command: AgentCommandName = 'agent activity-lease';
   const name = trimOrEmpty(input.agent);
   const projectRoot = deps.projectRoot || process.cwd();
+  const runBd = deps.runBd ?? runBdCommand;
 
   const agentIdError = validateAgentId(name);
   if (agentIdError) {
@@ -409,7 +440,7 @@ export async function extendActivityLease(
   try {
     const beadId = toBeadId(name);
     
-    const wispResult = await runBdCommand({
+    const wispResult = await runBd({
       projectRoot,
       args: [
         'create', 

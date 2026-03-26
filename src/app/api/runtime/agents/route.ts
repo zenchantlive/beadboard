@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { workerSessionManager, type WorkerSession } from '../../../../lib/worker-session-manager';
+import { summarizeAgentStates } from '../../../../lib/agent/state';
+import { workerSessionManager } from '../../../../lib/worker-session-manager';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,32 +12,36 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, error: 'projectRoot required' });
   }
 
-  const workers = workerSessionManager.listWorkers(projectRoot);
-  
-  const instances = workers.map((w: WorkerSession) => ({
-    id: w.agentInstanceId || w.id,
-    agentTypeId: w.agentTypeId || 'unknown',
-    displayName: w.displayName || `Worker ${w.id}`,
-    status: w.status,
-    currentBeadId: w.taskId,
-    startedAt: w.createdAt,
-    completedAt: w.completedAt,
-    result: w.result,
-    error: w.error,
+  const agentStates = workerSessionManager.listAgentStates(projectRoot);
+  const summary = summarizeAgentStates(agentStates);
+  const activeAgentStates = agentStates.filter((state) => state.status !== 'completed' && state.status !== 'failed');
+
+  const instances = activeAgentStates.map((state) => ({
+    id: state.agentId,
+    agentTypeId: state.agentTypeId || 'unknown',
+    displayName: state.label || state.agentId,
+    status: state.status === 'launching' ? 'spawning' : state.status,
+    currentBeadId: state.taskId || undefined,
+    startedAt: state.lastEventAt || new Date(0).toISOString(),
+    completedAt: state.status === 'completed' || state.status === 'failed' ? state.lastEventAt || undefined : undefined,
+    result: state.result || undefined,
+    error: state.error || undefined,
   }));
 
   const byType: Record<string, number> = {};
-  for (const w of workers) {
-    const typeId = w.agentTypeId || 'unknown';
+  for (const state of activeAgentStates) {
+    const typeId = state.agentTypeId || 'unknown';
     byType[typeId] = (byType[typeId] || 0) + 1;
   }
 
   return NextResponse.json({
     ok: true,
     status: {
-      totalActive: workers.filter((w: WorkerSession) => w.status === 'working' || w.status === 'spawning').length,
+      totalActive: activeAgentStates.length,
       byType,
       instances,
     },
+    agentStates,
+    summary,
   });
 }
