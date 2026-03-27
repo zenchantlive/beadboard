@@ -26,6 +26,7 @@ artifacts/
 .beads/last-touched
 .beads/push-state.json
 .beads/dolt-pre-reconcile-*/
+.beads/dolt-corrupt-backup-*/
 
 # beadboard runtime artifacts
 .beadboard/
