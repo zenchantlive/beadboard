@@ -10,12 +10,22 @@ worktrees/
 # beads lock artifact
 .beads/.bv.lock
 .beads/.jsonl.lock
+.beads/backup/
+.beads/interactions.jsonl
 
 # local screenshot artifacts
 artifacts/
 
 # beads socket lock
 .beads/bd.sock.startlock
+.beads/dolt-server.lock
+.beads/dolt-server.log
+.beads/dolt-server.pid
+.beads/dolt-server.port
+.beads/.local_version
+.beads/last-touched
+.beads/push-state.json
+.beads/dolt-pre-reconcile-*/
 
 # beadboard runtime artifacts
 .beadboard/
@@ -50,6 +60,9 @@ test-*.ts
 .qodo/
 .gemini/
 .kilocode/
+.auto-claude/
+.auto-claude-security.json
+.claude_settings.json
 
 # Dolt database files (added by bd init)
 .dolt/
