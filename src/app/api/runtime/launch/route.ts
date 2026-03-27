@@ -13,7 +13,7 @@ function isLaunchSurface(value: string): value is LaunchSurface {
   return ['social', 'graph', 'swarm', 'sessions', 'activity', 'task'].includes(value);
 }
 
-export async function handleRuntimeLaunchPost(request: Request, deps: LaunchDeps = {}): Promise<Response> {
+async function handleRuntimeLaunchPost(request: Request, deps: LaunchDeps = {}): Promise<Response> {
   try {
     const body = await request.json();
     const projectRoot = typeof body?.projectRoot === 'string' ? body.projectRoot.trim() : '';

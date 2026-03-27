@@ -124,6 +124,13 @@ describe('URL State Integration - bb-ui2.22', () => {
       assert.strictEqual(state.agentId, 'bb-silver-castle');
     });
 
+    it('/?view=social&agent=bb-silver-castle - agent detail branch selection', () => {
+      const sp = createMockSearchParams({ view: 'social', agent: 'bb-silver-castle' });
+      const state = parseUrlState(sp);
+      assert.strictEqual(state.view, 'social');
+      assert.strictEqual(state.agentId, 'bb-silver-castle');
+    });
+
     it('/?view=activity&swarm=bb-buff - filtered by swarm', () => {
       const sp = createMockSearchParams({ view: 'activity', swarm: 'bb-buff' });
       const state = parseUrlState(sp);
@@ -193,6 +200,12 @@ describe('URL State Integration - bb-ui2.22', () => {
       assert.strictEqual(url, '/?view=activity&agent=bb-silver-castle');
     });
 
+    it('builds social view agent detail URL', () => {
+      const sp = createMockSearchParams({});
+      const url = buildUrlParams(sp, { view: 'social', agent: 'bb-silver-castle' });
+      assert.strictEqual(url, '/?view=social&agent=bb-silver-castle');
+    });
+
     it('preserves existing params when adding new ones', () => {
       const sp = createMockSearchParams({ view: 'social' });
       const url = buildUrlParams(sp, { task: 'bb-buff.1' });
@@ -200,8 +213,8 @@ describe('URL State Integration - bb-ui2.22', () => {
     });
 
     it('removes params when set to null', () => {
-      const sp = createMockSearchParams({ view: 'social', task: 'bb-buff.1', panel: 'open' });
-      const url = buildUrlParams(sp, { task: null, panel: 'closed' });
+      const sp = createMockSearchParams({ view: 'social', task: 'bb-buff.1', agent: 'bb-silver-castle', panel: 'open' });
+      const url = buildUrlParams(sp, { task: null, agent: null, panel: 'closed' });
       assert.strictEqual(url, '/?view=social&panel=closed');
     });
 

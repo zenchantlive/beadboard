@@ -236,24 +236,24 @@ export function useUrlState(): UrlState {
     const right = id ? 'open' : null;
     const drawer = openDrawer ? 'open' : null;
     // Clear swarm when setting task
-    updateUrl({ task: id, swarm: null, right, panel: right, drawer });
+    updateUrl({ task: id, swarm: null, agent: null, right, panel: right, drawer });
   }, [updateUrl]);
 
   const setSwarmId = useCallback((id: string | null, openDrawer?: boolean) => {
     const right = id ? 'open' : null;
     const drawer = openDrawer ? 'open' : null;
     // Clear task when setting swarm
-    updateUrl({ swarm: id, task: null, right, panel: right, drawer });
+    updateUrl({ swarm: id, task: null, agent: null, right, panel: right, drawer });
   }, [updateUrl]);
 
   const setAgentId = useCallback((id: string | null) => {
     const right = id ? 'open' : null;
-    updateUrl({ agent: id, right, panel: right });
+    updateUrl({ agent: id, task: null, swarm: null, epic: null, right, panel: right });
   }, [updateUrl]);
 
   const setEpicId = useCallback((id: string | null) => {
     // Selecting an epic clears any active task conversation so SwarmCommandFeed shows
-    updateUrl({ epic: id, task: null });
+    updateUrl({ epic: id, task: null, agent: null });
   }, [updateUrl]);
 
   const togglePanel = toggleRightPanel;
@@ -267,7 +267,7 @@ export function useUrlState(): UrlState {
   }, [updateUrl]);
 
   const clearSelection = useCallback(() => {
-    updateUrl({ task: null, swarm: null, epic: null, right: 'closed', panel: 'closed', drawer: 'closed' });
+    updateUrl({ task: null, swarm: null, agent: null, epic: null, right: 'closed', panel: 'closed', drawer: 'closed' });
   }, [updateUrl]);
 
   return {

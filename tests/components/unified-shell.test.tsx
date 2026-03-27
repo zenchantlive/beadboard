@@ -34,6 +34,11 @@ test('UnifiedShell - passes onSelectedIssueChange to SmartDag', async () => {
   assert.ok(fileContent.includes('onSelectedIssueChange'), 'Should pass onSelectedIssueChange to SmartDag');
 });
 
+test('UnifiedShell - passes agentId to ContextualRightPanel', async () => {
+  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
+  assert.ok(fileContent.includes('agentId={agentId}'), 'Should pass agentId so the right panel can render agent detail');
+});
+
 // Test that AssignmentPanel is imported
 test('UnifiedShell - imports AssignmentPanel', async () => {
   const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');

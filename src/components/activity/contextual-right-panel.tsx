@@ -8,39 +8,64 @@ import { SwarmCommandFeed } from './swarm-command-feed';
 import { ThreadDrawer } from '../shared/thread-drawer';
 import { MissionInspector } from '../mission/mission-inspector';
 import { AgentStatusPanel } from '../agents/agent-status-panel';
+import { AgentDetailPanel } from './agent-detail-panel';
+import { TaskAssignedAgentContext } from './task-assigned-agent-context';
 import { useSwarmList } from '../../hooks/use-swarm-list';
 import { useUrlState } from '../../hooks/use-url-state';
 import { resolveContextualRightPanelVariant, type ContextualRightPanelVariant } from './contextual-right-panel-utils';
+import type { AgentState } from '../../lib/agent';
 
 export interface ContextualRightPanelProps {
     epicId?: string | null;
     taskId?: string | null;
     swarmId?: string | null;
+    agentId?: string | null;
     issues: BeadIssue[];
+    agentStates?: readonly AgentState[];
     projectRoot: string;
     actor?: string;
     onMinimize?: () => void;
 }
 
-export function ContextualRightPanel({ epicId, taskId, swarmId, issues, projectRoot, actor, onMinimize }: ContextualRightPanelProps) {
-    const { setTaskId } = useUrlState();
+export function ContextualRightPanel({ epicId, taskId, swarmId, agentId, issues, agentStates = [], projectRoot, actor, onMinimize }: ContextualRightPanelProps) {
+    const { setTaskId, setAgentId } = useUrlState();
 
-    const variant: ContextualRightPanelVariant = resolveContextualRightPanelVariant({ epicId, taskId, swarmId });
+    const variant: ContextualRightPanelVariant = resolveContextualRightPanelVariant({ epicId, taskId, swarmId, agentId });
 
     // Task conversation takes priority — user explicitly clicked the conversation icon
     if (variant === 'task' && taskId) {
         const selectedIssue = issues.find(i => i.id === taskId) ?? null;
         return (
-            <ThreadDrawer
-                isOpen={true}
-                embedded={true}
-                onClose={() => setTaskId(null)}
-                title={selectedIssue?.title ?? taskId}
-                id={taskId}
-                issue={selectedIssue}
-                projectRoot={projectRoot}
-                actor={actor}
-                onIssueUpdated={async () => {}}
+            <div className="flex h-full flex-col overflow-hidden bg-[var(--surface-primary)]">
+                <TaskAssignedAgentContext
+                    taskId={taskId}
+                    agentStates={agentStates}
+                    issue={selectedIssue}
+                />
+                <div className="min-h-0 flex-1 overflow-hidden">
+                    <ThreadDrawer
+                        isOpen={true}
+                        embedded={true}
+                        onClose={() => setTaskId(null)}
+                        title={selectedIssue?.title ?? taskId}
+                        id={taskId}
+                        issue={selectedIssue}
+                        projectRoot={projectRoot}
+                        actor={actor}
+                        onIssueUpdated={async () => {}}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    if (variant === 'agent' && agentId) {
+        return (
+            <AgentDetailPanel
+                agentId={agentId}
+                agentStates={agentStates}
+                issues={issues}
+                onClose={() => setAgentId(null)}
             />
         );
     }

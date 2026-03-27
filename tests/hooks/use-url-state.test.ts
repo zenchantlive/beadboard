@@ -50,6 +50,14 @@ describe('useUrlState', () => {
       assert.strictEqual(state.epicId, 'bb-vt');
     });
 
+    it('parses agent selection without disturbing other defaults', () => {
+      const state = parseUrlState(createMockSearchParams({ agent: 'bb-silver-castle' }));
+      assert.strictEqual(state.agentId, 'bb-silver-castle');
+      assert.strictEqual(state.view, 'social');
+      assert.strictEqual(state.taskId, null);
+      assert.strictEqual(state.swarmId, null);
+    });
+
     it('parses explicit left/right panel params', () => {
       const state = parseUrlState(createMockSearchParams({ left: 'closed', right: 'open' }));
       assert.strictEqual(state.leftPanel, 'closed');
@@ -100,8 +108,13 @@ describe('useUrlState', () => {
       assert.strictEqual(url, '/?view=social&task=bb-vt.2.1');
     });
 
+    it('adds agent param', () => {
+      const url = buildUrlParams(createMockSearchParams({ view: 'social' }), { agent: 'bb-silver-castle' });
+      assert.strictEqual(url, '/?view=social&agent=bb-silver-castle');
+    });
+
     it('removes params when value is null', () => {
-      const url = buildUrlParams(createMockSearchParams({ view: 'social', task: 'bb-vt.2.1' }), { task: null });
+      const url = buildUrlParams(createMockSearchParams({ view: 'social', task: 'bb-vt.2.1', agent: 'bb-silver-castle' }), { task: null, agent: null });
       assert.strictEqual(url, '/?view=social');
     });
 
@@ -117,8 +130,8 @@ describe('useUrlState', () => {
 
     it('clears selection params and keeps view', () => {
       const url = buildUrlParams(
-        createMockSearchParams({ view: 'social', task: 'bb-vt.2.1', swarm: 'bb-vt', right: 'open', panel: 'open' }),
-        { task: null, swarm: null, right: 'closed', panel: 'closed' },
+        createMockSearchParams({ view: 'social', task: 'bb-vt.2.1', swarm: 'bb-vt', agent: 'bb-silver-castle', right: 'open', panel: 'open' }),
+        { task: null, swarm: null, agent: null, right: 'closed', panel: 'closed' },
       );
       assert.strictEqual(url, '/?view=social&right=closed&panel=closed');
     });

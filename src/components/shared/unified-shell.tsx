@@ -56,7 +56,7 @@ export function UnifiedShell({
   projectScopeOptions,
 }: UnifiedShellProps) {
   const router = useRouter();
-  const { view, taskId, setTaskId, swarmId, graphTab, drawer, setDrawer, epicId, setEpicId, blockedOnly } = useUrlState();
+  const { view, taskId, setTaskId, swarmId, graphTab, drawer, setDrawer, epicId, setEpicId, agentId, blockedOnly } = useUrlState();
   const [leftSidebarMode, setLeftSidebarMode] = useState<LeftSidebarMode>('epics');
 
   // Subscribe to SSE for real-time updates on ALL views
@@ -456,7 +456,7 @@ export function UnifiedShell({
     }
 
     // Default: ContextualRightPanel
-    return <ContextualRightPanel epicId={epicId} taskId={taskId} swarmId={swarmId} issues={issues} projectRoot={projectRoot} actor={actor} onMinimize={handleMinimize} />;
+    return <ContextualRightPanel epicId={epicId} taskId={taskId} swarmId={swarmId} agentId={agentId} issues={issues} agentStates={agentStates} projectRoot={projectRoot} actor={actor} onMinimize={handleMinimize} />;
   };
 
   return (
