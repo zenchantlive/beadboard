@@ -1,15 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Map, MessageSquare, Users, X, Activity } from 'lucide-react';
+import { AlertTriangle, Loader2, Map, MessageSquare, Users, X, Activity } from 'lucide-react';
 import { WorkflowGraph } from '../shared/workflow-graph';
 import { AgentAvatar } from '../shared/agent-avatar';
 import { useMissionGraph } from '../../hooks/use-mission-graph';
+import type { SwarmStatusFromApi } from '../../lib/swarm-api';
 import type { AgentRecord } from '../../lib/agent-registry';
+import { buildSwarmBulkCancelConfirmation } from '../../lib/swarm-bulk-cancel-shared';
 
 interface MissionInspectorProps {
   missionId: string;
@@ -30,6 +33,79 @@ export function MissionInspector({
 }: MissionInspectorProps) {
   const { nodes, isLoading: isGraphLoading } = useMissionGraph(projectRoot, missionId);
   const [activeTab, setActiveTab] = useState('map');
+  const [swarmStatus, setSwarmStatus] = useState<SwarmStatusFromApi | null>(null);
+  const [isStatusLoading, setIsStatusLoading] = useState(true);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [confirmationText, setConfirmationText] = useState('');
+  const [isBulkStopping, setIsBulkStopping] = useState(false);
+  const [bulkStopError, setBulkStopError] = useState<string | null>(null);
+  const [bulkStopMessage, setBulkStopMessage] = useState<string | null>(null);
+
+  const fetchSwarmStatus = useMemo(() => {
+    return async () => {
+      setIsStatusLoading(true);
+      setStatusError(null);
+      try {
+        const response = await fetch(
+          `/api/swarm/status?projectRoot=${encodeURIComponent(projectRoot)}&epic=${encodeURIComponent(missionId)}`
+        );
+        const payload = await response.json();
+        if (payload.ok && payload.data) {
+          setSwarmStatus(payload.data);
+          setConfirmationText('');
+        } else {
+          setStatusError(payload.error?.message || 'Failed to load swarm status');
+        }
+      } catch {
+        setStatusError('Failed to fetch swarm status');
+      } finally {
+        setIsStatusLoading(false);
+      }
+    };
+  }, [missionId, projectRoot]);
+
+  useEffect(() => {
+    void fetchSwarmStatus();
+  }, [fetchSwarmStatus]);
+
+  const activeWorkerCount = swarmStatus?.active.length ?? 0;
+  const confirmationPhrase = buildSwarmBulkCancelConfirmation(missionId, activeWorkerCount);
+  const canConfirmBulkStop = confirmationText.trim() === confirmationPhrase;
+
+  const handleBulkStop = async () => {
+    if (!projectRoot || !swarmStatus || activeWorkerCount === 0 || !canConfirmBulkStop || isBulkStopping) return;
+
+    setIsBulkStopping(true);
+    setBulkStopError(null);
+    setBulkStopMessage(null);
+    try {
+      const response = await fetch('/api/swarm/stop-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectRoot,
+          swarmId: missionId,
+          confirmation: confirmationText.trim(),
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error?.message || 'Failed to stop active workers');
+      }
+
+      const stoppedCount = Array.isArray(payload.data?.stoppedWorkerIds) ? payload.data.stoppedWorkerIds.length : 0;
+      setBulkStopMessage(
+        stoppedCount > 0
+          ? `Stopped ${stoppedCount} active worker${stoppedCount === 1 ? '' : 's'}.`
+          : 'No active workers were found to stop.',
+      );
+      await fetchSwarmStatus();
+    } catch (error) {
+      setBulkStopError(error instanceof Error ? error.message : 'Failed to stop active workers');
+    } finally {
+      setIsBulkStopping(false);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full bg-[#08111d] border-l border-slate-800 text-slate-200">
@@ -130,6 +206,67 @@ export function MissionInspector({
                     </div>
                   ))
                 )}
+
+                <div className="rounded-lg border border-rose-900/40 bg-rose-950/20 p-3 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-rose-300">Destructive Action</p>
+                      <p className="text-xs leading-relaxed text-slate-300">
+                        This stops only the active workers in this swarm. Completed, failed, and blocked workers are left untouched.
+                      </p>
+                    </div>
+                  </div>
+
+                  {isStatusLoading ? (
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Loading active worker state...
+                    </div>
+                  ) : statusError ? (
+                    <div className="rounded-md border border-rose-900/40 bg-rose-950/30 px-3 py-2 text-xs text-rose-300">
+                      {statusError}
+                    </div>
+                  ) : activeWorkerCount === 0 ? (
+                    <div className="rounded-md border border-slate-800 bg-slate-950/40 px-3 py-2 text-xs text-slate-500">
+                      No active workers are currently running in this swarm.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="rounded-md border border-slate-800 bg-slate-950/40 px-3 py-2 text-xs text-slate-400">
+                        Type <span className="font-mono text-rose-300">{confirmationPhrase}</span> to enable stop-all.
+                      </div>
+                      <div className="space-y-2">
+                        <Input
+                          value={confirmationText}
+                          onChange={(event) => setConfirmationText(event.target.value)}
+                          placeholder={confirmationPhrase}
+                          className="border-slate-800 bg-slate-950/60 text-slate-100 placeholder:text-slate-600"
+                          aria-label="Bulk cancel confirmation"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          className="w-full"
+                          disabled={!canConfirmBulkStop || isBulkStopping}
+                          onClick={() => void handleBulkStop()}
+                        >
+                          {isBulkStopping ? 'Stopping active workers...' : `Stop ${activeWorkerCount} active worker${activeWorkerCount === 1 ? '' : 's'}`}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+
+                  {bulkStopError ? (
+                    <div className="rounded-md border border-rose-900/40 bg-rose-950/30 px-3 py-2 text-xs text-rose-300">
+                      {bulkStopError}
+                    </div>
+                  ) : bulkStopMessage ? (
+                    <div className="rounded-md border border-emerald-900/40 bg-emerald-950/20 px-3 py-2 text-xs text-emerald-300">
+                      {bulkStopMessage}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </ScrollArea>
           </TabsContent>

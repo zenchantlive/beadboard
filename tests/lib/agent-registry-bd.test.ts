@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 
 import {
   extendActivityLease,
@@ -13,11 +13,23 @@ import {
   setAgentState,
 } from '../../src/lib/agent-registry';
 
+const BD_BIN = '/Users/jordanhindo/.local/bin/bd';
+const TEST_ENV = {
+  ...process.env,
+  PATH: `${path.dirname(process.execPath)}:${process.env.PATH || ''}`,
+  DOLT_EXECUTABLE: '/opt/homebrew/bin/dolt',
+};
+
 async function withTempProject(run: (projectRoot: string) => Promise<void>): Promise<void> {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'beadboard-agent-bd-test-'));
+  const databaseName = `bb_test_${path.basename(tempDir).replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase()}`;
   
   // Initialize bd rig
-  execSync('bd init --prefix bb --force', { cwd: tempDir, stdio: 'ignore' });
+  execFileSync(BD_BIN, ['init', '--prefix', 'bb', '--database', databaseName, '--force'], {
+    cwd: tempDir,
+    stdio: 'ignore',
+    env: TEST_ENV,
+  });
 
   try {
     await run(tempDir);
@@ -44,7 +56,7 @@ test('BD REGISTRY: registerAgent creates a bd agent bead', async () => {
     assert.equal(result.data?.status, 'idle');
 
     // Verify via direct bd call
-    const showRaw = execSync('bd agent show bb-test-agent --json', { cwd: projectRoot, encoding: 'utf8' });
+    const showRaw = execFileSync(BD_BIN, ['agent', 'show', 'bb-test-agent', '--json'], { cwd: projectRoot, encoding: 'utf8', env: TEST_ENV });
     const show = JSON.parse(showRaw);
     assert.equal(show.id, 'bb-test-agent');
     assert.equal(show.title, 'Agent: Test Agent Display');
@@ -103,7 +115,7 @@ test('BD REGISTRY: extendActivityLease emits wisp and preserves issue state', as
     assert.equal(beforeState, afterState, 'Durable issues.jsonl should NOT change during lease extension');
 
     // Verify wisp exists via direct bd list
-    const listRaw = execSync('bd list --wisp-type heartbeat --json', { cwd: projectRoot, encoding: 'utf8' });
+    const listRaw = execFileSync(BD_BIN, ['list', '--wisp-type', 'heartbeat', '--json'], { cwd: projectRoot, encoding: 'utf8', env: TEST_ENV });
     const wisps = JSON.parse(listRaw);
     assert.ok(wisps.length > 0, 'Heartbeat wisp should be present in the stream');
     assert.ok(wisps[0].title.startsWith('pulse:'), 'Wisp title should match pulse prefix');

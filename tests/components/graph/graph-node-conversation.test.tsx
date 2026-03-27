@@ -138,6 +138,8 @@ test('ContextualRightPanel - swarm branch onClose clears swarmId', async () => {
     src.includes('setSwarmId(null)') || src.includes('clearSelection'),
     'SwarmIdBranch onClose must call setSwarmId(null)'
   );
+  assert.ok(src.includes('missionId={swarmId}'), 'swarm branch should pass the selected swarm id into MissionInspector');
+  assert.ok(src.includes('missionTitle={missionTitle}'), 'swarm branch should preserve a readable mission title while the swarm list loads');
 });
 
 test('ThreadDrawer - uses shared StatusBadge for issue status rendering', async () => {
@@ -176,6 +178,11 @@ test('UnifiedShell - right panel NOT gated behind panel === open', async () => {
 test('UnifiedShell - passes taskId to ContextualRightPanel', async () => {
   const src = await fs.readFile(SHELL, 'utf-8');
   assert.ok(src.includes('taskId={taskId}'), 'must pass taskId so right panel shows conversation on selection');
+});
+
+test('UnifiedShell - passes swarmId to ContextualRightPanel', async () => {
+  const src = await fs.readFile(SHELL, 'utf-8');
+  assert.ok(src.includes('swarmId={swarmId}'), 'must pass swarmId so right panel can switch into the swarm detail branch');
 });
 
 // ── page.tsx: Suspense boundary for useSearchParams ──────────────────────────

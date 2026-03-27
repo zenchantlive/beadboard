@@ -99,3 +99,25 @@ test('ContextualRightPanel - task branch now includes task assigned agent contex
   assert.ok(src.includes('onClose={() => setTaskId(null)}'), 'task branch should preserve the existing close behavior');
   assert.ok(src.includes('AgentDetailPanel'), 'agent branch should render the shared agent detail panel');
 });
+
+test('TaskReviewPanel - closed tasks route into a minimal review destination with evidence and explicit accept/reopen actions', async () => {
+  const rightPanelSrc = await fs.readFile(path.join(process.cwd(), 'src/components/activity/contextual-right-panel.tsx'), 'utf-8');
+  assert.ok(rightPanelSrc.includes('TaskReviewPanel'), 'closed task selection should route into a dedicated review panel');
+  assert.ok(
+    rightPanelSrc.includes("selectedIssue?.status === 'closed'") || rightPanelSrc.includes("issue.status === 'closed'"),
+    'task branch should only switch into review mode for completed work',
+  );
+
+  const reviewSrc = await fs.readFile(path.join(process.cwd(), 'src/components/activity/task-review-panel.tsx'), 'utf-8');
+  assert.ok(reviewSrc.includes('buildThreadItemsFromBead'), 'review panel should use bead thread evidence from the shared thread builder');
+  assert.ok(reviewSrc.includes('TaskAssignedAgentContext'), 'review panel should keep the assigned-agent context visible');
+  assert.ok(reviewSrc.includes('ThreadView'), 'review panel should render the bead-note evidence as a thread');
+  assert.ok(reviewSrc.includes('/api/beads/comment'), 'accept action should record an explicit review acknowledgement comment');
+  assert.ok(reviewSrc.includes('/api/beads/reopen'), 'reopen action should reuse the reopen mutation route');
+  assert.ok(reviewSrc.includes('Accept'), 'review panel should expose an explicit accept action');
+  assert.ok(reviewSrc.includes('Reopen'), 'review panel should expose an explicit reopen action');
+  assert.ok(reviewSrc.includes("Accepted in review"), 'accept action should leave a traceable acceptance note in bead state');
+  assert.ok(reviewSrc.includes('buildUrlParams'), 'accept should reuse the shared URL builder for route handoff');
+  assert.ok(reviewSrc.includes("window.history.pushState(null, '', nextUrl);"), 'accept should clear the review route directly in browser history');
+  assert.ok(reviewSrc.includes('close_reason'), 'review panel should surface completion evidence from the bead close reason');
+});

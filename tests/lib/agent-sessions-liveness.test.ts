@@ -3,16 +3,28 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 
 import { registerAgent } from '../../src/lib/agent-registry';
 import { getAgentLivenessMap } from '../../src/lib/agent-sessions';
 import type { ActivityEvent } from '../../src/lib/activity';
 
+const BD_BIN = '/Users/jordanhindo/.local/bin/bd';
+const TEST_ENV = {
+  ...process.env,
+  PATH: `${path.dirname(process.execPath)}:${process.env.PATH || ''}`,
+  DOLT_EXECUTABLE: '/opt/homebrew/bin/dolt',
+};
+
 async function withTempProject(run: (projectRoot: string) => Promise<void>): Promise<void> {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'beadboard-liveness-test-'));
-  execSync('bd init --prefix bb --force', { cwd: tempDir, stdio: 'ignore' });
+  const databaseName = `bb_test_${path.basename(tempDir).replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase()}`;
+  execFileSync(BD_BIN, ['init', '--prefix', 'bb', '--database', databaseName, '--force'], {
+    cwd: tempDir,
+    stdio: 'ignore',
+    env: TEST_ENV,
+  });
 
   try {
     await run(tempDir);
@@ -35,7 +47,7 @@ test('getAgentLivenessMap prefers telemetry over bead metadata', async () => {
     assert.equal(regResult.ok, true, `Failed to register agent: ${regResult.error?.message}`);
     
     // Verify bead exists on disk
-    const issues = execSync('bd list --label gt:agent --json', { cwd: projectRoot, encoding: 'utf8' });
+    const issues = execFileSync(BD_BIN, ['list', '--label', 'gt:agent', '--json'], { cwd: projectRoot, encoding: 'utf8', env: TEST_ENV });
     console.log('Registered agents:', issues);
 
     // 1. No heartbeats in stream -> use metadata

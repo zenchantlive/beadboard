@@ -6,6 +6,9 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Columns2, Loader2, ChevronDown, Rocket, Signal, UserPlus, X, MessageSquare } from 'lucide-react';
 import type { BeadIssue } from '../../lib/types';
 import type { AgentArchetype } from '../../lib/types-swarm';
+import type { AgentState } from '../../lib/agent';
+import { AgentAvatar } from '../shared/agent-avatar';
+import { mapAgentStateToAvatarStatus } from '../shared/agent-presence';
 
 /** Data payload for each custom ReactFlow node. */
 export interface GraphNodeData {
@@ -33,6 +36,8 @@ export interface GraphNodeData {
     blockerTooltipLines: string[];
     /** Labels attached to this node, including agent assignments (agent:archetype-id). */
     labels: string[];
+    /** Live assigned agent states projected from the shared runtime shell. */
+    assignedAgentStates?: readonly AgentState[];
     /** Available agent archetypes for assignment. */
     archetypes?: AgentArchetype[];
     /** ID of the currently selected task (for conversation icon highlight). */
@@ -125,6 +130,12 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
 
     const archetypes = data.archetypes ?? [];
     const assignedArchetypes = getAssignedArchetypes(localLabels, archetypes);
+    const liveAssignedAgentStates = data.assignedAgentStates ?? [];
+    const primaryAssignedAgentState = liveAssignedAgentStates[0] ?? null;
+    const primaryAssignedAgentStatus = primaryAssignedAgentState
+        ? mapAgentStateToAvatarStatus(primaryAssignedAgentState)
+        : null;
+    const liveAssignedCount = liveAssignedAgentStates.length;
     const isClosed = data.status === 'closed';
 
     const handleAssignAgent = async (archetypeId: string) => {
@@ -348,6 +359,29 @@ export function GraphNodeCard({ id, data, selected }: NodeProps<Node<GraphNodeDa
                             <p className="text-[8px] text-[var(--text-tertiary)]/50">
                                 +{data.blockerTooltipLines.length - 2} more
                             </p>
+                        ) : null}
+                    </div>
+                ) : null}
+
+                {primaryAssignedAgentState && primaryAssignedAgentStatus ? (
+                    <div className="pointer-events-none absolute bottom-2 right-2 z-20 flex max-w-[12rem] items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-overlay)]/95 px-1.5 py-1 shadow-[var(--shadow-lg)] backdrop-blur-sm">
+                        <AgentAvatar
+                            name={primaryAssignedAgentState.label}
+                            status={primaryAssignedAgentStatus}
+                            size="sm"
+                        />
+                        <div className="min-w-0">
+                            <div className="truncate text-[10px] font-semibold text-[var(--text-primary)]">
+                                {primaryAssignedAgentState.label}
+                            </div>
+                            <div className="text-[9px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
+                                {primaryAssignedAgentStatus}
+                            </div>
+                        </div>
+                        {liveAssignedCount > 1 ? (
+                            <span className="rounded-full bg-[var(--accent-info)]/15 px-1.5 py-0.5 text-[9px] font-semibold text-[var(--accent-info)]">
+                                +{liveAssignedCount - 1}
+                            </span>
                         ) : null}
                     </div>
                 ) : null}

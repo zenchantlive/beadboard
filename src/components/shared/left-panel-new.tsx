@@ -29,7 +29,7 @@ export interface LeftPanelProps {
   onEpicEdit?: (epicId: string) => void;
   filters: LeftPanelFilters;
   onFiltersChange: (filters: LeftPanelFilters) => void;
-  onAssignMode?: (epicId: string) => void;
+  onLaunchSwarm?: (epicId: string) => void;
   sidebarMode?: LeftSidebarMode;
   onSidebarModeChange?: (mode: LeftSidebarMode) => void;
   orchestrator?: RuntimeInstance;
@@ -126,6 +126,7 @@ export function LeftPanel({
   orchestratorThread,
   projectRoot,
   onEpicSelect,
+  onLaunchSwarm,
 }: LeftPanelProps) {
   const urlState = useUrlState();
   const { view, setView } = urlState;
@@ -388,6 +389,21 @@ export function LeftPanel({
                                 </span>
                               ) : null}
                             </div>
+                            {onLaunchSwarm ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEpicSelect?.(epic.id);
+                                  onLaunchSwarm(epic.id);
+                                }}
+                                className="inline-flex h-5 w-5 items-center justify-center rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 transition-colors hover:bg-emerald-500/20"
+                                aria-label={`Launch Swarm for ${epic.title}`}
+                                title="Launch Swarm"
+                              >
+                                <Rocket className="h-3 w-3" aria-hidden="true" />
+                              </button>
+                            ) : null}
                           </div>
                         </div>
                       </div>

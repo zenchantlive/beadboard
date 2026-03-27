@@ -1,5 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import fs from 'fs/promises';
+import path from 'path';
 import { parseUrlState, buildUrlParams } from '../../src/hooks/use-url-state';
 
 function createMockSearchParams(params: Record<string, string | null> = {}) {
@@ -141,6 +143,23 @@ describe('useUrlState', () => {
     it('loads the module without error', async () => {
       await import('../../src/hooks/use-url-state');
       assert.ok(true);
+    });
+  });
+
+  describe('selection exclusivity', () => {
+    it('setTaskId clears swarm and agent selection in the URL update path', async () => {
+      const src = await fs.readFile(path.join(process.cwd(), 'src/hooks/use-url-state.ts'), 'utf-8');
+      assert.ok(src.includes('updateUrl({ task: id, swarm: null, agent: null, right, panel: right, drawer })'));
+    });
+
+    it('setSwarmId clears task and agent selection in the URL update path', async () => {
+      const src = await fs.readFile(path.join(process.cwd(), 'src/hooks/use-url-state.ts'), 'utf-8');
+      assert.ok(src.includes('updateUrl({ swarm: id, task: null, agent: null, right, panel: right, drawer })'));
+    });
+
+    it('setAgentId clears task, swarm, and epic selection in the URL update path', async () => {
+      const src = await fs.readFile(path.join(process.cwd(), 'src/hooks/use-url-state.ts'), 'utf-8');
+      assert.ok(src.includes('updateUrl({ agent: id, task: null, swarm: null, epic: null, right, panel: right })'));
     });
   });
 });

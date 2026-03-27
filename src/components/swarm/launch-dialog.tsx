@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -24,7 +24,10 @@ import { Loader2, Rocket } from 'lucide-react';
 
 interface LaunchSwarmDialogProps {
   projectRoot: string;
-  onSuccess?: () => void;
+  onSuccess?: (swarmId: string | null) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  initialTitle?: string;
 }
 
 interface Formula {
@@ -32,15 +35,52 @@ interface Formula {
   description?: string;
 }
 
-export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogProps) {
-  const [open, setOpen] = useState(false);
+function getNestedString(record: Record<string, unknown>, key: string): string | null {
+  const value = record[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+export function extractLaunchedSwarmId(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  const record = payload as Record<string, unknown>;
+
+  const direct = getNestedString(record, 'swarmId')
+    ?? getNestedString(record, 'swarm_id')
+    ?? getNestedString(record, 'epicId')
+    ?? getNestedString(record, 'epic_id')
+    ?? getNestedString(record, 'id');
+  if (direct) {
+    return direct;
+  }
+
+  const data = record.data;
+  if (data && typeof data === 'object') {
+    return extractLaunchedSwarmId(data);
+  }
+
+  return null;
+}
+
+export function LaunchSwarmDialog({
+  projectRoot,
+  onSuccess,
+  open,
+  onOpenChange,
+  initialTitle = '',
+}: LaunchSwarmDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [formulas, setFormulas] = useState<Formula[]>([]);
   const [selectedFormula, setSelectedFormula] = useState<string>('');
-  const [title, setTitle] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : internalOpen;
 
-  const fetchFormulas = async () => {
+  const fetchFormulas = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -56,12 +96,33 @@ export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogP
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectRoot]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setLoading(false);
+      setSelectedFormula('');
+      setError(null);
+      setTitle('');
+      return;
+    }
+
+    if (initialTitle) {
+      setTitle(initialTitle);
+    }
+  }, [initialTitle, isOpen]);
+
+  useEffect(() => {
+    if (isOpen && formulas.length === 0 && !loading) {
+      void fetchFormulas();
+    }
+  }, [fetchFormulas, formulas.length, isOpen, loading]);
 
   const handleOpenChange = (isOpen: boolean) => {
-    setOpen(isOpen);
-    if (isOpen && formulas.length === 0) {
-      fetchFormulas();
+    if (onOpenChange) {
+      onOpenChange(isOpen);
+    } else {
+      setInternalOpen(isOpen);
     }
   };
 
@@ -85,10 +146,11 @@ export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogP
 
       const json = await res.json();
       if (json.ok) {
-        setOpen(false);
+        const launchedSwarmId = extractLaunchedSwarmId(json.data);
+        handleOpenChange(false);
         setTitle('');
         setSelectedFormula('');
-        onSuccess?.();
+        onSuccess?.(launchedSwarmId);
       } else {
         setError(json.error);
       }
@@ -100,17 +162,19 @@ export function LaunchSwarmDialog({ projectRoot, onSuccess }: LaunchSwarmDialogP
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2 border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300"
-        >
-          <Rocket className="h-4 w-4" />
-          Launch Swarm
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      {isControlled ? null : (
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300"
+          >
+            <Rocket className="h-4 w-4" />
+            Launch Swarm
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="bg-[#08111d] border-slate-800 text-slate-200 sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Launch New Swarm</DialogTitle>

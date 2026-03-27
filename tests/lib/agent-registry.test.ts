@@ -163,7 +163,27 @@ function createFakeBdRunner(initialNow = '2026-02-13T23:55:00.000Z') {
     }
 
     if (args[0] === 'create') {
-      return ok({ ok: true }, args);
+      const idIdx = args.indexOf('--id');
+      const titleIdx = args.indexOf('--title');
+      const descIdx = args.indexOf('--description');
+      const beadId = idIdx !== -1 ? args[idIdx + 1] : 'bb-agent';
+      const title = titleIdx !== -1 ? args[titleIdx + 1] : `Agent: ${beadId.replace(/^bb-/, '')}`;
+      const createdAt = initialNow;
+
+      agents.set(beadId, {
+        id: beadId,
+        title,
+        labels: [],
+        agent_state: 'idle',
+        created_at: createdAt,
+        last_activity: createdAt,
+      });
+
+      return ok({
+        id: beadId,
+        title,
+        description: descIdx !== -1 ? args[descIdx + 1] : '',
+      }, args);
     }
 
     return fail(args, `Unhandled fake bd command: ${args.join(' ')}`);

@@ -1,6 +1,7 @@
 'use client';
 
 import type { BeadIssue } from '../../lib/types';
+import type { AgentState } from '../../lib/agent';
 import { WorkflowGraph } from '../shared/workflow-graph';
 import type { GraphTabType } from '../../hooks/use-url-state';
 
@@ -11,6 +12,7 @@ interface GraphViewProps {
   graphTab: GraphTabType;
   onGraphTabChange: (tab: GraphTabType) => void;
   hideClosed?: boolean;
+  agentStates?: readonly AgentState[];
 }
 
 export function GraphView({
@@ -20,6 +22,7 @@ export function GraphView({
   graphTab,
   onGraphTabChange,
   hideClosed = false,
+  agentStates = [],
 }: GraphViewProps) {
   return (
     <div className="flex h-full flex-col bg-[var(--surface-secondary)]">
@@ -64,6 +67,7 @@ export function GraphView({
           onSelect={onSelect}
           hideClosed={graphTab === 'flow' ? hideClosed : false}
           className="h-full"
+          agentStates={agentStates}
         />
       </div>
     </div>

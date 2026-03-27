@@ -1,5 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import type { SocialCard as SocialCardData } from '../../../src/lib/social-cards';
 import { filterSocialCardsByBlockedOnly } from '../../../src/components/social/social-page';
@@ -46,5 +48,12 @@ describe('Social blocked-only routing', () => {
       visible.map((card) => card.id),
       ['ready-1', 'blocked-1'],
     );
+  });
+
+  it('SocialPage wires shared agent states into live presence helpers', async () => {
+    const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/social/social-page.tsx'), 'utf-8');
+    assert.ok(fileContent.includes('agentStates?: readonly AgentState[]'), 'SocialPage should accept live agent states from the shell');
+    assert.ok(fileContent.includes('buildSocialAgentPresenceByName'), 'SocialPage should derive card presence from a shared helper');
+    assert.ok(fileContent.includes('agentPresenceByCardId'), 'SocialPage should cache presence per card');
   });
 });

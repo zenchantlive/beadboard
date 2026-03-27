@@ -96,6 +96,12 @@ function trimOrEmpty(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function extractAgentStateLabel(labels: readonly string[]): string | undefined {
+  const stateLabel = labels.find((label) => label.startsWith('agent-state:') || label.startsWith('state:'));
+  if (!stateLabel) return undefined;
+  return stateLabel.split(':').slice(1).join(':') || undefined;
+}
+
 async function readAgentBeadEntries(projectRoot: string, runBd: BdRunner): Promise<any[]> {
   const listResult = await runBd({
     projectRoot,
@@ -181,6 +187,7 @@ function mapBdAgentToRecord(bdAgent: any): AgentRecord {
   let role = bdAgent.role_type || 'agent';
   let swarmId: string | undefined;
   let currentTask: string | undefined;
+  let status = bdAgent.agent_state;
 
   if (Array.isArray(bdAgent.labels)) {
     const roleLabel = bdAgent.labels.find((l: string) => l.startsWith('role:'));
@@ -195,6 +202,7 @@ function mapBdAgentToRecord(bdAgent: any): AgentRecord {
     if (workingLabel) {
       currentTask = workingLabel.split(':')[1];
     }
+    status = status || extractAgentStateLabel(bdAgent.labels);
   }
 
   let rig = bdAgent.rig;
@@ -209,9 +217,9 @@ function mapBdAgentToRecord(bdAgent: any): AgentRecord {
     agent_id: fromBeadId(bdAgent.id),
     display_name: bdAgent.title?.replace(/^Agent: /, '') || fromBeadId(bdAgent.id),
     role,
-    status: bdAgent.agent_state || 'idle',
-    created_at: bdAgent.created_at || bdAgent.last_activity || new Date().toISOString(),
-    last_seen_at: bdAgent.last_activity || new Date().toISOString(),
+    status: status || 'idle',
+    created_at: bdAgent.created_at || bdAgent.last_activity || bdAgent.updated_at || new Date().toISOString(),
+    last_seen_at: bdAgent.last_activity || bdAgent.updated_at || bdAgent.created_at || new Date().toISOString(),
     version: 1,
     rig,
     role_type: bdAgent.role_type,
@@ -254,13 +262,29 @@ export async function registerAgent(
       return invalid(command, 'DUPLICATE_AGENT_ID', 'Agent is already registered. Use --force-update to change display/role.');
     }
 
-    const stateResult = await runBd({
-      projectRoot,
-      args: ['agent', 'state', beadId, 'idle', '--json'],
-    });
+    if (!showResult.success) {
+      const createResult = await runBd({
+        projectRoot,
+        args: [
+          'create',
+          '--id',
+          beadId,
+          '--force',
+          '--title',
+          `Agent: ${display}`,
+          '--description',
+          `Agent role: ${role}`,
+          '--type',
+          'task',
+          '--priority',
+          '0',
+          '--json',
+        ],
+      });
 
-    if (!stateResult.success) {
-      return invalid(command, 'INTERNAL_ERROR', `Failed to set agent state: ${stateResult.error}`);
+      if (!createResult.success) {
+        return invalid(command, 'INTERNAL_ERROR', `Failed to create agent bead: ${createResult.error}`);
+      }
     }
 
     const existingAgent = showResult.success
@@ -270,7 +294,12 @@ export async function registerAgent(
       ? existingAgent.labels.filter((label: unknown): label is string => typeof label === 'string')
       : [];
     const labels = existingLabels.filter(
-      (label: string) => label !== 'gt:agent' && !label.startsWith('role:') && !label.startsWith('rig:'),
+      (label: string) =>
+        label !== 'gt:agent' &&
+        !label.startsWith('role:') &&
+        !label.startsWith('rig:') &&
+        !label.startsWith('agent-state:') &&
+        !label.startsWith('state:'),
     );
     labels.unshift('gt:agent');
     if (role) {
@@ -279,6 +308,7 @@ export async function registerAgent(
     if (input.rig) {
       labels.push(`rig:${input.rig}`);
     }
+    labels.push('agent-state:idle');
 
     const updateArgs = ['update', beadId, '--title', `Agent: ${display}`];
     for (const label of labels) {
@@ -385,14 +415,27 @@ export async function setAgentState(
 
   try {
     const beadId = toBeadId(name);
-    
+
+    const existingAgent = (await readAgentBeadEntries(projectRoot, runBd)).find((entry) => entry.id === beadId) ?? null;
+    if (!existingAgent) {
+      return invalid(command, 'AGENT_NOT_FOUND', 'Agent is not registered.');
+    }
+
+    const existingLabels = Array.isArray(existingAgent.labels)
+      ? existingAgent.labels.filter((label: unknown): label is string => typeof label === 'string')
+      : [];
+    const labels = existingLabels.filter(
+      (label: string) => !label.startsWith('agent-state:') && !label.startsWith('state:'),
+    );
+    labels.push(`agent-state:${state}`);
+
     const stateResult = await runBd({
       projectRoot,
-      args: ['agent', 'state', beadId, state, '--json'],
+      args: ['update', beadId, ...labels.flatMap((label: string) => ['--set-labels', label]), '--json'],
     });
 
     if (!stateResult.success) {
-      return invalid(command, 'AGENT_NOT_FOUND', 'Agent is not registered.');
+      return invalid(command, 'INTERNAL_ERROR', `Failed to set agent state: ${stateResult.error}`);
     }
 
     const record = await callBdAgentShow(beadId, projectRoot, runBd, { refresh: true });

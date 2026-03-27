@@ -9,6 +9,8 @@ import type { SocialCard as SocialCardData } from '../../lib/social-cards';
 import { buildSocialCards } from '../../lib/social-cards';
 import { SocialCard } from './social-card';
 import { useArchetypes } from '../../hooks/use-archetypes';
+import type { AgentState } from '../../lib/agent';
+import { buildSocialAgentPresenceByName, type SocialAgentPresence } from './social-presence';
 
 interface SocialPageProps {
   issues: BeadIssue[];
@@ -20,6 +22,7 @@ interface SocialPageProps {
   swarmId?: string;
   onRocketClick?: () => void;
   onAskOrchestrator?: (issueId: string) => void;
+  agentStates?: readonly AgentState[];
 }
 
 interface CoordMessage {
@@ -88,6 +91,7 @@ export function SocialPage({
   swarmId,
   onRocketClick,
   onAskOrchestrator,
+  agentStates = [],
 }: SocialPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -155,6 +159,13 @@ export function SocialPage({
 
     return map;
   }, [visibleCards]);
+  const agentPresenceByCardId = useMemo(() => {
+    const next: Record<string, Record<string, SocialAgentPresence>> = {};
+    for (const card of visibleCards) {
+      next[card.id] = buildSocialAgentPresenceByName(card, issueById.get(card.id), agentStates);
+    }
+    return next;
+  }, [agentStates, issueById, visibleCards]);
   const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({
     ready: false,
     in_progress: false,
@@ -341,6 +352,7 @@ export function SocialPage({
                         agentUnreadByName={agentUnreadByName}
                         agentMessagesByName={agentMessagesByName}
                         agentReservationsByName={agentReservationsByName}
+                        agentPresenceByName={agentPresenceByCardId[card.id] ?? {}}
                         onAckMessage={handleAckMessage}
                       />
                     );

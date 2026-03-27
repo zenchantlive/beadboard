@@ -15,19 +15,21 @@ import { MobileNav } from './mobile-nav';
 import { ThreadDrawer } from './thread-drawer';
 import { ResizeHandle } from './resize-handle';
 import { RuntimeConsole } from './runtime-console';
-import { useUrlState, type LeftSidebarMode } from '../../hooks/use-url-state';
+import { buildUrlParams, useUrlState, type LeftSidebarMode } from '../../hooks/use-url-state';
 import { usePanelResize } from '../../hooks/use-panel-resize';
 import { SmartDag } from '../graph/smart-dag';
 import { SocialPage } from '../social/social-page';
 import { buildSocialCards } from '../../lib/social-cards';
 import { ContextualRightPanel } from '../activity/contextual-right-panel';
 import { AssignmentPanel } from '../graph/assignment-panel';
+import { LaunchSwarmDialog } from '../swarm/launch-dialog';
 import { TelemetryStrip } from './telemetry-strip';
 import { useSwarmList } from '../../hooks/use-swarm-list';
 import { useBeadsSubscription } from '../../hooks/use-beads-subscription';
 import { useBdHealth } from '../../hooks/use-bd-health';
 import { BlockedTriageModal } from './blocked-triage-modal';
 import { deriveBlockedIds } from '../../lib/kanban';
+import { listRecentCompletedWorkers } from '../../lib/runtime-event-summary';
 
 export interface UnifiedShellProps {
   issues: BeadIssue[];
@@ -50,13 +52,35 @@ function mergeUniqueRuntimeEvents(existing: RuntimeConsoleEvent[], incoming: Run
   return merged.slice(0, 40);
 }
 
+function mergeUniqueConversationTurns(existing: ConversationTurn[], incoming: ConversationTurn[]): ConversationTurn[] {
+  const seen = new Set<string>();
+  const merged: ConversationTurn[] = [];
+
+  for (const turn of [...existing, ...incoming]) {
+    if (seen.has(turn.id)) {
+      continue;
+    }
+    seen.add(turn.id);
+    merged.push(turn);
+  }
+
+  return merged.sort((left, right) => {
+    const leftTime = Date.parse(left.timestamp);
+    const rightTime = Date.parse(right.timestamp);
+    if (leftTime !== rightTime) {
+      return leftTime - rightTime;
+    }
+    return left.id.localeCompare(right.id);
+  });
+}
+
 export function UnifiedShell({
   issues: initialIssues,
   projectRoot,
   projectScopeOptions,
 }: UnifiedShellProps) {
   const router = useRouter();
-  const { view, taskId, setTaskId, swarmId, graphTab, drawer, setDrawer, epicId, setEpicId, agentId, blockedOnly } = useUrlState();
+  const { view, taskId, setTaskId, swarmId, setSwarmId, graphTab, drawer, setDrawer, epicId, setEpicId, agentId, blockedOnly } = useUrlState();
   const [leftSidebarMode, setLeftSidebarMode] = useState<LeftSidebarMode>('epics');
 
   // Subscribe to SSE for real-time updates on ALL views
@@ -88,11 +112,15 @@ export function UnifiedShell({
   const [runtimeEvents, setRuntimeEvents] = useState<RuntimeConsoleEvent[]>([]);
   const [agentStates, setAgentStates] = useState<AgentState[]>([]);
   const [orchestratorTurns, setOrchestratorTurns] = useState<ConversationTurn[]>([]);
+  const [completionSummaryTurns, setCompletionSummaryTurns] = useState<ConversationTurn[]>([]);
+  const [acknowledgedCompletionKeys, setAcknowledgedCompletionKeys] = useState<string[]>([]);
   const [daemonLifecycle, setDaemonLifecycle] = useState<{ status: RuntimeStatus | 'stopped' | 'starting' | 'stopping' | 'failed' } | null>(null);
 
   // Assign mode state for graph view
   const [assignMode, setAssignMode] = useState(false);
   const [selectedAssignIssue, setSelectedAssignIssue] = useState<BeadIssue | null>(null);
+  const [swarmLaunchOpen, setSwarmLaunchOpen] = useState(false);
+  const [swarmLaunchTitle, setSwarmLaunchTitle] = useState('');
   
 // Remember last non-telemetry state for minimize button
   const [lastTaskId, setLastTaskId] = useState<string | null>(null);
@@ -110,6 +138,26 @@ export function UnifiedShell({
         (e) => e.status === 'blocked' || e.kind === 'worker.blocked' || e.kind === 'orchestrator.blocked'
       ).length,
     [runtimeEvents]
+  );
+  const recentCompletedWorkers = useMemo(
+    () => listRecentCompletedWorkers(runtimeEvents),
+    [runtimeEvents],
+  );
+  const acknowledgedCompletionKeySet = useMemo(
+    () => new Set(acknowledgedCompletionKeys),
+    [acknowledgedCompletionKeys],
+  );
+  const visibleCompletedWorkers = useMemo(
+    () => recentCompletedWorkers.filter((item) => !acknowledgedCompletionKeySet.has(item.dedupeKey)),
+    [acknowledgedCompletionKeySet, recentCompletedWorkers],
+  );
+  const completedEventCount = useMemo(
+    () => visibleCompletedWorkers.length,
+    [visibleCompletedWorkers]
+  );
+  const completionSummaryTurnIds = useMemo(
+    () => new Set(completionSummaryTurns.map((turn) => turn.id)),
+    [completionSummaryTurns],
   );
 
   const handleBlockedIndicatorClick = useCallback(() => {
@@ -149,6 +197,69 @@ export function UnifiedShell({
     setDrawer('closed');
   }, [setDrawer]);
 
+  useEffect(() => {
+    setAcknowledgedCompletionKeys((current) =>
+      current.filter((key) => recentCompletedWorkers.some((item) => item.dedupeKey === key)),
+    );
+  }, [recentCompletedWorkers]);
+
+  useEffect(() => {
+    const unseenSummaryTurns = [...recentCompletedWorkers]
+      .reverse()
+      .filter((item) => !completionSummaryTurnIds.has(`completion-summary:${item.dedupeKey}`))
+      .map((item) => {
+        const detailParts = [item.title, item.detail].filter((part) => part.trim().length > 0);
+        const description = detailParts.length > 0 ? `${detailParts.join(' — ')}.` : 'Worker completed successfully.';
+        const subject = item.taskId ?? item.workerIdentity;
+
+        return {
+          id: `completion-summary:${item.dedupeKey}`,
+          role: 'assistant' as const,
+          text: item.taskId
+            ? `Completed ${item.taskId}: ${description}`
+            : `Completed worker ${subject}: ${description}`,
+          timestamp: item.timestamp,
+          status: 'complete' as const,
+        };
+      });
+
+    if (unseenSummaryTurns.length === 0) {
+      return;
+    }
+
+    setCompletionSummaryTurns((current) => mergeUniqueConversationTurns(current, unseenSummaryTurns));
+  }, [completionSummaryTurnIds, recentCompletedWorkers]);
+
+  const handleCompletedIndicatorClick = useCallback(() => {
+    const nextVisibleCompletion = visibleCompletedWorkers.find((item) => item.taskId);
+    if (!nextVisibleCompletion?.taskId) {
+      return;
+    }
+
+    const completedIssue = issues.find((issue) => issue.id === nextVisibleCompletion.taskId) ?? null;
+    const shouldOpenDrawer = completedIssue?.status !== 'closed';
+
+    setAcknowledgedCompletionKeys((current) =>
+      current.includes(nextVisibleCompletion.dedupeKey)
+        ? current
+        : [...current, nextVisibleCompletion.dedupeKey],
+    );
+    const nextUrl = buildUrlParams(new URLSearchParams(window.location.search), {
+      task: nextVisibleCompletion.taskId,
+      swarm: null,
+      agent: null,
+      right: 'open',
+      panel: 'open',
+      drawer: shouldOpenDrawer ? 'open' : null,
+    });
+    window.history.pushState(null, '', nextUrl);
+  }, [issues, visibleCompletedWorkers]);
+
+  const mergedOrchestratorThread = useMemo(
+    () => mergeUniqueConversationTurns(orchestratorTurns, completionSummaryTurns),
+    [completionSummaryTurns, orchestratorTurns],
+  );
+
   // Handle assign mode change from SmartDag
   const handleAssignModeChange = useMemo(() => (mode: boolean) => {
     setAssignMode(mode);
@@ -167,6 +278,36 @@ export function UnifiedShell({
     setTaskId(null);
     setAssignMode(true);
   }, [setTaskId]);
+
+  const handleOpenSwarmLaunch = useCallback((epicId?: string) => {
+    const epic = epicId ? issues.find((issue) => issue.id === epicId && issue.issue_type === 'epic') ?? null : null;
+    setSwarmLaunchTitle(epic?.title ?? '');
+    setSwarmLaunchOpen(true);
+    setAssignMode(false);
+    setSelectedAssignIssue(null);
+    setCustomRightPanel(null);
+  }, [issues]);
+
+  const handleSwarmLaunchOpenChange = useCallback((nextOpen: boolean) => {
+    setSwarmLaunchOpen(nextOpen);
+    if (!nextOpen) {
+      setSwarmLaunchTitle('');
+    }
+  }, []);
+
+  const handleSwarmLaunchSuccess = useCallback((launchedSwarmId: string | null) => {
+    if (launchedSwarmId) {
+      const nextUrl = buildUrlParams(new URLSearchParams(window.location.search), {
+        swarm: launchedSwarmId,
+        task: null,
+        agent: null,
+        right: 'open',
+        panel: 'open',
+        drawer: null,
+      });
+      window.history.pushState(null, '', nextUrl);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -354,7 +495,8 @@ export function UnifiedShell({
   const isNonTelemetry = !!taskId || assignMode;
 
   // Chat Mode Logic: If a card is selected (drawer='open'), we show Chat popup
-  const isChatOpen = drawer === 'open' && (!!taskId || !!swarmId || !!epicId);
+  const isClosedTaskReview = taskId !== null && selectedIssue?.status === 'closed';
+  const isChatOpen = drawer === 'open' && (!!swarmId || !!epicId || (!!taskId && !isClosedTaskReview));
   const selectedEpic = epicId ? issues.find((issue) => issue.id === epicId && issue.issue_type === 'epic') ?? null : null;
   const drawerTitle = selectedSocialCard?.title || selectedSwarmCard?.title || selectedEpic?.title || '';
   const drawerId = taskId || swarmId || epicId || '';
@@ -398,6 +540,7 @@ export function UnifiedShell({
           onAssignModeChange={handleAssignModeChange}
           onSelectedIssueChange={handleSelectedIssueChange}
           swarmId={swarmId ?? undefined}
+          agentStates={agentStates}
         />
       );
     }
@@ -414,6 +557,7 @@ export function UnifiedShell({
           swarmId={swarmId ?? undefined}
           onRocketClick={handleSocialRocket}
           onAskOrchestrator={handleAskOrchestrator}
+          agentStates={agentStates}
         />
       );
     }
@@ -470,10 +614,12 @@ export function UnifiedShell({
         idleCount={agentSummary.idleCount}
         actor={actor}
         onActorChange={handleActorChange}
-        onLaunchSwarm={() => { setTaskId(null); setAssignMode(true); }}
+        onLaunchSwarm={() => { handleOpenSwarmLaunch(); }}
         onOpenBlockedTriage={handleOpenBlockedTriage}
         blockedEventCount={blockedEventCount}
+        completedEventCount={completedEventCount}
         onBlockedIndicatorClick={handleBlockedIndicatorClick}
+        onCompletedIndicatorClick={handleCompletedIndicatorClick}
       />
       {!bdHealth.loading && !bdHealth.healthy ? (
         <div className="border-b border-amber-500/35 bg-amber-500/12 px-4 py-2 text-xs text-amber-100">
@@ -495,11 +641,11 @@ export function UnifiedShell({
             onEpicEdit={(id) => { setEpicId(id); setDrawer('open'); }}
             filters={filters}
             onFiltersChange={setFilters}
-            onAssignMode={(epicId) => { setEpicId(epicId); setTaskId(null); setAssignMode(true); }}
+            onLaunchSwarm={(epicId) => { setEpicId(epicId); handleOpenSwarmLaunch(epicId); }}
             sidebarMode={leftSidebarMode}
             onSidebarModeChange={setLeftSidebarMode}
             orchestrator={orchestrator}
-            orchestratorThread={orchestratorTurns}
+            orchestratorThread={mergedOrchestratorThread}
             projectRoot={projectRoot}
           />
         </div>
@@ -529,6 +675,14 @@ export function UnifiedShell({
             />
           )}
         </div>
+
+        <LaunchSwarmDialog
+          projectRoot={projectRoot}
+          open={swarmLaunchOpen}
+          onOpenChange={handleSwarmLaunchOpenChange}
+          initialTitle={swarmLaunchTitle}
+          onSuccess={handleSwarmLaunchSuccess}
+        />
       </div>
 
       {/* THREAD DRAWER: Popup overlay when a task is selected */}
@@ -563,6 +717,7 @@ export function UnifiedShell({
         onClose={handleCloseBlockedTriage}
         issues={issues}
         projectRoot={projectRoot}
+        agentStates={agentStates}
         onSelectTask={(taskId) => {
           setTaskId(taskId);
           handleCloseBlockedTriage();

@@ -15,10 +15,6 @@ export interface AgentDetailPanelProps {
   onClose: () => void;
 }
 
-function matchesIssueOwnership(issue: BeadIssue, selectedAgentId: string): boolean {
-  return issue.assignee === selectedAgentId || issue.agentInstanceId === selectedAgentId;
-}
-
 export function selectAgentDetailStates(
   agentStates: readonly AgentState[],
   issues: readonly BeadIssue[],
@@ -26,7 +22,7 @@ export function selectAgentDetailStates(
 ): AgentState[] {
   const normalized = agentId.trim().toLowerCase();
   const ownedTaskIds = new Set(
-    issues.filter((issue) => matchesIssueOwnership(issue, agentId)).map((issue) => issue.id),
+    issues.filter((issue) => issue.assignee === agentId || issue.agentInstanceId === agentId).map((issue) => issue.id),
   );
 
   return agentStates
@@ -100,12 +96,12 @@ export function AgentDetailPanel({ agentId, agentStates, issues, onClose }: Agen
   const agentState = matchingStates[0] ?? null;
 
   const ownedTasks = useMemo(
-    () => issues.filter((issue) => matchesIssueOwnership(issue, agentId) && issue.status !== 'closed'),
+    () => issues.filter((issue) => (issue.assignee === agentId || issue.agentInstanceId === agentId) && issue.status !== 'closed'),
     [agentId, issues],
   );
 
   const completedTasks = useMemo(
-    () => issues.filter((issue) => matchesIssueOwnership(issue, agentId) && issue.status === 'closed'),
+    () => issues.filter((issue) => (issue.assignee === agentId || issue.agentInstanceId === agentId) && issue.status === 'closed'),
     [agentId, issues],
   );
 

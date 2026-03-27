@@ -7,6 +7,7 @@ import { useUrlState, buildUrlParams } from '../../hooks/use-url-state';
 
 import type { BeadIssue } from '../../lib/types';
 import type { GraphHopDepth } from '../../lib/graph-view';
+import type { AgentState } from '../../lib/agent';
 import { collectEpicDescendantIds } from '../../lib/epic-graph';
 import { WorkflowGraph } from '../shared/workflow-graph';
 import { WorkflowTabs, type WorkflowTab } from './workflow-tabs';
@@ -25,6 +26,7 @@ export interface SmartDagProps {
   onAssignModeChange?: (assignMode: boolean) => void;
   onSelectedIssueChange?: (issue: BeadIssue | null) => void;
   swarmId?: string;
+  agentStates?: readonly AgentState[];
 }
 
 const DEPTH_OPTIONS: GraphHopDepth[] = [1, 2, 'full'];
@@ -40,6 +42,7 @@ export function SmartDag({
   onAssignModeChange,
   onSelectedIssueChange,
   swarmId,
+  agentStates = [],
 }: SmartDagProps) {
   const { archetypes } = useArchetypes(projectRoot);
   const { setTaskId } = useUrlState();
@@ -293,6 +296,7 @@ export function SmartDag({
               archetypes={archetypes}
               assignMode={assignMode}
               swarmId={swarmId}
+              agentStates={agentStates}
             />
           </div>
         )}

@@ -10,6 +10,7 @@ import { AgentAvatar } from '../shared/agent-avatar';
 import { AgentActionRow } from '../agents';
 import { useArchetypePicker } from '../../hooks/use-archetype-picker';
 import type { AgentArchetype } from '../../lib/types-swarm';
+import type { SocialAgentPresence } from './social-presence';
 
 interface SocialCardProps {
   data: SocialCardData;
@@ -41,6 +42,7 @@ interface SocialCardProps {
     requires_ack: boolean;
   }>>;
   agentReservationsByName?: Record<string, string | undefined>;
+  agentPresenceByName?: Record<string, SocialAgentPresence>;
   onAckMessage?: (agent: string, messageId: string) => Promise<void> | void;
 }
 
@@ -149,6 +151,7 @@ export function SocialCard({
   agentUnreadByName = {},
   agentMessagesByName = {},
   agentReservationsByName = {},
+  agentPresenceByName = {},
   onAckMessage,
 }: SocialCardProps) {
   const status = statusVisual(data.status);
@@ -207,17 +210,31 @@ export function SocialCard({
         {data.agents.slice(0, 3).map((agent) => {
           const unreadCount = agentUnreadByName[agent.name] ?? 0;
           const reservation = agentReservationsByName[agent.name];
+          const presence = agentPresenceByName[agent.name];
+          const avatarStatus = (presence?.status ?? agent.status) as AgentStatus;
+          const statusLabel = presence?.status ?? agent.status;
+          const stale = statusLabel === 'stale';
           return (
             <div key={`${data.id}-${agent.name}`} className="flex items-center gap-1.5">
               <AgentAvatar
                 name={agent.name}
-                status={agent.status as AgentStatus}
+                status={avatarStatus}
                 role={agent.role}
                 size="sm"
               />
-              <div className="flex flex-col gap-1">
-                <span className="max-w-[84px] truncate text-[10px] text-[var(--text-tertiary)]">{agent.name}</span>
+              <div className="flex min-w-0 flex-col gap-1">
+                <span className="max-w-[96px] truncate text-[10px] text-[var(--text-tertiary)]">{agent.name}</span>
                 <div className="flex items-center gap-1">
+                  <span className={cn(
+                    'inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em]',
+                    presence?.live
+                      ? (stale
+                        ? 'border-amber-500/30 bg-amber-500/10 text-amber-300'
+                        : 'border-[var(--accent-success)]/30 bg-[var(--accent-success)]/10 text-[var(--accent-success)]')
+                      : 'border-[var(--border-subtle)] bg-[var(--surface-tertiary)] text-[var(--text-tertiary)]',
+                  )}>
+                    {statusLabel}
+                  </span>
                   {unreadCount > 0 ? (
                     <button
                       type="button"
@@ -234,6 +251,11 @@ export function SocialCard({
                   {reservation ? (
                     <span className="max-w-[92px] truncate rounded border border-cyan-500/30 bg-cyan-500/10 px-1 py-0.5 text-[9px] text-cyan-200" title={reservation}>
                       {reservation}
+                    </span>
+                  ) : null}
+                  {presence?.live ? (
+                    <span className="rounded-full border border-[var(--accent-info)]/30 bg-[var(--accent-info)]/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[var(--accent-info)]">
+                      {stale ? 'stale' : 'live'}
                     </span>
                   ) : null}
                 </div>

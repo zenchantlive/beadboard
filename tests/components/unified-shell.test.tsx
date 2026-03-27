@@ -22,6 +22,33 @@ test('UnifiedShell - has selectedAssignIssue state', async () => {
   assert.ok(fileContent.includes('selectedAssignIssue'), 'Should have selectedAssignIssue state');
 });
 
+test('UnifiedShell - owns a shared swarm launch dialog state', async () => {
+  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
+  assert.ok(fileContent.includes('LaunchSwarmDialog'), 'Should import the shared launch dialog');
+  assert.ok(fileContent.includes('const [swarmLaunchOpen, setSwarmLaunchOpen] = useState(false)'), 'Should own launch open state');
+  assert.ok(fileContent.includes('const [swarmLaunchTitle, setSwarmLaunchTitle] = useState(\'\')'), 'Should own launch title state');
+  assert.ok(fileContent.includes('handleOpenSwarmLaunch'), 'Should have a shared launch open handler');
+  assert.ok(fileContent.includes('onLaunchSwarm={() => { handleOpenSwarmLaunch(); }}'), 'TopBar should open the shared launch dialog');
+  assert.ok(fileContent.includes('onLaunchSwarm={(epicId) => { setEpicId(epicId); handleOpenSwarmLaunch(epicId); }}'), 'Epic rows should open the same dialog with epic context');
+  assert.ok(fileContent.includes('setAssignMode(false);'), 'Opening launch should not route into assignment mode');
+});
+
+test('UnifiedShell - routes launched swarms into active swarm context on success', async () => {
+  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
+  assert.ok(fileContent.includes('const handleSwarmLaunchSuccess = useCallback((launchedSwarmId: string | null) => {'), 'Should accept the launched swarm id from the shared dialog');
+  assert.ok(fileContent.includes('buildUrlParams(new URLSearchParams(window.location.search), {'), 'Should build the handoff URL from the current browser location');
+  assert.ok(fileContent.includes("swarm: launchedSwarmId"), 'Should activate the launched swarm context');
+  assert.ok(fileContent.includes("window.history.pushState(null, '', nextUrl);"), 'Should commit the launch handoff directly into browser history');
+  const launchHandlerSlice = fileContent.slice(
+    fileContent.indexOf('const handleSwarmLaunchSuccess = useCallback((launchedSwarmId: string | null) => {'),
+    fileContent.indexOf('  }, []);') + '  }, []);'.length,
+  );
+  assert.ok(!launchHandlerSlice.includes("setDrawer('closed');"), 'Launch success handler should avoid a second stale URL write that can wipe the swarm handoff');
+  assert.ok(!launchHandlerSlice.includes('router.refresh();'), 'Launch success handler should not refresh over the route handoff');
+  assert.ok(!launchHandlerSlice.includes('setTaskId(null);'), 'Launch success handler should not issue a redundant task-clearing push before the swarm handoff');
+  assert.ok(!launchHandlerSlice.includes('setSwarmId('), 'Launch success handler should not rely on the stale hook push path here');
+});
+
 // Test that SmartDag receives onAssignModeChange callback
 test('UnifiedShell - passes onAssignModeChange to SmartDag', async () => {
   const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
@@ -84,4 +111,25 @@ test('UnifiedShell - no longer derives TopBar agent counts from issues or hardco
   assert.ok(!fileContent.includes('idleCount={0}'), 'Should not hardcode idleCount to zero');
   assert.ok(fileContent.includes('busyCount={agentSummary.busyCount}'), 'Should pass busy count from agent summary');
   assert.ok(fileContent.includes('idleCount={agentSummary.idleCount}'), 'Should pass idle count from agent summary');
+});
+
+test('UnifiedShell - derives recent completion notifications from runtime events', async () => {
+  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
+  assert.ok(fileContent.includes('listRecentCompletedWorkers(runtimeEvents)'), 'Should derive completion notifications from runtime events');
+  assert.ok(fileContent.includes('const [completionSummaryTurns, setCompletionSummaryTurns] = useState<ConversationTurn[]>([])'), 'Should keep completion summaries alongside orchestrator turns');
+  assert.ok(fileContent.includes('visibleCompletedWorkers.length'), 'Should derive the visible completion count from the shared summary list');
+  assert.ok(fileContent.includes('completedEventCount={completedEventCount}'), 'Should pass recent completion count into TopBar');
+  assert.ok(fileContent.includes('onCompletedIndicatorClick={handleCompletedIndicatorClick}'), 'Should wire the completion badge click-through into the shell');
+  assert.ok(fileContent.includes("const shouldOpenDrawer = completedIssue?.status !== 'closed'"), 'Completion click-through should keep review destinations out of the full-screen drawer');
+  assert.ok(fileContent.includes('buildUrlParams(new URLSearchParams(window.location.search), {'), 'Completion click-through should build the next URL from the current browser state');
+  assert.ok(fileContent.includes("task: nextVisibleCompletion.taskId"), 'Completion click-through should route into the completed task');
+  assert.ok(fileContent.includes("drawer: shouldOpenDrawer ? 'open' : null"), 'Completion click-through should only keep drawer=open for live task conversations');
+  assert.ok(fileContent.includes("window.history.pushState(null, '', nextUrl);"), 'Completion click-through should commit the route handoff directly to browser history');
+  assert.ok(fileContent.includes('mergedOrchestratorThread'), 'Should merge completion summaries into the orchestrator thread');
+});
+
+test('UnifiedShell - suppresses the full-screen thread drawer for closed-task review routes', async () => {
+  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
+  assert.ok(fileContent.includes("const isClosedTaskReview = taskId !== null && selectedIssue?.status === 'closed'"), 'Closed-task review should be detected before showing the thread drawer overlay');
+  assert.ok(fileContent.includes("const isChatOpen = drawer === 'open' && (!!swarmId || !!epicId || (!!taskId && !isClosedTaskReview));"), 'Closed-task review should not mount the full-screen thread drawer overlay');
 });

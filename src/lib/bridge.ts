@@ -185,21 +185,31 @@ export async function runBdCommand(
     const shellCommand = buildShellCommand(command, args);
 
     let env = deps.env;
+    const nodeBinDir = path.dirname(process.execPath);
     if (process.platform === 'win32') {
       const mingwBin = 'C:\\msys64\\mingw64\\bin';
       const existingPath = deps.env.Path ?? deps.env.PATH ?? '';
-      const enhancedPath = existingPath.includes('mingw64')
-        ? existingPath
-        : `${mingwBin};${existingPath}`;
+      const pathParts = existingPath.split(';').filter(Boolean);
+      if (!pathParts.includes(mingwBin)) {
+        pathParts.unshift(mingwBin);
+      }
+      if (!pathParts.includes(nodeBinDir)) {
+        pathParts.unshift(nodeBinDir);
+      }
+      const enhancedPath = pathParts.join(';');
       env = { ...deps.env, Path: enhancedPath, PATH: enhancedPath };
     } else {
       // Ensure ~/.local/bin is in PATH so bd is found regardless of how the server was started
       const home = deps.env.HOME ?? '';
       const localBin = `${home}/.local/bin`;
-      const existingPath = deps.env.PATH ?? '';
-      if (home && !existingPath.includes(localBin)) {
-        env = { ...deps.env, PATH: `${localBin}:${existingPath}` };
+      const pathParts = (deps.env.PATH ?? '').split(':').filter(Boolean);
+      if (home && !pathParts.includes(localBin)) {
+        pathParts.unshift(localBin);
       }
+      if (!pathParts.includes(nodeBinDir)) {
+        pathParts.unshift(nodeBinDir);
+      }
+      env = { ...deps.env, PATH: pathParts.join(':') };
     }
 
     const { stdout, stderr } = await deps.exec(shellCommand, {

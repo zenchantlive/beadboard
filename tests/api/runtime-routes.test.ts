@@ -74,11 +74,15 @@ describe('validateProjectRoot — rejects invalid inputs', () => {
   });
 
   it('rejects absolute path without .beads directory', () => {
-    // os.tmpdir() exists but has no .beads subdirectory
-    const result = validateProjectRoot(os.tmpdir());
-    assert.equal(result.valid, false);
-    if (!result.valid) {
-      assert.equal(result.error.status, 400);
+    const dir = makeTempDir();
+    try {
+      const result = validateProjectRoot(dir);
+      assert.equal(result.valid, false);
+      if (!result.valid) {
+        assert.equal(result.error.status, 400);
+      }
+    } finally {
+      removeTempDir(dir);
     }
   });
 });

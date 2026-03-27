@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { ChevronLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import type { BeadIssue } from '../../lib/types';
 import { ActivityPanel } from './activity-panel';
 import { SwarmCommandFeed } from './swarm-command-feed';
@@ -10,6 +11,7 @@ import { MissionInspector } from '../mission/mission-inspector';
 import { AgentStatusPanel } from '../agents/agent-status-panel';
 import { AgentDetailPanel } from './agent-detail-panel';
 import { TaskAssignedAgentContext } from './task-assigned-agent-context';
+import { TaskReviewPanel } from './task-review-panel';
 import { useSwarmList } from '../../hooks/use-swarm-list';
 import { useUrlState } from '../../hooks/use-url-state';
 import { resolveContextualRightPanelVariant, type ContextualRightPanelVariant } from './contextual-right-panel-utils';
@@ -28,6 +30,7 @@ export interface ContextualRightPanelProps {
 }
 
 export function ContextualRightPanel({ epicId, taskId, swarmId, agentId, issues, agentStates = [], projectRoot, actor, onMinimize }: ContextualRightPanelProps) {
+    const router = useRouter();
     const { setTaskId, setAgentId } = useUrlState();
 
     const variant: ContextualRightPanelVariant = resolveContextualRightPanelVariant({ epicId, taskId, swarmId, agentId });
@@ -35,6 +38,21 @@ export function ContextualRightPanel({ epicId, taskId, swarmId, agentId, issues,
     // Task conversation takes priority — user explicitly clicked the conversation icon
     if (variant === 'task' && taskId) {
         const selectedIssue = issues.find(i => i.id === taskId) ?? null;
+        const handleIssueUpdated = async () => {
+            router.refresh();
+        };
+        if (selectedIssue?.status === 'closed') {
+            return (
+                <TaskReviewPanel
+                    taskId={taskId}
+                    issue={selectedIssue}
+                    agentStates={agentStates}
+                    projectRoot={projectRoot}
+                    actor={actor}
+                    onClose={() => setTaskId(null)}
+                />
+            );
+        }
         return (
             <div className="flex h-full flex-col overflow-hidden bg-[var(--surface-primary)]">
                 <TaskAssignedAgentContext
@@ -52,7 +70,7 @@ export function ContextualRightPanel({ epicId, taskId, swarmId, agentId, issues,
                         issue={selectedIssue}
                         projectRoot={projectRoot}
                         actor={actor}
-                        onIssueUpdated={async () => {}}
+                        onIssueUpdated={handleIssueUpdated}
                     />
                 </div>
             </div>

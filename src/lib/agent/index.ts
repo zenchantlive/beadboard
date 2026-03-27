@@ -14,3 +14,4 @@
 // Re-export from types (already migrated)
 export * from './types';
 export * from './state';
+export * from './ownership';

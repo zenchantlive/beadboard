@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
-import { AlertTriangle, LayoutGrid, Lock, Plus, Rocket, Sidebar, SidebarClose } from 'lucide-react';
+import { AlertTriangle, LayoutGrid, Lock, Plus, Sidebar, SidebarClose } from 'lucide-react';
 import { useUrlState } from '../../hooks/use-url-state';
 import { useResponsive } from '../../hooks/use-responsive';
 import { ThemeToggle } from './theme-toggle';
@@ -21,6 +21,8 @@ export interface TopBarProps {
   onLaunchSwarm?: () => void;
   onOpenBlockedTriage?: () => void;
   blockedEventCount?: number;
+  completedEventCount?: number;
+  onCompletedIndicatorClick?: () => void;
   onBlockedIndicatorClick?: () => void;
 }
 
@@ -94,6 +96,8 @@ export function TopBar({
   onLaunchSwarm,
   onOpenBlockedTriage,
   blockedEventCount = 0,
+  completedEventCount = 0,
+  onCompletedIndicatorClick,
   onBlockedIndicatorClick,
 }: TopBarProps) {
   const { leftPanel, toggleLeftPanel, rightPanel, toggleRightPanel, blockedOnly, toggleBlockedOnly } = useUrlState();
@@ -151,6 +155,21 @@ export function TopBar({
           </button>
         )}
 
+        {completedEventCount > 0 && (
+          <button
+            type="button"
+            onClick={onCompletedIndicatorClick}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/12 px-2.5 py-1.5 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            data-testid="completed-event-indicator"
+            aria-label={`${completedEventCount} completed worker${completedEventCount === 1 ? '' : 's'} awaiting review`}
+            title={`${completedEventCount} completed worker${completedEventCount === 1 ? '' : 's'} awaiting review`}
+          >
+            <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="hidden sm:inline">{completedEventCount} Completed</span>
+            <span className="sm:hidden">{completedEventCount}</span>
+          </button>
+        )}
+
         {children ?? (
           <>
 <button
@@ -198,7 +217,6 @@ export function TopBar({
             className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.11em] text-emerald-400 transition-colors hover:bg-emerald-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
             aria-label="Launch Swarm"
           >
-            <Rocket className="h-3.5 w-3.5" aria-hidden="true" />
             Launch Swarm
           </button>
         ) : null}

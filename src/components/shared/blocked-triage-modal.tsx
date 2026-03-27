@@ -12,6 +12,8 @@ import { deriveBlockedIds, buildBlockedByTree, type BlockedTreeNode } from '../.
 import { useArchetypePicker } from '../../hooks/use-archetype-picker';
 import { useArchetypes } from '../../hooks/use-archetypes';
 import type { BeadIssue } from '../../lib/types';
+import type { AgentState } from '../../lib/agent';
+import type { AgentArchetype } from '../../lib/types-swarm';
 import { Blocks, ChevronRight, UserPlus, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -20,7 +22,115 @@ export interface BlockedTriageModalProps {
   onClose: () => void;
   issues: BeadIssue[];
   projectRoot: string;
+  agentStates?: readonly AgentState[];
   onSelectTask?: (taskId: string) => void;
+}
+
+export interface BlockedTriageAssignmentOption {
+  archetype: AgentArchetype;
+  liveCount: number;
+  idleCount: number;
+  busyCount: number;
+  blockedCount: number;
+}
+
+export interface BlockedTriageIssueSummary {
+  issue: BeadIssue;
+  isExplicitlyBlocked: boolean;
+  isDerivedBlocked: boolean;
+  blockerChain: {
+    total: number;
+    nodes: BlockedTreeNode[];
+  };
+}
+
+export function selectBlockedTriageIssues(issues: BeadIssue[]): BlockedTriageIssueSummary[] {
+  const blockedIdsSet = deriveBlockedIds(issues);
+
+  return issues
+    .filter((issue) => {
+      const isExplicitlyBlocked = issue.status === 'blocked';
+      const isDerivedBlocked = blockedIdsSet.has(issue.id);
+      return isExplicitlyBlocked || isDerivedBlocked;
+    })
+    .map((issue) => ({
+      issue,
+      isExplicitlyBlocked: issue.status === 'blocked',
+      isDerivedBlocked: blockedIdsSet.has(issue.id),
+      blockerChain: buildBlockedByTree(issues, issue.id),
+    }))
+    .sort((left, right) => {
+      if (left.isExplicitlyBlocked !== right.isExplicitlyBlocked) {
+        return left.isExplicitlyBlocked ? -1 : 1;
+      }
+      if (left.issue.priority !== right.issue.priority) {
+        return left.issue.priority - right.issue.priority;
+      }
+      return left.issue.id.localeCompare(right.issue.id);
+    });
+}
+
+export function buildBlockedTriageAssignmentOptions(
+  archetypes: readonly AgentArchetype[],
+  agentStates: readonly AgentState[] = [],
+): BlockedTriageAssignmentOption[] {
+  const countsByType = new Map<string, Omit<BlockedTriageAssignmentOption, 'archetype'>>();
+
+  for (const state of agentStates) {
+    const agentTypeId = state.agentTypeId?.trim();
+    if (!agentTypeId) {
+      continue;
+    }
+
+    const current = countsByType.get(agentTypeId) ?? {
+      liveCount: 0,
+      idleCount: 0,
+      busyCount: 0,
+      blockedCount: 0,
+    };
+
+    if (state.status !== 'completed' && state.status !== 'failed') {
+      current.liveCount += 1;
+    }
+    if (state.status === 'idle') {
+      current.idleCount += 1;
+    }
+    if (state.status === 'launching' || state.status === 'working') {
+      current.busyCount += 1;
+    }
+    if (state.status === 'blocked') {
+      current.blockedCount += 1;
+    }
+
+    countsByType.set(agentTypeId, current);
+  }
+
+  const options = archetypes.map((archetype) => {
+    const counts = countsByType.get(archetype.id) ?? {
+      liveCount: 0,
+      idleCount: 0,
+      busyCount: 0,
+      blockedCount: 0,
+    };
+
+    return {
+      archetype,
+      ...counts,
+    };
+  });
+
+  const liveOptions = options.filter((option) => option.liveCount > 0);
+  const visibleOptions = liveOptions.length > 0 ? liveOptions : options;
+
+  return visibleOptions.sort((left, right) => {
+    if (left.liveCount !== right.liveCount) {
+      return right.liveCount - left.liveCount;
+    }
+    if (left.idleCount !== right.idleCount) {
+      return right.idleCount - left.idleCount;
+    }
+    return left.archetype.name.localeCompare(right.archetype.name);
+  });
 }
 
 export function BlockedTriageModal({
@@ -28,18 +138,28 @@ export function BlockedTriageModal({
   onClose,
   issues,
   projectRoot,
+  agentStates = [],
   onSelectTask,
 }: BlockedTriageModalProps) {
   const { archetypes } = useArchetypes(projectRoot);
-  const blockedIdsSet = useMemo(() => deriveBlockedIds(issues), [issues]);
-
-  const blockedTasks = useMemo(() => {
-    return issues.filter((issue) => {
-      const isExplicitlyBlocked = issue.status === 'blocked';
-      const isDerivedBlocked = blockedIdsSet.has(issue.id);
-      return isExplicitlyBlocked || isDerivedBlocked;
-    });
-  }, [issues, blockedIdsSet]);
+  const blockedTaskSummaries = useMemo(() => selectBlockedTriageIssues(issues), [issues]);
+  const assignmentOptions = useMemo(
+    () => buildBlockedTriageAssignmentOptions(archetypes, agentStates),
+    [agentStates, archetypes],
+  );
+  const assignmentAvailabilityNote = useMemo(() => {
+    const totalLiveOptions = assignmentOptions.filter((option) => option.liveCount > 0).length;
+    if (assignmentOptions.length === 0) {
+      return 'No agent types are available yet.';
+    }
+    if (totalLiveOptions === 0) {
+      return 'No live agents detected; showing all archetypes.';
+    }
+    if (totalLiveOptions === assignmentOptions.length) {
+      return `Showing ${totalLiveOptions} live agent type${totalLiveOptions === 1 ? '' : 's'}.`;
+    }
+    return `Showing ${totalLiveOptions} live agent type${totalLiveOptions === 1 ? '' : 's'} of ${assignmentOptions.length}.`;
+  }, [assignmentOptions]);
 
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const archetypePicker = useArchetypePicker();
@@ -65,19 +185,18 @@ export function BlockedTriageModal({
             Blocked Tasks Triage
           </DialogTitle>
           <DialogDescription className="text-[var(--text-secondary)]">
-            {blockedTasks.length} blocked task{blockedTasks.length !== 1 ? 's' : ''} require attention.
+            {blockedTaskSummaries.length} blocked task{blockedTaskSummaries.length !== 1 ? 's' : ''} require attention.
             Click on a row to see the blocker chain and assign an archetype.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-2 pr-2">
-          {blockedTasks.length === 0 ? (
+          {blockedTaskSummaries.length === 0 ? (
             <div className="text-center py-8 text-[var(--text-tertiary)]">
               No blocked tasks found.
             </div>
           ) : (
-            blockedTasks.map((issue) => {
-              const blockerChain = buildBlockedByTree(issues, issue.id);
+            blockedTaskSummaries.map(({ issue, isExplicitlyBlocked, isDerivedBlocked, blockerChain }) => {
               const isExpanded = expandedRow === issue.id;
 
               return (
@@ -85,16 +204,37 @@ export function BlockedTriageModal({
                   key={issue.id}
                   className="border rounded-lg bg-[var(--surface-card)] border-[var(--border-subtle)] overflow-hidden"
                 >
-                  <button
-                    onClick={() => toggleRow(issue.id)}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      onSelectTask?.(issue.id);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onSelectTask?.(issue.id);
+                      }
+                    }}
                     className="w-full flex items-center gap-3 p-3 text-left hover:bg-[var(--surface-hover)] transition-colors"
                   >
-                    <ChevronRight
-                      className={cn(
-                        'w-4 h-4 text-[var(--text-tertiary)] transition-transform',
-                        isExpanded && 'rotate-90'
-                      )}
-                    />
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        toggleRow(issue.id);
+                      }}
+                      className="p-0.5"
+                      aria-label={isExpanded ? 'Collapse blocker chain' : 'Expand blocker chain'}
+                      title={isExpanded ? 'Collapse blocker chain' : 'Expand blocker chain'}
+                    >
+                      <ChevronRight
+                        className={cn(
+                          'w-4 h-4 text-[var(--text-tertiary)] transition-transform',
+                          isExpanded && 'rotate-90'
+                        )}
+                      />
+                    </button>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-[var(--text-primary)] truncate">
                         {issue.title}
@@ -103,31 +243,33 @@ export function BlockedTriageModal({
                         {issue.id}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div
+                      className="flex items-center gap-2"
+                      onClick={(event) => event.stopPropagation()}
+                    >
                       {onSelectTask && (
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelectTask(issue.id);
-                          }}
+                          type="button"
+                          onClick={() => onSelectTask(issue.id)}
                           className="p-1 rounded hover:bg-[var(--surface-hover)] text-[var(--text-tertiary)] hover:text-[var(--accent-info)]"
                           title="Open in panel"
+                          aria-label="Open in panel"
                         >
                           <ExternalLink className="w-4 h-4" />
                         </button>
                       )}
-                      {issue.status === 'blocked' && (
+                      {isExplicitlyBlocked && (
                         <span className="text-xs px-2 py-0.5 rounded bg-[var(--status-blocked)] text-[var(--text-inverse)]">
                           explicit
                         </span>
                       )}
-                      {blockedIdsSet.has(issue.id) && issue.status !== 'blocked' && (
+                      {isDerivedBlocked && !isExplicitlyBlocked && (
                         <span className="text-xs px-2 py-0.5 rounded bg-[var(--accent-warning)]/20 text-[var(--accent-warning)]">
                           derived
                         </span>
                       )}
                     </div>
-                  </button>
+                  </div>
 
                   {isExpanded && (
                     <div className="border-t border-[var(--border-subtle)] p-3 bg-[var(--surface-tertiary)]/50">
@@ -161,6 +303,14 @@ export function BlockedTriageModal({
                       )}
 
                       <div className="flex items-center gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="mb-1 text-[10px] uppercase tracking-[0.12em] text-[var(--text-tertiary)]">
+                            Live availability
+                          </p>
+                          <p className="text-xs text-[var(--text-tertiary)]">
+                            {assignmentAvailabilityNote}
+                          </p>
+                        </div>
                         <select
                           value={archetypePicker.selectedArchetype || ''}
                           onChange={(e) =>
@@ -169,8 +319,10 @@ export function BlockedTriageModal({
                           className="flex-1 text-sm px-3 py-1.5 rounded border bg-[var(--surface-input)] border-[var(--border-default)] text-[var(--text-primary)]"
                         >
                           <option value="">Select archetype...</option>
-                          {archetypes.map((a) => (
-                            <option key={a.id} value={a.id}>{a.name}</option>
+                          {assignmentOptions.map((option) => (
+                            <option key={option.archetype.id} value={option.archetype.id}>
+                              {option.archetype.name} ({option.liveCount} live{option.idleCount > 0 ? `, ${option.idleCount} idle` : ''})
+                            </option>
                           ))}
                         </select>
                         <button

@@ -18,9 +18,11 @@ import { Maximize2 } from 'lucide-react';
 
 import type { BeadIssue } from '../../lib/types';
 import type { AgentArchetype } from '../../lib/types-swarm';
+import type { AgentState } from '../../lib/agent';
 import { buildWorkflowEdges } from '../../lib/epic-graph';
 import { useGraphAnalysis } from '../../hooks/use-graph-analysis';
 import { identifyTransitiveEdges } from '../../lib/graph-view';
+import { selectTaskAssignedAgentStates } from '../../lib/agent/ownership';
 import { GraphNodeCard, type GraphNodeData } from '../graph/graph-node-card';
 import { OffsetEdge } from '../graph/offset-edge';
 
@@ -34,6 +36,7 @@ export interface WorkflowGraphProps {
   className?: string;
   hideClosed?: boolean;
   archetypes?: AgentArchetype[];
+  agentStates?: readonly AgentState[];
   assignMode?: boolean;
   swarmId?: string;
 }
@@ -90,6 +93,7 @@ function WorkflowGraphInner({
   className = '',
   hideClosed = false,
   archetypes = [],
+  agentStates = [],
   assignMode = false,
 }: WorkflowGraphProps) {
   const { fitView } = useReactFlow();
@@ -109,6 +113,16 @@ function WorkflowGraphInner({
   } = useGraphAnalysis(beads, 'workflow', selectedId);
 
   const transitiveEdges = useMemo(() => identifyTransitiveEdges(graphModel), [graphModel]);
+  const assignedAgentStatesById = useMemo(() => {
+    const map = new Map<string, AgentState[]>();
+    for (const issue of beads) {
+      map.set(
+        issue.id,
+        selectTaskAssignedAgentStates(agentStates, issue.id, issue.agentInstanceId ?? null),
+      );
+    }
+    return map;
+  }, [agentStates, beads]);
 
   const flowModel = useMemo(() => {
     const visibleBeads = beads.filter((issue) => (!hideClosed ? true : issue.status !== 'closed'));
@@ -153,6 +167,7 @@ function WorkflowGraphInner({
           onViewInSocial: onViewInSocial,
           onAssignMode: onAssignMode,
           onViewTelemetry: onViewTelemetry,
+          assignedAgentStates: assignedAgentStatesById.get(issue.id) ?? [],
         },
         position: { x: 0, y: 0 },
         sourcePosition,
@@ -291,7 +306,7 @@ function WorkflowGraphInner({
       nodes: layoutDagre(baseNodes, graphEdges, layoutDirection, layoutDensity),
       edges: graphEdges,
     };
-  }, [transitiveEdges, beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap, archetypes, assignMode, onSelect, onViewInSocial, onAssignMode, onViewTelemetry, layoutDirection, layoutDensity, showHierarchy]);
+  }, [transitiveEdges, beads, hideClosed, selectedId, signalById, actionableNodeIds, cycleNodeIdSet, chainNodeIds, blockerTooltipMap, archetypes, assignedAgentStatesById, assignMode, onSelect, onViewInSocial, onAssignMode, onViewTelemetry, layoutDirection, layoutDensity, showHierarchy]);
 
   const nodeTypes: NodeTypes = useMemo(
     () => ({

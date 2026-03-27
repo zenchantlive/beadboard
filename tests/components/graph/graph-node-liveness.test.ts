@@ -3,97 +3,89 @@ import assert from 'node:assert/strict';
 import fs from 'fs/promises';
 import path from 'path';
 
-// Test that GraphNodeData interface includes livenessMap field
-test('GraphNodeData interface includes livenessMap field', async () => {
+import type { AgentState } from '../../../src/lib/agent';
+import { selectTaskAssignedAgentStates } from '../../../src/lib/agent/ownership';
+
+function makeAgentState(overrides: Partial<AgentState> & Pick<AgentState, 'projectId' | 'agentId' | 'status'>): AgentState {
+  return {
+    projectId: overrides.projectId,
+    agentId: overrides.agentId,
+    kind: overrides.kind ?? 'worker',
+    agentTypeId: overrides.agentTypeId ?? 'engineer',
+    label: overrides.label ?? overrides.agentId,
+    taskId: overrides.taskId ?? null,
+    epicId: overrides.epicId ?? null,
+    swarmId: overrides.swarmId ?? null,
+    status: overrides.status,
+    lastEventId: overrides.lastEventId ?? null,
+    lastEventKind: overrides.lastEventKind ?? null,
+    lastEventAt: overrides.lastEventAt ?? null,
+    result: overrides.result ?? null,
+    blocker: overrides.blocker ?? null,
+    error: overrides.error ?? null,
+    seenEventIds: overrides.seenEventIds ?? [],
+  };
+}
+
+test('GraphNodeCard overlays live agent ownership in the bottom-right corner', async () => {
   const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/graph/graph-node-card.tsx'), 'utf-8');
-  assert.ok(
-    /livenessMap/.test(fileContent),
-    'GraphNodeData should include livenessMap field'
-  );
+  assert.ok(fileContent.includes('AgentAvatar'), 'GraphNodeCard should render the shared AgentAvatar overlay');
+  assert.ok(fileContent.includes('assignedAgentStates'), 'GraphNodeCard should receive assigned agent states from the graph model');
+  assert.ok(fileContent.includes('absolute bottom-2 right-2'), 'GraphNodeCard should place the agent overlay in the bottom-right corner');
+  assert.ok(fileContent.includes("from '../shared/agent-presence'"), 'GraphNodeCard should reuse the shared agent-presence helper');
+  assert.ok(fileContent.includes('mapAgentStateToAvatarStatus(primaryAssignedAgentState)'), 'GraphNodeCard should map runtime state to avatar status through the shared helper');
 });
 
-// Test that GraphNodeData includes assignee field for liveness lookup
-test('GraphNodeData interface includes assignee field', async () => {
-  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/graph/graph-node-card.tsx'), 'utf-8');
-  assert.ok(
-    /assignee/.test(fileContent),
-    'GraphNodeData should include assignee field for liveness lookup'
-  );
-});
-
-// Test that GraphNodeCard imports AgentAvatar
-test('GraphNodeCard imports AgentAvatar component', async () => {
-  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/graph/graph-node-card.tsx'), 'utf-8');
-  assert.ok(
-    fileContent.includes('AgentAvatar'),
-    'GraphNodeCard should import and use AgentAvatar'
-  );
-});
-
-// Test that GraphNodeCard renders AgentAvatar based on liveness
-test('GraphNodeCard renders AgentAvatar with stale/evicted liveness pulse', async () => {
-  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/graph/graph-node-card.tsx'), 'utf-8');
-  // Should check for stale or evicted liveness state
-  assert.ok(
-    fileContent.includes('stale') || fileContent.includes('evicted'),
-    'GraphNodeCard should handle stale/evicted liveness for pulse animation'
-  );
-});
-
-// Test that WorkflowGraph accepts livenessMap prop
-test('WorkflowGraph accepts livenessMap prop', async () => {
+test('WorkflowGraph threads shared agent states into node data', async () => {
   const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/workflow-graph.tsx'), 'utf-8');
-  assert.ok(
-    /livenessMap/.test(fileContent),
-    'WorkflowGraph should accept livenessMap prop'
-  );
+  assert.ok(fileContent.includes('agentStates?: readonly AgentState[]'), 'WorkflowGraph should accept shell-owned agent states');
+  assert.ok(fileContent.includes('selectTaskAssignedAgentStates'), 'WorkflowGraph should reuse the shared task-agent projection');
+  assert.ok(fileContent.includes('assignedAgentStates: assignedAgentStatesById.get(issue.id) ?? []'), 'WorkflowGraph should pass per-task assigned states into node data');
 });
 
-// Test that WorkflowGraph passes livenessMap to node data
-test('WorkflowGraph passes livenessMap to node data', async () => {
-  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/shared/workflow-graph.tsx'), 'utf-8');
-  assert.ok(
-    fileContent.includes('livenessMap'),
-    'WorkflowGraph should pass livenessMap into node data'
-  );
+test('SmartDag and UnifiedShell pass shell agent states into the graph path', async () => {
+  const smartDag = await fs.readFile(path.join(process.cwd(), 'src/components/graph/smart-dag.tsx'), 'utf-8');
+  const shell = await fs.readFile(path.join(process.cwd(), 'src/components/shared/unified-shell.tsx'), 'utf-8');
+  assert.ok(smartDag.includes('agentStates?: readonly AgentState[]'), 'SmartDag should accept agent states from the shell');
+  assert.ok(smartDag.includes('agentStates={agentStates}'), 'SmartDag should forward agent states into WorkflowGraph');
+  assert.ok(shell.includes('agentStates={agentStates}'), 'UnifiedShell should pass shell agent states into SmartDag');
 });
 
-// Test that SmartDag passes livenessMap to WorkflowGraph
-test('SmartDag passes livenessMap prop to WorkflowGraph', async () => {
-  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/graph/smart-dag.tsx'), 'utf-8');
-  assert.ok(
-    fileContent.includes('livenessMap'),
-    'SmartDag should accept and pass livenessMap to WorkflowGraph'
-  );
-});
+test('selectTaskAssignedAgentStates prefers task matches and recent runtime states', () => {
+  const states = [
+    makeAgentState({
+      projectId: 'bb',
+      agentId: 'worker-a',
+      label: 'Worker A',
+      status: 'working',
+      taskId: 'task-1',
+      lastEventAt: '2026-03-26T12:00:00.000Z',
+    }),
+    makeAgentState({
+      projectId: 'bb',
+      agentId: 'worker-b',
+      label: 'Worker B',
+      status: 'blocked',
+      taskId: 'task-1',
+      lastEventAt: '2026-03-26T12:05:00.000Z',
+      blocker: 'Waiting on review',
+    }),
+    makeAgentState({
+      projectId: 'bb',
+      agentId: 'engineer-01-abc123',
+      label: 'Engineer 01',
+      status: 'launching',
+      taskId: 'task-2',
+      lastEventAt: '2026-03-26T12:10:00.000Z',
+    }),
+  ];
 
-// Test that SmartDag destructures livenessMap from props
-test('SmartDag destructures livenessMap from its props', async () => {
-  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/graph/smart-dag.tsx'), 'utf-8');
-  // Check that the function signature includes livenessMap
-  const funcMatch = fileContent.match(/export function SmartDag\s*\(\s*\{([^}]+)\}/s);
-  assert.ok(
-    funcMatch && funcMatch[1].includes('livenessMap'),
-    'SmartDag function should destructure livenessMap from props'
-  );
-});
+  const selected = selectTaskAssignedAgentStates(states, 'task-1');
+  assert.equal(selected.length, 2);
+  assert.equal(selected[0].agentId, 'worker-b');
+  assert.equal(selected[1].agentId, 'worker-a');
 
-// Test that AgentAvatar is overlaid at bottom-right of node card
-test('GraphNodeCard overlays AgentAvatar at bottom-right position', async () => {
-  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/graph/graph-node-card.tsx'), 'utf-8');
-  // Should use absolute positioning for the overlay
-  assert.ok(
-    fileContent.includes('absolute') && fileContent.includes('AgentAvatar'),
-    'GraphNodeCard should use absolute positioning for AgentAvatar overlay'
-  );
-});
-
-// Test liveness-to-status mapping covers stuck states
-test('GraphNodeCard maps stale/evicted liveness to stuck/stale AgentAvatar status', async () => {
-  const fileContent = await fs.readFile(path.join(process.cwd(), 'src/components/graph/graph-node-card.tsx'), 'utf-8');
-  // Should map liveness values to AgentAvatar status prop
-  assert.ok(
-    (fileContent.includes('stale') || fileContent.includes('stuck')) && fileContent.includes('AgentAvatar'),
-    'GraphNodeCard should map liveness to AgentAvatar status for stuck/stale agents'
-  );
+  const byAgentInstance = selectTaskAssignedAgentStates(states, 'task-missing', 'engineer-01-abc123');
+  assert.equal(byAgentInstance.length, 1);
+  assert.equal(byAgentInstance[0].agentId, 'engineer-01-abc123');
 });
