@@ -207,6 +207,9 @@ test('registerAgent creates stable metadata file with idle status', async () => 
   assert.equal(result.data?.agent_id, 'agent-ui-1');
   assert.equal(result.data?.status, 'idle');
   assert.equal(result.data?.role, 'ui');
+  assert.equal(result.data?.agent_type_id, 'ui');
+  assert.equal(result.data?.agent_instance_id, 'agent-ui-1');
+  assert.equal(result.data?.identity_kind, 'runtime-instance');
 });
 
 test('registerAgent rejects duplicate id without --force-update', async () => {
@@ -238,6 +241,8 @@ test('registerAgent force update mutates display/role but keeps created_at', asy
   assert.equal(updated.data?.display_name, 'Frontend Agent');
   assert.equal(updated.data?.role, 'frontend');
   assert.equal(updated.data?.created_at, createdAt);
+  assert.equal(updated.data?.agent_type_id, 'frontend');
+  assert.equal(updated.data?.agent_instance_id, 'agent-ui-1');
 });
 
 test('listAgents sorts and filters by role/status', async () => {

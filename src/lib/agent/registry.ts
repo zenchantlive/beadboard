@@ -15,8 +15,20 @@ import type {
   ActivityLeaseInput,
   AgentLiveness,
 } from './types';
+import {
+  AGENT_INSTANCE_LABEL_PREFIX,
+  AGENT_TYPE_LABEL_PREFIX,
+  LEGACY_AGENT_LABEL,
+  RUNTIME_INSTANCE_LABEL,
+  extractAgentInstanceLabel,
+  extractAgentTypeLabel,
+  fromAgentBeadId,
+  isRuntimeAgentLabels,
+  normalizeAgentHandle,
+  toAgentBeadId,
+} from './identity';
 
-const AGENT_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const AGENT_ID_PATTERN = /^[a-z0-9][a-z0-9./#_-]*$/i;
 
 interface CacheEntry<T> {
   data: T;
@@ -54,17 +66,6 @@ function setCachedAgent(projectRoot: string, beadId: string, data: AgentRecord |
 
 function invalidateCachedAgent(projectRoot: string, beadId: string): void {
   agentCache.delete(getAgentCacheKey(projectRoot, beadId));
-}
-
-function toBeadId(name: string): string {
-  const trimmed = name.trim();
-  if (trimmed.startsWith('bb-')) return trimmed;
-  return `bb-${trimmed}`;
-}
-
-function fromBeadId(id: string): string {
-  if (id.startsWith('bb-')) return id.slice(3);
-  return id;
 }
 
 function extractJson(text: string): any {
@@ -105,7 +106,7 @@ function extractAgentStateLabel(labels: readonly string[]): string | undefined {
 async function readAgentBeadEntries(projectRoot: string, runBd: BdRunner): Promise<any[]> {
   const listResult = await runBd({
     projectRoot,
-    args: ['list', '--label', 'gt:agent', '--json'],
+    args: ['list', '--all', '--label', LEGACY_AGENT_LABEL, '--json'],
     timeoutMs: 120_000,
   });
 
@@ -162,10 +163,10 @@ function success<T>(command: AgentCommandName, data: T): AgentCommandResponse<T>
 }
 
 function validateAgentId(value: string): AgentCommandError | null {
-  if (!AGENT_ID_PATTERN.test(value) || value.length < 3 || value.length > 48) {
+  if (!AGENT_ID_PATTERN.test(value) || value.length < 3 || value.length > 96) {
     return {
       code: 'INVALID_AGENT_ID',
-      message: 'Agent id must match ^[a-z0-9]+(?:-[a-z0-9]+)*$ and be 3..48 characters.',
+      message: 'Agent id must be 3..96 characters and use letters, numbers, ".", "/", "#", "_" or "-".',
     };
   }
 
@@ -184,38 +185,43 @@ function validateRole(value: string): AgentCommandError | null {
 }
 
 function mapBdAgentToRecord(bdAgent: any): AgentRecord {
+  const labels = Array.isArray(bdAgent.labels)
+    ? bdAgent.labels.filter((label: unknown): label is string => typeof label === 'string')
+    : [];
   let role = bdAgent.role_type || 'agent';
   let swarmId: string | undefined;
   let currentTask: string | undefined;
   let status = bdAgent.agent_state;
 
-  if (Array.isArray(bdAgent.labels)) {
-    const roleLabel = bdAgent.labels.find((l: string) => l.startsWith('role:'));
+  if (labels.length > 0) {
+    const roleLabel = labels.find((l: string) => l.startsWith('role:'));
     if (roleLabel) {
       role = roleLabel.split(':')[1];
     }
-    const swarmLabel = bdAgent.labels.find((l: string) => l.startsWith('swarm:'));
+    const swarmLabel = labels.find((l: string) => l.startsWith('swarm:'));
     if (swarmLabel) {
       swarmId = swarmLabel.split(':')[1];
     }
-    const workingLabel = bdAgent.labels.find((l: string) => l.startsWith('working:'));
+    const workingLabel = labels.find((l: string) => l.startsWith('working:'));
     if (workingLabel) {
       currentTask = workingLabel.split(':')[1];
     }
-    status = status || extractAgentStateLabel(bdAgent.labels);
+    status = status || extractAgentStateLabel(labels);
   }
 
+  const agentTypeId = extractAgentTypeLabel(labels) ?? normalizeAgentHandle(role);
+  const agentInstanceId = extractAgentInstanceLabel(labels) ?? fromAgentBeadId(bdAgent.id);
   let rig = bdAgent.rig;
-  if (!rig && Array.isArray(bdAgent.labels)) {
-    const rigLabel = bdAgent.labels.find((l: string) => l.startsWith('rig:'));
+  if (!rig && labels.length > 0) {
+    const rigLabel = labels.find((l: string) => l.startsWith('rig:'));
     if (rigLabel) {
       rig = rigLabel.split(':')[1];
     }
   }
 
   const record: AgentRecord = {
-    agent_id: fromBeadId(bdAgent.id),
-    display_name: bdAgent.title?.replace(/^Agent: /, '') || fromBeadId(bdAgent.id),
+    agent_id: agentInstanceId,
+    display_name: bdAgent.title?.replace(/^Agent: /, '') || agentInstanceId,
     role,
     status: status || 'idle',
     created_at: bdAgent.created_at || bdAgent.last_activity || bdAgent.updated_at || new Date().toISOString(),
@@ -225,6 +231,9 @@ function mapBdAgentToRecord(bdAgent: any): AgentRecord {
     role_type: bdAgent.role_type,
     swarm_id: swarmId,
     current_task: currentTask,
+    agent_type_id: agentTypeId,
+    agent_instance_id: agentInstanceId,
+    identity_kind: isRuntimeAgentLabels(labels) ? 'runtime-instance' : undefined,
   };
   return record;
 }
@@ -251,7 +260,9 @@ export async function registerAgent(
   }
 
   try {
-    const beadId = toBeadId(name);
+    const beadId = toAgentBeadId(name);
+    const agentTypeId = normalizeAgentHandle(role);
+    const agentInstanceId = normalizeAgentHandle(name);
 
     const showResult = await runBd({
       projectRoot,
@@ -273,7 +284,7 @@ export async function registerAgent(
           '--title',
           `Agent: ${display}`,
           '--description',
-          `Agent role: ${role}`,
+          `Runtime instance for archetype ${role}`,
           '--type',
           'task',
           '--priority',
@@ -295,22 +306,27 @@ export async function registerAgent(
       : [];
     const labels = existingLabels.filter(
       (label: string) =>
-        label !== 'gt:agent' &&
+        label !== LEGACY_AGENT_LABEL &&
+        label !== RUNTIME_INSTANCE_LABEL &&
         !label.startsWith('role:') &&
         !label.startsWith('rig:') &&
         !label.startsWith('agent-state:') &&
+        !label.startsWith(AGENT_TYPE_LABEL_PREFIX) &&
+        !label.startsWith(AGENT_INSTANCE_LABEL_PREFIX) &&
         !label.startsWith('state:'),
     );
-    labels.unshift('gt:agent');
+    labels.unshift(LEGACY_AGENT_LABEL, RUNTIME_INSTANCE_LABEL);
     if (role) {
       labels.push(`role:${role}`);
     }
+    labels.push(`${AGENT_TYPE_LABEL_PREFIX}${agentTypeId}`);
+    labels.push(`${AGENT_INSTANCE_LABEL_PREFIX}${agentInstanceId}`);
     if (input.rig) {
       labels.push(`rig:${input.rig}`);
     }
     labels.push('agent-state:idle');
 
-    const updateArgs = ['update', beadId, '--title', `Agent: ${display}`];
+    const updateArgs = ['update', beadId, '--title', `Agent: ${display}`, '--status', 'deferred'];
     for (const label of labels) {
       updateArgs.push('--set-labels', label);
     }
@@ -385,7 +401,7 @@ export async function showAgent(
   }
 
   try {
-    const beadId = toBeadId(name);
+    const beadId = toAgentBeadId(name);
     const record = await callBdAgentShow(beadId, projectRoot, runBd);
 
     if (!record) {
@@ -414,7 +430,7 @@ export async function setAgentState(
   }
 
   try {
-    const beadId = toBeadId(name);
+    const beadId = toAgentBeadId(name);
 
     const existingAgent = (await readAgentBeadEntries(projectRoot, runBd)).find((entry) => entry.id === beadId) ?? null;
     if (!existingAgent) {
@@ -429,9 +445,13 @@ export async function setAgentState(
     );
     labels.push(`agent-state:${state}`);
 
+    const issueStatus = state === 'done' || state === 'stopped' || state === 'dead'
+      ? 'closed'
+      : 'deferred';
+
     const stateResult = await runBd({
       projectRoot,
-      args: ['update', beadId, ...labels.flatMap((label: string) => ['--set-labels', label]), '--json'],
+      args: ['update', beadId, '--status', issueStatus, ...labels.flatMap((label: string) => ['--set-labels', label]), '--json'],
     });
 
     if (!stateResult.success) {
@@ -481,7 +501,7 @@ export async function extendActivityLease(
   }
 
   try {
-    const beadId = toBeadId(name);
+    const beadId = toAgentBeadId(name);
     
     const wispResult = await runBd({
       projectRoot,

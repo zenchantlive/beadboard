@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Folder, FolderOpen, Pencil, Rocket, Star } f
 
 import type { RuntimeInstance } from '../../lib/embedded-runtime';
 import type { BeadIssue } from '../../lib/types';
+import { isRuntimeAgentIssue } from '../../lib/agent/identity';
 import { cn } from '../../lib/utils';
 import { useUrlState, type LeftPanelFilters, type LeftPanelStatusFilter, type LeftPanelPriorityFilter, type LeftPanelPresetFilter, type LeftSidebarMode, type ViewType } from '../../hooks/use-url-state';
 export type { LeftPanelFilters } from '../../hooks/use-url-state';
@@ -73,7 +74,7 @@ function isTaskMatch(task: BeadIssue, filters: LeftPanelFilters): boolean {
   }
 
   if (filters.preset === 'blocked_agents') {
-    if (!task.labels.includes('gt:agent') && !task.labels.includes('agent:blocked')) return false;
+    if (!task.labels.includes('agent:blocked') && !task.assignee && !task.labels.some((label) => label.startsWith('agent:'))) return false;
   }
 
   if (filters.hideClosed) {
@@ -137,7 +138,7 @@ export function LeftPanel({
     const childrenMap = new Map<string, BeadIssue[]>();
 
     for (const issue of issues) {
-      if (issue.labels.includes('gt:agent')) continue;
+      if (isRuntimeAgentIssue(issue)) continue;
 
       const parentEdge = issue.dependencies.find((dep) => dep.type === 'parent');
       if (parentEdge) {

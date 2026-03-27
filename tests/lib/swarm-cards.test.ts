@@ -32,7 +32,7 @@ function makeBead(overrides: Partial<BeadIssue>): BeadIssue {
 function makeAgentBead(id: string, swarmId: string, updatedAt: string): BeadIssue {
   return makeBead({
     id,
-    title: `Agent: ${id}`,
+    title: `Agent: ${id.replace(/^bb-/, '')}`,
     issue_type: 'agent',
     labels: ['gt:agent', `swarm:${swarmId}`],
     updated_at: updatedAt,
@@ -114,6 +114,29 @@ test('buildSwarmCards extracts agents from swarm', () => {
   assert.equal(card!.agents.length, 2);
   assert.ok(card!.agents.some((a) => a.name === 'agent1'));
   assert.ok(card!.agents.some((a) => a.name === 'agent2'));
+});
+
+test('buildSwarmCards treats runtime-instance labels as swarm agents', () => {
+  const now = new Date();
+  const recentActivity = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
+
+  const beads: BeadIssue[] = [
+    makeEpicBead('bb-epic1', 'Epic'),
+    makeBead({
+      id: 'bb-coder-task-kqi-3',
+      title: 'Agent: coder/task-kqi-3',
+      issue_type: 'task',
+      labels: ['agent-lifecycle:runtime-instance', 'agent-instance:coder/task-kqi-3', 'swarm:bb-epic1'],
+      updated_at: recentActivity,
+    }),
+  ];
+
+  const cards = buildSwarmCards(beads, now);
+  const card = cards.find((c) => c.swarmId === 'bb-epic1');
+
+  assert.ok(card);
+  assert.equal(card!.agents.length, 1);
+  assert.equal(card!.agents[0].name, 'coder/task-kqi-3');
 });
 
 test('buildSwarmCards derives agent status from last activity', () => {

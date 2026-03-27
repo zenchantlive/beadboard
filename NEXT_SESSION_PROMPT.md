@@ -1,49 +1,65 @@
-# Next Session: Continue Orchestrator v2
+# Next Session: Post-KQI Follow-Through
 
-## Current State
+## What Changed
 
-Phase 1 is complete.
+`beadboard-kqi` is complete and closed.
 
-Verified beads:
-- `beadboard-ov2.2.1.2`
-- `beadboard-ov2.2.2.2`
-- `beadboard-ov2.2.3.2`
-- `beadboard-ov2.3.1.3`
-- `beadboard-ov2.3.2.3`
+Shipped work:
+- BeadBoard driver skill now treats approved archetypes as the only stable spawnable worker types.
+- Orchestrators must declare a spawn plan before dispatch.
+- Runtime instances now use deterministic archetype-backed identity labels.
+- Runtime-instance lifecycle is retired out of normal ready-work selection.
+- New archetype creation now requires explicit approval metadata in file, API, TUI, and inspector flows.
+- Git-tracked bead snapshot now includes `beadboard-kqi` and all child beads so GitHub pullers can see the finished work.
 
-What is now true:
-- `UnifiedShell` owns the canonical `agentStates` path.
-- `/api/runtime/agents` projects from `workerSessionManager.listAgentStates(projectRoot)` and `summarizeAgentStates(...)`.
-- `TopBar` now renders `busy`, `idle`, and `blocked` agent counts from `AgentState`.
-- `Blocked Items` still uses task-triage counts and is separate from the agent-state metric tile.
-
-## Verified Evidence
+## Verified
 
 Commands that passed in the current session:
 ```bash
-node --import tsx --test tests/components/shared/top-bar.test.tsx tests/components/unified-shell.test.tsx tests/api/runtime-routes.test.ts
+node --import tsx --test tests/lib/agent-registry.test.ts tests/lib/identity-isolation.test.ts tests/lib/social-cards.test.ts tests/lib/swarm-cards.test.ts tests/server/beads-fs.test.ts tests/skills/beadboard-driver/generate-agent-name.test.ts
 npm run typecheck
 npm run lint
 npm run test
+/Users/jordanhindo/.local/bin/bd ready --limit 10
+/Users/jordanhindo/.local/bin/bd query 'status=open AND label=gt:agent' --limit 5 --json
 ```
 
-Browser artifacts captured:
-- `artifacts/sessions-mobile-phase1b-shell-mount.png`
-- `artifacts/sessions-tablet-phase1b-shell-mount.png`
-- `artifacts/sessions-desktop-phase1b-shell-mount.png`
-- `artifacts/sessions-mobile-phase1b-topbar-metrics.png`
-- `artifacts/sessions-tablet-phase1b-topbar-metrics.png`
-- `artifacts/sessions-desktop-phase1b-topbar-metrics.png`
+Browser artifacts captured against `http://127.0.0.1:3003`:
+- `artifacts/sessions-mobile-governance.png`
+- `artifacts/sessions-tablet-governance.png`
+- `artifacts/sessions-desktop-governance.png`
+- `artifacts/graph-next-1440.png`
+- `artifacts/graph-next-768.png`
+- `artifacts/graph-next-390-overview.png`
+- `artifacts/graph-next-390-flow.png`
+- `artifacts/blocked-triage-mobile-open.png`
+- `artifacts/blocked-triage-tablet-open.png`
+- `artifacts/blocked-triage-desktop-open.png`
 
-## Next Beads
+Closed beads:
+- `beadboard-kqi`
+- `beadboard-kqi.1`
+- `beadboard-kqi.2`
+- `beadboard-kqi.3`
+- `beadboard-kqi.4`
+- `beadboard-kqi.5`
+- `beadboard-kqi.6`
 
-1. Start with `beadboard-ov2.4.1.4` once Phase 2A becomes the next ready slice.
-2. Keep the next work focused on downstream consumers of the canonical agent-state path.
-3. Do not reintroduce parallel count derivations in shell, graph, or social views.
+## Open Risks
 
-## Rules To Keep In Mind
+- `bd dolt pull` and `bd dolt push` still fail with `no common ancestor` against the configured Dolt remote. Local `bd` state is correct, and the Git-tracked snapshot was updated so repo pullers can see `kqi`, but Dolt remote reconciliation still needs a deliberate fix.
+- The reliable `bd` binary on this machine is `/Users/jordanhindo/.local/bin/bd` because the older PATH `bd` is mismatched with the repo schema.
 
-- Use `--assignee` on every in-progress bead update.
-- Do not close any bead without fresh evidence from the current session.
-- Keep `Blocked Items` semantics separate from agent-state metrics.
-- Update bead notes with commands run, files changed, and artifact paths before closing.
+## Exact Next Beads
+
+1. Resume product work from the next real ready bead after `kqi`, not from old `gt:agent` residue.
+2. If bead sync matters for the next stream, fix the Dolt common-ancestor divergence before doing another large local-only bead run.
+
+## Skills Used
+
+- No external skill was required for implementation.
+- Existing repo Playwright capture scripts were used for browser evidence.
+
+## Memory Nodes Created
+
+- No new canonical memory bead was created in this session.

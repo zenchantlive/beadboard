@@ -1,3 +1,9 @@
+export interface AgentTypeApproval {
+    approvedBy: string;
+    reason: string;
+    approvedAt?: string;
+}
+
 export interface AgentType {
     id: string;
     name: string;
@@ -10,6 +16,7 @@ export interface AgentType {
     createdAt: string;
     updatedAt: string;
     isBuiltIn: boolean;
+    approval?: AgentTypeApproval;
 }
 
 /** @deprecated Use AgentType instead. Kept for backward compatibility. */

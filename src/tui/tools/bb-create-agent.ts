@@ -13,10 +13,12 @@ export function createCreateAgentTool(projectRoot: string): ToolDefinition {
       systemPrompt: Type.String({ description: 'System prompt injected into workers with this agent type. Define their focus and behavior.' }),
       capabilities: Type.Array(Type.String(), { description: 'List of capabilities. Options: coding, implementation, planning, design_docs, review, arch_review, testing, research, debugging, ci_cd' }),
       color: Type.Optional(Type.String({ description: 'Hex color for display (e.g., "#3b82f6"). Default: blue' })),
+      approvedBy: Type.String({ description: 'Who approved creating this new agent type.' }),
+      approvalReason: Type.String({ description: 'Why a new agent type is warranted instead of reusing an existing one.' }),
     }),
     async execute(_toolCallId, params: any) {
       try {
-        const { name, description, systemPrompt, capabilities, color } = params;
+        const { name, description, systemPrompt, capabilities, color, approvedBy, approvalReason } = params;
 
         // Validate required params
         if (!name || typeof name !== 'string') {
@@ -51,6 +53,14 @@ export function createCreateAgentTool(projectRoot: string): ToolDefinition {
           };
         }
 
+        if (!approvedBy || !approvalReason) {
+          return {
+            content: [{ type: 'text', text: 'Error: approvedBy and approvalReason are required for new agent types.' }],
+            isError: true,
+            details: {},
+          };
+        }
+
         const agentType = await saveAgentType({
           name,
           description,
@@ -58,6 +68,7 @@ export function createCreateAgentTool(projectRoot: string): ToolDefinition {
           capabilities,
           color: color || '#3b82f6',
           isBuiltIn: false,
+          approval: { approvedBy, reason: approvalReason },
         });
 
         return {

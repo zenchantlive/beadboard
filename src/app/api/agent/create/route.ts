@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server';
 import { runBdCommand } from '../../../../lib/bridge';
+import {
+  AGENT_INSTANCE_LABEL_PREFIX,
+  AGENT_TYPE_LABEL_PREFIX,
+  LEGACY_AGENT_LABEL,
+  RUNTIME_INSTANCE_LABEL,
+  normalizeAgentHandle,
+  toAgentBeadId,
+} from '../../../../lib/agent/identity';
 
 export async function POST(request: Request) {
   try {
@@ -10,30 +18,51 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'Missing required fields' }, { status: 400 });
     }
 
-    // 1. Create the Agent Bead
+    const normalizedName = normalizeAgentHandle(name);
+    const normalizedRole = normalizeAgentHandle(role);
+    const beadId = toAgentBeadId(name);
+
+    // 1. Create the runtime-instance bead
     const createRes = await runBdCommand({
       projectRoot,
-      args: ['create', `Agent: ${name}`, '--type', 'task', '--priority', '2', '--description', instructions || `Agent role: ${role}`, '--json'],
+      args: [
+        'create',
+        '--id', beadId,
+        '--force',
+        '--title', `Agent: ${name}`,
+        '--type', 'task',
+        '--priority', '2',
+        '--description', instructions || `Runtime instance for archetype ${role}`,
+        '--json',
+      ],
     });
 
     if (!createRes.success) {
       return NextResponse.json({ ok: false, error: createRes.error }, { status: 500 });
     }
 
-    const newAgent = JSON.parse(createRes.stdout);
-    const agentId = newAgent.id;
-
-    // 2. Add Labels (gt:agent, role:X)
+    // 2. Add labels that identify this as a runtime instance
     const updateRes = await runBdCommand({
       projectRoot,
-      args: ['update', agentId, '--add-label', 'gt:agent', '--add-label', `role:${role}`, '--json'],
+      args: [
+        'update',
+        beadId,
+        '--add-label', LEGACY_AGENT_LABEL,
+        '--add-label', RUNTIME_INSTANCE_LABEL,
+        '--add-label', `role:${role}`,
+        '--add-label', `${AGENT_TYPE_LABEL_PREFIX}${normalizedRole}`,
+        '--add-label', `${AGENT_INSTANCE_LABEL_PREFIX}${normalizedName}`,
+        '--add-label', 'agent-state:idle',
+        '--status', 'deferred',
+        '--json',
+      ],
     });
 
     if (!updateRes.success) {
       return NextResponse.json({ ok: false, error: updateRes.error }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, data: { id: agentId } });
+    return NextResponse.json({ ok: true, data: { id: beadId } });
   } catch (e) {
     console.error('Agent creation failed:', e);
     return NextResponse.json({ ok: false, error: 'Internal server error' }, { status: 500 });

@@ -1,5 +1,6 @@
 import { runBdCommand } from './bridge';
 import { showAgent, type AgentRecord } from './agent-registry';
+import { fromAgentBeadId, isRuntimeAgentLabels, toAgentBeadId } from './agent/identity';
 
 export type SwarmCommandName = 'swarm join' | 'swarm leave' | 'swarm members';
 
@@ -37,17 +38,6 @@ function invalid(command: SwarmCommandName, code: string, message: string): Swar
 
 function success<T>(command: SwarmCommandName, data: T): SwarmCommandResponse<T> {
   return { ok: true, command, data, error: null };
-}
-
-function toBeadId(name: string): string {
-  const trimmed = name.trim();
-  if (trimmed.startsWith('bb-')) return trimmed;
-  return `bb-${trimmed}`;
-}
-
-function fromBeadId(id: string): string {
-  if (id.startsWith('bb-')) return id.slice(3);
-  return id;
 }
 
 function extractJson(text: string): any {
@@ -95,7 +85,7 @@ export async function joinSwarm(
 ): Promise<SwarmCommandResponse<AgentRecord>> {
   const command: SwarmCommandName = 'swarm join';
   const projectRoot = deps.projectRoot || process.cwd();
-  const beadId = toBeadId(input.agent);
+  const beadId = toAgentBeadId(input.agent);
 
   const agentResult = await showAgent({ agent: input.agent }, { projectRoot });
   if (!agentResult.ok) {
@@ -137,7 +127,7 @@ export async function leaveSwarm(
 ): Promise<SwarmCommandResponse<AgentRecord>> {
   const command: SwarmCommandName = 'swarm leave';
   const projectRoot = deps.projectRoot || process.cwd();
-  const beadId = toBeadId(input.agent);
+  const beadId = toAgentBeadId(input.agent);
 
   const agentResult = await showAgent({ agent: input.agent }, { projectRoot });
   if (!agentResult.ok) {
@@ -168,6 +158,6 @@ export async function getSwarmMembers(
 
   const agents = extractJsonArray(result.stdout);
   return agents
-    .filter((a: any) => a.labels?.includes('gt:agent'))
-    .map((a: any) => fromBeadId(a.id));
+    .filter((a: any) => Array.isArray(a.labels) && isRuntimeAgentLabels(a.labels))
+    .map((a: any) => fromAgentBeadId(a.id));
 }

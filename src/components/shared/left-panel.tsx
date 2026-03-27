@@ -7,6 +7,7 @@ import type { RuntimeInstance } from '../../lib/embedded-runtime';
 import type { ConversationTurn } from '../../lib/orchestrator-chat';
 import type { BeadIssue } from '../../lib/types';
 import { cn } from '../../lib/utils';
+import { isRuntimeAgentIssue } from '../../lib/agent/identity';
 import { useUrlState, type LeftSidebarMode, type ViewType } from '../../hooks/use-url-state';
 import { OrchestratorPanel } from './orchestrator-panel';
 
@@ -105,7 +106,7 @@ function formatRelative(timestamp: string): string {
 
 function buildEntries(issues: BeadIssue[]): EpicEntry[] {
   const epics = issues.filter((issue) => issue.issue_type === 'epic' && !issue.labels?.includes('memory-anchor'));
-  const tasks = issues.filter((issue) => issue.issue_type !== 'epic');
+  const tasks = issues.filter((issue) => issue.issue_type !== 'epic' && !isRuntimeAgentIssue(issue));
   const taskById = new Map(tasks.map((task) => [task.id, task] as const));
   const incomingBlockers = new Map<string, string[]>();
 
@@ -146,8 +147,7 @@ function buildEntries(issues: BeadIssue[]): EpicEntry[] {
       const agentBlockedCount = children.filter(
         (task) =>
           isEffectivelyBlocked(task) &&
-          (Boolean(task.assignee) ||
-            task.labels.some((label) => label === 'gt:agent' || label.startsWith('agent:') || label.startsWith('gt:agent:'))),
+          (Boolean(task.assignee) || task.labels.some((label) => label.startsWith('agent:'))),
       ).length;
       const latestTimestamp = [epic.updated_at, ...children.map((child) => child.updated_at)]
         .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] ?? epic.updated_at;
@@ -200,7 +200,7 @@ function isTaskMatch(task: BeadIssue, filters: LeftPanelFilters): boolean {
     filters.preset === 'blocked_agents' &&
     !(
       task.status === 'blocked' &&
-      (Boolean(task.assignee) || task.labels.some((label) => label === 'gt:agent' || label.startsWith('agent:')))
+      (Boolean(task.assignee) || task.labels.some((label) => label.startsWith('agent:')))
     )
   ) {
     return false;

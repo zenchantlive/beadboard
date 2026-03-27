@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
             description: body.description || '',
             systemPrompt: body.systemPrompt,
             capabilities: body.capabilities || [],
-            color: body.color || '#3b82f6'
+            color: body.color || '#3b82f6',
+            approval: body.approval,
         });
 
         return NextResponse.json(archetype, { status: 201 });

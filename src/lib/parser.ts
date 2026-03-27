@@ -1,4 +1,5 @@
 import type { BeadDependency, BeadIssue, ParseableBeadIssue } from './types';
+import { isRuntimeAgentIssue } from './agent/identity';
 
 export interface ParseIssuesOptions {
   includeTombstones?: boolean;
@@ -84,7 +85,7 @@ export function parseIssuesJsonl(text: string, options: ParseIssuesOptions = {})
       }
 
       // Exclude agent identities from standard mission lists
-      if (!options.skipAgentFilter && normalized.labels.includes('gt:agent')) {
+      if (!options.skipAgentFilter && isRuntimeAgentIssue(normalized)) {
         continue;
       }
 

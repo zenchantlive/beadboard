@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { AgentType, AgentArchetype, SwarmTemplate } from '../types-swarm';
+import { AgentType, AgentArchetype, SwarmTemplate, type AgentTypeApproval } from '../types-swarm';
 
 const AGENT_DIR = path.join(process.cwd(), '.beads', 'archetypes');
 const TEMPLATE_DIR = path.join(process.cwd(), '.beads', 'templates');
@@ -15,12 +15,13 @@ export function slugify(name: string): string {
         .replace(/^-|-$/g, '');
 }
 
-export type SaveAgentTypeInput = Partial<AgentType> & {
+export type SaveAgentTypeInput = Omit<Partial<AgentType>, 'approval'> & {
     name: string;
     description: string;
     systemPrompt: string;
     capabilities: string[];
     color: string;
+    approval?: Partial<AgentTypeApproval>;
 };
 
 /** @deprecated Use SaveAgentTypeInput instead */
@@ -34,18 +35,45 @@ export async function saveAgentType(input: SaveAgentTypeInput): Promise<AgentTyp
 
     let isBuiltIn = input.isBuiltIn ?? false;
     let createdAt = input.createdAt || now;
+    let approval: AgentTypeApproval | undefined = undefined;
+    let exists = false;
 
     try {
         const existingContent = await fs.readFile(path.join(AGENT_DIR, `${id}.json`), 'utf-8');
         const existing = JSON.parse(existingContent);
+        exists = true;
         if (existing.isBuiltIn) {
             isBuiltIn = true; // Protect built-in status
         }
         if (existing.createdAt) {
             createdAt = existing.createdAt;
         }
+        if (existing.approval) {
+            approval = existing.approval;
+        }
     } catch {
         // File doesn't exist, which is fine
+    }
+
+    if (!isBuiltIn && !exists) {
+        const approvedBy = input.approval?.approvedBy?.trim();
+        const reason = input.approval?.reason?.trim();
+        if (!approvedBy || !reason) {
+            throw new Error('New archetype creation requires approval with approvedBy and reason.');
+        }
+        approval = {
+            approvedBy,
+            reason,
+            approvedAt: input.approval?.approvedAt || now,
+        };
+    }
+
+    if (!approval && input.approval?.approvedBy && input.approval?.reason) {
+        approval = {
+            approvedBy: input.approval.approvedBy.trim(),
+            reason: input.approval.reason.trim(),
+            approvedAt: input.approval.approvedAt || now,
+        };
     }
 
     const agentType: AgentType = {
@@ -58,7 +86,8 @@ export async function saveAgentType(input: SaveAgentTypeInput): Promise<AgentTyp
         icon: input.icon,
         createdAt,
         updatedAt: now,
-        isBuiltIn
+        isBuiltIn,
+        approval,
     };
 
     await fs.writeFile(

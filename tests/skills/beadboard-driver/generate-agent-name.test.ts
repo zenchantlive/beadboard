@@ -25,36 +25,36 @@ async function withTempDir(run: (root: string) => Promise<void>) {
   }
 }
 
-test('generate-agent-name returns adjective-noun format', async () => {
+test('generate-agent-name returns deterministic archetype-scoped runtime instance name', async () => {
   const result = await runName({
-    BB_NAME_ADJECTIVES: 'green',
-    BB_NAME_NOUNS: 'castle',
+    BB_ARCHETYPE_ID: 'Coder',
+    BB_INSTANCE_SCOPE: 'task beadboard-kqi.3',
     BB_NAME_MAX_RETRIES: '1',
   });
 
   assert.equal(result.ok, true);
-  assert.equal(result.agent_name, 'green-castle');
-  assert.match(result.agent_name, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+  assert.equal(result.agent_name, 'coder/task-beadboard-kqi-3');
+  assert.equal(result.runtime_instance_name, 'coder/task-beadboard-kqi-3');
+  assert.equal(result.archetype_id, 'coder');
 });
 
-test('generate-agent-name retries on collisions', async () => {
+test('generate-agent-name retries on collisions with ordinal suffix', async () => {
   await withTempDir(async (root) => {
     const registryDir = path.join(root, 'agents');
     await fs.mkdir(registryDir, { recursive: true });
-    await fs.writeFile(path.join(registryDir, 'green-castle.json'), '{}', 'utf8');
+    await fs.writeFile(path.join(registryDir, 'coder__task-kqi-3.json'), '{}', 'utf8');
 
     const result = await runName({
       BB_AGENT_REGISTRY_DIR: registryDir,
-      BB_NAME_ADJECTIVES: 'green,blue',
-      BB_NAME_NOUNS: 'castle',
+      BB_ARCHETYPE_ID: 'coder',
+      BB_INSTANCE_SCOPE: 'task-kqi-3',
       BB_NAME_MAX_RETRIES: '3',
-      BB_NAME_SEED_SEQUENCE: '0,0,0.9,0',
     });
 
     assert.equal(result.ok, true);
-    assert.equal(result.agent_name, 'blue-castle');
-    assert.equal(result.collisions, 2);
-    assert.equal(result.attempts, 3);
+    assert.equal(result.agent_name, 'coder/task-kqi-3#2');
+    assert.equal(result.collisions, 1);
+    assert.equal(result.attempts, 2);
   });
 });
 
@@ -62,14 +62,14 @@ test('generate-agent-name fails after retry exhaustion', async () => {
   await withTempDir(async (root) => {
     const registryDir = path.join(root, 'agents');
     await fs.mkdir(registryDir, { recursive: true });
-    await fs.writeFile(path.join(registryDir, 'green-castle.json'), '{}', 'utf8');
+    await fs.writeFile(path.join(registryDir, 'coder__task-kqi-3.json'), '{}', 'utf8');
+    await fs.writeFile(path.join(registryDir, 'coder__task-kqi-3__2.json'), '{}', 'utf8');
 
     const result = await runName({
       BB_AGENT_REGISTRY_DIR: registryDir,
-      BB_NAME_ADJECTIVES: 'green',
-      BB_NAME_NOUNS: 'castle',
+      BB_ARCHETYPE_ID: 'coder',
+      BB_INSTANCE_SCOPE: 'task-kqi-3',
       BB_NAME_MAX_RETRIES: '2',
-      BB_NAME_SEED_SEQUENCE: '0,0,0,0',
     });
 
     assert.equal(result.ok, false);

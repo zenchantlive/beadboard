@@ -2,6 +2,13 @@
 
 This runbook is the minimum lifecycle contract for agents using BeadBoard Driver.
 
+Read this together with `references/archetype-instance-model.md`.
+That document defines the canonical identity model:
+
+- `archetype` = stable approved worker type
+- `runtime instance` = temporary executing copy of an archetype
+- `spawn plan` = orchestrator declaration of what will be spawned and why
+
 ## 1) Session Start
 
 1. Run preflight and discovery checks:
@@ -10,11 +17,14 @@ This runbook is the minimum lifecycle contract for agents using BeadBoard Driver
 node {baseDir}/scripts/session-preflight.mjs
 ```
 
-2. Create or identify your agent bead first (required before claiming work):
+2. Create or identify your runtime-instance bead first (required before claiming work):
 
 ```bash
-bd create --title "Agent: <name>" --type task --priority 0 --label "gt:agent,role:<role>"
+bd create --title "Agent: <archetype>/<scope-or-ordinal>" --type task --priority 0 --label "gt:agent,role:<role>"
 ```
+
+This bead represents a runtime instance, not a new stable worker type.
+Stable worker types come from approved archetypes.
 
 3. Set state transitions and attach hook when work begins:
 

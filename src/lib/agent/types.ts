@@ -79,6 +79,9 @@ export interface AgentRecord {
   role_type?: string;
   swarm_id?: string;
   current_task?: string;
+  agent_type_id?: string;
+  agent_instance_id?: string;
+  identity_kind?: 'runtime-instance';
 }
 
 export interface RegisterAgentInput {

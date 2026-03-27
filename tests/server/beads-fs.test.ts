@@ -9,6 +9,15 @@ const TEMPLATE_DIR = path.join(process.cwd(), '.beads', 'templates');
 const TEST_ARCHETYPE_ID = 'test-custom-archetype';
 const TEST_TEMPLATE_ID = 'test-custom-template';
 
+function testApproval() {
+    return {
+        approval: {
+            approvedBy: 'test-suite',
+            reason: 'coverage for governed archetype creation',
+        },
+    };
+}
+
 async function cleanupTestArchetype() {
     try {
         await fs.unlink(path.join(ARCHE_DIR, `${TEST_ARCHETYPE_ID}.json`));
@@ -50,7 +59,8 @@ test('saveArchetype: creates new archetype with generated id from name', async (
             description: 'A test archetype',
             systemPrompt: 'You are a test agent',
             capabilities: ['testing'],
-            color: '#ff0000'
+            color: '#ff0000',
+            ...testApproval(),
         });
 
         assert.equal(archetype.id, 'test-custom-archetype');
@@ -72,7 +82,8 @@ test('saveArchetype: creates new archetype with provided id', async () => {
             description: 'Description',
             systemPrompt: 'Prompt',
             capabilities: [],
-            color: '#000000'
+            color: '#000000',
+            ...testApproval(),
         });
 
         assert.equal(archetype.id, customId);
@@ -90,7 +101,8 @@ test('saveArchetype: updates existing archetype and preserves createdAt', async 
             description: 'Original desc',
             systemPrompt: 'Original prompt',
             capabilities: [],
-            color: '#000000'
+            color: '#000000',
+            ...testApproval(),
         });
 
         const originalCreatedAt = created.createdAt;
@@ -142,7 +154,8 @@ test('saveArchetype: writes file to archetypes directory', async () => {
             description: 'Desc',
             systemPrompt: 'Prompt',
             capabilities: [],
-            color: '#000000'
+            color: '#000000',
+            ...testApproval(),
         });
 
         const filePath = path.join(ARCHE_DIR, `${TEST_ARCHETYPE_ID}.json`);
@@ -164,7 +177,8 @@ test('deleteArchetype: deletes non-built-in archetype', async () => {
             description: 'Desc',
             systemPrompt: 'Prompt',
             capabilities: [],
-            color: '#000000'
+            color: '#000000',
+            ...testApproval(),
         });
 
         await deleteArchetype(TEST_ARCHETYPE_ID);
@@ -186,6 +200,20 @@ test('deleteArchetype: rejects deletion of built-in archetype', async () => {
             /built-in/
         );
     }
+});
+
+test('saveArchetype: rejects new archetypes without approval', async () => {
+    await assert.rejects(
+        async () => await saveArchetype({
+            id: 'missing-approval-archetype',
+            name: 'Missing Approval',
+            description: 'Desc',
+            systemPrompt: 'Prompt',
+            capabilities: [],
+            color: '#000000',
+        }),
+        /requires approval/i,
+    );
 });
 
 test('deleteArchetype: throws error for non-existent archetype', async () => {
@@ -271,7 +299,7 @@ test('saveTemplate: updates existing template and preserves createdAt', async ()
             id: TEST_TEMPLATE_ID,
             name: 'Updated Template',
             description: 'Updated description',
-            team: [{ archetypeId: 'coder', count: 2 }],
+            team: [{ archetypeId: 'engineer', count: 2 }],
             createdAt: originalCreatedAt,
             isBuiltIn: false
         });

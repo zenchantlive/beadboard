@@ -7,7 +7,8 @@ Day-to-day runbooks use `bd mail` delegation rather than direct low-level agent 
 
 - `node skills/beadboard-driver/scripts/session-preflight.mjs`
 - `node skills/beadboard-driver/scripts/ensure-bb-mail-configured.mjs`
-- `bd create --title="Agent: <role-name>" --description="<agent scope>" --type=task --priority=0 --label="gt:agent,role:<orchestrator|ui|graph|backend|infra>"`
+- Read `references/archetype-instance-model.md`
+- `bd create --title="Agent: <archetype>/<scope-or-ordinal>" --description="<runtime-instance scope>" --type=task --priority=0 --label="gt:agent,role:<orchestrator|ui|graph|backend|infra>"`
 - `bd agent state <agent-bead-id> spawning` — agent bead created, environment not yet verified
 - `bd agent state <agent-bead-id> running` — environment verified, ready to claim work
 - `bd agent state <agent-bead-id> working` — work bead claimed, actively executing
@@ -16,6 +17,9 @@ Day-to-day runbooks use `bd mail` delegation rather than direct low-level agent 
 - `bd agent state <agent-bead-id> stopped` — session ending cleanly
 - `bd agent heartbeat <agent-bead-id>`
 - `bd agent show <agent-bead-id>`
+
+Use `Agent: ...` beads as runtime-instance records only.
+Do not treat them as approval to invent new stable worker types outside the archetype system.
 
 ## Work Claim and Lifecycle
 

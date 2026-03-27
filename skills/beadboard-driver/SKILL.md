@@ -26,6 +26,25 @@ No bead claims, handoffs, or completion statements without:
 3) evidence recorded.
 ```
 
+## Approved Archetypes
+
+Read [`references/archetype-instance-model.md`](references/archetype-instance-model.md) before creating or dispatching agents.
+
+Canonical model:
+
+- `archetype` = stable approved worker type
+- `runtime instance` = temporary executing copy of an archetype
+- `spawn plan` = orchestrator declaration of what will be spawned, why, and who owns each scope
+
+Hard rules:
+
+1. Only approved archetypes are spawnable worker types.
+2. Runtime instances may be created freely from approved archetypes.
+3. Workers do not invent new stable worker types.
+4. New archetype creation is separate and must be explicitly approved.
+5. Orchestrators must state the spawn plan before dispatch.
+6. Orchestrators own runtime-instance retirement when work is done or abandoned.
+
 ## Requirements
 
 - `bd` must be installed and available on `PATH`.
@@ -145,26 +164,40 @@ After fixing: update that row in `project.md` to `pass` with today's date.
 
 > See [Platform Notes](#platform-notes) if running on Windows native or WSL2.
 
-### Step 2: Create Agent Bead Identity + Verify Mail
+### Step 2: Create Runtime-Instance Identity + Verify Mail
 
 ```bash
-bd create --title="Agent: bb-<role-name>" --description="<scope>" --type=task --priority=0 --label="gt:agent,role:<orchestrator|ui|graph|backend|infra>"
+bd create --title="Agent: <archetype>/<scope-or-ordinal>" --description="<runtime-instance scope>" --type=task --priority=0 --label="gt:agent,role:<orchestrator|ui|graph|backend|infra>"
 ```
 
 ```bash
 # Register in bb coordination system and set identity
-bb agent register --name <role-name> --role <orchestrator|ui|graph|backend|infra>
-export BB_AGENT=<role-name>
+bb agent register --name <archetype>/<scope-or-ordinal> --role <orchestrator|ui|graph|backend|infra>
+export BB_AGENT=<archetype>/<scope-or-ordinal>
 ```
 
-> **Naming convention:** Name your `bd` bead `bb-<role-name>` (e.g. `bb-silver-scribe`). Register the same name in `bb` as `<role-name>` (e.g. `silver-scribe`). Set `BB_AGENT=<role-name>`. This bridges both identity systems: `bd agent state bb-silver-scribe ...` uses the bead ID; `bd mail send` uses `BB_AGENT` automatically.
+This bead is a runtime-instance record, not a new stable worker type.
+Stable type identity comes from the approved archetype.
+
+Deterministic naming rules:
+
+1. Start with the approved archetype id.
+2. Add scope or ordinal that explains why this instance exists.
+3. Keep names human-readable, but do not invent arbitrary personas.
+
+Examples:
+
+- `Agent: coder/task-beadboard-kqi.3`
+- `Agent: reviewer/swarm-beadboard-ov2`
+- `Agent: researcher#2`
 
 | Term | Example | Used where |
 |------|---------|------------|
-| `<role-name>` | `silver-scribe` | `bb agent register --name`, `BB_AGENT`, `bd mail --to` |
-| Bead title | `bb-silver-scribe` | `bd create --title` |
+| `archetype` | `coder` | stable approved worker type |
+| `runtime instance name` | `coder/task-beadboard-kqi.3` | `bb agent register --name`, `BB_AGENT`, `bd mail --to` |
+| Bead title | `Agent: coder/task-beadboard-kqi.3` | `bd create --title` |
 | `<agent-bead-id>` | `beadboard-0m9` | `bd agent state`, `bd slot set`, `bd update --assignee` |
-| `BB_AGENT` value | `silver-scribe` | Set via `export`; auto-injected into all `bd mail` calls |
+| `BB_AGENT` value | `coder/task-beadboard-kqi.3` | Set via `export`; auto-injected into all `bd mail` calls |
 
 Now that BB_AGENT is set, verify the full mail stack:
 
@@ -189,6 +222,30 @@ bd agent state <agent-bead-id> spawning
 bd agent state <agent-bead-id> running
 ```
 
+### Step 2A: Declare Spawn Plan Before Dispatch
+
+If you are the orchestrator and intend to fan out work, state the spawn plan first.
+
+Minimum spawn-plan fields:
+
+1. archetype
+2. action: `reuse` or `create`
+3. target bead or scope
+4. purpose
+
+Example:
+
+- `coder` `create` `beadboard-kqi.3` `implement runtime naming and retirement rules`
+- `reviewer` `create` `beadboard-kqi.6` `independent regression validation`
+- `researcher` `reuse` `beadboard-kqi.2` `gather current skill drift before rewrite`
+
+Do not dispatch workers before you can explain:
+
+- what will be spawned
+- why each instance is needed
+- who owns each target bead
+- whether each instance is reused or newly created
+
 ### Step 3: Note Any Environment Changes in `project.md`
 
 `project.md` was already read in Step 0. Only update it now if something changed this session — new package installed, delegate reconfigured, new platform quirk discovered. If nothing changed, skip this step entirely.
@@ -207,7 +264,7 @@ bd show <target-bead-id>
 
 > Pick the domain matching your task: `memory-arch` (architecture decisions), `memory-workflow` (session protocol), `memory-agent` (agent setup/identity), `memory-ux` (UI/UX), `memory-reliability` (errors/recovery). Domain anchor IDs are in `references/memory-system.md`.
 
-> `bd ready` lists all unblocked, unassigned tasks ready for pickup. Review the output and select a `<target-bead-id>` to pass to `bd show`.
+> `bd ready` can include stale runtime-instance artifacts in older repos. Prefer actionable work beads over `gt:agent` runtime-instance records, and use the current lifecycle contract to retire stale instances rather than treating them as normal project work.
 
 Minimum: read task contract, dependencies, success criteria, and blockers.
 
@@ -270,6 +327,14 @@ bd slot clear <agent-bead-id> hook
 bd agent state <agent-bead-id> done
 ```
 
+If you are the orchestrator, retirement is not finished until you also:
+
+1. confirm the instance no longer owns live work
+2. clear or reassign any lingering hook/claim state
+3. retire the runtime instance according to the current lifecycle rules
+
+Do not leave finished instances sitting at the top of normal ready-work flows.
+
 Update `project.md` Environment Status Cache:
 - If you ran tests: set `Tests last run` row to `pass`/`fail` + today's date
 - If you ran preflight: update `session-preflight` row
@@ -294,11 +359,16 @@ Stop and correct if you are about to:
 - claim completion without gate output
 - write project context inside skill folder instead of repo `project.md`
 - use deprecated direct command patterns from old docs
+- spawn workers without stating the spawn plan first
+- invent a new stable worker type instead of using an approved archetype
+- leave finished runtime instances unretired
 
 ## Use-The-Right-Doc Map
 
 - `references/session-lifecycle.md`:
   Full end-to-end session choreography.
+- `references/archetype-instance-model.md`:
+  Canonical identity model for approved archetypes, runtime instances, spawn plans, reuse, and retirement.
 - `references/agent-state-liveness.md`:
   Agent states, heartbeat cadence, liveness interpretation.
 - `references/coordination-system.md`:

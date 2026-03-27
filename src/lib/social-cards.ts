@@ -1,4 +1,5 @@
 import type { BeadIssue } from './types';
+import { fromAgentBeadId, isRuntimeAgentIssue } from './agent/identity';
 export type { AgentStatus, AgentRole } from '../components/shared/agent-avatar';
 import type { AgentStatus, AgentRole } from '../components/shared/agent-avatar';
 
@@ -52,18 +53,6 @@ function mapPriority(priority: number): SocialCardPriority {
   return 'P4';
 }
 
-function extractAgentName(bead: BeadIssue): string | null {
-  // First check title for "Agent: <name>" pattern
-  const agentMatch = bead.title.match(/Agent:\s*(\S+)/i);
-  if (agentMatch) return agentMatch[1];
-  
-  // Then check labels for "agent:" prefix
-  const agentLabel = bead.labels.find(l => l.startsWith('agent:'));
-  if (agentLabel) return agentLabel.replace('agent:', '');
-  
-  return null;
-}
-
 function extractAgentTypeId(labels: string[] | undefined): string | undefined {
   if (!labels) return undefined;
   const agentLabel = labels.find(l => l.startsWith('agent:'));
@@ -83,8 +72,10 @@ function extractAgents(bead: BeadIssue): AgentInfo[] {
         ? (bead.metadata.agentRole as AgentRole)
         : undefined;
 
-    // Get actual agent name from title/labels, fallback to assignee (bead ID)
-    const agentName = extractAgentName(bead) || bead.assignee;
+    const agentName =
+      typeof bead.metadata?.agentName === 'string' && bead.metadata.agentName.trim().length > 0
+        ? bead.metadata.agentName.trim()
+        : fromAgentBeadId(bead.assignee);
     
     agents.push({ 
       name: agentName, 
@@ -96,7 +87,7 @@ function extractAgents(bead: BeadIssue): AgentInfo[] {
 }
 
 export function buildSocialCards(beads: BeadIssue[]): SocialCard[] {
-  const taskBeads = beads.filter((bead) => bead.issue_type !== 'epic');
+  const taskBeads = beads.filter((bead) => bead.issue_type !== 'epic' && !isRuntimeAgentIssue(bead));
   const beadMap = new Map<string, BeadIssue>();
   for (const bead of taskBeads) {
     beadMap.set(bead.id, bead);

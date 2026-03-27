@@ -1,4 +1,5 @@
 import type { BeadIssue } from './types';
+import { extractAgentDisplayName, isRuntimeAgentLabels } from './agent/identity';
 
 export interface AgentRoster {
   name: string;
@@ -25,7 +26,7 @@ function extractSwarmId(labels: string[]): string | null {
 }
 
 function isAgent(labels: string[]): boolean {
-  return labels.includes('gt:agent');
+  return isRuntimeAgentLabels(labels);
 }
 
 function deriveAgentStatus(lastActivity: string, now: Date): 'active' | 'stale' | 'stuck' | 'dead' {
@@ -75,11 +76,6 @@ function getAttentionItems(beads: BeadIssue[]): string[] {
     .map((b) => `${b.id}: ${b.title}`);
 }
 
-function toAgentName(id: string): string {
-  if (id.startsWith('bb-')) return id.slice(3);
-  return id;
-}
-
 export function buildSwarmCards(beads: BeadIssue[], now: Date = new Date()): SwarmCard[] {
   const epicById = new Map<string, BeadIssue>();
   const beadsBySwarm = new Map<string, BeadIssue[]>();
@@ -111,11 +107,11 @@ export function buildSwarmCards(beads: BeadIssue[], now: Date = new Date()): Swa
     const title = epic?.title || `Swarm ${swarmId}`;
 
     const agentBeads = agentsBySwarm.get(swarmId) || [];
-    const agents: AgentRoster[] = agentBeads.map((a) => ({
-      name: toAgentName(a.id),
-      status: deriveAgentStatus(a.updated_at, now),
-      currentTask: a.assignee || undefined,
-    }));
+      const agents: AgentRoster[] = agentBeads.map((a) => ({
+        name: extractAgentDisplayName(a),
+        status: deriveAgentStatus(a.updated_at, now),
+        currentTask: a.assignee || undefined,
+      }));
 
     const allTimestamps = swarmBeads
       .map((b) => new Date(b.updated_at).getTime())
@@ -145,7 +141,7 @@ export function buildSwarmCards(beads: BeadIssue[], now: Date = new Date()): Swa
       const title = epic?.title || `Swarm ${swarmId}`;
 
       const agents: AgentRoster[] = agentBeads.map((a) => ({
-        name: toAgentName(a.id),
+        name: extractAgentDisplayName(a),
         status: deriveAgentStatus(a.updated_at, now),
       }));
 

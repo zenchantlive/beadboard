@@ -25,7 +25,8 @@ export async function PUT(
             capabilities: body.capabilities || [],
             color: body.color || '#3b82f6',
             createdAt: body.createdAt,
-            isBuiltIn: body.isBuiltIn
+            isBuiltIn: body.isBuiltIn,
+            approval: body.approval,
         });
 
         return NextResponse.json(archetype);

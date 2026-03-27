@@ -14,13 +14,14 @@ test('generate-agent-name contract: returns structured success', async () => {
   const { stdout } = await execFileAsync(process.execPath, [scriptPath], {
     env: {
       ...process.env,
-      BB_NAME_ADJECTIVES: 'green',
-      BB_NAME_NOUNS: 'castle',
+      BB_ARCHETYPE_ID: 'reviewer',
+      BB_INSTANCE_SCOPE: 'swarm-beadboard-ov2',
       BB_NAME_MAX_RETRIES: '1',
     },
   });
   const result = JSON.parse(stdout);
   assert.equal(result.ok, true);
-  assert.equal(result.agent_name, 'green-castle');
+  assert.equal(result.agent_name, 'reviewer/swarm-beadboard-ov2');
+  assert.equal(result.runtime_instance_name, 'reviewer/swarm-beadboard-ov2');
   assert.equal(typeof result.attempts, 'number');
 });

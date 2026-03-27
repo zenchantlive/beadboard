@@ -3,6 +3,7 @@
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { access } from 'node:fs/promises';
 
 import { findCommandInPath } from './lib/driver-lib.mjs';
 
@@ -24,6 +25,15 @@ function readMailDelegate(bdPath) {
   };
 }
 
+async function hasLocalBeadsRepo(cwd = process.cwd()) {
+  try {
+    await access(join(cwd, '.beads', 'config.yaml'));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function main() {
   const bdPath = await findCommandInPath('bd');
   const shimPath = join(__dirname, 'bb-mail-shim.mjs');
@@ -40,6 +50,24 @@ async function main() {
             process.platform === 'win32'
               ? 'Primary: npm i -g beadboard. Fallback: powershell -ExecutionPolicy Bypass -File .\\install\\install.ps1. Then ensure bd is available in PATH.'
               : 'Primary: npm i -g beadboard. Fallback: bash ./install/install.sh. Then ensure bd is available in PATH.',
+          expected_delegate: expected,
+          delegate: null,
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    return;
+  }
+
+  if (!(await hasLocalBeadsRepo())) {
+    process.stdout.write(
+      `${JSON.stringify(
+        {
+          ok: false,
+          error_code: 'MAIL_DELEGATE_MISSING',
+          reason: 'This directory is not an initialized beads repo, so mail.delegate cannot be verified here yet.',
+          remediation: 'Run bd init first, then configure the delegate with bd config set mail.delegate "<shim command>".',
           expected_delegate: expected,
           delegate: null,
         },

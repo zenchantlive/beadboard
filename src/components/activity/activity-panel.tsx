@@ -6,6 +6,7 @@ import type { ActivityEvent } from '../../lib/activity';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { extractAgentDisplayName, isRuntimeAgentIssue } from '../../lib/agent/identity';
 
 type AgentStatus = 'active' | 'stale' | 'stuck' | 'dead';
 
@@ -49,8 +50,6 @@ interface ActivityPanelProps {
   projectRoot: string;
 }
 
-const AGENT_LABEL = 'gt:agent';
-
 function mergeUniqueActivities(existing: ActivityEvent[], incoming: ActivityEvent[]): ActivityEvent[] {
   const seen = new Set<string>();
   const merged: ActivityEvent[] = [];
@@ -80,27 +79,12 @@ function deriveAgentStatus(lastSeenAt: string | null): AgentStatus {
   return 'dead';
 }
 
-// Get agent name from bead
-function extractAgentName(issue: BeadIssue): string | null {
-  const agentMatch = issue.title.match(/Agent:\s*(\S+)/i);
-  if (agentMatch) return agentMatch[1];
-
-  const agentLabel = issue.labels.find(l => l.startsWith('agent:'));
-  if (agentLabel) return agentLabel.replace('agent:', '');
-
-  return null;
-}
-
 // Build agent roster - filter out dead agents unless none are active
 function buildAgentRoster(issues: BeadIssue[]): AgentRosterEntry[] {
-  const agentIssues = issues.filter(issue =>
-    issue.labels.includes(AGENT_LABEL) ||
-    issue.labels.some(l => l.startsWith('gt:agent')) ||
-    issue.labels.includes('agent')
-  );
+  const agentIssues = issues.filter((issue) => isRuntimeAgentIssue(issue));
 
   const roster = agentIssues.map(issue => {
-    const name = extractAgentName(issue) || issue.title.replace('Agent: ', '') || issue.id;
+    const name = extractAgentDisplayName(issue);
     const status = deriveAgentStatus(issue.updated_at);
 
     return {

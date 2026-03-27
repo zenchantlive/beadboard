@@ -1,6 +1,7 @@
 import type { RowDataPacket } from 'mysql2';
 
 import { getDoltConnection, DoltConnectionError } from './dolt-client';
+import { isRuntimeAgentIssue } from './agent/identity';
 import type { ReadIssuesOptions } from './read-issues';
 import type { BeadDependency, BeadIssue, BeadStatus } from './types';
 
@@ -115,7 +116,7 @@ export async function readIssuesViaDolt(
       .map((row) => normalizeRow(row, depsMap.get(row.id) ?? []))
       .filter((issue) => {
         if (issue.status === 'tombstone' && !options.includeTombstones) return false;
-        if (issue.labels.includes('gt:agent') && !options.skipAgentFilter) return false;
+        if (isRuntimeAgentIssue(issue) && !options.skipAgentFilter) return false;
         return true;
       });
   } catch {

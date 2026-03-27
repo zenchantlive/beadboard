@@ -46,6 +46,8 @@ export function ArchetypeInspector({ archetype, onClose, onSave, onDelete, onClo
     const [capabilities, setCapabilities] = useState<string[]>(archetype?.capabilities || []);
     const [color, setColor] = useState(archetype?.color || '#3b82f6');
     const [icon, setIcon] = useState(archetype?.icon || '');
+    const [approvedBy, setApprovedBy] = useState(archetype?.approval?.approvedBy || '');
+    const [approvalReason, setApprovalReason] = useState(archetype?.approval?.reason || '');
     const [newCapability, setNewCapability] = useState('');
     const [capabilityFilter, setCapabilityFilter] = useState('');
     const [isSaving, setIsSaving] = useState(false);
@@ -64,6 +66,8 @@ export function ArchetypeInspector({ archetype, onClose, onSave, onDelete, onClo
             setCapabilities(archetype.capabilities);
             setColor(archetype.color);
             setIcon(archetype.icon || '');
+            setApprovedBy(archetype.approval?.approvedBy || '');
+            setApprovalReason(archetype.approval?.reason || '');
         }
     }, [archetype]);
 
@@ -95,6 +99,11 @@ export function ArchetypeInspector({ archetype, onClose, onSave, onDelete, onClo
             return;
         }
 
+        if (isNew && (!approvedBy.trim() || !approvalReason.trim())) {
+            setError('New archetypes require approver and approval reason');
+            return;
+        }
+
         setIsSaving(true);
         setError(null);
 
@@ -107,7 +116,13 @@ export function ArchetypeInspector({ archetype, onClose, onSave, onDelete, onClo
                 capabilities,
                 color,
                 icon: icon || undefined,
-                isBuiltIn: archetype?.isBuiltIn
+                isBuiltIn: archetype?.isBuiltIn,
+                approval: isNew
+                    ? {
+                        approvedBy: approvedBy.trim(),
+                        reason: approvalReason.trim(),
+                    }
+                    : archetype?.approval,
             });
             onClose();
         } catch (err) {
@@ -212,6 +227,31 @@ export function ArchetypeInspector({ archetype, onClose, onSave, onDelete, onClo
                             />
                         </div>
                     </div>
+
+                    {isNew && (
+                        <div className="grid grid-cols-2 gap-4 rounded-xl border border-[var(--ui-border-soft)] bg-[var(--ui-bg-soft)]/40 p-4">
+                            <div>
+                                <label className="block text-sm font-medium text-[var(--ui-text-secondary)] mb-1.5">Approved By *</label>
+                                <input
+                                    type="text"
+                                    value={approvedBy}
+                                    onChange={(e) => setApprovedBy(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg bg-[var(--ui-bg-soft)] border border-[var(--ui-border-soft)] text-[var(--ui-text-primary)] placeholder:text-[var(--ui-text-muted)] focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                    placeholder="e.g., Jordan Hindo"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-[var(--ui-text-secondary)] mb-1.5">Approval Reason *</label>
+                                <input
+                                    type="text"
+                                    value={approvalReason}
+                                    onChange={(e) => setApprovalReason(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg bg-[var(--ui-bg-soft)] border border-[var(--ui-border-soft)] text-[var(--ui-text-primary)] placeholder:text-[var(--ui-text-muted)] focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                    placeholder="Why a new archetype is needed"
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <div>
                         <label className="block text-sm font-medium text-[var(--ui-text-secondary)] mb-1.5">System Prompt *</label>
