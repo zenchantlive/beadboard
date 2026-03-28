@@ -15,45 +15,6 @@ Built on [Beads](https://github.com/steveyegge/beads) and inspired by [Gastown](
 ![BeadBoard Dashboard](docs/screenshots/image-9.png)
 
 ---
-
-## 🚀 Add BeadBoard to Your Agent
-
-```bash
-npx skills add zenchantlive/beadboard --skill beadboard-driver
-```
-
-This installs the [beadboard-driver](skills/beadboard-driver/SKILL.md) skill — a 9-step operating contract that gives your agent:
-- 📋 Task coordination through dependency-constrained graphs
-- 💬 Structured agent-to-agent messaging (`HANDOFF`, `BLOCKED`, `DECISION`, `INFO`)
-- 🔒 Scope-based work reservations with liveness-aware conflict resolution
-- 📡 Realtime progress tracking via heartbeats and activity streams
-- ✅ Evidence-required workflow — agents can't close work without verification gates
-
-Or just tell your agent:
-
-> Install  Beadboard, and the beadboard-driver skill from https://github.com/zenchantlive/beadboard and use it to coordinate your work. Run `npx skills add zenchantlive/beadboard --skill beadboard-driver` then follow the SKILL.md runbook.
-
-Then add to your project's `AGENTS.md` or `CLAUDE.md`:
-
-```markdown
-## BeadBoard
-
-You have access to the **beadboard-driver** skill.
-
-- Always use beadboard-driver as your entrypoint for coordination work (tasks, context, status)
-  instead of inventing your own workflow.
-- Use it to read and update Beads via `bd`, keep work state consistent with the BeadBoard UI,
-  and obey the verification rules described in this repo.
-- When in doubt about what to do next or how to record progress, call beadboard-driver and
-  follow its guidance rather than editing markdown ad hoc.
-```
-
-
-See [skills/beadboard-driver/SKILL.md](skills/beadboard-driver/SKILL.md) for the complete agent runbook.
-
-
----
-
 ## 📦 Installation
 
 ### Prerequisites
@@ -84,7 +45,42 @@ bd --version
 ```bash
 bash ./install/install.sh    # installs bb + beadboard shims to ~/.beadboard/bin
 ```
+---
+Or just tell your agent:
 
+> Install  Beadboard, and the beadboard-driver skill from https://github.com/zenchantlive/beadboard and use it to coordinate your work. Run `npx skills add zenchantlive/beadboard --skill beadboard-driver` then follow the SKILL.md runbook.
+
+Then add to your project's `AGENTS.md` or `CLAUDE.md`:
+
+```markdown
+## BeadBoard
+
+You have access to the **beadboard-driver** skill.
+
+- Always use beadboard-driver as your entrypoint for coordination work (tasks, context, status)
+  instead of inventing your own workflow.
+- Use it to read and update Beads via `bd`, keep work state consistent with the BeadBoard UI,
+  and obey the verification rules described in the Beadboard-Driver Skill.
+- When in doubt about what to do next or how to record progress, call beadboard-driver and
+  follow its guidance rather than editing markdown ad hoc.
+```
+
+
+See [skills/beadboard-driver/SKILL.md](skills/beadboard-driver/SKILL.md) for the complete agent runbook.
+
+---
+## 🚀 Add BeadBoard Skill to Your Agent
+
+```bash
+npx skills add zenchantlive/beadboard --skill beadboard-driver
+```
+
+This installs the [beadboard-driver](skills/beadboard-driver/SKILL.md) skill — a 9-step operating contract that gives your agent:
+- 📋 Task coordination through dependency-constrained graphs
+- 💬 Structured agent-to-agent messaging (`HANDOFF`, `BLOCKED`, `DECISION`, `INFO`)
+- 🔒 Scope-based work reservations with liveness-aware conflict resolution
+- 📡 Realtime progress tracking via heartbeats and activity streams
+- ✅ Evidence-required workflow — agents can't close work without verification gates
 ---
 
 ## ⚡ Quick Start
@@ -100,7 +96,6 @@ Open [http://localhost:3000](http://localhost:3000).
 ```bash
 bd create --title "My first task" --type task --priority 0
 ```
-
 ---
 
 ## 🗄️ Dolt
