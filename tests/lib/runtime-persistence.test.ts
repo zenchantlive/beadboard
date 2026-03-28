@@ -148,6 +148,29 @@ describe('EmbeddedPiDaemon restores events from disk on ensureProject', () => {
     assert.equal(events[0].id, 'evt-test-001');
     assert.equal(events[0].title, 'Test event');
   });
+
+  it('restores the newest persisted events first when history exceeds the cap', () => {
+    for (let index = 0; index < 1005; index += 1) {
+      appendJsonl(dir, 'events.jsonl', {
+        id: `evt-${index}`,
+        projectId: 'test-proj',
+        kind: 'worker.updated',
+        title: `Event ${index}`,
+        detail: `Persisted event ${index}`,
+        timestamp: `2026-03-26T00:00:${String(index % 60).padStart(2, '0')}.000Z`,
+        status: 'working',
+        metadata: { workerId: `worker-${index}` },
+      } satisfies RuntimeConsoleEvent);
+    }
+
+    const freshDaemon = new EmbeddedPiDaemon();
+    freshDaemon.ensureProject(dir);
+
+    const events = freshDaemon.listEvents(dir);
+    assert.equal(events.length, 1000);
+    assert.equal(events[0].id, 'evt-1004');
+    assert.equal(events.at(-1)?.id, 'evt-5');
+  });
 });
 
 describe('EmbeddedPiDaemon restores turns from disk on ensureProject', () => {
@@ -243,7 +266,7 @@ describe('WorkerSessionManager bootstraps agent state from persisted workers bef
     removeTempDir(dir);
   });
 
-  it('restores workers and seeds blocked agent state from persisted runtime events', () => {
+  it('marks restored in-flight workers failed and appends a terminal event after restart', () => {
     const projectId = getProjectRuntimeId(dir);
 
     writeJsonl(dir, 'workers.jsonl', [
@@ -287,16 +310,19 @@ describe('WorkerSessionManager bootstraps agent state from persisted workers bef
 
     const workers = workerSessionManager.listWorkers(dir);
     const agentStates = workerSessionManager.listAgentStates(dir);
+    const events = embeddedPiDaemon.listEvents(dir);
 
     assert.equal(workers.length, 1);
     assert.equal(workers[0].status, 'failed');
     assert.equal(workers[0].error, 'Server restarted');
 
     assert.equal(agentStates.length, 1);
-    assert.equal(agentStates[0].status, 'blocked');
-    assert.equal(agentStates[0].blocker, 'Waiting on approval');
-    assert.equal(agentStates[0].lastEventKind, 'worker.blocked');
+    assert.equal(agentStates[0].status, 'failed');
+    assert.equal(agentStates[0].error, 'Server restarted');
+    assert.equal(agentStates[0].lastEventKind, 'worker.failed');
     assert.equal(agentStates[0].taskId, 'task-1');
+    assert.equal(events[0].kind, 'worker.failed');
+    assert.equal(events[0].metadata?.workerId, 'worker-123');
   });
 
   it('keeps one logical agent through restore plus live replay and preserves counts', () => {
@@ -372,7 +398,9 @@ describe('WorkerSessionManager bootstraps agent state from persisted workers bef
     assert.equal(agentStates.length, 1);
     assert.equal(agentStates[0].status, 'blocked');
     assert.equal(agentStates[0].blocker, 'Waiting on approval after reconnect');
-    assert.deepEqual(agentStates[0].seenEventIds, ['worker-123:bootstrap', 'evt-blocked-live']);
+    assert.equal(agentStates[0].seenEventIds.length, 3);
+    assert.equal(agentStates[0].seenEventIds[0], 'worker-123:bootstrap');
+    assert.equal(agentStates[0].seenEventIds[2], 'evt-blocked-live');
     assert.equal(summary.totalCount, 1);
     assert.equal(summary.busyCount, 0);
     assert.equal(summary.blockedCount, 1);

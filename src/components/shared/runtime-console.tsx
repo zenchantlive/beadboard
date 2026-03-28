@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp, TerminalSquare, Square } from 'lucide-react';
 
 import { cn } from '../../lib/utils';
@@ -8,6 +8,7 @@ import type { RuntimeConsoleEvent } from '../../lib/embedded-runtime';
 
 export interface RuntimeConsoleProps {
   events: RuntimeConsoleEvent[];
+  activeWorkerIds?: readonly string[];
   daemonStatus?: string | null;
   projectRoot?: string;
 }
@@ -33,40 +34,11 @@ function formatTimestamp(timestamp: string): string {
   return Number.isNaN(date.getTime()) ? timestamp : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-/**
- * Derive the set of currently active worker IDs from the event stream.
- * A worker is active if it has a spawned/updated event but no completed/failed event.
- */
-function deriveActiveWorkerIds(events: RuntimeConsoleEvent[]): Set<string> {
-  const spawned = new Set<string>();
-  const terminal = new Set<string>();
-
-  for (const event of events) {
-    const workerId = typeof event.metadata?.workerId === 'string' ? event.metadata.workerId : null;
-    if (!workerId) continue;
-
-    if (event.kind === 'worker.spawned' || event.kind === 'worker.updated') {
-      spawned.add(workerId);
-    }
-    if (event.kind === 'worker.completed' || event.kind === 'worker.failed') {
-      terminal.add(workerId);
-    }
-  }
-
-  const active = new Set<string>();
-  for (const id of spawned) {
-    if (!terminal.has(id)) {
-      active.add(id);
-    }
-  }
-  return active;
-}
-
-export function RuntimeConsole({ events, daemonStatus, projectRoot }: RuntimeConsoleProps) {
+export function RuntimeConsole({ events, activeWorkerIds = [], daemonStatus, projectRoot }: RuntimeConsoleProps) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [stoppingWorkers, setStoppingWorkers] = useState<Set<string>>(new Set());
 
-  const activeWorkerIds = useMemo(() => deriveActiveWorkerIds(events), [events]);
+  const activeWorkerIdSet = useMemo(() => new Set(activeWorkerIds), [activeWorkerIds]);
 
   const handleStopWorker = async (workerId: string) => {
     if (!projectRoot || stoppingWorkers.has(workerId)) return;
@@ -118,7 +90,7 @@ export function RuntimeConsole({ events, daemonStatus, projectRoot }: RuntimeCon
         <div className="grid max-h-44 gap-2 overflow-y-auto px-4 py-3 custom-scrollbar">
           {events.map((event) => {
             const workerId = typeof event.metadata?.workerId === 'string' ? event.metadata.workerId : null;
-            const isActive = workerId ? activeWorkerIds.has(workerId) : false;
+            const isActive = workerId ? activeWorkerIdSet.has(workerId) : false;
             const isStopping = workerId ? stoppingWorkers.has(workerId) : false;
 
             return (

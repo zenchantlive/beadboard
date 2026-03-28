@@ -13,8 +13,12 @@ export async function GET(request: Request) {
   }
 
   const agentStates = workerSessionManager.listAgentStates(projectRoot);
+  const liveWorkers = workerSessionManager.listWorkers(projectRoot);
   const summary = summarizeAgentStates(agentStates);
   const activeAgentStates = agentStates.filter((state) => state.status !== 'completed' && state.status !== 'failed');
+  const liveWorkerIds = liveWorkers
+    .filter((worker) => worker.status === 'spawning' || worker.status === 'working')
+    .map((worker) => worker.id);
 
   const instances = activeAgentStates.map((state) => ({
     id: state.agentId,
@@ -41,6 +45,7 @@ export async function GET(request: Request) {
       byType,
       instances,
     },
+    liveWorkerIds,
     agentStates,
     summary,
   });

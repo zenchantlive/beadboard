@@ -43,9 +43,10 @@ export class EmbeddedPiDaemon {
 
     const orchestrator = createOrchestratorInstance(projectRoot);
 
-    // Restore events from disk if present, capped to MAX_EVENTS
+    // Restore the newest persisted events and keep in-memory ordering newest-first.
     const persistedEvents = readJsonl<RuntimeConsoleEvent>(projectRoot, 'events.jsonl')
-      .slice(0, MAX_EVENTS);
+      .slice(-MAX_EVENTS)
+      .reverse();
 
     // Restore turns from disk if present
     const turnStore = new ConversationTurnStore();

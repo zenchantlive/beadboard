@@ -2,7 +2,7 @@
 
 ## What Changed
 
-`beadboard-kqi` is complete and closed.
+`beadboard-kqi` is complete and closed, and `beadboard-kqi.7` follow-up is also complete.
 
 Shipped work:
 - BeadBoard driver skill now treats approved archetypes as the only stable spawnable worker types.
@@ -10,6 +10,8 @@ Shipped work:
 - Runtime instances now use deterministic archetype-backed identity labels.
 - Runtime-instance lifecycle is retired out of normal ready-work selection.
 - New archetype creation now requires explicit approval metadata in file, API, TUI, and inspector flows.
+- Restart recovery now restores the newest runtime event window and appends terminal failed events for in-flight workers lost on daemon restart.
+- Runtime Console stop controls now use the live active-worker set from the runtime API.
 - Git-tracked bead snapshot now includes `beadboard-kqi` and all child beads so GitHub pullers can see the finished work.
 
 ## Verified
@@ -35,6 +37,7 @@ Browser artifacts captured against `http://127.0.0.1:3003`:
 - `artifacts/blocked-triage-mobile-open.png`
 - `artifacts/blocked-triage-tablet-open.png`
 - `artifacts/blocked-triage-desktop-open.png`
+- `artifacts/restart-fix-social-fullpage.png`
 
 Closed beads:
 - `beadboard-kqi`
@@ -44,6 +47,7 @@ Closed beads:
 - `beadboard-kqi.4`
 - `beadboard-kqi.5`
 - `beadboard-kqi.6`
+- `beadboard-kqi.7`
 
 ## Open Risks
 

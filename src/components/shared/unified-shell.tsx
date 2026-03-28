@@ -110,6 +110,7 @@ export function UnifiedShell({
   const [customRightPanel, setCustomRightPanel] = useState<React.ReactNode | null>(null);
   const [orchestrator, setOrchestrator] = useState(() => createOrchestratorInstance(projectRoot));
   const [runtimeEvents, setRuntimeEvents] = useState<RuntimeConsoleEvent[]>([]);
+  const [activeWorkerIds, setActiveWorkerIds] = useState<string[]>([]);
   const [agentStates, setAgentStates] = useState<AgentState[]>([]);
   const [orchestratorTurns, setOrchestratorTurns] = useState<ConversationTurn[]>([]);
   const [completionSummaryTurns, setCompletionSummaryTurns] = useState<ConversationTurn[]>([]);
@@ -348,6 +349,11 @@ export function UnifiedShell({
         if (agentsResponse.ok && agentsPayload?.ok && Array.isArray(agentsPayload.agentStates)) {
           setAgentStates(agentsPayload.agentStates);
         }
+        if (agentsResponse.ok && agentsPayload?.ok && Array.isArray(agentsPayload.liveWorkerIds)) {
+          setActiveWorkerIds(
+            agentsPayload.liveWorkerIds.filter((workerId: unknown): workerId is string => typeof workerId === 'string' && workerId.length > 0),
+          );
+        }
         if (eventsResponse.ok && eventsPayload?.ok && Array.isArray(eventsPayload.data)) {
           setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, eventsPayload.data));
         }
@@ -387,6 +393,18 @@ export function UnifiedShell({
       try {
         const payload = JSON.parse(event.data) as RuntimeConsoleEvent;
         setRuntimeEvents((current) => mergeUniqueRuntimeEvents(current, [payload]));
+        const workerId = typeof payload.metadata?.workerId === 'string' ? payload.metadata.workerId : null;
+        if (workerId) {
+          setActiveWorkerIds((current) => {
+            const next = new Set(current);
+            if (payload.kind === 'worker.spawned' || payload.kind === 'worker.updated') {
+              next.add(workerId);
+            } else if (payload.kind === 'worker.blocked' || payload.kind === 'worker.completed' || payload.kind === 'worker.failed') {
+              next.delete(workerId);
+            }
+            return [...next];
+          });
+        }
         if (isAgentStateEventKind(payload.kind)) {
           setAgentStates((current) => reduceAgentStates(current, payload as AgentStateEvent));
         }
@@ -706,7 +724,12 @@ export function UnifiedShell({
         </div>
       ) : null}
 
-      <RuntimeConsole events={runtimeEvents} daemonStatus={daemonLifecycle?.status ?? null} projectRoot={projectRoot} />
+      <RuntimeConsole
+        events={runtimeEvents}
+        activeWorkerIds={activeWorkerIds}
+        daemonStatus={daemonLifecycle?.status ?? null}
+        projectRoot={projectRoot}
+      />
 
 {/* MOBILE NAV: Bottom tab bar */}
       <MobileNav />

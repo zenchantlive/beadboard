@@ -208,6 +208,13 @@ class WorkerSessionManagerImpl {
     embeddedPiDaemon.ensureProject(projectRoot);
     const serialized = readJsonl<SerializedWorker>(projectRoot, 'workers.jsonl');
     this.bootstrapAgentStates(projectRoot, serialized);
+    const existingTerminalWorkerIds = new Set(
+      embeddedPiDaemon
+        .listEvents(projectRoot)
+        .filter((event) => event.kind === 'worker.completed' || event.kind === 'worker.failed')
+        .map((event) => (typeof event.metadata?.workerId === 'string' ? event.metadata.workerId : null))
+        .filter((workerId): workerId is string => Boolean(workerId)),
+    );
 
     for (const record of serialized) {
       const status: WorkerStatus =
@@ -234,6 +241,34 @@ class WorkerSessionManagerImpl {
       const numericPart = parseInt(worker.id.replace('worker-', '').split('-')[0], 10);
       if (!isNaN(numericPart) && numericPart >= this.nextWorkerId) {
         this.nextWorkerId = numericPart + 1;
+      }
+
+      if (status === 'failed' && record.status !== 'failed' && !existingTerminalWorkerIds.has(worker.id)) {
+        const failedEvent = embeddedPiDaemon.appendEvent(projectRoot, {
+          kind: 'worker.failed',
+          title: worker.displayName ? `${worker.displayName} failed after restart` : `Worker ${worker.id} failed after restart`,
+          detail: worker.error ?? 'Server restarted',
+          status: 'failed',
+          metadata: {
+            workerId: worker.id,
+            agentInstanceId: worker.agentInstanceId ?? null,
+            agentTypeId: worker.agentTypeId ?? worker.archetypeId ?? null,
+            displayName: worker.displayName ?? null,
+            taskId: worker.taskId ?? null,
+          },
+        });
+        this.recordAgentEvent(worker, {
+          id: failedEvent.id,
+          kind: failedEvent.kind,
+          projectId: failedEvent.projectId,
+          timestamp: failedEvent.timestamp,
+          status: failedEvent.status,
+          taskId: failedEvent.taskId ?? worker.taskId,
+          swarmId: failedEvent.swarmId ?? null,
+          actorLabel: failedEvent.actorLabel ?? worker.displayName ?? worker.id,
+          metadata: failedEvent.metadata ?? {},
+          detail: failedEvent.detail,
+        });
       }
     }
   }
