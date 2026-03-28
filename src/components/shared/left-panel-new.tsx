@@ -1,13 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, Folder, FolderOpen, Pencil, Rocket, Star } from 'lucide-react';
+import { ChevronDown, ChevronRight, Folder, FolderOpen, Rocket } from 'lucide-react';
 
 import type { RuntimeInstance } from '../../lib/embedded-runtime';
 import type { BeadIssue } from '../../lib/types';
 import { isRuntimeAgentIssue } from '../../lib/agent/identity';
 import { cn } from '../../lib/utils';
-import { useUrlState, type LeftPanelFilters, type LeftPanelStatusFilter, type LeftPanelPriorityFilter, type LeftPanelPresetFilter, type LeftSidebarMode, type ViewType } from '../../hooks/use-url-state';
+import { useUrlState, type LeftPanelFilters, type LeftPanelStatusFilter, type LeftPanelPriorityFilter, type LeftSidebarMode } from '../../hooks/use-url-state';
 export type { LeftPanelFilters } from '../../hooks/use-url-state';
 import { OrchestratorPanel } from './orchestrator-panel';
 
@@ -21,6 +21,13 @@ interface EpicEntry {
   doneCount: number;
   agentBlockedCount: number;
   latestTimestamp: string;
+}
+
+interface TreeRowProps {
+  issue: BeadIssue;
+  depth: number;
+  childrenByParent: Map<string, BeadIssue[]>;
+  filters: LeftPanelFilters;
 }
 
 export interface LeftPanelProps {
@@ -133,19 +140,35 @@ export function LeftPanel({
   const { view, setView } = urlState;
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
+  const issueById = useMemo(() => {
+    const next = new Map<string, BeadIssue>();
+    for (const issue of issues) {
+      if (!isRuntimeAgentIssue(issue)) {
+        next.set(issue.id, issue);
+      }
+    }
+    return next;
+  }, [issues]);
+
+  const childrenByParent = useMemo(() => {
+    const next = new Map<string, BeadIssue[]>();
+
+    for (const issue of issueById.values()) {
+      const parentEdge = issue.dependencies.find((dep) => dep.type === 'parent');
+      if (!parentEdge) continue;
+      const children = next.get(parentEdge.target) ?? [];
+      children.push(issue);
+      next.set(parentEdge.target, children);
+    }
+
+    return next;
+  }, [issueById]);
+
   const entries = useMemo(() => {
     const epicMap = new Map<string, EpicEntry>();
-    const childrenMap = new Map<string, BeadIssue[]>();
 
-    for (const issue of issues) {
-      if (isRuntimeAgentIssue(issue)) continue;
-
-      const parentEdge = issue.dependencies.find((dep) => dep.type === 'parent');
-      if (parentEdge) {
-        const children = childrenMap.get(parentEdge.target) ?? [];
-        children.push(issue);
-        childrenMap.set(parentEdge.target, children);
-      } else if (issue.issue_type === 'epic') {
+    for (const issue of issueById.values()) {
+      if (issue.issue_type === 'epic') {
         epicMap.set(issue.id, {
           epic: issue,
           children: [],
@@ -161,7 +184,7 @@ export function LeftPanel({
     }
 
     for (const entry of epicMap.values()) {
-      entry.children = childrenMap.get(entry.epic.id) ?? [];
+      entry.children = childrenByParent.get(entry.epic.id) ?? [];
       entry.blockedCount = entry.children.filter((t) => t.status === 'blocked').length;
       entry.activeCount = entry.children.filter((t) => t.status === 'in_progress').length;
       entry.readyCount = entry.children.filter((t) => t.status === 'open').length;
@@ -179,11 +202,64 @@ export function LeftPanel({
         filters,
       }))
       .sort((a, b) => b.latestTimestamp.localeCompare(a.latestTimestamp));
-  }, [issues, selectedEpicId, filters]);
+  }, [childrenByParent, issueById, selectedEpicId, filters]);
 
   const handleEpicClick = (epicId: string) => {
-    setExpanded((prev) => ({ ...prev, [epicId]: !prev[epicId] }));
+    setExpanded((prev) => ({ ...prev, [epicId]: true }));
     onEpicSelect?.(epicId);
+  };
+
+  const hasMatchedDescendants = (issueId: string): boolean => {
+    const children = childrenByParent.get(issueId) ?? [];
+    return children.some((child) => isTaskMatch(child, filters) || hasMatchedDescendants(child.id));
+  };
+
+  const renderTreeRows = ({ issue, depth, childrenByParent, filters }: TreeRowProps) => {
+    const directChildren = childrenByParent.get(issue.id) ?? [];
+    const visibleChildren = directChildren
+      .map((child) => ({
+        child,
+        matches: isTaskMatch(child, filters),
+        hasMatchingDescendants: hasMatchedDescendants(child.id),
+      }))
+      .filter(({ matches, hasMatchingDescendants }) => matches || hasMatchingDescendants);
+
+    const isVisible = isTaskMatch(issue, filters) || visibleChildren.length > 0;
+    if (!isVisible) {
+      return null;
+    }
+
+    const statusTone =
+      issue.status === 'blocked'
+        ? 'text-[var(--accent-danger)]'
+        : issue.status === 'in_progress'
+          ? 'text-[var(--accent-warning)]'
+          : issue.status === 'closed' || issue.status === 'tombstone'
+            ? 'text-[var(--text-quaternary)]'
+            : 'text-[var(--text-tertiary)]';
+
+    return (
+      <li key={issue.id} className="space-y-1">
+        <div
+          className="rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-primary)]/60 px-2.5 py-2"
+          style={{ marginLeft: `${depth * 14}px` }}
+        >
+          <div className="flex items-center gap-2">
+            <Folder className="h-3.5 w-3.5 shrink-0 text-[var(--text-tertiary)]" />
+            <span className="min-w-0 flex-1 truncate text-xs font-medium text-[var(--text-primary)]">{issue.title}</span>
+            <span className={cn('shrink-0 font-mono text-[10px] uppercase tracking-[0.08em]', statusTone)}>
+              {mapStatus(issue).replace('_', ' ')}
+            </span>
+          </div>
+          <p className="mt-1 truncate font-mono text-[10px] text-[var(--text-quaternary)]">{issue.id}</p>
+        </div>
+        {visibleChildren.length > 0 ? (
+          <ul className="space-y-1" data-testid={`epic-tree-${issue.id}`}>
+            {visibleChildren.map(({ child }) => renderTreeRows({ issue: child, depth: depth + 1, childrenByParent, filters }))}
+          </ul>
+        ) : null}
+      </li>
+    );
   };
 
   return (
@@ -345,19 +421,19 @@ export function LeftPanel({
                 const {
                   epic,
                   children,
-                  blockedCount,
-                  activeCount,
-                  readyCount,
-                  deferredCount,
-                  doneCount,
-                  agentBlockedCount,
-                  latestTimestamp,
                 } = entry;
                 const matchedChildren = children.filter((task) => isTaskMatch(task, filters));
                 const total = children.length;
                 const isExpanded = expanded[epic.id] ?? false;
                 const isSelected = selectedEpicId === epic.id;
                 const rowBackground = rowTone(entry);
+                const visibleTreeChildren = children
+                  .map((child) => ({
+                    child,
+                    matches: isTaskMatch(child, filters),
+                    hasMatchingDescendants: hasMatchedDescendants(child.id),
+                  }))
+                  .filter(({ matches, hasMatchingDescendants }) => matches || hasMatchingDescendants);
 
                 return (
                   <div key={epic.id} className="mb-2">
@@ -381,7 +457,12 @@ export function LeftPanel({
                             >
                               {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                             </button>
-                            <div className="flex min-w-0 items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleEpicClick(epic.id)}
+                              className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
+                              aria-label={`Focus ${epic.title}`}
+                            >
                               <FolderOpen className="h-3.5 w-3.5 text-[var(--accent-info)]" />
                               <span className="truncate text-sm font-semibold text-[var(--text-primary)]">{epic.title}</span>
                               {total > 0 ? (
@@ -389,7 +470,7 @@ export function LeftPanel({
                                   {matchedChildren.length}/{total}
                                 </span>
                               ) : null}
-                            </div>
+                            </button>
                             {onLaunchSwarm ? (
                               <button
                                 type="button"
@@ -408,6 +489,17 @@ export function LeftPanel({
                           </div>
                         </div>
                       </div>
+                      {isExpanded ? (
+                        visibleTreeChildren.length > 0 ? (
+                          <ul className="mt-3 space-y-1.5 border-t border-[var(--border-subtle)] pt-3" data-testid={`epic-tree-${epic.id}`}>
+                            {visibleTreeChildren.map(({ child }) => renderTreeRows({ issue: child, depth: 0, childrenByParent, filters }))}
+                          </ul>
+                        ) : (
+                          <p className="mt-3 border-t border-[var(--border-subtle)] pt-3 text-xs text-[var(--text-tertiary)]">
+                            No matching tasks under this epic.
+                          </p>
+                        )
+                      ) : null}
                     </div>
                   </div>
                 );

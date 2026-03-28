@@ -72,4 +72,20 @@ describe('LeftPanel Scope Controls', () => {
     assert.ok(fileContent.includes('onLaunchSwarm(epic.id);'), 'Epic launch should route through the shared launch callback');
     assert.ok(!fileContent.includes('onAssignMode?.(epic.id);'), 'Epic launch should not open assignment mode');
   });
+
+  it('wires the epic title block back to the shared epic-selection callback', async () => {
+    const fileContent = await fs.promises.readFile(new URL('../../../src/components/shared/left-panel-new.tsx', import.meta.url), 'utf-8');
+    assert.ok(fileContent.includes('const handleEpicClick = (epicId: string) => {'), 'LeftPanel should define a shared epic click handler');
+    assert.ok(fileContent.includes('[epicId]: true'), 'Epic click handler should force the clicked epic open in the tree');
+    assert.ok(fileContent.includes('aria-label={`Focus ${epic.title}`}'), 'Epic rows should expose an explicit focus target');
+    assert.ok(fileContent.includes('onClick={() => handleEpicClick(epic.id)}'), 'Epic focus target should route through the shared open-and-select handler');
+  });
+
+  it('renders an expanded descendant tree below epic rows', async () => {
+    const fileContent = await fs.promises.readFile(new URL('../../../src/components/shared/left-panel-new.tsx', import.meta.url), 'utf-8');
+    assert.ok(fileContent.includes('const visibleTreeChildren = children'), 'LeftPanel should derive visible task descendants for each epic');
+    assert.ok(fileContent.includes('data-testid={`epic-tree-${epic.id}`}'), 'Expanded epic rows should render a concrete task tree container');
+    assert.ok(fileContent.includes('renderTreeRows({ issue: child, depth: 0, childrenByParent, filters })'), 'Epic expansion should render descendant rows, not just toggle local state');
+    assert.ok(fileContent.includes('hasMatchedDescendants(child.id)'), 'Tree rendering should preserve nested subtask paths when descendants match');
+  });
 });
