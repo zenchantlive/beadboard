@@ -96,7 +96,7 @@ npm run typecheck && npm run lint && npm run test
 
 You can paste this into your agent's context:
 
-> You're contributing to BeadBoard (https://github.com/zenchantlive/beadboard), a multi-agent orchestration system built on Beads.It is critical that you read the CONTRIBUTION.md and be respectful of the maintainers. Keep Pre small, focused and maintainable. Fork the repo, run `npm install`, then check `bd list --label contrib:open` for available work. Install the beadboard-driver skill with `npx skills add zenchantlive/beadboard --skill beadboard-driver` and follow the SKILL.md runbook. Run `npm run typecheck && npm run lint && npm run test` before submitting. Keep PRs under 100 lines and reference the GitHub Issue.
+> You're contributing to BeadBoard (https://github.com/zenchantlive/beadboard), a multi-agent orchestration system built on Beads.It is critical that you read the CONTRIBUTION.md and be respectful of the maintainers. Keep PRs small, focused and maintainable. Fork the repo, run `npm install`, then check `bd list --label contrib:open` for available work. Install the beadboard-driver skill with `npx skills add zenchantlive/beadboard --skill beadboard-driver` and follow the SKILL.md runbook. Run `npm run typecheck && npm run lint && npm run test` before submitting. Keep PRs under 100 lines and reference the GitHub Issue.
 
 ### Agent-specific notes
 
