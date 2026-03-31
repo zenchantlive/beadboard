@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import { Noto_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 import './globals.css';
-
-const notoSans = Noto_Sans({
-  subsets: ['latin'],
-  variable: '--font-ui',
-});
 
 export const metadata: Metadata = {
   title: 'BeadBoard',
@@ -16,7 +10,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" data-theme="aurora" suppressHydrationWarning>
-      <body className={notoSans.variable} suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { handleCoordEventsPost } from '../../src/app/api/coord/events/route';
+import { handleCoordEventsPost } from '../../src/lib/handlers/coord-events';
 
 test('handleCoordEventsPost returns 400 for invalid body', async () => {
   const request = new Request('http://localhost/api/coord/events', {
