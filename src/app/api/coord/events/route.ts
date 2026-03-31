@@ -16,7 +16,7 @@ function parseBody(data: unknown): { projectRoot: string; event: unknown } | nul
   };
 }
 
-export async function handleCoordEventsPost(
+async function handleCoordEventsPost(
   request: Request,
   deps?: Partial<CoordEventsDeps>,
 ): Promise<Response> {
